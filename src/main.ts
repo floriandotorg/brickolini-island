@@ -1,4 +1,5 @@
 import "./style.css";
+import { IsoReader, IsoVariant } from "./lib/iso";
 
 const dropZone = document.getElementById("drop-zone");
 const isoInput = document.getElementById(
@@ -6,26 +7,33 @@ const isoInput = document.getElementById(
 ) as HTMLInputElement | null;
 const dropZoneLabel = dropZone?.querySelector('label[for="iso-input"]');
 
-const handleFileSelect = (file: File | null) => {
+const handleFileSelect = async (file: File | null) => {
 	if (!file) {
 		console.error("No file selected.");
-		// Handle error display in the UI
 		return;
 	}
 
 	if (!file.name.toLowerCase().endsWith(".iso")) {
 		console.error("Invalid file type. Please select an ISO file.");
-		// Handle error display in the UI
 		return;
 	}
 
-	console.log("Selected ISO file:", file.name);
-	// TODO: Add logic to process the ISO file
-	// e.g., display loading state, start parsing
+	try {
+		const buffer = await file.arrayBuffer();
+		const reader = new IsoReader(buffer, IsoVariant.ISO9660);
+		const files = reader.filelist.sort();
+		console.log("Files in ISO:", files);
+	} catch (e) {
+		console.error("Error reading ISO:", e);
+		if (e instanceof Error) {
+			console.error(`Error details: ${e.message}`);
+		} else {
+			console.error("An unknown error occurred while reading the ISO file.");
+		}
+	}
 };
 
 if (dropZone && isoInput) {
-	// Prevent default drag behaviors
 	for (const eventName of ["dragenter", "dragover", "dragleave", "drop"]) {
 		dropZone.addEventListener(
 			eventName,
@@ -37,12 +45,11 @@ if (dropZone && isoInput) {
 		);
 	}
 
-	// Highlight drop zone when item is dragged over it
 	for (const eventName of ["dragenter", "dragover"]) {
 		dropZone.addEventListener(
 			eventName,
 			() => {
-				dropZone.classList.add("highlight"); // Add a CSS class for highlighting
+				dropZone.classList.add("highlight");
 			},
 			false,
 		);
@@ -52,13 +59,12 @@ if (dropZone && isoInput) {
 		dropZone.addEventListener(
 			eventName,
 			() => {
-				dropZone.classList.remove("highlight"); // Remove highlight class
+				dropZone.classList.remove("highlight");
 			},
 			false,
 		);
 	}
 
-	// Handle dropped files
 	dropZone.addEventListener(
 		"drop",
 		(e) => {
@@ -66,38 +72,32 @@ if (dropZone && isoInput) {
 			const files = dt?.files;
 
 			if (files && files.length > 0) {
-				handleFileSelect(files[0] ?? null); // Pass null if files[0] is undefined
+				handleFileSelect(files[0] ?? null);
 			}
 		},
 		false,
 	);
 
-	// Handle file selection via button
 	isoInput.addEventListener("change", (e) => {
 		const target = e.target as HTMLInputElement;
 		if (target.files && target.files.length > 0) {
-			handleFileSelect(target.files[0] ?? null); // Pass null if files[0] is undefined
+			handleFileSelect(target.files[0] ?? null);
 		}
 	});
 
-	// Allow clicking the drop zone to trigger file input
 	if (dropZoneLabel) {
-		// Clicking the label already triggers the input, so we only need the drop zone itself
 		dropZone.addEventListener("click", (e) => {
-			// Prevent triggering the input if the click was on the label/button itself
-			if (e.target !== dropZoneLabel) {
+			if (e.target !== dropZoneLabel && e.target !== isoInput) {
 				isoInput.click();
 			}
 		});
 	}
 } else {
-	console.error("Required elements (drop-zone or iso-input) not found.");
+	console.error("Required elements (drop-zone, iso-input) not found.");
+	if (!dropZone) {
+		console.error("Element with ID 'drop-zone' not found.");
+	}
+	if (!isoInput) {
+		console.error("Element with ID 'iso-input' not found.");
+	}
 }
-
-// Add a 'highlight' class style to style.css if you want visual feedback
-/*
-.highlight {
-  border-color: #4CAF50; // Green border for highlight
-  background-color: #e8f5e9;
-}
-*/
