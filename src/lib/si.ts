@@ -181,11 +181,7 @@ export class SI {
             volume = reader.readUint32()
           }
         }
-        const [coord0, coord1, coord2, coord3, coord4, coord5, coord6, coord7, coord8] = coords
-        if (coord0 == null || coord1 == null || coord2 == null || coord3 == null || coord4 == null || coord5 == null || coord6 == null || coord7 == null || coord8 == null) {
-          throw new Error('Invalid coordinates')
-        }
-        const obj = new SIObject(type, presenter, name, id, flags, duration, loops, [coord0, coord1, coord2], [coord3, coord4, coord5], [coord6, coord7, coord8], filename, fileType, volume)
+        const obj = new SIObject(type, presenter, name, id, flags, duration, loops, [coords[0], coords[1], coords[2]], [coords[3], coords[4], coords[5]], [coords[6], coords[7], coords[8]], filename, fileType, volume)
         this.objectList.set(id, obj)
         const parent = parents.at(-1)
         if (parent) {

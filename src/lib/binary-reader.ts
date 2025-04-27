@@ -40,6 +40,12 @@ export class BinaryReader {
     return value
   }
 
+  readInt32() {
+    const value = this._view.getInt32(this._offset, true)
+    this._offset += 4
+    return value
+  }
+
   readFloat32() {
     const value = this._view.getFloat32(this._offset, true)
     this._offset += 4

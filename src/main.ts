@@ -2,6 +2,8 @@ import './style.css'
 import { ISO9660, ISOVariant } from './lib/iso'
 import { SI, type SIObject, SIType } from './lib/si'
 import { BinaryWriter } from './lib/binary-writer'
+import { BinaryReader } from './lib/binary-reader'
+import { Smk } from './lib/smk'
 
 const dropZone = document.getElementById('drop-zone')
 const isoInput = document.getElementById('iso-input') as HTMLInputElement | null
@@ -48,11 +50,63 @@ const readIso = async (file: File) => {
   if (!audio) {
     throw new Error('Audio not found')
   }
+  const video = movie.children.find(c => c.type === SIType.Video)
+  if (!video) {
+    throw new Error('Video not found')
+  }
+
+  const main = document.getElementById('app')
+  if (!main) {
+    throw new Error('Main element not found')
+  }
+  main.innerHTML = `
+    <canvas id="canvas"></canvas>
+  `
+  const canvas = document.getElementById('canvas') as HTMLCanvasElement
+  if (!canvas) {
+    throw new Error('Canvas element not found')
+  }
+  const ctx = canvas.getContext('2d')
+  if (!ctx) {
+    throw new Error('Canvas context not found')
+  }
+  const smk = new Smk(new BinaryReader(video.data.buffer))
+
   const audioCtx = new AudioContext()
   const audioSource = audioCtx.createBufferSource()
   audioSource.buffer = await audioCtx.decodeAudioData(toWAV(audio))
   audioSource.connect(audioCtx.destination)
   audioSource.start()
+
+  const decodeFrame = () => {
+    const frame = smk.decodeFrame()
+
+    canvas.width = smk.width
+    canvas.height = smk.height
+    const imageData = ctx.createImageData(smk.width, smk.height)
+    for (let n = 0; n < smk.width * smk.height; ++n) {
+      const i = n * 3
+      const j = n * 4
+      imageData.data[j] = frame[i]
+      imageData.data[j + 1] = frame[i + 1]
+      imageData.data[j + 2] = frame[i + 2]
+      imageData.data[j + 3] = 255
+    }
+    return imageData
+  }
+  let n = 0
+  let currentFrame = decodeFrame()
+  const render = () => {
+    if (n * (1000 / smk.frameRate) < audioCtx.currentTime * 1000) {
+      currentFrame = decodeFrame()
+      ++n
+    }
+
+    ctx.putImageData(currentFrame, 0, 0)
+
+    requestAnimationFrame(render)
+  }
+  render()
 }
 
 const handleFileSelect = async (file: File | null) => {
