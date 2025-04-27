@@ -18,7 +18,7 @@ const handleFileSelect = async (file: File | null) => {
 
 	try {
 		const buffer = await file.arrayBuffer()
-		const reader = new IsoReader(buffer, IsoVariant.ISO9660)
+		const reader = new IsoReader(buffer, IsoVariant.Joliet)
 		const files = reader.filelist.sort()
 		console.log('Files in ISO:', files)
 	} catch (e) {
