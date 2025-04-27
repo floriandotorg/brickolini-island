@@ -1,6 +1,8 @@
-# Brickolini
+# Brickolini Island
 
-A TypeScript rewrite of the 1997 game Lego Island.
+A web-based rewrite of the 1997 game Lego Island.
+
+**Play it here:** [http://floriandotorg.github.io/brickolini-island/](http://floriandotorg.github.io/brickolini-island/)
 
 This project aims to recreate the charm and fun of Lego Island in your browser to make it accessible.
 
