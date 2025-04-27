@@ -1,3 +1,5 @@
+const decoder = new TextDecoder('ascii')
+
 export class BinaryReader {
 	private view: DataView
 	private offset = 0
@@ -60,15 +62,15 @@ export class BinaryReader {
 	}
 
 	readString() {
-		let result = ''
+		const result: number[] = []
 		while (true) {
 			const char = this.readUint8()
 			if (char === 0) {
 				break
 			}
-			result += String.fromCharCode(char)
+			result.push(char)
 		}
-		return result
+		return decoder.decode(new Uint8Array(result))
 	}
 
 	seek(offset: number) {
