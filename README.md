@@ -16,7 +16,7 @@ This project aims to recreate the charm and fun of Lego Island in your browser t
     ```
 2.  Run the development server:
     ```bash
-    npm run dev
+    npm start
     ```
 3.  Open your browser to the specified local address (usually `http://localhost:5173`). 
 

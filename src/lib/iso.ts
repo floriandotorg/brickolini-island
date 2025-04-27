@@ -147,15 +147,8 @@ export class IsoReader {
 		if (!entry) {
 			throw new Error(`File not found: ${path}`)
 		}
-		const bufferSlice = this.view.buffer.slice(entry.loc * SECTOR_SIZE, entry.loc * SECTOR_SIZE + entry.len)
 
-		if (bufferSlice instanceof ArrayBuffer) {
-			return bufferSlice
-		}
-
-		const standardBuffer = new ArrayBuffer(bufferSlice.byteLength)
-		new Uint8Array(standardBuffer).set(new Uint8Array(bufferSlice))
-		return standardBuffer
+		return this.view.buffer.slice(entry.loc * SECTOR_SIZE, entry.loc * SECTOR_SIZE + entry.len)
 	}
 
 	get filelist(): string[] {
