@@ -20,6 +20,18 @@ export class BinaryReader {
 		return value
 	}
 
+	readUint16() {
+		const value = this.view.getUint16(this.offset, true)
+		this.offset += 2
+		return value
+	}
+
+	readUint8() {
+		const value = this.view.getUint8(this.offset)
+		this.offset += 1
+		return value
+	}
+
 	readInt8() {
 		const value = this.view.getInt8(this.offset)
 		this.offset += 1
@@ -32,6 +44,12 @@ export class BinaryReader {
 		return value
 	}
 
+	readFloat64() {
+		const value = this.view.getFloat64(this.offset, true)
+		this.offset += 8
+		return value
+	}
+
 	readBytes(count: number): Uint8Array {
 		if (this.offset + count > this.view.byteLength) {
 			throw new Error('Reading beyond buffer length')
@@ -39,6 +57,18 @@ export class BinaryReader {
 		const value = new Uint8Array(this.view.buffer, this.view.byteOffset + this.offset, count)
 		this.offset += count
 		return value
+	}
+
+	readString() {
+		let result = ''
+		while (true) {
+			const char = this.readUint8()
+			if (char === 0) {
+				break
+			}
+			result += String.fromCharCode(char)
+		}
+		return result
 	}
 
 	seek(offset: number) {

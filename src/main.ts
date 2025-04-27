@@ -1,101 +1,98 @@
 import './style.css'
-import { IsoReader, IsoVariant } from './lib/iso'
+import { ISO9660, ISOVariant } from './lib/iso'
+import { SI } from './lib/si'
 
 const dropZone = document.getElementById('drop-zone')
 const isoInput = document.getElementById('iso-input') as HTMLInputElement | null
 const dropZoneLabel = dropZone?.querySelector('label[for="iso-input"]')
 
+if (!dropZone || !isoInput || !dropZoneLabel) {
+	throw new Error('Elements not found')
+}
+
+const readIso = async (file: File) => {
+	const buffer = await file.arrayBuffer()
+	const reader = new ISO9660(buffer, ISOVariant.Joliet)
+	console.log(reader.filelist())
+	const si = new SI(reader.open('Lego/Scripts/INTRO.SI'))
+	console.log(si.objects)
+}
+
 const handleFileSelect = async (file: File | null) => {
 	if (!file) {
-		console.error('No file selected.')
-		return
+		throw new Error('No file selected.')
 	}
 
 	if (!file.name.toLowerCase().endsWith('.iso')) {
-		console.error('Invalid file type. Please select an ISO file.')
-		return
+		throw new Error('Invalid file type. Please select an ISO file.')
 	}
 
-	try {
-		const buffer = await file.arrayBuffer()
-		const reader = new IsoReader(buffer, IsoVariant.Joliet)
-		const files = reader.filelist.sort()
-		console.log('Files in ISO:', files)
-	} catch (e) {
-		console.error('Error reading ISO:', e)
-		if (e instanceof Error) {
-			console.error(`Error details: ${e.message}`)
-		} else {
-			console.error('An unknown error occurred while reading the ISO file.')
-		}
-	}
+	readIso(file)
 }
 
-if (dropZone && isoInput) {
-	for (const eventName of ['dragenter', 'dragover', 'dragleave', 'drop']) {
-		dropZone.addEventListener(
-			eventName,
-			e => {
-				e.preventDefault()
-				e.stopPropagation()
-			},
-			false,
-		)
-	}
-
-	for (const eventName of ['dragenter', 'dragover']) {
-		dropZone.addEventListener(
-			eventName,
-			() => {
-				dropZone.classList.add('highlight')
-			},
-			false,
-		)
-	}
-
-	for (const eventName of ['dragleave', 'drop']) {
-		dropZone.addEventListener(
-			eventName,
-			() => {
-				dropZone.classList.remove('highlight')
-			},
-			false,
-		)
-	}
-
+for (const eventName of ['dragenter', 'dragover', 'dragleave', 'drop']) {
 	dropZone.addEventListener(
-		'drop',
+		eventName,
 		e => {
-			const dt = e.dataTransfer
-			const files = dt?.files
-
-			if (files && files.length > 0) {
-				handleFileSelect(files[0] ?? null)
-			}
+			e.preventDefault()
+			e.stopPropagation()
 		},
 		false,
 	)
+}
 
-	isoInput.addEventListener('change', e => {
-		const target = e.target as HTMLInputElement
-		if (target.files && target.files.length > 0) {
-			handleFileSelect(target.files[0] ?? null)
+for (const eventName of ['dragenter', 'dragover']) {
+	dropZone.addEventListener(
+		eventName,
+		() => {
+			dropZone.classList.add('highlight')
+		},
+		false,
+	)
+}
+
+for (const eventName of ['dragleave', 'drop']) {
+	dropZone.addEventListener(
+		eventName,
+		() => {
+			dropZone.classList.remove('highlight')
+		},
+		false,
+	)
+}
+
+dropZone.addEventListener(
+	'drop',
+	e => {
+		const dt = e.dataTransfer
+		const files = dt?.files
+
+		if (files && files.length > 0) {
+			handleFileSelect(files[0] ?? null)
 		}
-	})
+	},
+	false,
+)
 
-	if (dropZoneLabel) {
-		dropZone.addEventListener('click', e => {
-			if (e.target !== dropZoneLabel && e.target !== isoInput) {
-				isoInput.click()
-			}
-		})
+isoInput.addEventListener('change', e => {
+	const target = e.target as HTMLInputElement
+	if (target.files && target.files.length > 0) {
+		handleFileSelect(target.files[0] ?? null)
 	}
-} else {
-	console.error('Required elements (drop-zone, iso-input) not found.')
-	if (!dropZone) {
-		console.error("Element with ID 'drop-zone' not found.")
+})
+
+dropZone.addEventListener('click', e => {
+	if (e.target !== dropZoneLabel && e.target !== isoInput) {
+		isoInput.click()
 	}
-	if (!isoInput) {
-		console.error("Element with ID 'iso-input' not found.")
+})
+
+if (import.meta.env.DEV) {
+	const res = await fetch('/LEGO_ISLANDI.ISO')
+	if (!res.ok) {
+		throw new Error(`Failed to fetch ISO: ${res.status}`)
 	}
+	const blob = await res.blob()
+	const file = new File([blob], 'your.iso', { type: 'application/octet-stream' })
+	readIso(file)
 }

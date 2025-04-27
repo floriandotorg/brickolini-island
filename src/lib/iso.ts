@@ -2,156 +2,99 @@ import { BinaryReader } from './binary-reader'
 
 const SECTOR_SIZE = 2048
 
-export enum IsoVariant {
+export enum ISOVariant {
 	ISO9660 = 1,
 	Joliet = 2,
 }
 
-interface IsoFileEntry {
-	loc: number
-	len: number
-}
+const asciiDecoder = new TextDecoder('ascii')
+const utf16beDecoder = new TextDecoder('utf-16be')
 
-export class IsoReader {
-	private mainReader: BinaryReader
-	private variant: IsoVariant
-	private pathToLoc = new Map<string, IsoFileEntry>()
-	private view: DataView
+export class ISO9660 {
+	private reader: BinaryReader
+	private entries = new Map<string, { loc: number; len: number }>()
+	private buffer: ArrayBuffer
+	private variant: ISOVariant
 
-	constructor(buffer: ArrayBuffer, variant: IsoVariant = IsoVariant.Joliet) {
-		this.mainReader = new BinaryReader(buffer)
-		this.view = new DataView(buffer)
+	constructor(buffer: ArrayBuffer, variant: ISOVariant = ISOVariant.Joliet) {
+		this.buffer = buffer
+		this.reader = new BinaryReader(buffer)
 		this.variant = variant
-
-		let volumeDescriptorSector: number
-		if (variant === IsoVariant.ISO9660) {
-			if (this.getVolumeDescriptorType(16) !== 1) {
-				throw new Error('Primary volume descriptor must be type 1 for ISO9660')
+		const sector = variant === ISOVariant.Joliet ? 17 : 16
+		const type = this.getVDType(sector)
+		if (variant === ISOVariant.Joliet) {
+			if (type !== 2) {
+				throw new Error('Bad PVD')
 			}
-			volumeDescriptorSector = 16
-		} else if (variant === IsoVariant.Joliet) {
-			if (this.getVolumeDescriptorType(17) !== 2) {
-				throw new Error('Volume descriptor at sector 17 must be type 2 for Joliet')
-			}
-			volumeDescriptorSector = 17
 		} else {
-			throw new Error('Unsupported variant')
+			if (type !== 1) {
+				throw new Error('Bad PVD')
+			}
 		}
-
-		this.mainReader.seek(volumeDescriptorSector * SECTOR_SIZE + 156)
-
-		const rootDirRecordBytes = this.mainReader.readBytes(34)
-		const rootDirRecordBuffer = rootDirRecordBytes.buffer.slice(rootDirRecordBytes.byteOffset, rootDirRecordBytes.byteOffset + rootDirRecordBytes.byteLength)
-		const rootReader = new BinaryReader(rootDirRecordBuffer as ArrayBuffer)
-		rootReader.skip(2)
-		const rootDirLoc = rootReader.readUint32()
-		rootReader.skip(4)
-		const rootDirLen = rootReader.readUint32()
-
-		this.readDir(rootDirLoc, rootDirLen, '')
+		this.reader.skip(151)
+		const pvdLoc = this.reader.readUint32()
+		this.reader.skip(4)
+		const pvdLen = this.reader.readUint32()
+		this.readDir(pvdLoc, pvdLen, '')
 	}
 
-	private getVolumeDescriptorType(sector: number): number | null {
-		this.mainReader.seek(sector * SECTOR_SIZE)
-		const type = this.mainReader.readInt8()
-		const identifier = this.mainReader.readBytes(5)
-		const version = this.mainReader.readInt8()
-
-		const decoder = new TextDecoder('ascii')
-		if (decoder.decode(identifier) !== 'CD001' || version !== 1) {
-			throw new Error('Not a valid ISO 9660 file')
+	private getVDType = (sector: number) => {
+		this.reader.seek(sector * SECTOR_SIZE)
+		const t = this.reader.readUint8()
+		const id = asciiDecoder.decode(this.reader.readBytes(5))
+		const v = this.reader.readUint8()
+		if (id !== 'CD001') {
+			throw new Error('Not ISO')
 		}
-		return type
+		if (v !== 1) {
+			throw new Error('Unsupported version')
+		}
+		return t
 	}
 
-	private readDir(start: number, totalLen: number, currentPath: string): void {
+	private readDir = (start: number, total: number, path: string) => {
 		let n = 0
-		const decoder = new TextDecoder(this.variant === IsoVariant.Joliet ? 'utf-16be' : 'ascii')
-
-		while (n < totalLen) {
-			const sectorStartOffset = start * SECTOR_SIZE
-			if (sectorStartOffset + n >= this.mainReader.length) break
-
-			this.mainReader.seek(sectorStartOffset + n)
-			const recordStartReaderOffset = this.mainReader.position
-
-			if (recordStartReaderOffset + 1 > this.mainReader.length) break
-			const recLen = this.mainReader.readInt8()
-
-			if (recLen <= 0) {
-				const bytesRemainingInSector = SECTOR_SIZE - (n % SECTOR_SIZE)
-				n += bytesRemainingInSector
-				if (bytesRemainingInSector === 0) n += SECTOR_SIZE
+		while (n < total) {
+			const base = start * SECTOR_SIZE + n
+			this.reader.seek(base)
+			const recLen = this.reader.readUint8()
+			if (recLen < 1) {
+				n = ((n / SECTOR_SIZE + 1) | 0) * SECTOR_SIZE
 				continue
 			}
-
-			if (recordStartReaderOffset + recLen > this.mainReader.length) {
-				break
-			}
-
-			this.mainReader.seek(recordStartReaderOffset + 1)
-
-			if (this.mainReader.position + 28 > this.mainReader.length) {
-				break
-			}
-
-			this.mainReader.skip(1)
-			const loc = this.mainReader.readUint32()
-			this.mainReader.skip(4)
-			const len = this.mainReader.readUint32()
-			this.mainReader.skip(7)
-			const flags = this.mainReader.readInt8()
-			this.mainReader.skip(6)
-			this.mainReader.skip(4)
-			const nameLen = this.mainReader.readInt8()
-
-			if (this.mainReader.position + nameLen > this.mainReader.length || this.mainReader.position + nameLen > recordStartReaderOffset + recLen) {
-				break
-			}
-
-			const nameBytes = this.mainReader.readBytes(nameLen)
+			this.reader.readUint8()
+			const loc = this.reader.readUint32()
+			this.reader.skip(4)
+			const len = this.reader.readUint32()
+			this.reader.skip(11)
+			const flags = this.reader.readUint8()
+			this.reader.skip(6)
+			const nameLen = this.reader.readUint8()
+			const nameBytes = this.reader.readBytes(nameLen)
 			n += recLen
-
 			if (nameBytes.length === 1 && (nameBytes[0] === 0 || nameBytes[0] === 1)) {
 				continue
 			}
-
-			let name = decoder.decode(nameBytes)
-
-			if (this.variant === IsoVariant.Joliet && name.endsWith('\u0000')) {
-				name = name.slice(0, -1)
+			let name = this.variant === ISOVariant.ISO9660 ? asciiDecoder.decode(nameBytes) : utf16beDecoder.decode(nameBytes)
+			if (name.endsWith(';1')) {
+				name = name.slice(0, -2)
 			}
-
-			if (this.variant === IsoVariant.ISO9660 && name.includes(';')) {
-				const parts = name.split(';')
-				if (parts.length === 2 && parts[1] && /^\d+$/.test(parts[1]) && parts[0]) {
-					name = parts[0]
-				}
-			}
-
-			const safeCurrentPath = currentPath ?? ''
-			const filename = `${safeCurrentPath}${name}`
-
-			if (!(flags & 0b10)) {
-				this.pathToLoc.set(filename, { loc, len })
-			}
-
-			if (flags & 0b10 && nameBytes[0] !== 0 && nameBytes[0] !== 1) {
-				this.readDir(loc, len, `${filename}/`)
+			const full = path + name
+			this.entries.set(full, { loc, len })
+			if ((flags & 0b10) !== 0) {
+				this.readDir(loc, len, `${path}${name}/`)
 			}
 		}
 	}
 
-	open(path: string): ArrayBuffer {
-		const entry = this.pathToLoc.get(path)
-		if (!entry) {
-			throw new Error(`File not found: ${path}`)
+	open = (p: string): ArrayBuffer => {
+		const e = this.entries.get(p)
+		if (!e) {
+			throw new Error('File not found')
 		}
-
-		return this.view.buffer.slice(entry.loc * SECTOR_SIZE, entry.loc * SECTOR_SIZE + entry.len)
+		const start = e.loc * SECTOR_SIZE
+		return this.buffer.slice(start, start + e.len)
 	}
 
-	get filelist(): string[] {
-		return Array.from(this.pathToLoc.keys())
-	}
+	filelist = () => Array.from(this.entries.keys())
 }
