@@ -56,6 +56,7 @@ export class SIObject {
 		public volume?: number,
 		public data: Uint8Array = new Uint8Array(),
 		public chunkSizes: number[] = [],
+		public children: SIObject[] = [],
 	) {}
 
 	open = () => {
@@ -79,11 +80,12 @@ export class SI {
 		return this.objectList
 	}
 
-	private readChunk = () => {
+	private readChunk = (parents: SIObject[] = []) => {
 		const pos = this.reader.position
 		const magic = String.fromCharCode(...this.reader.readBytes(4))
 		const size = this.reader.readUint32()
 		const end = pos + 8 + size
+		let current: SIObject | undefined
 		if (magic === 'RIFF') {
 			if (String.fromCharCode(...this.reader.readBytes(4)) !== 'OMNI') {
 				throw new Error('Invalid SI file')
@@ -143,20 +145,17 @@ export class SI {
 					volume = this.reader.readUint32()
 				}
 			}
-			const coord0 = coords[0]
-			const coord1 = coords[1]
-			const coord2 = coords[2]
-			const coord3 = coords[3]
-			const coord4 = coords[4]
-			const coord5 = coords[5]
-			const coord6 = coords[6]
-			const coord7 = coords[7]
-			const coord8 = coords[8]
+			const [coord0, coord1, coord2, coord3, coord4, coord5, coord6, coord7, coord8] = coords
 			if (coord0 == null || coord1 == null || coord2 == null || coord3 == null || coord4 == null || coord5 == null || coord6 == null || coord7 == null || coord8 == null) {
 				throw new Error('Invalid coordinates')
 			}
 			const obj = new SIObject(type, presenter, name, id, flags, duration, loops, [coord0, coord1, coord2], [coord3, coord4, coord5], [coord6, coord7, coord8], filename, fileType, volume)
 			this.objectList.set(id, obj)
+			const parent = parents.at(-1)
+			if (parent) {
+				parent.children.push(obj)
+			}
+			current = obj
 		} else if (magic === 'MxCh') {
 			const flags = this.reader.readUint16()
 			const id = this.reader.readUint16()
@@ -192,7 +191,7 @@ export class SI {
 					this.reader.skip(this.bufferSize - offset)
 				}
 			}
-			this.readChunk()
+			this.readChunk(current ? [...parents, current] : parents)
 		}
 		this.reader.seek(end)
 		if (size % 2 === 1) {
