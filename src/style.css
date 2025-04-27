@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap'); /* Using Nunito as a rounded, bold font */
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -11,6 +13,14 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Game-like colors */
+  --primary-red: #d9001c;
+  --primary-yellow: #ffcd00;
+  --primary-blue: #005eb8;
+  --primary-green: #009743;
+  --light-bg: #f2f2f2;
+  --dark-text: #333333;
 }
 
 a {
@@ -23,23 +33,46 @@ a:hover {
 }
 
 body {
-  margin: 0;
+  font-family: 'Nunito', 'Arial Rounded MT Bold', sans-serif;
+  /* background: linear-gradient(135deg, var(--primary-blue), var(--primary-green)); Removed gradient */
+  background-image: url('/texture.png'); /* Added background texture */
+  /* background-size: cover; Cover the entire page */
+  background-size: 150px; /* Set specific size for smaller texture */
+  background-repeat: repeat; /* Ensure texture repeats */
   display: flex;
-  place-items: center;
-  min-width: 320px;
+  justify-content: center;
+  align-items: center;
   min-height: 100vh;
+  margin: 0;
+  color: var(--dark-text);
+  padding: 20px;
 }
 
+/* Remove h1 styles as it's replaced by an image */
+/*
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  color: var(--primary-red);
+  font-size: 3.5em; 
+  font-weight: 900; 
+  margin-bottom: 15px;
+  text-shadow: 3px 3px var(--primary-yellow); 
+  -webkit-text-stroke: 1.5px var(--dark-text); 
+}
+*/
+
+#title-img {
+  max-width: 60%; /* Reduced size */
+  height: auto;
+  margin-bottom: 20px; /* Space below the title */
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
   text-align: center;
+  background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+  padding: 30px 40px;
+  border-radius: 15px; /* More rounded */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  border: 4px solid var(--dark-text); /* Add border */
 }
 
 .logo {
@@ -93,4 +126,72 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+#drop-zone {
+  border: 4px dashed var(--primary-blue);
+  padding: 35px;
+  border-radius: 10px;
+  background-color: var(--light-bg);
+  margin-top: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+#drop-zone:hover,
+#drop-zone.highlight { /* Add highlight style */
+  background-color: #e0e0e0;
+  border-color: var(--primary-green);
+}
+
+#drop-zone p {
+  margin: 10px 0;
+  font-size: 1.3em; /* Larger text */
+  font-weight: 700;
+}
+
+.info-text {
+  margin-bottom: 20px;
+  font-size: 1.1em;
+  color: var(--dark-text);
+}
+
+.info-text a {
+  color: var(--primary-blue);
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.info-text a:hover {
+  color: var(--primary-red);
+}
+
+.button {
+  display: inline-block;
+  background-color: var(--primary-yellow);
+  color: var(--dark-text);
+  padding: 12px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 1.1em;
+  border: 3px solid var(--primary-red);
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  margin-top: 15px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 0px var(--primary-red); /* Button shadow */
+}
+
+.button:hover {
+  background-color: #e4a700;
+}
+
+.button:active { /* Add active state */
+  transform: translateY(2px);
+  box-shadow: 0 2px 0px var(--primary-red);
+}
+
+/* Hide the actual file input */
+#iso-input {
+  display: none;
 }
