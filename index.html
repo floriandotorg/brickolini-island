@@ -6,11 +6,20 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Brickolini</title>
-  <link rel="stylesheet" href="/src/style.css">
 </head>
 
 <body>
-  <main id="app">
+  <canvas id="cutscene-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;" x-data
+    :style="$store.state.mode === 'cutscene' ? { pointerEvents: 'auto', display: 'block' } : { pointerEvents: 'none', display: 'none' }"></canvas>
+
+  <div id="loading-screen" x-data
+    :style="$store.state.mode === 'loading' ? { pointerEvents: 'auto', display: 'block' } : { pointerEvents: 'none', display: 'none' }">
+    <img src="/title.png" alt="Brickolini Title" id="title-img" />
+    <p>Loading...</p>
+  </div>
+
+  <main id="app" x-data
+    :style="$store.state.mode === 'welcome' ? { pointerEvents: 'auto', display: 'block' } : { pointerEvents: 'none', display: 'none' }">
     <img src="/title.png" alt="Brickolini Title" id="title-img" />
     <p class="info-text">
       To play, you'll need the original game's ISO file.
@@ -24,6 +33,7 @@
       <input type="file" id="iso-input" accept=".iso" hidden>
     </div>
   </main>
+
   <script type="module" src="/src/main.ts"></script>
 </body>
 

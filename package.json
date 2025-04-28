@@ -12,7 +12,11 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
+		"@types/alpinejs": "^3.13.11",
 		"typescript": "~5.8.3",
 		"vite": "^6.3.3"
+	},
+	"dependencies": {
+		"alpinejs": "^3.14.9"
 	}
 }
