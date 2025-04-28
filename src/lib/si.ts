@@ -1,4 +1,5 @@
 import { BinaryReader } from './binary-reader'
+import BinaryWriter from './binary-writer'
 
 const decoder = new TextDecoder('ascii')
 
@@ -63,6 +64,9 @@ const HEADER_SIZE = 8
 const CHUNK_HEADER_SIZE = 14
 
 export class SIObject {
+  private _data: Uint8Array | null = null
+  private _dataWriter: BinaryWriter = new BinaryWriter()
+
   constructor(
     public type: SIType,
     public presenter: string,
@@ -77,10 +81,30 @@ export class SIObject {
     public filename?: string,
     public fileType?: SIFileType,
     public volume?: number,
-    public data: Uint8Array = new Uint8Array(),
     public chunkSizes: number[] = [],
     public children: SIObject[] = [],
   ) {}
+
+  get data() {
+    if (this._data === null) {
+      throw new Error("Cannot access data from an unfinished SI Object")
+    }
+    return this._data
+  }
+
+  finish = () => {
+    if (this._data !== null) {
+      throw new Error("Cannot finish an already finished SI Object")
+    }
+    this._data = new Uint8Array(this._dataWriter.buffer)
+  }
+
+  appendChunk = (data: Uint8Array) => {
+    if (this._data !== null) {
+      throw new Error("Cannot append to an already finished SI Object")
+    }
+    this._dataWriter.writeBytes(data)
+  }
 
   open = () => {
     return new Blob([this.data]).stream()
@@ -97,6 +121,9 @@ export class SI {
   constructor(buffer: ArrayBuffer) {
     this.reader = new BinaryReader(buffer)
     this.readChunk()
+    for (const obj of this.objects.values()) {
+      obj.finish()
+    }
   }
 
   get objects() {
@@ -202,10 +229,7 @@ export class SI {
           if (!obj) {
             throw new Error(`Object ${id} not found`)
           }
-          const combined = new Uint8Array(obj.data.length + data.length)
-          combined.set(obj.data)
-          combined.set(data, obj.data.length)
-          obj.data = combined
+          obj.appendChunk(data)
           if (this.splitChunkBytesWritten === 0) {
             obj.chunkSizes.push(totalSize)
           }
