@@ -3,7 +3,7 @@ import { ISO9660, ISOVariant } from './iso'
 import { BinaryWriter } from './binary-writer'
 import { Smk } from './smk'
 import { BinaryReader } from './binary-reader'
-import { WDB } from './wdb'
+import { WDB, type Model } from './wdb'
 import { setLoading } from './store'
 
 const siFiles: Map<string, SI> = new Map()
@@ -84,6 +84,18 @@ const createWAV = (obj: SIObject): ArrayBuffer => {
   const fileWriter = new BinaryWriter()
   writeChunk(fileWriter, 'RIFF', new Uint8Array(contentWriter.buffer))
   return fileWriter.buffer
+}
+
+export const getModel = (name: string): Model => {
+  if (wdb == null) {
+    throw new Error('Assets not initialized')
+  }
+  const model = wdb.models.find(m => m.name == name)
+  if (model == null) {
+    throw new Error('Model not found')
+  }
+
+  return model
 }
 
 export const getMovie = (name: string): { audio: ArrayBuffer; video: Smk } => {
