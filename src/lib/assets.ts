@@ -4,14 +4,8 @@ import { ISO9660, ISOVariant } from './iso'
 let si: SI | null = null
 
 export const initAssets = async (file: File) => {
-  const assets = new Map<string, HTMLImageElement>()
-
-  const reader = new ISO9660(await file.arrayBuffer(), ISOVariant.Joliet)
-  console.log(reader.filelist())
-  si = new SI(reader.open('Lego/Scripts/INTRO.SI'))
-  console.log(si.objects)
-
-  return assets
+  const iso = new ISO9660(await file.arrayBuffer(), ISOVariant.Joliet)
+  si = new SI(iso.open('Lego/Scripts/INTRO.SI'))
 }
 
 export const getMovie = (name: string): { audio: SIObject; video: SIObject } => {

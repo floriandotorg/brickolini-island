@@ -6,6 +6,7 @@ export const loadFromISO = async (file: File) => {
   setMode('loading')
   await initAssets(file)
 
-  await playCutscene('Mindscape_Movie')
   await playCutscene('Lego_Movie')
+  await playCutscene('Mindscape_Movie')
+  await playCutscene('Intro_Movie')
 }

@@ -29,8 +29,14 @@ const toWAV = (obj: SIObject): ArrayBuffer => {
   return fileWriter.buffer
 }
 
+let skipCutscene = false
+window.skipCutscene = () => {
+  skipCutscene = true
+}
+
 export const playCutscene = async (name: string) => {
   setMode('cutscene')
+  skipCutscene = false
 
   const { audio, video } = getMovie(name)
   const canvas = document.getElementById('cutscene-canvas') as HTMLCanvasElement
@@ -69,6 +75,11 @@ export const playCutscene = async (name: string) => {
   let currentFrame = decodeFrame()
   return new Promise<void>(resolve => {
     const render = () => {
+      if (skipCutscene) {
+        resolve()
+        return
+      }
+
       if (n * (1000 / smk.frameRate) < audioCtx.currentTime * 1000) {
         if (n >= smk.numFrames - 1) {
           resolve()

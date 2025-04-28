@@ -9,8 +9,11 @@
 </head>
 
 <body>
-  <canvas id="cutscene-canvas" class="fixed top-0 left-0 w-full h-full block"
-    :class="{ 'pointer-none': $store.state.mode !== 'cutscene', 'invisible': $store.state.mode !== 'cutscene' }"></canvas>
+  <div class="fixed top-0 left-0 w-full h-full bg-black"
+    :class="{ 'pointer-none': $store.state.mode !== 'cutscene', 'invisible': $store.state.mode !== 'cutscene' }" x-data
+    @click="skipCutscene()">
+    <canvas id="cutscene-canvas" class="w-full h-full pointer-events-none"></canvas>
+  </div>
 
   <div id="loading-screen"
     class="fixed top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-white/90 text-[#333333]" x-data
