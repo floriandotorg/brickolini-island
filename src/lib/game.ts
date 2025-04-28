@@ -75,27 +75,53 @@ export const initGame = () => {
     }
   })
 
+  // movement/rotation constants (units per second)
+  const MAX_LINEAR_VEL = 40
+  const MAX_ROT_VEL = 20
+  const MAX_LINEAR_ACCEL = 15
+  const MAX_ROT_ACCEL = 30
+  const MAX_LINEAR_DECEL = 50
+  const MAX_ROT_DECEL = 50
+  const EPSILON = 0.0001
+
+  let linearVel = 0
+  let rotVel = 0
+  let lastTime = performance.now()
+
+  const calculateNewVel = (targetVel: number, currentVel: number, accel: number, delta: number) => {
+    let newVel = currentVel
+    const velDiff = targetVel - currentVel
+    if (Math.abs(velDiff) > EPSILON) {
+      const vSign = velDiff > 0 ? 1 : -1
+      const deltaVel = accel * delta
+      newVel = currentVel + deltaVel * vSign
+      newVel = vSign > 0 ? Math.min(newVel, targetVel) : Math.max(newVel, targetVel)
+    }
+    return newVel
+  }
+
   const animate = () => {
     requestAnimationFrame(animate)
 
-    const moveSpeed = 0.1
-    const rotateSpeed = 0.05
+    const now = performance.now()
+    const delta = (now - lastTime) / 1000
+    lastTime = now
+
+    const targetLinearVel = keyStates.ArrowUp ? MAX_LINEAR_VEL : keyStates.ArrowDown ? -MAX_LINEAR_VEL : 0
+
+    const targetRotVel = keyStates.ArrowLeft ? MAX_ROT_VEL : keyStates.ArrowRight ? -MAX_ROT_VEL : 0
+
+    const linearAccel = targetLinearVel !== 0 ? MAX_LINEAR_ACCEL : MAX_LINEAR_DECEL
+    const rotAccel = (targetRotVel !== 0 ? MAX_ROT_ACCEL : MAX_ROT_DECEL) * 40
+
+    linearVel = calculateNewVel(targetLinearVel, linearVel, linearAccel, delta)
+    rotVel = calculateNewVel(targetRotVel, rotVel, rotAccel, delta)
+
+    camera.rotation.y += THREE.MathUtils.degToRad(rotVel * delta)
 
     const forward = new THREE.Vector3()
     camera.getWorldDirection(forward)
-
-    if (keyStates.ArrowUp) {
-      camera.position.addScaledVector(forward, moveSpeed)
-    }
-    if (keyStates.ArrowDown) {
-      camera.position.addScaledVector(forward, -moveSpeed)
-    }
-    if (keyStates.ArrowLeft) {
-      camera.rotation.y += rotateSpeed
-    }
-    if (keyStates.ArrowRight) {
-      camera.rotation.y -= rotateSpeed
-    }
+    camera.position.addScaledVector(forward, linearVel * delta)
 
     renderer.render(scene, camera)
   }
