@@ -8,6 +8,29 @@ This project aims to recreate the charm and fun of Lego Island in your browser t
 
 *Note: This project is currently in the very early stages of development.*
 
+## Features
+
+| Feature                | Status        |
+|:-----------------------|:-------------:|
+| **Read ISO**           | ✅ Done       |
+| **Read SI**            | ✅ Done       |
+| **Read WDB**           | 🟡 Mostly Done|
+| **Decode Smacker**     | ✅ Done       |
+| **Decode Flic**        | ✅ Done       |
+| **Play Cutscenes**     | ✅ Done       |
+| **Render World**       | 🟡            |
+| **Music**              | ⬜            |
+| **Pedestrians**        | ⬜            |
+| **Missions**           |               |
+| &nbsp;&nbsp;Pizza      | ⬜            |
+| &nbsp;&nbsp;Ambulance  | ⬜            |
+| &nbsp;&nbsp;Police     | ⬜            |
+| &nbsp;&nbsp;Jetski     | ⬜            |
+| &nbsp;&nbsp;Race       | ⬜            |
+| **Brickster Storyline**| ⬜            |
+
+⬜ = Not started &nbsp;&nbsp; 🟡 = In progress &nbsp;&nbsp; ✅ = Done
+
 ## Running the project
 
 1.  Install dependencies:
