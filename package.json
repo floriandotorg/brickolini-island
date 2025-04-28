@@ -14,11 +14,13 @@
 		"@biomejs/biome": "^1.9.4",
 		"@tailwindcss/vite": "^4.1.4",
 		"@types/alpinejs": "^3.13.11",
+		"@types/three": "^0.176.0",
 		"tailwindcss": "^4.1.4",
 		"typescript": "~5.8.3",
 		"vite": "^6.3.3"
 	},
 	"dependencies": {
-		"alpinejs": "^3.14.9"
+		"alpinejs": "^3.14.9",
+		"three": "^0.176.0"
 	}
 }

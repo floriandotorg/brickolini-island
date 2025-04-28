@@ -9,14 +9,19 @@
 </head>
 
 <body>
-  <div class="fixed top-0 left-0 w-full h-full bg-black"
-    :class="{ 'pointer-none': $store.state.mode !== 'cutscene', 'invisible': $store.state.mode !== 'cutscene' }" x-data
-    @click="skipCutscene()">
-    <canvas id="cutscene-canvas" class="w-full h-full pointer-events-none"></canvas>
+  <div class="fixed inset-0 bg-black flex justify-center items-center"
+    :class="{ 'pointer-none': $store.state.mode !== 'in-game', 'invisible': $store.state.mode !== 'in-game' }" x-data>
+    <canvas id="game-canvas" class="pointer-events-none aspect-[4/3] h-full max-w-full"></canvas>
   </div>
 
-  <div id="loading-screen"
-    class="fixed top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-white/90 text-[#333333]" x-data
+  <div class="fixed inset-0 bg-black flex justify-center items-center"
+    :class="{ 'pointer-none': $store.state.mode !== 'cutscene', 'invisible': $store.state.mode !== 'cutscene' }" x-data
+    @click="skipCutscene()">
+    <canvas id="cutscene-canvas" class="pointer-events-none aspect-[4/3] h-full max-w-full"></canvas>
+  </div>
+
+  <div id="loading-screen" class="fixed inset-0 flex flex-col justify-center items-center bg-white/90 text-[#333333]"
+    x-data
     :style="$store.state.mode === 'loading' ? { pointerEvents: 'auto', display: 'flex' } : { pointerEvents: 'none', display: 'none' }">
     <img src="/title.png" alt="Brickolini Title" class="w-[20rem] h-auto mb-5" />
     <p class="text-xl font-bold">Loading...</p>
