@@ -3,11 +3,15 @@ import { ISO9660, ISOVariant } from './iso'
 import { BinaryWriter } from './binary-writer'
 import { Smk } from './smk'
 import { BinaryReader } from './binary-reader'
+import { WDB } from './wdb'
 let si: SI | null = null
+let wdb: WDB | null = null
 
 export const initAssets = async (file: File) => {
   const iso = new ISO9660(await file.arrayBuffer(), ISOVariant.Joliet)
   si = new SI(iso.open('Lego/Scripts/INTRO.SI'))
+
+  wdb = new WDB(iso.open("DATA/disk/LEGO/data/WORLD.WDB"))
 }
 
 const createWAV = (obj: SIObject): ArrayBuffer => {
