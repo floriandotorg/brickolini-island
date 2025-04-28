@@ -31,8 +31,7 @@ export const initGame = () => {
 
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(75, 4 / 3, 0.1, 1000)
-  scene.background = backgroundColor
-  const renderer = new THREE.WebGLRenderer({ canvas })
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
   renderer.setSize(Math.floor((window.innerHeight * 4) / 3), window.innerHeight)
   const lod = getModel('isle_hi')?.lods.at(-1)
   if (!lod) {
