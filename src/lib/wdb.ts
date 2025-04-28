@@ -191,7 +191,7 @@ export class WDB {
     return decoder.decode(bytes.subarray(0, end))
   }
 
-  private _readVertex = (): [number, number, number] => [this._reader.readFloat32(), this._reader.readFloat32(), this._reader.readFloat32()]
+  private _readVertex = (): [number, number, number] => [-this._reader.readFloat32(), this._reader.readFloat32(), this._reader.readFloat32()]
   private _readVertices = (count: number): [number, number, number][] => Array.from({ length: count }, () => this._readVertex())
 
   private _readAnimationTree = (): void => {
@@ -271,6 +271,11 @@ export class WDB {
         } else {
           indices.push(packed & 0x7fff)
         }
+      }
+      for (let i = 0; i < indices.length; i += 3) {
+        const temp = indices[i]
+        indices[i] = indices[i + 2]
+        indices[i + 2] = temp
       }
       if (mesh_vertices.length !== num_mesh_verts) {
         throw new Error('vertex count mismatch')

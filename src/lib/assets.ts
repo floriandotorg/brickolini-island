@@ -103,13 +103,11 @@ export const getModel = (name: string): Model => {
 const createTexture = (image: Gif): THREE.DataTexture => {
   const data = new Uint8Array(image.width * image.height * 4)
 
-  for (let row = 0; row < image.height; row++) {
-    for (let col = 0; col < image.width; col++) {
-      const texIndex = (row * image.width + (image.width - col - 1)) * 4
-      const gifIndex = (row * image.width + col) * 3
-      data.set(image.image.subarray(gifIndex, gifIndex + 3), texIndex)
-      data[texIndex + 3] = 0xff
-    }
+  for (let index = 0; index < image.width * image.height; index++) {
+    const texIndex = index * 4
+    const gifIndex = index * 3
+    data.set(image.image.subarray(gifIndex, gifIndex + 3), texIndex)
+    data[texIndex + 3] = 0xff
   }
 
   const tex = new THREE.DataTexture(data, image.width, image.height)
