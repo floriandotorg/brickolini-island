@@ -48,26 +48,6 @@ for (const eventName of ['dragenter', 'dragover', 'dragleave', 'drop']) {
   )
 }
 
-for (const eventName of ['dragenter', 'dragover']) {
-  dropZone.addEventListener(
-    eventName,
-    () => {
-      dropZone.classList.add('highlight')
-    },
-    false,
-  )
-}
-
-for (const eventName of ['dragleave', 'drop']) {
-  dropZone.addEventListener(
-    eventName,
-    () => {
-      dropZone.classList.remove('highlight')
-    },
-    false,
-  )
-}
-
 dropZone.addEventListener(
   'drop',
   e => {

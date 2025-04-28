@@ -9,30 +9,39 @@
 </head>
 
 <body>
-  <canvas id="cutscene-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;" x-data
-    :style="$store.state.mode === 'cutscene' ? { pointerEvents: 'auto', display: 'block' } : { pointerEvents: 'none', display: 'none' }"></canvas>
+  <canvas id="cutscene-canvas" class="fixed top-0 left-0 w-full h-full block"
+    :class="{ 'pointer-none': $store.state.mode !== 'cutscene', 'invisible': $store.state.mode !== 'cutscene' }"></canvas>
 
-  <div id="loading-screen" x-data
-    :style="$store.state.mode === 'loading' ? { pointerEvents: 'auto', display: 'block' } : { pointerEvents: 'none', display: 'none' }">
-    <img src="/title.png" alt="Brickolini Title" id="title-img" />
-    <p>Loading...</p>
+  <div id="loading-screen"
+    class="fixed top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-white/90 text-[#333333]" x-data
+    :style="$store.state.mode === 'loading' ? { pointerEvents: 'auto', display: 'flex' } : { pointerEvents: 'none', display: 'none' }">
+    <img src="/title.png" alt="Brickolini Title" class="w-[20rem] h-auto mb-5" />
+    <p class="text-xl font-bold">Loading...</p>
   </div>
 
-  <main id="app" x-data
-    :style="$store.state.mode === 'welcome' ? { pointerEvents: 'auto', display: 'block' } : { pointerEvents: 'none', display: 'none' }">
-    <img src="/title.png" alt="Brickolini Title" id="title-img" />
-    <p class="info-text">
-      To play, you'll need the original game's ISO file.
-      You can download it from the Internet Archive:
-      <a href="https://archive.org/details/lego-islandi" target="_blank" rel="noopener noreferrer">Download ISO</a>
-    </p>
-    <div id="drop-zone">
-      <p>Drag & Drop your Lego Island ISO here</p>
-      <p>or</p>
-      <label for="iso-input" class="button">Select ISO File</label>
-      <input type="file" id="iso-input" accept=".iso" hidden>
+  <div
+    class="font-['Nunito',_'Arial_Rounded_MT_Bold',_sans-serif] bg-[url('/texture.png')] bg-[length:150px] bg-repeat min-h-screen flex flex-col justify-center items-center px-10"
+    x-data :class="{ 'pointer-none': $store.state.mode !== 'welcome', 'invisible': $store.state.mode !== 'welcome' }">
+    <div
+      class="flex flex-col gap-5 justify-center items-center m-0 text-[#333333] p-7.5 text-center bg-white/90 rounded-xl shadow-[0_6px_12px_rgba(0,0,0,0.2)] border-4 border-[#333333]">
+      <img src="/title.png" alt="Brickolini Title" class="w-[25rem] h-auto mx-auto mb-5" />
+      <p class="text-[#333333] mx-5">
+        To play, you'll need the original game's ISO file.
+        You can download it from the Internet Archive:
+        <a href="https://archive.org/details/lego-islandi" target="_blank" rel="noopener noreferrer"
+          class="text-[#005eb8] font-bold underline hover:text-[#d9001c]">Download ISO</a>
+      </p>
+      <div id="drop-zone"
+        class="border-4 border-dashed border-[#005eb8] p-[35px] rounded-[10px] bg-[#f2f2f2] cursor-pointer transition-colors duration-300 ease-in-out hover:bg-[#e0e0e0] hover:border-[#009743] w-full">
+        <p class="m-[10px_0] text-[1.3em] font-bold">Drag & Drop your game ISO here</p>
+        <p class="m-[10px_0] text-[1.3em] font-bold">or</p>
+        <label for="iso-input"
+          class="inline-block bg-[#ffcd00] text-[#333333] p-[12px_25px] rounded-[8px] cursor-pointer font-black text-[1.1em] border-3 border-[#d9001c] transition-all duration-300 ease-in-out mt-[15px] uppercase shadow-[0_4px_0px_#d9001c] hover:bg-[#e4a700] active:translate-y-[2px] active:shadow-[0_2px_0px_#d9001c]">Select
+          ISO File</label>
+        <input type="file" id="iso-input" accept=".iso" class="hidden">
+      </div>
     </div>
-  </main>
+  </div>
 
   <script type="module" src="/src/main.ts"></script>
 </body>
