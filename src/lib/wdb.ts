@@ -3,11 +3,9 @@ import { BinaryReader } from './binary-reader'
 const decoder = new TextDecoder('ascii')
 
 export enum Shading {
-  WireFrame = 0,
-  UnlitFlat = 1,
-  Flat = 2,
-  Gouraud = 3,
-  Phong = 4,
+  Flat = 0,
+  Gouraud = 1,
+  WireFrame = 2,
 }
 
 export type Gif = { title: string; width: number; height: number; image: Uint8Array }
@@ -20,6 +18,7 @@ export type Mesh = {
   color: Color
   textureName: string
   materialName: string
+  shading: Shading
 }
 export type Lod = { meshes: Mesh[] }
 export type Model = { name: string; lods: Lod[] }
@@ -287,12 +286,12 @@ export class WDB {
       const green = this._reader.readUint8()
       const blue = this._reader.readUint8()
       const alpha = 1 - this._reader.readFloat32()
-      const shading_val = this._reader.readInt8()
+      const shading = this._reader.readInt8()
       this._reader.skip(3)
       const texture_name = this._readStr()
       const material_name = this._readStr()
       const color: Color = { red, green, blue, alpha }
-      meshes.push({ vertices: mesh_vertices, normals: mesh_normals, uvs: mesh_uvs, indices, color, textureName: texture_name, materialName: material_name })
+      meshes.push({ vertices: mesh_vertices, normals: mesh_normals, uvs: mesh_uvs, indices, color, textureName: texture_name, materialName: material_name, shading })
     }
     return { meshes }
   }

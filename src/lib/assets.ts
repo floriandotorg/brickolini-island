@@ -3,7 +3,7 @@ import { ISO9660, ISOVariant } from './iso'
 import { BinaryWriter } from './binary-writer'
 import { Smk } from './smk'
 import { BinaryReader } from './binary-reader'
-import { WDB, type Gif, type Model } from './wdb'
+import { Shading, WDB, type Gif, type Model } from './wdb'
 import { setLoading } from './store'
 import { FLC } from './flc'
 import * as THREE from 'three'
@@ -127,17 +127,18 @@ export const getModelObject = (name: string): THREE.Group => {
     const vertices: number[] = model_mesh.vertices.flat()
     const indices: number[] = model_mesh.indices
     const uvs: number[] = model_mesh.uvs.flat()
-    const material = new THREE.MeshLambertMaterial()
-    // const material = (() => {
-    //   switch (mesh.shading) {
-    //     case Shading.WireFrame:
-    //       return new THREE.MeshBasicMaterial({ wireframe: true })
-    //     case Shading.Phong:
-    //       return new THREE.MeshPhongMaterial()
-    //     default:
-    //       return new THREE.MeshBasicMaterial()
-    //   }
-    // })()
+    const material = (() => {
+      switch (model_mesh.shading) {
+        case Shading.WireFrame:
+          return new THREE.MeshBasicMaterial({ wireframe: true })
+        case Shading.Gouraud:
+          return new THREE.MeshLambertMaterial()
+        case Shading.Flat:
+          return new THREE.MeshLambertMaterial({ flatShading: true })
+        default:
+          throw new Error(`Unknown shading: ${model_mesh.shading}`)
+      }
+    })()
     const geometry = new THREE.BufferGeometry()
     geometry.setIndex(indices)
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
