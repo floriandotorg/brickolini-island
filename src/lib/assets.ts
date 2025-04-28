@@ -3,7 +3,7 @@ import { ISO9660, ISOVariant } from './iso'
 import { BinaryWriter } from './binary-writer'
 import { Smk } from './smk'
 import { BinaryReader } from './binary-reader'
-import { WDB, type Model } from './wdb'
+import { WDB, type Gif, type Model } from './wdb'
 import { setLoading } from './store'
 import { FLC } from './flc'
 
@@ -97,6 +97,13 @@ export const getModel = (name: string): Model => {
   }
 
   return model
+}
+
+export const getTexture = (name: string): Gif => {
+  if (wdb == null) {
+    throw new Error('Assets not initialized')
+  }
+  return wdb.texture_by_name(name)
 }
 
 export const getAnimation = (siName: string, name: string): FLC => {
