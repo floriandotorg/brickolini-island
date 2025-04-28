@@ -5,6 +5,7 @@ import { Smk } from './smk'
 import { BinaryReader } from './binary-reader'
 import { WDB, type Model } from './wdb'
 import { setLoading } from './store'
+import { FLC } from './flc'
 
 const siFiles: Map<string, SI> = new Map()
 let wdb: WDB | null = null
@@ -96,6 +97,38 @@ export const getModel = (name: string): Model => {
   }
 
   return model
+}
+
+export const getAnimation = (siName: string, name: string): FLC => {
+  const si = siFiles.get(siName)
+  if (si == null) {
+    throw new Error('Assets not initialized')
+  }
+
+  const flc = Array.from(si.objects.values()).find(o => o.name === name)
+  if (flc == null) {
+    throw new Error('Animation not found')
+  }
+
+  let dest = new BinaryWriter()
+  let offset = 0
+  for (const [index, chunkSize] of flc.chunkSizes.entries()) {
+    console.log(index, chunkSize);
+
+    let chunk = flc.data.subarray(offset, offset + chunkSize)
+    if (index > 0) {
+      if (chunkSize == 20) {
+        chunk = new Uint8Array([0x10, 0x00, 0x00, 0x00, 0xfa, 0xf1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+      } else {
+        chunk = chunk.subarray(20)
+      }
+    }
+    if (chunk.length > 0) {
+      dest.writeBytes(chunk)
+    }
+    offset += chunkSize
+  }
+  return new FLC(dest.buffer)
 }
 
 export const getMovie = (name: string): { audio: ArrayBuffer; video: Smk } => {
