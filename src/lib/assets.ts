@@ -91,7 +91,7 @@ export const getModel = (name: string): Model => {
   if (wdb == null) {
     throw new Error('Assets not initialized')
   }
-  const model = wdb.models.find(m => m.name == name)
+  const model = wdb.models.find(m => m.name === name)
   if (model == null) {
     throw new Error('Model not found')
   }
@@ -110,14 +110,14 @@ export const getAnimation = (siName: string, name: string): FLC => {
     throw new Error('Animation not found')
   }
 
-  let dest = new BinaryWriter()
+  const dest = new BinaryWriter()
   let offset = 0
   for (const [index, chunkSize] of flc.chunkSizes.entries()) {
-    console.log(index, chunkSize);
+    console.log(index, chunkSize)
 
     let chunk = flc.data.subarray(offset, offset + chunkSize)
     if (index > 0) {
-      if (chunkSize == 20) {
+      if (chunkSize === 20) {
         chunk = new Uint8Array([0x10, 0x00, 0x00, 0x00, 0xfa, 0xf1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
       } else {
         chunk = chunk.subarray(20)
