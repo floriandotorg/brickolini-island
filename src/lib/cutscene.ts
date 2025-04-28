@@ -1,5 +1,4 @@
 import { getMovie } from './assets'
-import { BinaryReader } from './binary-reader'
 import { setMode } from './store'
 
 let skipCutscene = false
