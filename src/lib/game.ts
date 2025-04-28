@@ -44,14 +44,15 @@ export const initGame = () => {
     const vertices: number[] = mesh.vertices.flat()
     const indices: number[] = mesh.indices
     const uvs: number[] = mesh.uvs.flat()
-    const color = (mesh.color.red << 16) | (mesh.color.green << 8) | mesh.color.blue
-    const material = new THREE.MeshBasicMaterial({ color: color })
+    const material = new THREE.MeshBasicMaterial()
     const geometry = new THREE.BufferGeometry()
     geometry.setIndex(indices)
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
     if (mesh.textureName) {
       material.map = createTexture(getTexture(mesh.textureName))
       geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
+    } else {
+      material.color = new THREE.Color(mesh.color.red / 255, mesh.color.green / 255, mesh.color.blue / 255)
     }
     const cube = new THREE.Mesh(geometry, material)
     group.add(cube)
