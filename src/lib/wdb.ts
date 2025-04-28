@@ -13,9 +13,9 @@ export enum Shading {
 export type Gif = { title: string; width: number; height: number; image: Uint8Array }
 export type Color = { red: number; green: number; blue: number; alpha: number }
 export type Mesh = {
-  vertices: number[][]
-  normals: number[][]
-  uvs: number[][]
+  vertices: [number, number, number][]
+  normals: [number, number, number][]
+  uvs: [number, number][]
   indices: number[]
   color: Color
   textureName: string
