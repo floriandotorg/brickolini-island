@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { getModel, getTexture } from './assets'
+import { getModelObject, getTexture } from './assets'
 import type { Gif } from './wdb'
 
 const createTexture = (image: Gif): THREE.DataTexture => {
@@ -33,41 +33,14 @@ export const initGame = () => {
   const camera = new THREE.PerspectiveCamera(75, 4 / 3, 0.1, 1000)
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
   renderer.setSize(Math.floor((window.innerHeight * 4) / 3), window.innerHeight)
-  const lod = getModel('isle_hi')?.lods.at(-1)
-  if (!lod) {
-    throw new Error("Couldn't find lod")
-  }
-  const group = new THREE.Group()
-  const collidable: THREE.Mesh[] = []
-  for (const mesh of lod.meshes) {
-    const vertices: number[] = mesh.vertices.flat()
-    const indices: number[] = mesh.indices
-    const uvs: number[] = mesh.uvs.flat()
-    const material = new THREE.MeshBasicMaterial()
-    const geometry = new THREE.BufferGeometry()
-    geometry.setIndex(indices)
-    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
-    if (mesh.textureName) {
-      material.map = createTexture(getTexture(mesh.textureName))
-      geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
-    } else {
-      material.color = new THREE.Color(mesh.color.red / 255, mesh.color.green / 255, mesh.color.blue / 255)
-    }
-    if (mesh.color.alpha < 0.99) {
-      material.transparent = true
-      material.opacity = mesh.color.alpha
-    }
-    const cube = new THREE.Mesh(geometry, material)
-    group.add(cube)
-    collidable.push(cube)
-  }
-  scene.add(group)
+  const obj = getModelObject('isle_hi')
+  scene.add(obj)
 
   const CAM_HEIGHT = 1
 
   const placeCameraOnGround = () => {
     const downRay = new THREE.Raycaster(new THREE.Vector3(camera.position.x, camera.position.y + 50, camera.position.z), new THREE.Vector3(0, -1, 0), 0, 1000)
-    const hit = downRay.intersectObjects(collidable, false)[0]
+    const hit = downRay.intersectObject(obj)[0]
     if (hit) {
       camera.position.copy(hit.point.clone().add(new THREE.Vector3(0, CAM_HEIGHT, 0)))
     }
@@ -172,7 +145,7 @@ export const initGame = () => {
     const moveVec = forward.clone().multiplyScalar(linearVel * delta)
     if (moveVec.length() > 0) {
       const ray = new THREE.Raycaster(camera.position, moveVec.clone().normalize(), 0, moveVec.length() + 0.5)
-      const hit = ray.intersectObjects(collidable, false)[0]
+      const hit = ray.intersectObject(obj)[0]
       if (!hit) {
         camera.position.add(moveVec)
       }

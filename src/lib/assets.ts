@@ -6,6 +6,7 @@ import { BinaryReader } from './binary-reader'
 import { WDB, type Gif, type Model } from './wdb'
 import { setLoading } from './store'
 import { FLC } from './flc'
+import * as THREE from 'three'
 
 const siFiles: Map<string, SI> = new Map()
 let wdb: WDB | null = null
@@ -97,6 +98,55 @@ export const getModel = (name: string): Model => {
   }
 
   return model
+}
+
+const createTexture = (image: Gif): THREE.DataTexture => {
+  const data = new Uint8Array(image.width * image.height * 4)
+
+  for (let row = 0; row < image.height; row++) {
+    for (let col = 0; col < image.width; col++) {
+      const texIndex = (row * image.width + (image.width - col - 1)) * 4
+      const gifIndex = (row * image.width + col) * 3
+      data.set(image.image.subarray(gifIndex, gifIndex + 3), texIndex)
+      data[texIndex + 3] = 0xff
+    }
+  }
+
+  const tex = new THREE.DataTexture(data, image.width, image.height)
+  tex.wrapS = THREE.RepeatWrapping
+  tex.wrapT = THREE.RepeatWrapping
+  tex.needsUpdate = true
+  return tex
+}
+
+export const getModelObject = (name: string): THREE.Group => {
+  const lod = getModel(name).lods.at(-1)
+  if (!lod) {
+    throw new Error("Couldn't find lod")
+  }
+  const group = new THREE.Group()
+  for (const model_mesh of lod.meshes) {
+    const vertices: number[] = model_mesh.vertices.flat()
+    const indices: number[] = model_mesh.indices
+    const uvs: number[] = model_mesh.uvs.flat()
+    const material = new THREE.MeshBasicMaterial()
+    const geometry = new THREE.BufferGeometry()
+    geometry.setIndex(indices)
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
+    if (model_mesh.textureName) {
+      material.map = createTexture(getTexture(model_mesh.textureName))
+      geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
+    } else {
+      material.color = new THREE.Color(model_mesh.color.red / 255, model_mesh.color.green / 255, model_mesh.color.blue / 255)
+    }
+    if (model_mesh.color.alpha < 0.99) {
+      material.transparent = true
+      material.opacity = model_mesh.color.alpha
+    }
+    const mesh = new THREE.Mesh(geometry, material)
+    group.add(mesh)
+  }
+  return group
 }
 
 export const getTexture = (name: string): Gif => {
