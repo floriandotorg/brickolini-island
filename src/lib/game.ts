@@ -2,7 +2,6 @@ import * as THREE from 'three'
 import { getModel, getTexture } from './assets'
 import type { Gif } from './wdb'
 
-
 const createTexture = (image: Gif): THREE.DataTexture => {
   const data = new Uint8Array(image.width * image.height * 4)
 
@@ -11,7 +10,7 @@ const createTexture = (image: Gif): THREE.DataTexture => {
       const texIndex = (row * image.width + (image.width - col - 1)) * 4
       const gifIndex = (row * image.width + col) * 3
       data.set(image.image.subarray(gifIndex, gifIndex + 3), texIndex)
-      data[texIndex + 3] = 0xff;
+      data[texIndex + 3] = 0xff
     }
   }
 
@@ -32,11 +31,12 @@ export const initGame = () => {
   const camera = new THREE.PerspectiveCamera(75, 4 / 3, 0.1, 1000)
   const renderer = new THREE.WebGLRenderer({ canvas })
   renderer.setSize(Math.floor((window.innerHeight * 4) / 3), window.innerHeight)
-  const lod = getModel('post')?.lods[2]
+  const lod = getModel('isle_hi')?.lods[0]
   if (!lod) {
     throw new Error("Couldn't find lod")
   }
   const group = new THREE.Group()
+  const collidable: THREE.Mesh[] = []
   for (const mesh of lod.meshes) {
     const vertices: number[] = mesh.vertices.flat()
     const indices: number[] = mesh.indices
@@ -52,9 +52,23 @@ export const initGame = () => {
     }
     const cube = new THREE.Mesh(geometry, material)
     group.add(cube)
+    collidable.push(cube)
   }
   scene.add(group)
-  camera.position.z = 5
+
+  const CAM_HEIGHT = 1
+
+  const placeCameraOnGround = () => {
+    const downRay = new THREE.Raycaster(new THREE.Vector3(camera.position.x, camera.position.y + 50, camera.position.z), new THREE.Vector3(0, -1, 0), 0, 1000)
+    const hit = downRay.intersectObjects(collidable, false)[0]
+    if (hit) {
+      camera.position.copy(hit.point.clone().add(new THREE.Vector3(0, CAM_HEIGHT, 0)))
+    }
+  }
+
+  camera.position.set(20, 0, 30)
+  camera.lookAt(60, 0, 0)
+  placeCameraOnGround()
 
   const keyStates = {
     ArrowUp: false,
@@ -75,9 +89,8 @@ export const initGame = () => {
     }
   })
 
-  // movement/rotation constants (units per second)
-  const MAX_LINEAR_VEL = 40
-  const MAX_ROT_VEL = 20
+  const MAX_LINEAR_VEL = 10
+  const MAX_ROT_VEL = 80
   const MAX_LINEAR_ACCEL = 15
   const MAX_ROT_ACCEL = 30
   const MAX_LINEAR_DECEL = 50
@@ -121,7 +134,17 @@ export const initGame = () => {
 
     const forward = new THREE.Vector3()
     camera.getWorldDirection(forward)
-    camera.position.addScaledVector(forward, linearVel * delta)
+
+    const moveVec = forward.clone().multiplyScalar(linearVel * delta)
+    if (moveVec.length() > 0) {
+      const ray = new THREE.Raycaster(camera.position, moveVec.clone().normalize(), 0, moveVec.length() + 0.5)
+      const hit = ray.intersectObjects(collidable, false)[0]
+      if (!hit) {
+        camera.position.add(moveVec)
+      }
+    }
+
+    placeCameraOnGround()
 
     renderer.render(scene, camera)
   }
