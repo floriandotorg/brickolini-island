@@ -129,10 +129,21 @@ export const getModelObject = (name: string): THREE.Group => {
     const vertices: number[] = model_mesh.vertices.flat()
     const indices: number[] = model_mesh.indices
     const uvs: number[] = model_mesh.uvs.flat()
-    const material = new THREE.MeshBasicMaterial()
+    const material = new THREE.MeshLambertMaterial()
+    // const material = (() => {
+    //   switch (mesh.shading) {
+    //     case Shading.WireFrame:
+    //       return new THREE.MeshBasicMaterial({ wireframe: true })
+    //     case Shading.Phong:
+    //       return new THREE.MeshPhongMaterial()
+    //     default:
+    //       return new THREE.MeshBasicMaterial()
+    //   }
+    // })()
     const geometry = new THREE.BufferGeometry()
     geometry.setIndex(indices)
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
+    geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(model_mesh.normals.flat()), 3))
     if (model_mesh.textureName) {
       material.map = createTexture(getTexture(model_mesh.textureName))
       geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))

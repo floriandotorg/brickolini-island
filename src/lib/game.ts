@@ -1,25 +1,5 @@
 import * as THREE from 'three'
-import { getModelObject, getTexture } from './assets'
-import type { Gif } from './wdb'
-
-const createTexture = (image: Gif): THREE.DataTexture => {
-  const data = new Uint8Array(image.width * image.height * 4)
-
-  for (let row = 0; row < image.height; row++) {
-    for (let col = 0; col < image.width; col++) {
-      const texIndex = (row * image.width + (image.width - col - 1)) * 4
-      const gifIndex = (row * image.width + col) * 3
-      data.set(image.image.subarray(gifIndex, gifIndex + 3), texIndex)
-      data[texIndex + 3] = 0xff
-    }
-  }
-
-  const tex = new THREE.DataTexture(data, image.width, image.height)
-  tex.wrapS = THREE.RepeatWrapping
-  tex.wrapT = THREE.RepeatWrapping
-  tex.needsUpdate = true
-  return tex
-}
+import { getModelObject } from './assets'
 
 export const initGame = () => {
   const canvas = document.getElementById('game-canvas') as HTMLCanvasElement | null
@@ -27,14 +7,19 @@ export const initGame = () => {
     throw new Error('Canvas not found')
   }
 
-  const backgroundColor = new THREE.Color().setHSL(0.56, 0.54, 0.68)
-
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(75, 4 / 3, 0.1, 1000)
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
   renderer.setSize(Math.floor((window.innerHeight * 4) / 3), window.innerHeight)
   const obj = getModelObject('isle_hi')
   scene.add(obj)
+
+  const ambientLight = new THREE.AmbientLight(new THREE.Color(0.3, 0.3, 0.3))
+  scene.add(ambientLight)
+  const sunLight = new THREE.PointLight(0xffffff, 1, 1000, 0)
+  scene.add(sunLight)
+  const directionalLight = new THREE.DirectionalLight(0xffffff)
+  scene.add(directionalLight)
 
   const CAM_HEIGHT = 1
 
@@ -46,7 +31,7 @@ export const initGame = () => {
     }
   }
 
-  camera.position.set(20, 0, 30)
+  camera.position.set(20, 10, 30)
   camera.lookAt(60, 0, 0)
   placeCameraOnGround()
 
@@ -57,36 +42,69 @@ export const initGame = () => {
     ArrowRight: false,
   }
 
+  scene.background = new THREE.Color(0.56, 0.54, 0.68)
+  const getSkyColor = () => {
+    if (!(scene.background instanceof THREE.Color)) {
+      throw new Error('Scene background is not a Color')
+    }
+    const hsl = { h: 0, s: 0, l: 0 }
+    scene.background.getHSL(hsl)
+    return hsl
+  }
+  const setSkyColor = (hsl: { h: number; s: number; l: number }) => {
+    const color = new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l)
+    scene.background = color
+    const lightColor = new THREE.Color(Math.min(color.r * (1 / 0.23), 1), Math.min(color.g * (1 / 0.63), 1), Math.min(color.b * (1 / 0.85), 1))
+    directionalLight.color = lightColor
+    sunLight.color = lightColor
+  }
+  setSkyColor({ h: 0.56, s: 0.54, l: 0.68 })
+
+  let lightIndex = 0
+  const setLightPosition = (index: number) => {
+    const lights: [number, number, number, number, number, number][] = [
+      [1.0, 0.0, 0.0, -150.0, 50.0, -50.0],
+      [0.809, -0.588, 0.0, -75.0, 50.0, -50.0],
+      [0.0, -1.0, 0.0, 0.0, 150.0, -150.0],
+      [-0.309, -0.951, 0.0, 25.0, 50.0, -50.0],
+      [-0.809, -0.588, 0.0, 75.0, 50.0, -50.0],
+      [-1.0, 0.0, 0.0, 150.0, 50.0, -50.0],
+    ]
+    sunLight.position.set(lights[index][3], lights[index][4], lights[index][5])
+    sunLight.lookAt(lights[index][0], lights[index][1], lights[index][2])
+    directionalLight.position.set(lights[index][0], lights[index][1], lights[index][2])
+  }
+  setLightPosition(lightIndex)
+
   document.addEventListener('keydown', event => {
     if (event.key in keyStates) {
       keyStates[event.key as keyof typeof keyStates] = true
     }
 
     if (event.key === 'c') {
-      const hsl = { h: 0, s: 0, l: 0 }
-      backgroundColor.getHSL(hsl)
+      const hsl = getSkyColor()
       hsl.h += 0.01
       if (hsl.h > 1) {
         hsl.h = -1
       }
-      backgroundColor.setHSL(hsl.h, hsl.s, hsl.l)
-      scene.background = backgroundColor
+      setSkyColor(hsl)
     }
 
     if (event.key === 'v') {
-      const hsl = { h: 0, s: 0, l: 0 }
-      backgroundColor.getHSL(hsl)
+      const hsl = getSkyColor()
       hsl.s = Math.min(hsl.s + 0.1, 1)
-      backgroundColor.setHSL(hsl.h, hsl.s, hsl.l)
-      scene.background = backgroundColor
+      setSkyColor(hsl)
     }
 
     if (event.key === 'b') {
-      const hsl = { h: 0, s: 0, l: 0 }
-      backgroundColor.getHSL(hsl)
+      const hsl = getSkyColor()
       hsl.s = Math.max(hsl.s - 0.1, 0.1)
-      backgroundColor.setHSL(hsl.h, hsl.s, hsl.l)
-      scene.background = backgroundColor
+      setSkyColor(hsl)
+    }
+
+    if (event.key === 'n') {
+      lightIndex = (lightIndex + 1) % 6
+      setLightPosition(lightIndex)
     }
   })
 
