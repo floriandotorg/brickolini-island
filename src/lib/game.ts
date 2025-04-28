@@ -34,7 +34,7 @@ export const initGame = () => {
   scene.background = backgroundColor
   const renderer = new THREE.WebGLRenderer({ canvas })
   renderer.setSize(Math.floor((window.innerHeight * 4) / 3), window.innerHeight)
-  const lod = getModel('isle_hi')?.lods[0]
+  const lod = getModel('isle_hi')?.lods.at(-1)
   if (!lod) {
     throw new Error("Couldn't find lod")
   }
