@@ -156,6 +156,8 @@ export const initGame = () => {
     rotVel = calculateNewVel(targetRotVel, rotVel, rotAccel, delta)
 
     camera.rotation.y += THREE.MathUtils.degToRad(rotVel * delta)
+    camera.rotation.x = 0
+    camera.rotation.z = 0
 
     const forward = new THREE.Vector3()
     camera.getWorldDirection(forward)
