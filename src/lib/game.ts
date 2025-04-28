@@ -27,8 +27,11 @@ export const initGame = () => {
     throw new Error('Canvas not found')
   }
 
+  const backgroundColor = new THREE.Color().setHSL(0.56, 0.54, 0.68)
+
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(75, 4 / 3, 0.1, 1000)
+  scene.background = backgroundColor
   const renderer = new THREE.WebGLRenderer({ canvas })
   renderer.setSize(Math.floor((window.innerHeight * 4) / 3), window.innerHeight)
   const lod = getModel('isle_hi')?.lods[0]
@@ -80,6 +83,33 @@ export const initGame = () => {
   document.addEventListener('keydown', event => {
     if (event.key in keyStates) {
       keyStates[event.key as keyof typeof keyStates] = true
+    }
+
+    if (event.key === 'c') {
+      const hsl = { h: 0, s: 0, l: 0 }
+      backgroundColor.getHSL(hsl)
+      hsl.h += 0.01
+      if (hsl.h > 1) {
+        hsl.h = -1
+      }
+      backgroundColor.setHSL(hsl.h, hsl.s, hsl.l)
+      scene.background = backgroundColor
+    }
+
+    if (event.key === 'v') {
+      const hsl = { h: 0, s: 0, l: 0 }
+      backgroundColor.getHSL(hsl)
+      hsl.s = Math.min(hsl.s + 0.1, 1)
+      backgroundColor.setHSL(hsl.h, hsl.s, hsl.l)
+      scene.background = backgroundColor
+    }
+
+    if (event.key === 'b') {
+      const hsl = { h: 0, s: 0, l: 0 }
+      backgroundColor.getHSL(hsl)
+      hsl.s = Math.max(hsl.s - 0.1, 0.1)
+      backgroundColor.setHSL(hsl.h, hsl.s, hsl.l)
+      scene.background = backgroundColor
     }
   })
 
