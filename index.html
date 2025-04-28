@@ -39,14 +39,17 @@
         <a href="https://archive.org/details/lego-islandi" target="_blank" rel="noopener noreferrer"
           class="text-[#005eb8] font-bold underline hover:text-[#d9001c]">Download ISO</a>
       </p>
-      <div id="drop-zone"
+      <div id="drop-zone" x-data="dropZoneComponent()" @dragover.prevent="dragging = true"
+        @dragleave.prevent="dragging = false" @drop.prevent="handleDrop($event)"
+        :class="{ 'border-[#009743] bg-[#e0e0e0]': dragging }"
         class="border-4 border-dashed border-[#005eb8] p-[35px] rounded-[10px] bg-[#f2f2f2] cursor-pointer transition-colors duration-300 ease-in-out hover:bg-[#e0e0e0] hover:border-[#009743] w-full">
         <p class="m-[10px_0] text-[1.3em] font-bold">Drag & Drop your game ISO here</p>
         <p class="m-[10px_0] text-[1.3em] font-bold">or</p>
-        <label for="iso-input"
+        <label for="iso-input" @click.prevent="$refs.isoInput.click()"
           class="inline-block bg-[#ffcd00] text-[#333333] p-[12px_25px] rounded-[8px] cursor-pointer font-black text-[1.1em] border-3 border-[#d9001c] transition-all duration-300 ease-in-out mt-[15px] uppercase shadow-[0_4px_0px_#d9001c] hover:bg-[#e4a700] active:translate-y-[2px] active:shadow-[0_2px_0px_#d9001c]">Select
           ISO File</label>
-        <input type="file" id="iso-input" accept=".iso" class="hidden">
+        <input type="file" id="iso-input" x-ref="isoInput" accept=".iso" class="hidden"
+          @change="handleFileSelect($event.target.files)">
       </div>
     </div>
   </div>
