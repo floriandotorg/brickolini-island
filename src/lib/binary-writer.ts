@@ -40,17 +40,13 @@ export class BinaryWriter {
 
   writeString = (str: string) => {
     const encoded = encoder.encode(str)
-    this.ensureCapacity(encoded.length)
-    for (const n of encoded) {
-      this.writeU8(n)
-    }
+    this.writeBytes(encoded)
   }
 
   writeBytes = (bytes: Uint8Array) => {
     this.ensureCapacity(bytes.length)
-    for (const n of bytes) {
-      this.writeU8(n)
-    }
+    new Uint8Array(this._buffer, this._offset).set(bytes)
+    this._offset += bytes.length
   }
 
   get buffer() {
