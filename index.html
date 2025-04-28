@@ -24,7 +24,13 @@
     x-data
     :style="$store.state.mode === 'loading' ? { pointerEvents: 'auto', display: 'flex' } : { pointerEvents: 'none', display: 'none' }">
     <img src="/title.png" alt="Brickolini Title" class="w-[20rem] h-auto mb-5" />
-    <p class="text-xl font-bold">Loading...</p>
+    <div class="flex flex-col gap-2 items-center" x-data x-show="$store.state.loading != null" x-cloak>
+      <div class="w-[10rem] h-2 bg-gray-200 rounded-full">
+        <div class="h-full bg-blue-500 rounded-full" x-data :style="{ width: $store.state.loading?.progress + '%' }">
+        </div>
+      </div>
+      <p class="text-sm text-gray-500" x-data x-text="$store.state.loading?.message"></p>
+    </div>
   </div>
 
   <div
@@ -42,11 +48,11 @@
       <div id="drop-zone" x-data="dropZoneComponent()" @dragover.prevent="dragging = true"
         @dragleave.prevent="dragging = false" @drop.prevent="handleDrop($event)"
         :class="{ 'border-[#009743] bg-[#e0e0e0]': dragging }"
-        class="border-4 border-dashed border-[#005eb8] p-[35px] rounded-[10px] bg-[#f2f2f2] cursor-pointer transition-colors duration-300 ease-in-out hover:bg-[#e0e0e0] hover:border-[#009743] w-full">
+        class="border-4 border-dashed border-[#005eb8] p-8 rounded-lg bg-[#f2f2f2] cursor-pointer transition-colors duration-300 ease-in-out hover:bg-[#e0e0e0] hover:border-[#009743] w-full">
         <p class="m-[10px_0] text-[1.3em] font-bold">Drag & Drop your game ISO here</p>
         <p class="m-[10px_0] text-[1.3em] font-bold">or</p>
         <label for="iso-input" @click.prevent="$refs.isoInput.click()"
-          class="inline-block bg-[#ffcd00] text-[#333333] p-[12px_25px] rounded-[8px] cursor-pointer font-black text-[1.1em] border-3 border-[#d9001c] transition-all duration-300 ease-in-out mt-[15px] uppercase shadow-[0_4px_0px_#d9001c] hover:bg-[#e4a700] active:translate-y-[2px] active:shadow-[0_2px_0px_#d9001c]">Select
+          class="inline-block bg-[#ffcd00] text-[#333333] py-3 px-6 rounded-lg cursor-pointer font-black text-lg border-3 border-[#d9001c] mt-4 uppercase shadow-[0_4px_0px_#d9001c] hover:bg-[#e4a700] active:translate-y-[2px] active:shadow-[0_2px_0px_#d9001c]">Select
           ISO File</label>
         <input type="file" id="iso-input" x-ref="isoInput" accept=".iso" class="hidden"
           @change="handleFileSelect($event.target.files)">
