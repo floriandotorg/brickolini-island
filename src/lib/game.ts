@@ -54,6 +54,10 @@ export const initGame = () => {
     } else {
       material.color = new THREE.Color(mesh.color.red / 255, mesh.color.green / 255, mesh.color.blue / 255)
     }
+    if (mesh.color.alpha < 0.99) {
+      material.transparent = true
+      material.opacity = mesh.color.alpha
+    }
     const cube = new THREE.Mesh(geometry, material)
     group.add(cube)
     collidable.push(cube)
