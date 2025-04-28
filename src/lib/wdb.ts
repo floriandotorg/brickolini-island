@@ -1,4 +1,4 @@
-import { BinaryReader } from "./binary-reader";
+import { BinaryReader } from './binary-reader'
 
 const decoder = new TextDecoder('ascii')
 
@@ -7,7 +7,7 @@ export enum Shading {
   UnlitFlat = 1,
   Flat = 2,
   Gouraud = 3,
-  Phong = 4
+  Phong = 4,
 }
 
 export type Gif = { title: string; width: number; height: number; image: Uint8Array }
@@ -51,14 +51,18 @@ export class WDB {
         const size = this._reader.readUint32()
         const offset = this._reader.readUint32()
         this._readStr()
-        for (let i = 0; i < 9; i += 1) { this._reader.readFloat32() }
+        for (let i = 0; i < 9; i += 1) {
+          this._reader.readFloat32()
+        }
         this._reader.skip(1)
         models_offsets.push(offset)
       }
     }
     const gif_chunk_size = this._reader.readUint32()
     const num_frames = this._reader.readUint32()
-    for (let i = 0; i < num_frames; i += 1) { this._images.push(this._readGif()) }
+    for (let i = 0; i < num_frames; i += 1) {
+      this._images.push(this._readGif())
+    }
     for (const offset of parts_offsets) {
       this._reader.seek(offset)
       const texture_info_offset = this._reader.readUint32()
@@ -75,37 +79,45 @@ export class WDB {
     const scanned_offsets = new Set<number>()
     const scanned_model_names = new Set<string>()
     for (const offset of models_offsets) {
-      if (scanned_offsets.has(offset)) { continue }
+      if (scanned_offsets.has(offset)) {
+        continue
+      }
       scanned_offsets.add(offset)
       this._reader.seek(offset)
       const version = this._reader.readUint32()
-      if (version !== 19) { throw new Error('invalid version') }
+      if (version !== 19) {
+        throw new Error('invalid version')
+      }
       const texture_info_offset = this._reader.readUint32()
       const num_rois = this._reader.readUint32()
       const num_animations = this._reader.readUint32()
-      for (let i = 0; i < num_animations; i += 1) {
-        this._readStr()
-        this._reader.readUint32()
+      if (num_animations > 0) {
         throw new Error('animations not supported')
       }
       this._reader.readUint32()
       this._readAnimationTree()
       const model_name = this._readStr()
-      if (scanned_model_names.has(model_name)) { continue }
+      if (scanned_model_names.has(model_name)) {
+        continue
+      }
       scanned_model_names.add(model_name)
       this._readVertex()
       this._reader.readFloat32()
       this._readVertex()
       this._readVertex()
       const texture_name = this._readStr()
-      if (texture_name !== '') { throw new Error('unexpected texture name') }
+      if (texture_name !== '') {
+        throw new Error('unexpected texture name')
+      }
       const defined_elsewhere = this._reader.readInt8()
       if (defined_elsewhere === 0) {
         const num_lods = this._reader.readUint32()
         if (num_lods !== 0) {
           this._reader.readUint32()
           const lods: Lod[] = []
-          for (let l = 0; l < num_lods; l += 1) { lods.push(this._readLod()) }
+          for (let l = 0; l < num_lods; l += 1) {
+            lods.push(this._readLod())
+          }
           this._models.push({ name: model_name, lods })
         }
       } else {
@@ -124,19 +136,29 @@ export class WDB {
     }
   }
 
-  get images(): Gif[] { return this._images }
-  get textures(): Gif[] { return this._textures }
-  get model_textures(): Gif[] { return this._model_textures }
-  get models(): Model[] { return this._models }
+  get images(): Gif[] {
+    return this._images
+  }
+  get textures(): Gif[] {
+    return this._textures
+  }
+  get model_textures(): Gif[] {
+    return this._model_textures
+  }
+  get models(): Model[] {
+    return this._models
+  }
 
   texture_by_name = (name: string): Gif => {
     const tex = this._model_textures.find(t => t.title === name)
-    if (!tex) { throw new Error('texture not found') }
+    if (!tex) {
+      throw new Error('texture not found')
+    }
     return tex
   }
 
-  private _readGif = (title?: string): Gif => {
-    if (title === undefined) { title = this._readStr() }
+  private _readGif = (maybeTitle?: string): Gif => {
+    const title = maybeTitle ?? this._readStr()
     const width = this._reader.readUint32()
     const height = this._reader.readUint32()
     const num_colors = this._reader.readUint32()
@@ -163,7 +185,9 @@ export class WDB {
     const len = this._reader.readUint32()
     const bytes = this._reader.readBytes(len)
     let end = bytes.length
-    while (end > 0 && bytes[end - 1] === 0) { end -= 1 }
+    while (end > 0 && bytes[end - 1] === 0) {
+      end -= 1
+    }
     return decoder.decode(bytes.subarray(0, end))
   }
 
@@ -194,14 +218,20 @@ export class WDB {
       this._reader.readInt8()
     }
     const num_children = this._reader.readUint32()
-    for (let i = 0; i < num_children; i += 1) { this._readAnimationTree() }
+    for (let i = 0; i < num_children; i += 1) {
+      this._readAnimationTree()
+    }
   }
 
   private _readLod = (): Lod => {
     const unknown8 = this._reader.readUint32()
-    if ((unknown8 & 0xffffff04) !== 0) { throw new Error('invalid flags') }
+    if ((unknown8 & 0xffffff04) !== 0) {
+      throw new Error('invalid flags')
+    }
     const num_meshes = this._reader.readUint32()
-    if (num_meshes === 0) { throw new Error('no meshes') }
+    if (num_meshes === 0) {
+      throw new Error('no meshes')
+    }
     const num_verts = this._reader.readUint16()
     let num_normals = this._reader.readUint16()
     num_normals = num_normals >>> 1
@@ -217,7 +247,9 @@ export class WDB {
       const num_texture_indices = this._reader.readUint32()
       let texture_indices: number[] = []
       if (num_texture_indices > 0) {
-        if (num_texture_indices !== num_polys * 3) { throw new Error('texture index count mismatch') }
+        if (num_texture_indices !== num_polys * 3) {
+          throw new Error('texture index count mismatch')
+        }
         texture_indices = Array.from({ length: num_polys * 3 }, () => this._reader.readUint32())
       }
       const mesh_vertices: [number, number, number][] = []
@@ -233,13 +265,19 @@ export class WDB {
           mesh_vertices.push(vertices[gv])
           const gn = (packed >>> 16) & 0x7fff
           mesh_normals.push(normals[gn])
-          if (tex !== undefined && uvs.length > 0) { mesh_uvs.push(uvs[tex]) }
+          if (tex !== undefined && uvs.length > 0) {
+            mesh_uvs.push(uvs[tex])
+          }
         } else {
           indices.push(packed & 0x7fff)
         }
       }
-      if (mesh_vertices.length !== num_mesh_verts) { throw new Error('vertex count mismatch') }
-      if (mesh_uvs.length !== 0 && mesh_uvs.length !== num_mesh_verts) { throw new Error('uv count mismatch') }
+      if (mesh_vertices.length !== num_mesh_verts) {
+        throw new Error('vertex count mismatch')
+      }
+      if (mesh_uvs.length !== 0 && mesh_uvs.length !== num_mesh_verts) {
+        throw new Error('uv count mismatch')
+      }
       const red = this._reader.readUint8()
       const green = this._reader.readUint8()
       const blue = this._reader.readUint8()
