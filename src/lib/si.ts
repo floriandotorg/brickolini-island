@@ -78,6 +78,7 @@ export class SIObject {
     public location: [number, number, number],
     public direction: [number, number, number],
     public up: [number, number, number],
+    public extraData: string,
     public filename?: string,
     public fileType?: SIFileType,
     public volume?: number,
@@ -192,9 +193,11 @@ export class SI {
         for (let i = 0; i < 9; i++) {
           coords.push(reader.readFloat64())
         }
-        const extraSkip = reader.readUint16()
-        if (extraSkip) {
-          reader.skip(extraSkip)
+        const extraDataLength = reader.readUint16()
+        let extraData: string = ""
+        if (extraDataLength > 0) {
+          const extraBytes = reader.readBytes(extraDataLength)
+          extraData = decoder.decode(extraBytes)
         }
         let filename: string | undefined
         let fileType: SIFileType | undefined
@@ -208,7 +211,7 @@ export class SI {
             volume = reader.readUint32()
           }
         }
-        const obj = new SIObject(type, presenter, name, id, flags, duration, loops, [coords[0], coords[1], coords[2]], [coords[3], coords[4], coords[5]], [coords[6], coords[7], coords[8]], filename, fileType, volume)
+        const obj = new SIObject(type, presenter, name, id, flags, duration, loops, [coords[0], coords[1], coords[2]], [coords[3], coords[4], coords[5]], [coords[6], coords[7], coords[8]], extraData, filename, fileType, volume)
         this.objectList.set(id, obj)
         const parent = parents.at(-1)
         if (parent) {
