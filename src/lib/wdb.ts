@@ -256,7 +256,7 @@ export class WDB {
       const mesh_uvs: [number, number][] = []
       const indices: number[] = []
       for (let i = 0; i < vertex_indices_packed.length; i += 1) {
-        const packed = vertex_indices_packed[i] >>> 0
+        const packed = vertex_indices_packed[i]
         const tex = texture_indices[i]
         if ((packed & 0x80000000) !== 0) {
           indices.push(mesh_vertices.length)

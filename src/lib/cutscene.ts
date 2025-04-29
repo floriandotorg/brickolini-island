@@ -49,6 +49,7 @@ export const playCutscene = async (name: string) => {
   return new Promise<void>(resolve => {
     const render = () => {
       if (skipCutscene) {
+        audioSource.stop()
         resolve()
         return
       }
