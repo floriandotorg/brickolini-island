@@ -196,7 +196,10 @@ export class SI {
         const extraDataLength = reader.readUint16()
         let extraData: string = ""
         if (extraDataLength > 0) {
-          const extraBytes = reader.readBytes(extraDataLength)
+          let extraBytes = reader.readBytes(extraDataLength)
+          if (extraBytes.at(-1) === 0) {
+            extraBytes = extraBytes.subarray(0, extraBytes.length - 1)
+          }
           extraData = decoder.decode(extraBytes)
         }
         let filename: string | undefined

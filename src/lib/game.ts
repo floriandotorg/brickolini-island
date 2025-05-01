@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { getModelObject } from './assets'
+import { getBuildings, getModelObject } from './assets'
 import { setPosition } from './store'
 
 export const initGame = () => {
@@ -14,6 +14,20 @@ export const initGame = () => {
   renderer.setSize(Math.floor((window.innerHeight * 4) / 3), window.innerHeight)
   const obj = getModelObject('isle_hi')
   scene.add(obj)
+
+  for (const buildingData of getBuildings()) {
+    console.log(buildingData)
+    try {
+      const model = getModelObject(buildingData.model_name)
+      model.position.set(-buildingData.location[0], buildingData.location[1], buildingData.location[2])
+      const direction = new THREE.Vector3(-buildingData.direction[0], buildingData.direction[1], buildingData.direction[2])
+      const target = model.position.clone().add(direction);
+      model.lookAt(target)
+      scene.add(model)
+    } catch (Error) {
+      console.log(`Couldn't place ${buildingData.model_name}`)
+    }
+  }
 
   const ambientLight = new THREE.AmbientLight(new THREE.Color(0.3, 0.3, 0.3))
   scene.add(ambientLight)

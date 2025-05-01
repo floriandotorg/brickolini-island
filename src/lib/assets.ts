@@ -64,6 +64,62 @@ export const initAssets = async (file: File) => {
   setLoading(null)
 }
 
+const parseKeyValueString = (extra: string): Record<string, string> => {
+  if (!extra) return {};
+
+  const result: Record<string, string> = {};
+  const tokens = extra.split(/[,\s\r\n\t]+/);
+
+  for (let token of tokens) {
+    const separatorIndex = token.indexOf(':');
+    if (separatorIndex > 0) {
+      const key = token.substring(0, separatorIndex).trim();
+      const value = token.substring(separatorIndex + 1).trim();
+
+      if (key.length > 0 && value.length > 0) {
+        result[key.toLowerCase()] = value;
+      }
+    }
+  }
+
+  return result;
+}
+
+export const getBuildings = (): { model_name: string; location: [number, number, number]; direction: [number, number, number] }[] => {
+  const si = siFiles.get('ISLE.SI')
+  if (!si) {
+    throw new Error('Assets not initialized')
+  }
+
+  const result: { model_name: string; location: [number, number, number]; direction: [number, number, number] }[] = []
+
+  const root = si.objects.get(0)
+  if (!root) {
+    throw new Error('Root object not found')
+  }
+
+  for (const a of root.children) {
+    console.log(`a = ${a.name}`)
+    for (const b of a.children) {
+      console.log(`  b = ${b.name} with ${b.extraData}`)
+      const keyValues = parseKeyValueString(b.extraData)
+      console.log(keyValues)
+      for (const key in keyValues) {
+        if (key == 'db_create') {
+          result.push({
+            model_name: keyValues[key],
+            location: a.location,
+            direction: a.direction,
+          })
+          break
+        }
+      }
+    }
+  }
+
+  return result
+}
+
 const createWAV = (obj: SIObject): ArrayBuffer => {
   const writeChunk = (writer: BinaryWriter, tag: string, data: Uint8Array) => {
     writer.writeString(tag)
@@ -92,9 +148,9 @@ export const getModel = (name: string): Model => {
   if (wdb == null) {
     throw new Error('Assets not initialized')
   }
-  const model = wdb.models.find(m => m.name === name)
+  const model = wdb.models.find(m => m.name.toLowerCase() === name.toLowerCase())
   if (model == null) {
-    throw new Error('Model not found')
+    throw new Error(`Model '${name}' not found`)
   }
 
   return model
