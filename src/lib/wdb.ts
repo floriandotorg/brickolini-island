@@ -21,7 +21,7 @@ export type Mesh = {
   shading: Shading
 }
 export type Lod = { meshes: Mesh[] }
-export type Model = { name: string; lods: Lod[] }
+export type Model = { name: string; lods: Lod[], children: Model[], texture_name: string }
 
 export class WDB {
   private _reader: BinaryReader
@@ -95,33 +95,8 @@ export class WDB {
       }
       this._reader.readUint32()
       this._readAnimationTree()
-      const model_name = this._readStr()
-      if (scanned_model_names.has(model_name)) {
-        continue
-      }
-      scanned_model_names.add(model_name)
-      this._readVertex()
-      this._reader.readFloat32()
-      this._readVertex()
-      this._readVertex()
-      const texture_name = this._readStr()
-      if (texture_name !== '') {
-        throw new Error('unexpected texture name')
-      }
-      const defined_elsewhere = this._reader.readInt8()
-      if (defined_elsewhere === 0) {
-        const num_lods = this._reader.readUint32()
-        if (num_lods !== 0) {
-          this._reader.readUint32()
-          const lods: Lod[] = []
-          for (let l = 0; l < num_lods; l += 1) {
-            lods.push(this._readLod())
-          }
-          this._models.push({ name: model_name, lods })
-        }
-      } else {
-        model_name.replace(/[0-9]+$/, '')
-      }
+      const model = this._readRoi(offset, scanned_model_names)
+      this._models.push(model)
       this._reader.seek(offset + texture_info_offset)
       const num_textures = this._reader.readUint32()
       const skip_textures = this._reader.readUint32()
@@ -154,6 +129,40 @@ export class WDB {
       throw new Error('texture not found')
     }
     return tex
+  }
+
+  private _readRoi = (offset: number, scanned_model_names: Set<string>): Model => {
+    const model_name = this._readStr()
+    if (scanned_model_names.has(model_name)) {
+      console.log(`Already scanned model '${model_name}'!`)
+    }
+    console.log(model_name)
+    scanned_model_names.add(model_name)
+    this._readVertex()
+    this._reader.readFloat32()
+    this._readVertex()
+    this._readVertex()
+    const texture_name = this._readStr()
+    const defined_elsewhere = this._reader.readInt8()
+    const lods: Lod[] = []
+    if (defined_elsewhere === 0) {
+      const num_lods = this._reader.readUint32()
+      if (num_lods !== 0) {
+        const end_component_offset = this._reader.readUint32()
+        for (let l = 0; l < num_lods; l += 1) {
+          lods.push(this._readLod())
+        }
+        this._reader.seek(offset + end_component_offset)
+      }
+    } else {
+      model_name.replace(/[0-9]+$/, '')
+    }
+    const children: Model[] = []
+    const num_rois = this._reader.readUint32()
+    for (let i = 0; i < num_rois; i++) {
+      children.push(this._readRoi(offset, scanned_model_names))
+    }
+    return { name: model_name, lods, children, texture_name }
   }
 
   private _readGif = (maybeTitle?: string): Gif => {
@@ -229,7 +238,7 @@ export class WDB {
     }
     const num_meshes = this._reader.readUint32()
     if (num_meshes === 0) {
-      throw new Error('no meshes')
+      return { meshes: [] }
     }
     const num_verts = this._reader.readUint16()
     let num_normals = this._reader.readUint16()

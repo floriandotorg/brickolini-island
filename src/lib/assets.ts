@@ -3,7 +3,7 @@ import { ISO9660, ISOVariant } from './iso'
 import { BinaryWriter } from './binary-writer'
 import { Smk } from './smk'
 import { BinaryReader } from './binary-reader'
-import { Shading, WDB, type Gif, type Model } from './wdb'
+import { Shading, WDB, type Gif, type Lod, type Model } from './wdb'
 import { setLoading } from './store'
 import { FLC } from './flc'
 import * as THREE from 'three'
@@ -173,12 +173,7 @@ const createTexture = (image: Gif): THREE.DataTexture => {
   return tex
 }
 
-export const getModelObject = (name: string): THREE.Group => {
-  const lod = getModel(name).lods.at(-1)
-  if (!lod) {
-    throw new Error("Couldn't find lod")
-  }
-  const group = new THREE.Group()
+const addLodObject = (lod: Lod, group: THREE.Group) => {
   for (const model_mesh of lod.meshes) {
     const vertices: number[] = model_mesh.vertices.flat()
     const indices: number[] = model_mesh.indices
@@ -212,7 +207,27 @@ export const getModelObject = (name: string): THREE.Group => {
     const mesh = new THREE.Mesh(geometry, material)
     group.add(mesh)
   }
+}
+
+const getModelObjectBase = (model: Model): THREE.Group => {
+  const lod = model.lods.at(-1)
+  if (!lod && !model.children) {
+    throw new Error("Couldn't find lod and children")
+  }
+  const group = new THREE.Group()
+  if (lod) {
+    addLodObject(lod, group)
+  }
+  for (const child of model.children) {
+    const childGroup = getModelObjectBase(child)
+    group.add(childGroup)
+  }
   return group
+}
+
+export const getModelObject = (name: string): THREE.Group => {
+  const model = getModel(name)
+  return getModelObjectBase(model)
 }
 
 export const getTexture = (name: string): Gif => {

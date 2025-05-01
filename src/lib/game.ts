@@ -24,8 +24,8 @@ export const initGame = () => {
       const target = model.position.clone().add(direction);
       model.lookAt(target)
       scene.add(model)
-    } catch (Error) {
-      console.log(`Couldn't place ${buildingData.model_name}`)
+    } catch (e) {
+      console.log(`Couldn't place ${buildingData.model_name}: ${e}`)
     }
   }
 
