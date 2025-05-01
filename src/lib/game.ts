@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { getModelObject } from './assets'
+import { setPosition } from './store'
 
 export const initGame = () => {
   const canvas = document.getElementById('game-canvas') as HTMLCanvasElement | null
@@ -76,6 +77,8 @@ export const initGame = () => {
   }
   setLightPosition(lightIndex)
 
+  let showDebugMenu = import.meta.env.DEV
+
   document.addEventListener('keydown', event => {
     if (event.key in keyStates) {
       keyStates[event.key as keyof typeof keyStates] = true
@@ -105,6 +108,10 @@ export const initGame = () => {
     if (event.key === 'n') {
       lightIndex = (lightIndex + 1) % 6
       setLightPosition(lightIndex)
+    }
+
+    if (event.key === 'd') {
+      showDebugMenu = !showDebugMenu
     }
   })
 
@@ -172,6 +179,15 @@ export const initGame = () => {
     }
 
     placeCameraOnGround()
+
+    if (showDebugMenu) {
+      const debugVec = (vec: THREE.Vector3): string => {
+        return `x: ${vec.x.toFixed(4)}, y: ${vec.y.toFixed(4)}, z: ${vec.z.toFixed(4)}`
+      }
+      setPosition(`position: ${debugVec(camera.position)}`)
+    } else {
+      setPosition('')
+    }
 
     renderer.render(scene, camera)
   }

@@ -10,6 +10,7 @@ export const initStores = () => {
   Alpine.store('state', {
     mode: 'welcome' as Mode,
     loading: null,
+    position: '',
   })
 }
 
@@ -19,4 +20,8 @@ export const setMode = (mode: Mode) => {
 
 export const setLoading = (loading: Loading) => {
   ;(Alpine.store('state') as { loading: Loading }).loading = loading
+}
+
+export const setPosition = (position: string) => {
+  ;(Alpine.store('state') as { position: string }).position = position
 }
