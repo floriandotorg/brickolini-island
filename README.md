@@ -4,7 +4,7 @@ A web-based rewrite of the 1997 game Lego Island.
 
 **Play it here:** [http://floriandotorg.github.io/brickolini-island/](http://floriandotorg.github.io/brickolini-island/)
 
-This project aims to recreate the charm and fun of Lego Island in your browser to make it accessible.
+This project aims to recreate the charm of LEGO ISLAND in your browser to make it easily accessible. It will only include minor enhancements and will try to be as close to the original as possible.
 
 *Note: This project is currently in the very early stages of development.*
 
