@@ -8,10 +8,22 @@ export const initGame = () => {
     throw new Error('Canvas not found')
   }
 
+  const resolutionRatio = 4 / 3
+
+  const setRendererSize = () => {
+    const width = Math.floor(window.innerHeight * resolutionRatio)
+    if (width > window.innerWidth) {
+      const height = Math.floor(window.innerWidth / resolutionRatio)
+      renderer.setSize(window.innerWidth, height)
+    } else {
+      renderer.setSize(width, window.innerHeight)
+    }
+  }
+
   const scene = new THREE.Scene()
-  const camera = new THREE.PerspectiveCamera(75, 4 / 3, 0.1, 1000)
+  const camera = new THREE.PerspectiveCamera(75, resolutionRatio, 0.1, 1000)
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
-  renderer.setSize(Math.floor((window.innerHeight * 4) / 3), window.innerHeight)
+  setRendererSize()
   const obj = getModelObject('isle_hi')
   scene.add(obj)
 
@@ -133,6 +145,10 @@ export const initGame = () => {
     if (event.key in keyStates) {
       keyStates[event.key as keyof typeof keyStates] = false
     }
+  })
+
+  window.addEventListener('resize', _ => {
+    setRendererSize()
   })
 
   const MAX_LINEAR_VEL = 10
