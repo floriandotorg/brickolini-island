@@ -12,7 +12,7 @@
   <div class="fixed inset-0 bg-black flex justify-center items-center"
     :class="{ 'pointer-none': $store.state.mode !== 'in-game', 'invisible': $store.state.mode !== 'in-game' }" x-data>
     <div class="aspect-[4/3] h-full max-w-full">
-      <div class="absolute ml-4 mt-4 p-1 text-white bg-black font-mono" x-data x-text="$store.state.position" :style="$store.state.position.length > 0 ? { display: 'block' } : { display: 'none' }"></div>
+      <div class="absolute ml-4 mt-4 p-1 text-white bg-black font-mono" x-data x-text="$store.state.position" x-show="$store.state.position.length > 0" x-cloak></div>
       <canvas id="game-canvas" class="pointer-events-none aspect-[4/3] h-full max-w-full" data-engine="three.js r176" width="1232" height="924" style="width: 1232px; height: 924px;"></canvas>
     </div>
   </div>
