@@ -199,10 +199,10 @@ const addLodObject = (lod: Lod, group: THREE.Group) => {
       geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
     } else {
       material.color = new THREE.Color(model_mesh.color.red / 255, model_mesh.color.green / 255, model_mesh.color.blue / 255)
-    }
-    if (model_mesh.color.alpha < 0.99) {
-      material.transparent = true
-      material.opacity = model_mesh.color.alpha
+      if (model_mesh.color.alpha < 0.99) {
+        material.transparent = true
+        material.opacity = model_mesh.color.alpha
+      }
     }
     const mesh = new THREE.Mesh(geometry, material)
     group.add(mesh)

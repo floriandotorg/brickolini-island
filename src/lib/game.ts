@@ -28,7 +28,6 @@ export const initGame = () => {
   scene.add(obj)
 
   for (const buildingData of getBuildings()) {
-    console.log(buildingData)
     try {
       const model = getModelObject(buildingData.model_name)
       model.position.set(-buildingData.location[0], buildingData.location[1], buildingData.location[2])
