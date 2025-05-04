@@ -98,18 +98,15 @@ export const getBuildings = (): { model_name: string; location: [number, number,
     throw new Error('Root object not found')
   }
 
-  for (const a of root.children) {
-    console.log(`a = ${a.name}`)
-    for (const b of a.children) {
-      console.log(`  b = ${b.name} with ${b.extraData}`)
-      const keyValues = parseKeyValueString(b.extraData)
-      console.log(keyValues)
+  for (const parent of root.children) {
+    for (const model of parent.children) {
+      const keyValues = parseKeyValueString(model.extraData)
       for (const key in keyValues) {
         if (key === 'db_create') {
           result.push({
             model_name: keyValues[key],
-            location: a.location,
-            direction: a.direction,
+            location: parent.location,
+            direction: parent.direction,
           })
           break
         }
@@ -216,6 +213,7 @@ const getModelObjectBase = (model: Roi, animation: Animation.Node | undefined): 
   }
 
   const group = new THREE.Group()
+  group.name = model.name
   if (animation) {
     if (animation.translationKeys.length === 1) {
       if (animation.translationKeys[0].timeAndFlags.time !== 0) {
