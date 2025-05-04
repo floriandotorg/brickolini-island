@@ -198,7 +198,7 @@ export class SI {
           coords.push(reader.readFloat64())
         }
         const extraDataLength = reader.readUint16()
-        let extraData: string = ""
+        let extraData = ''
         if (extraDataLength > 0) {
           let extraBytes = reader.readBytes(extraDataLength)
           if (extraBytes.at(-1) === 0) {

@@ -21,15 +21,15 @@ export type Mesh = {
   materialName: string
   shading: Shading
 }
-export type Model = { roi: Roi, animation: Animation.Node }
-export type Roi = { name: string; lods: Lod[], children: Roi[], texture_name: string }
+export type Model = { roi: Roi; animation: Animation.Node }
+export type Roi = { name: string; lods: Lod[]; children: Roi[]; texture_name: string }
 export type Lod = { meshes: Mesh[] }
 export namespace Animation {
-  export type TimeAndFlags = { time: number, flags: number }
-  export type VertexKey = { timeAndFlags: TimeAndFlags, vertex: Vertex }
-  export type RotationKey = { vertexKey: VertexKey, angle: number }
-  export type MorphKey = { timeAndFlags: TimeAndFlags, bool: boolean }
-  export type Node = { name: string, translationKeys: VertexKey[], rotationKeys: RotationKey[], scaleKeys: VertexKey[], morphKeys: MorphKey[], children: Node[] }
+  export type TimeAndFlags = { time: number; flags: number }
+  export type VertexKey = { timeAndFlags: TimeAndFlags; vertex: Vertex }
+  export type RotationKey = { vertexKey: VertexKey; angle: number }
+  export type MorphKey = { timeAndFlags: TimeAndFlags; bool: boolean }
+  export type Node = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Node[] }
 }
 
 export class WDB {
@@ -105,7 +105,7 @@ export class WDB {
       this._reader.readUint32()
       const animation = this._readAnimationTree()
       const roi = this._readRoi(offset, scanned_model_names)
-      this._models.push({roi, animation})
+      this._models.push({ roi, animation })
       this._reader.seek(offset + texture_info_offset)
       const num_textures = this._reader.readUint32()
       const skip_textures = this._reader.readUint32()
@@ -225,7 +225,7 @@ export class WDB {
     for (let i = 0; i < num_translation_keys; i += 1) {
       const timeAndFlags = this._readTimeAndFlags()
       const vertex = this._readVertex()
-      translations.push({timeAndFlags, vertex})
+      translations.push({ timeAndFlags, vertex })
     }
     const rotations: Animation.RotationKey[] = []
     const num_rotation_keys = this._reader.readUint16()
@@ -233,28 +233,28 @@ export class WDB {
       const timeAndFlags = this._readTimeAndFlags()
       const angle = this._reader.readFloat32()
       const vertex = this._readVertex()
-      rotations.push({vertexKey: {timeAndFlags, vertex}, angle})
+      rotations.push({ vertexKey: { timeAndFlags, vertex }, angle })
     }
     const scales: Animation.VertexKey[] = []
     const num_scale_keys = this._reader.readUint16()
     for (let i = 0; i < num_scale_keys; i += 1) {
       const timeAndFlags = this._readTimeAndFlags()
       const vertex = this._readVertex()
-      scales.push({timeAndFlags, vertex})
+      scales.push({ timeAndFlags, vertex })
     }
     const morphs: Animation.MorphKey[] = []
     const num_morph_keys = this._reader.readUint16()
     for (let i = 0; i < num_morph_keys; i += 1) {
       const timeAndFlags = this._readTimeAndFlags()
       const bool = this._reader.readInt8() !== 0
-      morphs.push({timeAndFlags, bool})
+      morphs.push({ timeAndFlags, bool })
     }
     const children = []
     const num_children = this._reader.readUint32()
     for (let i = 0; i < num_children; i += 1) {
       children.push(this._readAnimationTree())
     }
-    return {name, translationKeys: translations, rotationKeys: rotations, scaleKeys: scales, morphKeys: morphs, children}
+    return { name, translationKeys: translations, rotationKeys: rotations, scaleKeys: scales, morphKeys: morphs, children }
   }
 
   private _readLod = (): Lod => {

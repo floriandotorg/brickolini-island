@@ -65,24 +65,24 @@ export const initAssets = async (file: File) => {
 }
 
 const parseKeyValueString = (extra: string): Record<string, string> => {
-  if (!extra) return {};
+  if (!extra) return {}
 
-  const result: Record<string, string> = {};
-  const tokens = extra.split(/[,\s\r\n\t]+/);
+  const result: Record<string, string> = {}
+  const tokens = extra.split(/[,\s\r\n\t]+/)
 
-  for (let token of tokens) {
-    const separatorIndex = token.indexOf(':');
+  for (const token of tokens) {
+    const separatorIndex = token.indexOf(':')
     if (separatorIndex > 0) {
-      const key = token.substring(0, separatorIndex).trim();
-      const value = token.substring(separatorIndex + 1).trim();
+      const key = token.substring(0, separatorIndex).trim()
+      const value = token.substring(separatorIndex + 1).trim()
 
       if (key.length > 0 && value.length > 0) {
-        result[key.toLowerCase()] = value;
+        result[key.toLowerCase()] = value
       }
     }
   }
 
-  return result;
+  return result
 }
 
 export const getBuildings = (): { model_name: string; location: [number, number, number]; direction: [number, number, number] }[] => {
@@ -105,7 +105,7 @@ export const getBuildings = (): { model_name: string; location: [number, number,
       const keyValues = parseKeyValueString(b.extraData)
       console.log(keyValues)
       for (const key in keyValues) {
-        if (key == 'db_create') {
+        if (key === 'db_create') {
           result.push({
             model_name: keyValues[key],
             location: a.location,

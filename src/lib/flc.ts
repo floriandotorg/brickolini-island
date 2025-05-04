@@ -1,4 +1,4 @@
-import { BinaryReader } from "./binary-reader";
+import { BinaryReader } from './binary-reader'
 
 const decoder = new TextDecoder('ascii')
 
@@ -28,11 +28,11 @@ export enum ChunkType {
   LABELEX = 41,
   SHIFT = 42,
   PATHMAP = 43,
-  PREFIX_TYPE = 0xF100,
-  SCRIPT_CHUNK = 0xF1E0,
-  FRAME_TYPE = 0xF1FA,
-  SEGMENT_TABLE = 0xF1FB,
-  HUFFMAN_TABLE = 0xF1FC
+  PREFIX_TYPE = 0xf100,
+  SCRIPT_CHUNK = 0xf1e0,
+  FRAME_TYPE = 0xf1fa,
+  SEGMENT_TABLE = 0xf1fb,
+  HUFFMAN_TABLE = 0xf1fc,
 }
 
 type Color = { r: number; g: number; b: number }
@@ -56,8 +56,12 @@ export class FLC {
     this._reader.skip(4)
     this._delayMs = this._reader.readUint32()
     this._reader.skip(108)
-    if (type !== 0xaf12) { throw new Error('invalid flc') }
-    for (let i = 0; i < frames; i += 1) { this._readChunk() }
+    if (type !== 0xaf12) {
+      throw new Error('invalid flc')
+    }
+    for (let i = 0; i < frames; i += 1) {
+      this._readChunk()
+    }
   }
 
   get width() {
@@ -93,12 +97,18 @@ export class FLC {
       case ChunkType.FRAME_TYPE: {
         const chunks = this._reader.readUint16()
         const zeros = this._reader.readBytes(8)
-        if ([...zeros].some(b => b !== 0)) { throw new Error('unsupported settings') }
+        if ([...zeros].some(b => b !== 0)) {
+          throw new Error('unsupported settings')
+        }
         if (chunks === 0) {
-          if (this._frames.length === 0) { throw new Error('missing previous frame') }
+          if (this._frames.length === 0) {
+            throw new Error('missing previous frame')
+          }
           this._frames.push(this._frames[this._frames.length - 1])
         } else {
-          for (let i = 0; i < chunks; i += 1) { this._readChunk() }
+          for (let i = 0; i < chunks; i += 1) {
+            this._readChunk()
+          }
         }
         break
       }
@@ -110,7 +120,9 @@ export class FLC {
           const skip = this._reader.readUint8()
           let count = this._reader.readUint8()
           idx += skip
-          if (count === 0) { count = 256 }
+          if (count === 0) {
+            count = 256
+          }
           for (let j = 0; j < count; j += 1) {
             const r = this._reader.readUint8()
             const g = this._reader.readUint8()
@@ -128,7 +140,9 @@ export class FLC {
           let pixels = 0
           while (pixels < this._width) {
             const count = this._reader.readInt8()
-            if (count === 0) { throw new Error('invalid count') }
+            if (count === 0) {
+              throw new Error('invalid count')
+            }
             if (count < 0) {
               const src = this._reader.readBytes(-count)
               for (let k = 0; k < src.length; k += 1) {
@@ -150,12 +164,16 @@ export class FLC {
             }
           }
         }
-        if (pos !== frame.length) { throw new Error('frame length mismatch') }
+        if (pos !== frame.length) {
+          throw new Error('frame length mismatch')
+        }
         this._frames.push(frame)
         break
       }
       case ChunkType.DELTA_FLC: {
-        if (this._frames.length === 0) { throw new Error('missing base frame') }
+        if (this._frames.length === 0) {
+          throw new Error('missing base frame')
+        }
         const frame = new Uint8Array(this._frames[this._frames.length - 1])
         const lines = this._reader.readUint16()
         let line = 0
@@ -201,7 +219,9 @@ export class FLC {
                     frame[off + 5] = c2.b
                   }
                   pixel += count * 2
-                } else { throw new Error('invalid count') }
+                } else {
+                  throw new Error('invalid count')
+                }
               }
               break
             }
@@ -213,14 +233,19 @@ export class FLC {
               frame[pos + 2] = col.b
             } else if (code === 3) {
               line -= opcode - 0x10000
-            } else { throw new Error('undefined opcode') }
+            } else {
+              throw new Error('undefined opcode')
+            }
           }
           line += 1
         }
         this._frames.push(frame)
         break
       }
-      case ChunkType.PSTAMP: { this._reader.skip(chunkSize - 6); break }
+      case ChunkType.PSTAMP: {
+        this._reader.skip(chunkSize - 6)
+        break
+      }
       case ChunkType.FLI_COPY: {
         const frame = new Uint8Array(this._width * this._height * 3)
         for (let i = 0; i < this._width * this._height; i += 1) {
@@ -236,8 +261,12 @@ export class FLC {
         this._frames.push(new Uint8Array(this._width * this._height * 3))
         break
       }
-      default: { throw new Error(`unsupported chunk type ${chunkType}`) }
+      default: {
+        throw new Error(`unsupported chunk type ${chunkType}`)
+      }
     }
-    if (this._reader.position < end) { this._reader.seek(end) }
+    if (this._reader.position < end) {
+      this._reader.seek(end)
+    }
   }
 }

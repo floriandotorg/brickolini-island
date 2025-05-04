@@ -32,7 +32,7 @@ export const initGame = () => {
       const model = getModelObject(buildingData.model_name)
       model.position.set(-buildingData.location[0], buildingData.location[1], buildingData.location[2])
       const direction = new THREE.Vector3(-buildingData.direction[0], buildingData.direction[1], buildingData.direction[2])
-      const target = model.position.clone().add(direction);
+      const target = model.position.clone().add(direction)
       model.lookAt(target)
       scene.add(model)
     } catch (e) {
