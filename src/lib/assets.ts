@@ -3,7 +3,7 @@ import { ISO9660, ISOVariant } from './iso'
 import { BinaryWriter } from './binary-writer'
 import { Smk } from './smk'
 import { BinaryReader } from './binary-reader'
-import { Shading, WDB, type Gif, type Lod, type Model } from './wdb'
+import { Shading, WDB, type Gif, type Lod, type Model, type Roi, type Animation } from './wdb'
 import { setLoading } from './store'
 import { FLC } from './flc'
 import * as THREE from 'three'
@@ -148,7 +148,7 @@ export const getModel = (name: string): Model => {
   if (wdb == null) {
     throw new Error('Assets not initialized')
   }
-  const model = wdb.models.find(m => m.name.toLowerCase() === name.toLowerCase())
+  const model = wdb.models.find(m => m.roi.name.toLowerCase() === name.toLowerCase())
   if (model == null) {
     throw new Error(`Model '${name}' not found`)
   }
@@ -209,17 +209,41 @@ const addLodObject = (lod: Lod, group: THREE.Group) => {
   }
 }
 
-const getModelObjectBase = (model: Model): THREE.Group => {
+const getModelObjectBase = (model: Roi, animation: Animation.Node | undefined): THREE.Group => {
   const lod = model.lods.at(-1)
   if (!lod && !model.children) {
     throw new Error("Couldn't find lod and children")
   }
+
   const group = new THREE.Group()
+  if (animation) {
+    if (animation.translationKeys.length === 1) {
+      if (animation.translationKeys[0].timeAndFlags.time !== 0) {
+        console.log(`Translation key for model ${model.name} has non-zero time of ${animation.translationKeys[0].timeAndFlags.time}`)
+      }
+      if (animation.translationKeys[0].timeAndFlags.flags !== 1) {
+        console.log(`Translation key for model ${model.name} has non-standard flags of ${animation.translationKeys[0].timeAndFlags.flags}`)
+      }
+      group.position.set(...animation.translationKeys[0].vertex)
+    } else if (animation.translationKeys.length > 1) {
+      console.log(`Model ${model.name} has ${animation.translationKeys.length} translation keys`)
+    }
+    if (animation.rotationKeys.length > 0) {
+      console.log(`Model ${model.name} has ${animation.rotationKeys.length} rotation keys`)
+    }
+    if (animation.scaleKeys.length > 0) {
+      console.log(`Model ${model.name} has ${animation.scaleKeys.length} scale keys`)
+    }
+    if (animation.morphKeys.length > 0) {
+      console.log(`Model ${model.name} has ${animation.morphKeys.length} morph keys`)
+    }
+  }
   if (lod) {
     addLodObject(lod, group)
   }
   for (const child of model.children) {
-    const childGroup = getModelObjectBase(child)
+    const childAnimation = animation?.children.find(n => n.name.toLowerCase() === child.name.toLowerCase())
+    const childGroup = getModelObjectBase(child, childAnimation)
     group.add(childGroup)
   }
   return group
@@ -227,7 +251,7 @@ const getModelObjectBase = (model: Model): THREE.Group => {
 
 export const getModelObject = (name: string): THREE.Group => {
   const model = getModel(name)
-  return getModelObjectBase(model)
+  return getModelObjectBase(model.roi, model.animation)
 }
 
 export const getTexture = (name: string): Gif => {

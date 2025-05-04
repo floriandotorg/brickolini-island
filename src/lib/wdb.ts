@@ -8,11 +8,12 @@ export enum Shading {
   WireFrame = 2,
 }
 
+export type Vertex = [number, number, number]
 export type Gif = { title: string; width: number; height: number; image: Uint8Array }
 export type Color = { red: number; green: number; blue: number; alpha: number }
 export type Mesh = {
-  vertices: [number, number, number][]
-  normals: [number, number, number][]
+  vertices: Vertex[]
+  normals: Vertex[]
   uvs: [number, number][]
   indices: number[]
   color: Color
@@ -20,8 +21,16 @@ export type Mesh = {
   materialName: string
   shading: Shading
 }
+export type Model = { roi: Roi, animation: Animation.Node }
+export type Roi = { name: string; lods: Lod[], children: Roi[], texture_name: string }
 export type Lod = { meshes: Mesh[] }
-export type Model = { name: string; lods: Lod[], children: Model[], texture_name: string }
+export namespace Animation {
+  export type TimeAndFlags = { time: number, flags: number }
+  export type VertexKey = { timeAndFlags: TimeAndFlags, vertex: Vertex }
+  export type RotationKey = { vertexKey: VertexKey, angle: number }
+  export type MorphKey = { timeAndFlags: TimeAndFlags, bool: boolean }
+  export type Node = { name: string, translationKeys: VertexKey[], rotationKeys: RotationKey[], scaleKeys: VertexKey[], morphKeys: MorphKey[], children: Node[] }
+}
 
 export class WDB {
   private _reader: BinaryReader
@@ -94,9 +103,9 @@ export class WDB {
         throw new Error('animations not supported')
       }
       this._reader.readUint32()
-      this._readAnimationTree()
-      const model = this._readRoi(offset, scanned_model_names)
-      this._models.push(model)
+      const animation = this._readAnimationTree()
+      const roi = this._readRoi(offset, scanned_model_names)
+      this._models.push({roi, animation})
       this._reader.seek(offset + texture_info_offset)
       const num_textures = this._reader.readUint32()
       const skip_textures = this._reader.readUint32()
@@ -131,7 +140,7 @@ export class WDB {
     return tex
   }
 
-  private _readRoi = (offset: number, scanned_model_names: Set<string>): Model => {
+  private _readRoi = (offset: number, scanned_model_names: Set<string>): Roi => {
     const model_name = this._readStr()
     if (scanned_model_names.has(model_name)) {
       console.log(`Already scanned model '${model_name}'!`)
@@ -157,7 +166,7 @@ export class WDB {
     } else {
       model_name.replace(/[0-9]+$/, '')
     }
-    const children: Model[] = []
+    const children: Roi[] = []
     const num_rois = this._reader.readUint32()
     for (let i = 0; i < num_rois; i++) {
       children.push(this._readRoi(offset, scanned_model_names))
@@ -199,36 +208,53 @@ export class WDB {
     return decoder.decode(bytes.subarray(0, end))
   }
 
-  private _readVertex = (): [number, number, number] => [-this._reader.readFloat32(), this._reader.readFloat32(), this._reader.readFloat32()]
-  private _readVertices = (count: number): [number, number, number][] => Array.from({ length: count }, () => this._readVertex())
+  private _readVertex = (): Vertex => [-this._reader.readFloat32(), this._reader.readFloat32(), this._reader.readFloat32()]
+  private _readVertices = (count: number): Vertex[] => Array.from({ length: count }, () => this._readVertex())
 
-  private _readAnimationTree = (): void => {
-    this._readStr()
+  private _readTimeAndFlags = (): Animation.TimeAndFlags => {
+    const tf = this._reader.readUint32()
+    const flags = tf >>> 24
+    const time = tf & 0xffffff
+    return { time, flags }
+  }
+
+  private _readAnimationTree = (): Animation.Node => {
+    const name = this._readStr()
+    const translations: Animation.VertexKey[] = []
     const num_translation_keys = this._reader.readUint16()
     for (let i = 0; i < num_translation_keys; i += 1) {
-      const tf = this._reader.readUint32()
-      this._readVertex()
+      const timeAndFlags = this._readTimeAndFlags()
+      const vertex = this._readVertex()
+      translations.push({timeAndFlags, vertex})
     }
+    const rotations: Animation.RotationKey[] = []
     const num_rotation_keys = this._reader.readUint16()
     for (let i = 0; i < num_rotation_keys; i += 1) {
-      this._reader.readUint32()
-      this._reader.readFloat32()
-      this._readVertex()
+      const timeAndFlags = this._readTimeAndFlags()
+      const angle = this._reader.readFloat32()
+      const vertex = this._readVertex()
+      rotations.push({vertexKey: {timeAndFlags, vertex}, angle})
     }
+    const scales: Animation.VertexKey[] = []
     const num_scale_keys = this._reader.readUint16()
     for (let i = 0; i < num_scale_keys; i += 1) {
-      this._reader.readUint32()
-      this._readVertex()
+      const timeAndFlags = this._readTimeAndFlags()
+      const vertex = this._readVertex()
+      scales.push({timeAndFlags, vertex})
     }
+    const morphs: Animation.MorphKey[] = []
     const num_morph_keys = this._reader.readUint16()
     for (let i = 0; i < num_morph_keys; i += 1) {
-      this._reader.readUint32()
-      this._reader.readInt8()
+      const timeAndFlags = this._readTimeAndFlags()
+      const bool = this._reader.readInt8() !== 0
+      morphs.push({timeAndFlags, bool})
     }
+    const children = []
     const num_children = this._reader.readUint32()
     for (let i = 0; i < num_children; i += 1) {
-      this._readAnimationTree()
+      children.push(this._readAnimationTree())
     }
+    return {name, translationKeys: translations, rotationKeys: rotations, scaleKeys: scales, morphKeys: morphs, children}
   }
 
   private _readLod = (): Lod => {
@@ -260,8 +286,8 @@ export class WDB {
         }
         texture_indices = Array.from({ length: num_polys * 3 }, () => this._reader.readUint32())
       }
-      const mesh_vertices: [number, number, number][] = []
-      const mesh_normals: [number, number, number][] = []
+      const mesh_vertices: Vertex[] = []
+      const mesh_normals: Vertex[] = []
       const mesh_uvs: [number, number][] = []
       const indices: number[] = []
       for (let i = 0; i < vertex_indices_packed.length; i += 1) {
