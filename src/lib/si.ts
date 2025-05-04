@@ -5,14 +5,18 @@ const decoder = new TextDecoder('ascii')
 
 export enum SIType {
   Null = -1,
-  Video = 0x03,
-  Sound = 0x04,
-  World = 0x06,
-  Presenter = 0x07,
-  Event = 0x08,
-  Animation = 0x09,
-  Bitmap = 0x0a,
-  Object = 0x0b,
+  Object = 0,
+  Action = 1,
+  MediaAction = 2,
+  Anim = 3,
+  Sound = 4,
+  MultiAction = 5,
+  SerialAction = 6,
+  ParallelAction = 7,
+  Event = 8,
+  SelectAction = 9,
+  Still = 10,
+  ObjectAction = 11,
 }
 
 export enum SIFlags {
@@ -88,21 +92,21 @@ export class SIObject {
 
   get data() {
     if (this._data === null) {
-      throw new Error("Cannot access data from an unfinished SI Object")
+      throw new Error('Cannot access data from an unfinished SI Object')
     }
     return this._data
   }
 
   finish = () => {
     if (this._data !== null) {
-      throw new Error("Cannot finish an already finished SI Object")
+      throw new Error('Cannot finish an already finished SI Object')
     }
     this._data = new Uint8Array(this._dataWriter.buffer)
   }
 
   appendChunk = (data: Uint8Array) => {
     if (this._data !== null) {
-      throw new Error("Cannot append to an already finished SI Object")
+      throw new Error('Cannot append to an already finished SI Object')
     }
     this._dataWriter.writeBytes(data)
   }
@@ -186,7 +190,7 @@ export class SI {
         const name = reader.readString()
         const id = reader.readUint32()
         const flags = reader.readUint32()
-        reader.skip(4)
+        const startTime = reader.readUint32()
         const duration = reader.readUint32()
         const loops = reader.readUint32()
         const coords: number[] = []
@@ -205,7 +209,7 @@ export class SI {
         let filename: string | undefined
         let fileType: SIFileType | undefined
         let volume: number | undefined
-        if (type !== SIType.Presenter && type !== SIType.World && type !== SIType.Animation) {
+        if (type !== SIType.ParallelAction && type !== SIType.SerialAction && type !== SIType.SelectAction) {
           filename = reader.readString()
           reader.skip(12)
           fileType = reader.readUint32() as SIFileType

@@ -309,7 +309,7 @@ export const getMovie = (name: string): { audio: ArrayBuffer; video: Smk } => {
     throw new Error('Audio not found')
   }
 
-  const video = movie.children.find(c => c.type === SIType.Video)
+  const video = movie.children.find(c => c.type === SIType.Anim)
   if (video == null) {
     throw new Error('Video not found')
   }
