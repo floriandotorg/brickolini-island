@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import { boundaryMap, getBoundary, getBuildings, getModelObject } from './assets'
+import { boundaryMap, getBoundary, getBuildings, getDashboard, getModelObject } from './assets'
+import { Dashboard, type Dashboards, dashboardForModel } from './dashboard'
 import { setPosition } from './store'
 
 export const initGame = () => {
@@ -8,7 +9,70 @@ export const initGame = () => {
     throw new Error('Canvas not found')
   }
 
+  const overlay = document.getElementById('overlay-canvas') as HTMLCanvasElement
+  if (canvas == null) {
+    throw new Error('Overlay canvas not found')
+  }
+
+  const overlayContext = overlay.getContext('2d')
+  if (overlayContext == null) {
+    throw new Error('Overlay canvas context not found')
+  }
+
+  const audioContext = new AudioContext()
+
   const resolutionRatio = 4 / 3
+
+  let dashboard: { group: THREE.Group; dashboard: Dashboard } | null = null
+
+  const carsWithDashboard: { group: THREE.Group; dashboard: Dashboards }[] = []
+
+  overlay.addEventListener('mouseup', _ => {
+    if (dashboard) {
+      dashboard.dashboard.mouseUp()
+    }
+  })
+
+  overlay.addEventListener('mousedown', async event => {
+    const x = event.offsetX
+    const y = event.offsetY
+    if (dashboard) {
+      const guessX = (x * overlay.width) / overlay.clientWidth
+      const guessY = (y * overlay.height) / overlay.clientHeight
+      if (dashboard.dashboard.checkClick(guessX, guessY)) {
+        dashboard.group.position.copy(camera.position).sub(new THREE.Vector3(0, CAM_HEIGHT, 0))
+        dashboard.group.quaternion.copy(camera.quaternion)
+        dashboard.group.visible = true
+        dashboard.dashboard.clear()
+        dashboard = null
+      }
+    } else {
+      const relativeX = (event.offsetX / overlay.clientWidth) * 2 - 1
+      const relativeY = -(event.offsetY / overlay.clientHeight) * 2 + 1
+      const raycaster = new THREE.Raycaster()
+      raycaster.setFromCamera(new THREE.Vector2(relativeX, relativeY), camera)
+      const intersects = raycaster.intersectObjects(carsWithDashboard.map(({ group }) => group).filter(group => group.visible))
+      let obj: THREE.Object3D | null = intersects[0]?.object
+      while (obj) {
+        if (obj instanceof THREE.Group) {
+          const hitGroup = carsWithDashboard.find(({ group }) => group === obj) ?? null
+          if (hitGroup) {
+            hitGroup.group.visible = false
+            const dashboardObj = getDashboard(hitGroup.dashboard)
+            dashboard = { dashboard: await Dashboard.create(dashboardObj, overlayContext, audioContext), group: hitGroup.group }
+            dashboard.dashboard.drawBackground()
+            camera.position.copy(hitGroup.group.position)
+            camera.quaternion.copy(hitGroup.group.quaternion)
+            break
+          }
+        }
+        obj = obj.parent
+        if (obj instanceof THREE.Scene) {
+          obj = null
+        }
+      }
+    }
+  })
 
   const setRendererSize = () => {
     const width = Math.floor(window.innerHeight * resolutionRatio)
@@ -43,6 +107,12 @@ export const initGame = () => {
 
       const target = group.position.clone().add(direction)
       group.lookAt(target)
+
+      const modelDashboard = dashboardForModel(buildingData.model_name)
+      if (modelDashboard) {
+        carsWithDashboard.push({ group, dashboard: modelDashboard })
+      }
+
       scene.add(group)
     } catch (e) {
       console.log(`Couldn't place ${buildingData.model_name}: ${e}`)
@@ -258,6 +328,9 @@ export const initGame = () => {
 
     linearVel = calculateNewVel(targetLinearVel, linearVel, linearAccel, delta)
     rotVel = calculateNewVel(targetRotVel, rotVel, rotAccel, delta)
+
+    const vel = linearVel < 0 ? -linearVel : linearVel
+    dashboard?.dashboard.drawMeters(vel / MAX_LINEAR_VEL, 0.5, overlayContext)
 
     camera.rotation.y += THREE.MathUtils.degToRad(rotVel * delta)
     camera.rotation.x = 0

@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { BinaryReader } from './binary-reader'
 import { BinaryWriter } from './binary-writer'
+import type { Dashboards } from './dashboard'
 import { FLC } from './flc'
 import { ISO9660, ISOVariant } from './iso'
 import { SI, type SIObject, SIType } from './si'
@@ -279,6 +280,11 @@ const createWAV = (obj: SIObject): ArrayBuffer => {
   return fileWriter.buffer
 }
 
+export const createAudioBuffer = async (obj: SIObject, audioCtx: AudioContext): Promise<AudioBuffer> => {
+  const wav = createWAV(obj)
+  return await audioCtx.decodeAudioData(wav)
+}
+
 export const getModel = (name: string): Model => {
   if (wdb == null) {
     throw new Error('Assets not initialized')
@@ -403,6 +409,19 @@ export const getTexture = (name: string): Gif => {
     throw new Error('Assets not initialized')
   }
   return wdb.texture_by_name(name)
+}
+
+export const getDashboard = (dashboard: Dashboards): SIObject => {
+  const si = siFiles.get('ISLE.SI')
+  if (si == null) {
+    throw new Error('Assets not initialized')
+  }
+
+  const dashboardObj = si.objects.get(dashboard)
+  if (!dashboardObj) {
+    throw new Error('Dashboard not found')
+  }
+  return dashboardObj
 }
 
 export const getAnimation = (siName: string, name: string): FLC => {
