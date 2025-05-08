@@ -200,12 +200,7 @@ export class WDB {
 
   private _readStr = (): string => {
     const len = this._reader.readUint32()
-    const bytes = this._reader.readBytes(len)
-    let end = bytes.length
-    while (end > 0 && bytes[end - 1] === 0) {
-      end -= 1
-    }
-    return decoder.decode(bytes.subarray(0, end))
+    return this._reader.readString(len)
   }
 
   private _readVertex = (): Vertex => [-this._reader.readFloat32(), this._reader.readFloat32(), this._reader.readFloat32()]

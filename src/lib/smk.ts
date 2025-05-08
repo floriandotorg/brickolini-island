@@ -52,8 +52,7 @@ export class Smk {
     this._reader = reader
 
     // Header --------------------------------------------------
-    const sigBytes = this._reader.readBytes(4)
-    const signature = String.fromCharCode(...sigBytes)
+    const signature = this._reader.readString(4)
     if (signature !== 'SMK2') {
       throw new Error(`Invalid SMK signature: ${signature}`)
     }
