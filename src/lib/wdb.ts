@@ -27,7 +27,7 @@ export type Lod = { meshes: Mesh[] }
 export namespace Animation {
   export type TimeAndFlags = { time: number; flags: number }
   export type VertexKey = { timeAndFlags: TimeAndFlags; vertex: Vertex }
-  export type RotationKey = { vertexKey: VertexKey; angle: number }
+  export type RotationKey = { timeAndFlags: TimeAndFlags; quaternion: [number, number, number, number] }
   export type MorphKey = { timeAndFlags: TimeAndFlags; bool: boolean }
   export type Node = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Node[] }
 }
@@ -231,9 +231,9 @@ export class WDB {
     const num_rotation_keys = this._reader.readUint16()
     for (let i = 0; i < num_rotation_keys; i += 1) {
       const timeAndFlags = this._readTimeAndFlags()
-      const angle = this._reader.readFloat32()
+      const w = this._reader.readFloat32()
       const vertex = this._readVertex()
-      rotations.push({ vertexKey: { timeAndFlags, vertex }, angle })
+      rotations.push({ timeAndFlags, quaternion: [vertex[0], vertex[1], vertex[2], w] })
     }
     const scales: Animation.VertexKey[] = []
     const num_scale_keys = this._reader.readUint16()
