@@ -5,6 +5,10 @@ export type Loading = {
   progress: number
   message: string
 } | null
+export type DebugData = {
+  position: string
+  direction: string
+} | null
 
 export const initStores = () => {
   Alpine.store('state', {
@@ -22,6 +26,6 @@ export const setLoading = (loading: Loading) => {
   ;(Alpine.store('state') as { loading: Loading }).loading = loading
 }
 
-export const setPosition = (position: string) => {
-  ;(Alpine.store('state') as { position: string }).position = position
+export const setPosition = (debug: DebugData) => {
+  ;(Alpine.store('state') as { debug: DebugData }).debug = debug
 }

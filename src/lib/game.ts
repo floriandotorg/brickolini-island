@@ -222,9 +222,9 @@ export const initGame = () => {
       const debugVec = (vec: THREE.Vector3): string => {
         return `x: ${vec.x.toFixed(4)}, y: ${vec.y.toFixed(4)}, z: ${vec.z.toFixed(4)}`
       }
-      setPosition(`position: ${debugVec(camera.position)}`)
+      setPosition({ position: debugVec(camera.position), direction: debugVec(new THREE.Vector3(0, 0, 1).applyEuler(camera.rotation)) })
     } else {
-      setPosition('')
+      setPosition(null)
     }
 
     renderer.render(scene, camera)
