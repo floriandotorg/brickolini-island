@@ -97,14 +97,14 @@ export class SIObject {
     return this._data
   }
 
-  finish = () => {
+  _finish = () => {
     if (this._data !== null) {
       throw new Error('Cannot finish an already finished SI Object')
     }
     this._data = new Uint8Array(this._dataWriter.buffer)
   }
 
-  appendChunk = (data: Uint8Array) => {
+  _appendChunk = (data: Uint8Array) => {
     if (this._data !== null) {
       throw new Error('Cannot append to an already finished SI Object')
     }
@@ -127,7 +127,7 @@ export class SI {
     this.reader = new BinaryReader(buffer)
     this.readChunk()
     for (const obj of this.objects.values()) {
-      obj.finish()
+      obj._finish()
     }
   }
 
@@ -239,7 +239,7 @@ export class SI {
           if (!obj) {
             throw new Error(`Object ${id} not found`)
           }
-          obj.appendChunk(data)
+          obj._appendChunk(data)
           if (this.splitChunkBytesWritten === 0) {
             obj.chunkSizes.push(totalSize)
           }
