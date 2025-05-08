@@ -228,14 +228,14 @@ const getModelObjectBase = (model: Roi, animation: Animation.Node | undefined): 
     }
     if (animation.rotationKeys.length === 1) {
       if (animation.rotationKeys[0].timeAndFlags.time !== 0) {
-        console.log(`Translation key for model ${model.name} has non-zero time of ${animation.rotationKeys[0].timeAndFlags.time}`)
+        console.log(`Rotation key for model ${model.name} has non-zero time of ${animation.rotationKeys[0].timeAndFlags.time}`)
       }
       if (animation.rotationKeys[0].timeAndFlags.flags !== 1) {
-        console.log(`Translation key for model ${model.name} has non-standard flags of ${animation.rotationKeys[0].timeAndFlags.flags}`)
+        console.log(`Rotation key for model ${model.name} has non-standard flags of ${animation.rotationKeys[0].timeAndFlags.flags}`)
       }
       group.quaternion.set(...animation.rotationKeys[0].quaternion)
     } else if (animation.rotationKeys.length > 1) {
-      console.log(`Model ${model.name} has ${animation.rotationKeys.length} translation keys`)
+      console.log(`Model ${model.name} has ${animation.rotationKeys.length} rotation keys`)
     }
     if (animation.scaleKeys.length > 0) {
       console.log(`Model ${model.name} has ${animation.scaleKeys.length} scale keys`)
