@@ -64,27 +64,6 @@ export const initAssets = async (file: File) => {
   setLoading(null)
 }
 
-const parseKeyValueString = (extra: string): Record<string, string> => {
-  if (!extra) return {}
-
-  const result: Record<string, string> = {}
-  const tokens = extra.split(/[,\s\r\n\t]+/)
-
-  for (const token of tokens) {
-    const separatorIndex = token.indexOf(':')
-    if (separatorIndex > 0) {
-      const key = token.substring(0, separatorIndex).trim()
-      const value = token.substring(separatorIndex + 1).trim()
-
-      if (key.length > 0 && value.length > 0) {
-        result[key.toLowerCase()] = value
-      }
-    }
-  }
-
-  return result
-}
-
 export const getBuildings = (): { model_name: string; location: [number, number, number]; direction: [number, number, number] }[] => {
   const si = siFiles.get('ISLE.SI')
   if (!si) {
@@ -100,16 +79,13 @@ export const getBuildings = (): { model_name: string; location: [number, number,
 
   for (const parent of root.children) {
     for (const model of parent.children) {
-      const keyValues = parseKeyValueString(model.extraData)
-      for (const key in keyValues) {
-        if (key === 'db_create') {
-          result.push({
-            model_name: keyValues[key],
-            location: parent.location,
-            direction: parent.direction,
-          })
-          break
-        }
+      const value = model.extraValues.find("db_create")
+      if (value) {
+        result.push({
+          model_name: value,
+          location: parent.location,
+          direction: parent.direction,
+        })
       }
     }
   }

@@ -67,9 +67,20 @@ const TAGS = {
 const HEADER_SIZE = 8
 const CHUNK_HEADER_SIZE = 14
 
+export class ExtraValues {
+  constructor(
+    public values: { key: string, value: string }[]
+  ) {}
+
+  public find = (searchKey: string): string | undefined => {
+    return this.values.find(({key}) => searchKey.toLowerCase() === key.toLowerCase())?.value
+  }
+}
+
 export class SIObject {
   private _data: Uint8Array | null = null
   private _dataWriter: BinaryWriter = new BinaryWriter()
+  private _extraValues: ExtraValues = new ExtraValues([])
 
   constructor(
     public type: SIType,
@@ -97,11 +108,29 @@ export class SIObject {
     return this._data
   }
 
+  get extraValues() {
+    return this._extraValues
+  }
+
   _finish = () => {
     if (this._data !== null) {
       throw new Error('Cannot finish an already finished SI Object')
     }
     this._data = new Uint8Array(this._dataWriter.buffer)
+
+    const tokens = this.extraData.split(/[,\s\r\n\t]+/)
+
+    for (const token of tokens) {
+      const separatorIndex = token.indexOf(':')
+      if (separatorIndex > 0) {
+        const key = token.substring(0, separatorIndex).trim()
+        const value = token.substring(separatorIndex + 1).trim()
+
+        if (key.length > 0 && value.length > 0) {
+          this._extraValues.values.push({ key: key, value})
+        }
+      }
+    }
   }
 
   _appendChunk = (data: Uint8Array) => {
