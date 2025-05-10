@@ -27,11 +27,20 @@ export const initGame = () => {
   const obj = getModelObject('isle_hi')
   scene.add(obj)
 
+  let specialModel = 0
   for (const buildingData of getBuildings()) {
     try {
       const group = getModelObject(buildingData.model_name)
-      group.position.set(-buildingData.location[0], buildingData.location[1], buildingData.location[2])
+      const position = new THREE.Vector3(-buildingData.location[0], buildingData.location[1], buildingData.location[2])
       const direction = new THREE.Vector3(-buildingData.direction[0], buildingData.direction[1], buildingData.direction[2])
+
+      if (position.equals(new THREE.Vector3(0, 0, 0))) {
+        group.position.set(specialModel * 2, 0, 3)
+        specialModel++
+      } else {
+        group.position.copy(position)
+      }
+
       const target = group.position.clone().add(direction);
       group.lookAt(target)
       scene.add(group)
