@@ -221,8 +221,10 @@ export class WDB {
     for (let i = 0; i < num_rotation_keys; i += 1) {
       const timeAndFlags = this._readTimeAndFlags()
       const w = this._reader.readFloat32()
-      const vertex = this._readVertex()
-      rotations.push({ timeAndFlags, quaternion: [vertex[0], vertex[1], vertex[2], w] })
+      const x = -this._reader.readFloat32()
+      const y = this._reader.readFloat32()
+      const z = this._reader.readFloat32()
+      rotations.push({ timeAndFlags, quaternion: [x, y, z, w] })
     }
     const scales: Animation.VertexKey[] = []
     const num_scale_keys = this._reader.readUint16()
