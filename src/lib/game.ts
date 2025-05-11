@@ -41,7 +41,7 @@ export const initGame = () => {
         group.position.copy(position)
       }
 
-      const target = group.position.clone().add(direction);
+      const target = group.position.clone().add(direction)
       group.lookAt(target)
       scene.add(group)
     } catch (e) {

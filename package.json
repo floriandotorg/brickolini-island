@@ -1,26 +1,28 @@
 {
-	"name": "brickolini",
-	"private": true,
-	"version": "0.0.0",
-	"type": "module",
-	"scripts": {
-		"start": "vite dev",
-		"build": "tsc && vite build",
-		"preview": "vite preview",
-		"check": "tsc --noEmit",
-		"lint": "biome check"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
-		"@tailwindcss/vite": "^4.1.4",
-		"@types/alpinejs": "^3.13.11",
-		"@types/three": "^0.176.0",
-		"tailwindcss": "^4.1.4",
-		"typescript": "~5.8.3",
-		"vite": "^6.3.3"
-	},
-	"dependencies": {
-		"alpinejs": "^3.14.9",
-		"three": "^0.176.0"
-	}
+  "name": "brickolini",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "vite dev",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "check": "tsc --noEmit",
+    "lint": "biome check",
+    "lefthook:install": "lefthook install"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@tailwindcss/vite": "^4.1.4",
+    "@types/alpinejs": "^3.13.11",
+    "@types/three": "^0.176.0",
+    "lefthook": "^1.11.12",
+    "tailwindcss": "^4.1.4",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.3"
+  },
+  "dependencies": {
+    "alpinejs": "^3.14.9",
+    "three": "^0.176.0"
+  }
 }

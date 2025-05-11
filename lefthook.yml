@@ -1,0 +1,8 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: lint
+      run: npm run lint -- --write
+      stage_fixed: true
+    - name: check
+      run: npm run check

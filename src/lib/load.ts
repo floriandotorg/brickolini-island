@@ -1,7 +1,7 @@
-import { setMode } from './store'
 import { initAssets } from './assets'
 import { playCutscene } from './cutscene'
 import { initGame } from './game'
+import { setMode } from './store'
 
 export const loadFromISO = async (file: File) => {
   setMode('loading')

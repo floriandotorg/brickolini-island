@@ -1,12 +1,12 @@
-import { type SIObject, SIType, SI } from './si'
-import { ISO9660, ISOVariant } from './iso'
-import { BinaryWriter } from './binary-writer'
-import { Smk } from './smk'
-import { BinaryReader } from './binary-reader'
-import { Shading, WDB, type Gif, type Lod, type Model, type Roi, type Animation } from './wdb'
-import { setLoading } from './store'
-import { FLC } from './flc'
 import * as THREE from 'three'
+import { BinaryReader } from './binary-reader'
+import { BinaryWriter } from './binary-writer'
+import { FLC } from './flc'
+import { ISO9660, ISOVariant } from './iso'
+import { SI, type SIObject, SIType } from './si'
+import { Smk } from './smk'
+import { setLoading } from './store'
+import { type Animation, type Gif, type Lod, type Model, type Roi, Shading, WDB } from './wdb'
 
 const siFiles: Map<string, SI> = new Map()
 let wdb: WDB | null = null
@@ -79,7 +79,7 @@ export const getBuildings = (): { model_name: string; location: [number, number,
 
   for (const parent of root.children) {
     for (const model of parent.children) {
-      const value = model.extraValues.find("db_create")
+      const value = model.extraValues.find('db_create')
       if (value) {
         result.push({
           model_name: value,

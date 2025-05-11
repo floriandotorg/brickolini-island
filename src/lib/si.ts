@@ -68,12 +68,10 @@ const HEADER_SIZE = 8
 const CHUNK_HEADER_SIZE = 14
 
 export class ExtraValues {
-  constructor(
-    public values: { key: string, value: string }[]
-  ) {}
+  constructor(public values: { key: string; value: string }[]) {}
 
   public find = (searchKey: string): string | undefined => {
-    return this.values.find(({key}) => searchKey.toLowerCase() === key.toLowerCase())?.value
+    return this.values.find(({ key }) => searchKey.toLowerCase() === key.toLowerCase())?.value
   }
 }
 
@@ -127,7 +125,7 @@ export class SIObject {
         const value = token.substring(separatorIndex + 1).trim()
 
         if (key.length > 0 && value.length > 0) {
-          this._extraValues.values.push({ key: key, value})
+          this._extraValues.values.push({ key: key, value })
         }
       }
     }

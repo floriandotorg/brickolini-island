@@ -1,7 +1,7 @@
 import './style.css'
 import Alpine from 'alpinejs'
-import { initStores } from './lib/store'
 import { loadFromISO } from './lib/load'
+import { initStores } from './lib/store'
 
 initStores()
 
