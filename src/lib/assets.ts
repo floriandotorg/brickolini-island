@@ -61,7 +61,173 @@ export const initAssets = async (file: File) => {
   await updateLoading(95, 'Loading WDB...')
   wdb = new WDB(iso.open('DATA/disk/LEGO/data/WORLD.WDB'))
 
+  parseBoundaries()
+
   setLoading(null)
+}
+
+type Struct = {
+  name: string
+  flags: number
+}
+
+type Face = {
+  faceIndex: number
+  ccwIndex: number
+  cwIndex: number
+}
+
+type Edge = {
+  flags: number
+  pointA: THREE.Vector3
+  pointB: THREE.Vector3
+  faceA?: Face
+  faceB?: Face
+  unknown: THREE.Vector3
+  unknown2: number
+}
+
+type Trigger = {
+  struct: Struct
+  data: number
+  unknown: number
+}
+
+type Boundary = {
+  edges: Edge[]
+  flags: number
+  unknown: number
+  unknownVec4: THREE.Vector4
+  unknowns: THREE.Vector4[]
+  unknownVec3: THREE.Vector3
+  unknownFloat: number
+  triggers: Trigger[]
+  optionalUnknownVec3?: THREE.Vector3
+}
+
+export const boundaryMap = new Map<string, Map<string, Boundary>>()
+
+export const getBoundary = (name: string, boundaryName: string): Boundary | undefined => {
+  const boundaries = boundaryMap.get(name)
+  if (!boundaries) {
+    return undefined
+  }
+  return boundaries.get(boundaryName)
+}
+
+const parseBoundaries = () => {
+  for (const [name, si] of siFiles.entries()) {
+    for (const obj of si.objects.values()) {
+      if (name !== 'ISLE.SI') {
+        continue
+      }
+
+      if (obj.type === SIType.ObjectAction && obj.presenter === 'LegoPathPresenter') {
+        const reader = new BinaryReader(obj.data.buffer)
+        const numStructs = reader.readUint16()
+        const numNodes = reader.readUint16()
+        const numCtrlEdges = reader.readUint16()
+        const numBoundaries = reader.readUint16()
+
+        const structs: Struct[] = []
+        for (let n = 0; n < numStructs; ++n) {
+          structs.push({ name: reader.readString('u8'), flags: reader.readUint32() })
+        }
+
+        const location = new THREE.Vector3(obj.location[0], obj.location[1], obj.location[2])
+        const nodes: THREE.Vector3[] = []
+        for (let n = 0; n < numNodes; ++n) {
+          nodes.push(new THREE.Vector3(...reader.readVector3()).add(location))
+        }
+
+        const getNode = (index: number) => {
+          if (index >= nodes.length) {
+            throw new Error(`Node index out of bounds: ${index} >= ${nodes.length} (${name})`)
+          }
+          return nodes[index]
+        }
+
+        const edges: Edge[] = []
+        for (let n = 0; n < numCtrlEdges; ++n) {
+          edges.push({
+            flags: reader.readUint16(),
+            pointA: getNode(reader.readUint16()),
+            pointB: getNode(reader.readUint16()),
+            unknown: new THREE.Vector3(),
+            unknown2: 0,
+          })
+
+          if (edges[n].flags & 0x04) {
+            edges[n].faceA = {
+              faceIndex: reader.readUint16(),
+              ccwIndex: reader.readUint16(),
+              cwIndex: reader.readUint16(),
+            }
+          }
+
+          if (edges[n].flags & 0x08) {
+            edges[n].faceB = {
+              faceIndex: reader.readUint16(),
+              ccwIndex: reader.readUint16(),
+              cwIndex: reader.readUint16(),
+            }
+          }
+
+          edges[n].unknown = new THREE.Vector3(...reader.readVector3())
+          edges[n].unknown2 = reader.readFloat32()
+        }
+
+        const boundaries: Map<string, Boundary> = new Map()
+        for (let n = 0; n < numBoundaries; ++n) {
+          const numEdges = reader.readUint8()
+          const boundaryEdges: Edge[] = []
+          for (let n = 0; n < numEdges; ++n) {
+            const idx = reader.readUint16()
+            if (idx >= edges.length) {
+              throw new Error(`Edge index out of bounds: ${idx} >= ${edges.length}`)
+            }
+            boundaryEdges.push(edges[idx])
+          }
+          const flags = reader.readUint8()
+          const unknown = reader.readUint8()
+          const name = reader.readString('u8')
+          const unknownVec4 = new THREE.Vector4(...reader.readVector4()) // unknown
+          const unknowns: THREE.Vector4[] = []
+          for (let n = 0; n < numEdges; ++n) {
+            unknowns.push(new THREE.Vector4(...reader.readVector4()))
+          }
+          const unknownVec3 = new THREE.Vector3(...reader.readVector3()) // unknown
+          const unknownFloat = reader.readFloat32() // unknown
+          const numTriggers = reader.readUint8()
+          let optionalUnknownVec3: THREE.Vector3 | undefined
+          const triggers: Trigger[] = []
+          if (numTriggers > 0) {
+            for (let n = 0; n < numTriggers; ++n) {
+              triggers.push({
+                struct: structs[reader.readUint16()],
+                data: reader.readUint32(),
+                unknown: reader.readFloat32(),
+              })
+            }
+            optionalUnknownVec3 = new THREE.Vector3(...reader.readVector3())
+          }
+          boundaries.set(name, {
+            edges: boundaryEdges,
+            flags,
+            unknown,
+            unknownVec4,
+            unknowns,
+            unknownVec3,
+            unknownFloat,
+            triggers,
+            optionalUnknownVec3,
+          })
+        }
+
+        boundaryMap.set(name, boundaries)
+      }
+    }
+  }
 }
 
 export const getBuildings = (): { model_name: string; location: [number, number, number]; direction: [number, number, number] }[] => {

@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { getBuildings, getModelObject } from './assets'
+import { boundaryMap, getBoundary, getBuildings, getModelObject } from './assets'
 import { setPosition } from './store'
 
 export const initGame = () => {
@@ -46,6 +46,64 @@ export const initGame = () => {
       scene.add(group)
     } catch (e) {
       console.log(`Couldn't place ${buildingData.model_name}: ${e}`)
+    }
+  }
+
+  const debugObjectGroup = new THREE.Group()
+  scene.add(debugObjectGroup)
+
+  const debugDrawArrow = (from: THREE.Vector3, to: THREE.Vector3, color: string) => {
+    const dir = to.clone().sub(from).normalize()
+    const length = from.distanceTo(to)
+    const arrow = new THREE.ArrowHelper(dir, from, length, color)
+    debugObjectGroup.add(arrow)
+  }
+
+  const debugDrawSphere = (position: THREE.Vector3, color: string, radius = 1) => {
+    const sphere = new THREE.SphereGeometry(radius)
+    const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5 })
+    const mesh = new THREE.Mesh(sphere, material)
+    mesh.position.copy(position)
+    debugObjectGroup.add(mesh)
+  }
+
+  const debugDrawText = (position: THREE.Vector3, text: string, color: string) => {
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ color: 0xffffff }))
+    sprite.position.copy(position)
+    sprite.scale.set(2, 1, 1)
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    if (ctx == null) {
+      throw new Error('Context not found')
+    }
+    ctx.font = '20px sans-serif'
+    const metrics = ctx.measureText(text)
+    canvas.width = Math.ceil(metrics.width) + 16
+    canvas.height = 32
+    ctx.fillStyle = color
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(text, 32, 16)
+    const texture = new THREE.CanvasTexture(canvas)
+    sprite.material.map = texture
+    sprite.material.needsUpdate = true
+    debugObjectGroup.add(sprite)
+  }
+
+  // const boundary = getBoundary('ISLE.SI', 'INT43')
+  const allBoundaries = boundaryMap.get('ISLE.SI')
+  if (!allBoundaries) {
+    throw new Error('No boundaries found')
+  }
+  for (const [name, boundary] of allBoundaries.entries()) {
+    if (boundary == null) {
+      throw new Error('Boundary not found')
+    }
+    for (let n = 0; n < boundary.edges.length; ++n) {
+      const edge = boundary.edges[n]
+
+      debugDrawArrow(edge.pointA, edge.pointB, 'red')
+      // debugDrawText(edge.pointA.clone().add(new THREE.Vector3(0, 1 + n * 0.4, 0)), name, 'red')
     }
   }
 
@@ -146,6 +204,7 @@ export const initGame = () => {
 
     if (event.key === 'd') {
       showDebugMenu = !showDebugMenu
+      debugObjectGroup.visible = showDebugMenu
     }
   })
 
