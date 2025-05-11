@@ -214,9 +214,9 @@ export class SI {
         break
       case TAGS.MxOb: {
         const type = reader.readUint16() as SIType
-        const presenter = reader.readString()
+        const presenter = reader.readNullTerminatedString()
         reader.skip(4)
-        const name = reader.readString()
+        const name = reader.readNullTerminatedString()
         const id = reader.readUint32()
         const flags = reader.readUint32()
         const startTime = reader.readUint32()
@@ -239,7 +239,7 @@ export class SI {
         let fileType: SIFileType | undefined
         let volume: number | undefined
         if (type !== SIType.ParallelAction && type !== SIType.SerialAction && type !== SIType.SelectAction) {
-          filename = reader.readString()
+          filename = reader.readNullTerminatedString()
           reader.skip(12)
           fileType = reader.readUint32() as SIFileType
           reader.skip(8)

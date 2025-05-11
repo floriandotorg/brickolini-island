@@ -67,28 +67,26 @@ export class BinaryReader {
     return value
   }
 
-  readString(count?: number) {
-    let bytes: Uint8Array
-    if (count !== undefined) {
-      bytes = this.readBytes(count)
-      for (let idx: number = 0; idx < bytes.length; idx++) {
-        if (bytes[idx] === 0) {
-          bytes = bytes.subarray(0, idx)
-          break
-        }
+  readNullTerminatedString() {
+    const result: number[] = []
+    while (true) {
+      const char = this.readUint8()
+      if (char === 0) {
+        break
       }
-    } else {
-      const result: number[] = []
-      while (true) {
-        const char = this.readUint8()
-        if (char === 0) {
-          break
-        }
-        result.push(char)
-      }
-      bytes = new Uint8Array(result)
+      result.push(char)
     }
-    return decoder.decode(bytes)
+    return decoder.decode(new Uint8Array(result))
+  }
+
+  readString(lengthType: 'u8' | 'u16' | 'u32' = 'u32') {
+    const len = lengthType === 'u8' ? this.readUint8() : lengthType === 'u16' ? this.readUint16() : this.readUint32()
+    const bytes = this.readBytes(len)
+    let end = bytes.length
+    while (end > 0 && bytes[end - 1] === 0) {
+      end -= 1
+    }
+    return decoder.decode(bytes.subarray(0, end))
   }
 
   seek(offset: number) {

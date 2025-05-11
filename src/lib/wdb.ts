@@ -45,20 +45,20 @@ export class WDB {
     const parts_offsets: number[] = []
     const models_offsets: number[] = []
     for (let w = 0; w < num_worlds; w += 1) {
-      const world_name = this._readStr()
+      const world_name = this._reader.readString()
       const num_parts = this._reader.readUint32()
       for (let p = 0; p < num_parts; p += 1) {
-        this._readStr()
+        this._reader.readString()
         const item_size = this._reader.readUint32()
         const offset = this._reader.readUint32()
         parts_offsets.push(offset)
       }
       const num_models = this._reader.readUint32()
       for (let m = 0; m < num_models; m += 1) {
-        this._readStr()
+        this._reader.readString()
         const size = this._reader.readUint32()
         const offset = this._reader.readUint32()
-        this._readStr()
+        this._reader.readString()
         for (let i = 0; i < 9; i += 1) {
           this._reader.readFloat32()
         }
@@ -141,17 +141,16 @@ export class WDB {
   }
 
   private _readRoi = (offset: number, scanned_model_names: Set<string>): Roi => {
-    const model_name = this._readStr()
+    const model_name = this._reader.readString()
     if (scanned_model_names.has(model_name)) {
       console.log(`Already scanned model '${model_name}'!`)
     }
-    console.log(model_name)
     scanned_model_names.add(model_name)
     this._readVertex()
     this._reader.readFloat32()
     this._readVertex()
     this._readVertex()
-    const texture_name = this._readStr()
+    const texture_name = this._reader.readString()
     const defined_elsewhere = this._reader.readInt8()
     const lods: Lod[] = []
     if (defined_elsewhere === 0) {
@@ -175,7 +174,7 @@ export class WDB {
   }
 
   private _readGif = (maybeTitle?: string): Gif => {
-    const title = maybeTitle ?? this._readStr()
+    const title = maybeTitle ?? this._reader.readString()
     const width = this._reader.readUint32()
     const height = this._reader.readUint32()
     const num_colors = this._reader.readUint32()
@@ -198,11 +197,6 @@ export class WDB {
     return { title, width, height, image }
   }
 
-  private _readStr = (): string => {
-    const len = this._reader.readUint32()
-    return this._reader.readString(len)
-  }
-
   private _readVertex = (): Vertex => [-this._reader.readFloat32(), this._reader.readFloat32(), this._reader.readFloat32()]
   private _readVertices = (count: number): Vertex[] => Array.from({ length: count }, () => this._readVertex())
 
@@ -214,7 +208,7 @@ export class WDB {
   }
 
   private _readAnimationTree = (): Animation.Node => {
-    const name = this._readStr()
+    const name = this._reader.readString()
     const translations: Animation.VertexKey[] = []
     const num_translation_keys = this._reader.readUint16()
     for (let i = 0; i < num_translation_keys; i += 1) {
@@ -318,8 +312,8 @@ export class WDB {
       const alpha = 1 - this._reader.readFloat32()
       const shading = this._reader.readInt8()
       this._reader.skip(3)
-      const texture_name = this._readStr()
-      const material_name = this._readStr()
+      const texture_name = this._reader.readString()
+      const material_name = this._reader.readString()
       const color: Color = { red, green, blue, alpha }
       meshes.push({ vertices: mesh_vertices, normals: mesh_normals, uvs: mesh_uvs, indices, color, textureName: texture_name, materialName: material_name, shading })
     }
