@@ -47,3 +47,17 @@ Also, please feel free to open an issue or submit a pull request.
     npm start
     ```
 3.  Open your browser to the specified local address (usually `http://localhost:5173`). 
+
+## Development Tools
+
+### Lefthook
+
+This project uses [Lefthook](https://github.com/evilmartians/lefthook) for managing Git hooks to ensure code quality. Lefthook runs linting and type checking before each commit.
+
+To set up Lefthook:
+
+```bash
+npm run lefthook:install
+```
+
+Once installed, Lefthook will automatically run pre-commit checks to lint and validate your code when you commit changes.
