@@ -1,6 +1,7 @@
 import * as THREE from 'three'
-import { boundaryMap, getBoundary, getBuildings, getDashboard, getModelObject } from './assets'
+import { boundaryMap, getBoundary, getBuildings, getDashboard, getModel, getModelInstanced, getModelObject } from './assets'
 import { Dashboard, type Dashboards, dashboardForModel } from './dashboard'
+import { Plant } from './plant'
 import { setPosition } from './store'
 
 export const initGame = () => {
@@ -287,6 +288,17 @@ export const initGame = () => {
   window.addEventListener('resize', _ => {
     setRendererSize()
   })
+
+  for (const plant of Plant.locationsPerPair()) {
+    const plantName = Plant.modelName(plant.variant, plant.color)
+    if (plantName) {
+      const plantInstance = getModelInstanced(plantName, plant.locations.length)
+      for (const [index, location] of plant.locations.entries()) {
+        plantInstance.setPositionAt(index, new THREE.Vector3(...location))
+      }
+      plantInstance.addTo(scene)
+    }
+  }
 
   const MAX_LINEAR_VEL = 10
   const MAX_ROT_VEL = 80

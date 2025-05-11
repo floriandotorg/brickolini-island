@@ -314,7 +314,8 @@ const createTexture = (image: Gif): THREE.DataTexture => {
   return tex
 }
 
-const addLodObject = (lod: Lod, group: THREE.Group) => {
+const createMeshValues = (lod: Lod): [THREE.BufferGeometry, THREE.Material][] => {
+  const result: [THREE.BufferGeometry, THREE.Material][] = []
   for (const model_mesh of lod.meshes) {
     const vertices: number[] = model_mesh.vertices.flat()
     const indices: number[] = model_mesh.indices
@@ -345,9 +346,9 @@ const addLodObject = (lod: Lod, group: THREE.Group) => {
         material.opacity = model_mesh.color.alpha
       }
     }
-    const mesh = new THREE.Mesh(geometry, material)
-    group.add(mesh)
+    result.push([geometry, material])
   }
+  return result
 }
 
 const getModelObjectBase = (model: Roi, animation: Animation.Node | undefined): THREE.Group => {
@@ -389,7 +390,10 @@ const getModelObjectBase = (model: Roi, animation: Animation.Node | undefined): 
     }
   }
   if (lod) {
-    addLodObject(lod, group)
+    for (const [geometry, material] of createMeshValues(lod)) {
+      const mesh = new THREE.Mesh(geometry, material)
+      group.add(mesh)
+    }
   }
   for (const child of model.children) {
     const childAnimation = animation?.children.find(n => n.name.toLowerCase() === child.name.toLowerCase())
@@ -402,6 +406,58 @@ const getModelObjectBase = (model: Roi, animation: Animation.Node | undefined): 
 export const getModelObject = (name: string): THREE.Group => {
   const model = getModel(name)
   return getModelObjectBase(model.roi, model.animation)
+}
+
+export class InstancedModel {
+  private readonly _meshes: THREE.InstancedMesh[]
+  public readonly group: THREE.Group
+
+  constructor(meshes: THREE.InstancedMesh[]) {
+    if (!meshes) {
+      throw new Error('No meshes provided')
+    }
+    const instanceCount = meshes[0].count
+    for (const mesh of meshes) {
+      if (mesh.count !== instanceCount) {
+        throw new Error(`Not all meshes have the same number of instances (${instanceCount} and ${mesh.count})`)
+      }
+    }
+    this._meshes = meshes
+    this.group = new THREE.Group()
+  }
+
+  public setPositionAt(index: number, position: THREE.Vector3) {
+    const matrix = new THREE.Matrix4()
+    matrix.setPosition(position)
+    for (const mesh of this._meshes) {
+      mesh.setMatrixAt(index, matrix)
+    }
+  }
+
+  public addTo(scene: THREE.Scene) {
+    for (const mesh of this._meshes) {
+      scene.add(mesh)
+    }
+  }
+}
+
+export const getModelInstanced = (name: string, count: number): InstancedModel => {
+  const model = getModel(name)
+  if (model.roi.children.length > 0) {
+    throw new Error('Instanced models do not support children (yet?)')
+  }
+  const lod = model.roi.lods.at(-1)
+  if (!lod) {
+    throw new Error("Couldn't find lod and children")
+  }
+  const meshes: THREE.InstancedMesh[] = []
+  for (const [geometry, material] of createMeshValues(lod)) {
+    const mesh = new THREE.InstancedMesh(geometry, material, count)
+    meshes.push(mesh)
+  }
+  const result = new InstancedModel(meshes)
+  result.group.name = model.roi.name
+  return result
 }
 
 export const getTexture = (name: string): Gif => {
