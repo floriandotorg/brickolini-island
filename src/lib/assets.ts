@@ -118,10 +118,6 @@ export const getBoundary = (name: string, boundaryName: string): Boundary | unde
 const parseBoundaries = () => {
   for (const [name, si] of siFiles.entries()) {
     for (const obj of si.objects.values()) {
-      if (name !== 'ISLE.SI') {
-        continue
-      }
-
       if (obj.type === SIType.ObjectAction && obj.presenter === 'LegoPathPresenter') {
         const reader = new BinaryReader(obj.data.buffer)
         const numStructs = reader.readUint16()
