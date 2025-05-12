@@ -4,6 +4,20 @@ import { Dashboard, type Dashboards, dashboardForModel } from './dashboard'
 import { Plant } from './plant'
 import { setDebugData } from './store'
 
+const calulcateTransformationMatrix = (location: [number, number, number], direction: [number, number, number], up: [number, number, number], matrix?: THREE.Matrix4): THREE.Matrix4 => {
+  const locationVector = new THREE.Vector3(...location)
+  const directionVector = new THREE.Vector3(...direction).normalize()
+  const upVector = new THREE.Vector3(...up).normalize()
+
+  const right = new THREE.Vector3().crossVectors(upVector, directionVector).normalize()
+  const newUp = new THREE.Vector3().crossVectors(directionVector, right).normalize()
+
+  const transformationMatrix = matrix ?? new THREE.Matrix4()
+  transformationMatrix.makeBasis(right, newUp, directionVector)
+  transformationMatrix.setPosition(locationVector)
+  return transformationMatrix
+}
+
 export const initGame = () => {
   const canvas = document.getElementById('game-canvas') as HTMLCanvasElement | null
   if (!canvas) {
@@ -93,22 +107,18 @@ export const initGame = () => {
   const obj = getModelObject('isle_hi')
   scene.add(obj)
 
+  const transformationMatrix = new THREE.Matrix4()
   let specialModel = 0
   for (const buildingData of getBuildings()) {
     try {
       const group = getModelObject(buildingData.model_name)
       const position = new THREE.Vector3(-buildingData.location[0], buildingData.location[1], buildingData.location[2])
-      const direction = new THREE.Vector3(-buildingData.direction[0], buildingData.direction[1], buildingData.direction[2])
-
       if (position.equals(new THREE.Vector3(0, 0, 0))) {
-        group.position.set(specialModel * 2, 0, 3)
+        position.set(specialModel * 2, 0, 3)
         specialModel++
-      } else {
-        group.position.copy(position)
       }
-
-      const target = group.position.clone().add(direction)
-      group.lookAt(target)
+      calulcateTransformationMatrix([position.x, position.y, position.z], [-buildingData.direction[0], buildingData.direction[1], buildingData.direction[2]], [-buildingData.up[0], buildingData.up[1], buildingData.up[2]], transformationMatrix)
+      group.applyMatrix4(transformationMatrix)
 
       const modelDashboard = dashboardForModel(buildingData.model_name)
       if (modelDashboard) {
@@ -118,6 +128,18 @@ export const initGame = () => {
       scene.add(group)
     } catch (e) {
       console.log(`Couldn't place ${buildingData.model_name}: ${e}`)
+    }
+  }
+
+  for (const plant of Plant.locationsPerPair()) {
+    const plantName = Plant.modelName(plant.variant, plant.color)
+    if (plantName) {
+      const plantInstance = getModelInstanced(plantName, plant.locations.length)
+      for (const [index, { location, direction, up }] of plant.locations.entries()) {
+        calulcateTransformationMatrix(location, direction, up, transformationMatrix)
+        plantInstance.setMatrixAt(index, transformationMatrix)
+      }
+      plantInstance.addTo(scene)
     }
   }
 
@@ -308,17 +330,6 @@ export const initGame = () => {
   window.addEventListener('resize', _ => {
     setRendererSize()
   })
-
-  for (const plant of Plant.locationsPerPair()) {
-    const plantName = Plant.modelName(plant.variant, plant.color)
-    if (plantName) {
-      const plantInstance = getModelInstanced(plantName, plant.locations.length)
-      for (const [index, location] of plant.locations.entries()) {
-        plantInstance.setPositionAt(index, new THREE.Vector3(...location))
-      }
-      plantInstance.addTo(scene)
-    }
-  }
 
   const MAX_LINEAR_VEL = 10
   const MAX_ROT_VEL = 80

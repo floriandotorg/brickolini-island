@@ -227,13 +227,13 @@ const parseBoundaries = () => {
   }
 }
 
-export const getBuildings = (): { model_name: string; location: [number, number, number]; direction: [number, number, number] }[] => {
+export const getBuildings = (): { model_name: string; location: [number, number, number]; direction: [number, number, number]; up: [number, number, number] }[] => {
   const si = siFiles.get('ISLE.SI')
   if (!si) {
     throw new Error('Assets not initialized')
   }
 
-  const result: { model_name: string; location: [number, number, number]; direction: [number, number, number] }[] = []
+  const result: { model_name: string; location: [number, number, number]; direction: [number, number, number]; up: [number, number, number] }[] = []
 
   const root = si.objects.get(0)
   if (!root) {
@@ -248,6 +248,7 @@ export const getBuildings = (): { model_name: string; location: [number, number,
           model_name: value,
           location: parent.location,
           direction: parent.direction,
+          up: parent.up,
         })
       }
     }
@@ -426,9 +427,7 @@ export class InstancedModel {
     this.group = new THREE.Group()
   }
 
-  public setPositionAt(index: number, position: THREE.Vector3) {
-    const matrix = new THREE.Matrix4()
-    matrix.setPosition(position)
+  public setMatrixAt(index: number, matrix: THREE.Matrix4) {
     for (const mesh of this._meshes) {
       mesh.setMatrixAt(index, matrix)
     }
