@@ -121,6 +121,7 @@ export const initGame = () => {
   }
 
   const debugObjectGroup = new THREE.Group()
+  debugObjectGroup.visible = import.meta.env.DEV
   scene.add(debugObjectGroup)
 
   const debugDrawArrow = (from: THREE.Vector3, to: THREE.Vector3, color: string) => {
