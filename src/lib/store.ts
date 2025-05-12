@@ -8,6 +8,7 @@ export type Loading = {
 export type DebugData = {
   position: string
   direction: string
+  slewMode: boolean
 } | null
 
 export const initStores = () => {
@@ -26,6 +27,6 @@ export const setLoading = (loading: Loading) => {
   ;(Alpine.store('state') as { loading: Loading }).loading = loading
 }
 
-export const setPosition = (debug: DebugData) => {
+export const setDebugData = (debug: DebugData) => {
   ;(Alpine.store('state') as { debug: DebugData }).debug = debug
 }

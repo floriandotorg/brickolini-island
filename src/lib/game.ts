@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { boundaryMap, getBoundary, getBuildings, getDashboard, getModel, getModelInstanced, getModelObject } from './assets'
 import { Dashboard, type Dashboards, dashboardForModel } from './dashboard'
 import { Plant } from './plant'
-import { setPosition } from './store'
+import { setDebugData } from './store'
 
 export const initGame = () => {
   const canvas = document.getElementById('game-canvas') as HTMLCanvasElement | null
@@ -87,6 +87,7 @@ export const initGame = () => {
 
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(75, resolutionRatio, 0.1, 1000)
+  camera.rotation.order = 'YXZ'
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
   setRendererSize()
   const obj = getModelObject('isle_hi')
@@ -205,7 +206,15 @@ export const initGame = () => {
     ArrowDown: false,
     ArrowLeft: false,
     ArrowRight: false,
+    w: false,
+    s: false,
+    q: false,
+    e: false,
   }
+
+  let slewMode = false
+  let verticalVel = 0
+  let pitchVel = 0
 
   scene.background = new THREE.Color(0.56, 0.54, 0.68)
   const getSkyColor = () => {
@@ -246,6 +255,16 @@ export const initGame = () => {
   document.addEventListener('keydown', event => {
     if (event.key in keyStates) {
       keyStates[event.key as keyof typeof keyStates] = true
+    }
+
+    if (event.key === 'f' && import.meta.env.DEV) {
+      slewMode = !slewMode
+      if (!slewMode) {
+        linearVel = 0
+        rotVel = 0
+        verticalVel = 0
+        pitchVel = 0
+      }
     }
 
     if (event.key === 'c') {
@@ -332,44 +351,83 @@ export const initGame = () => {
     const delta = (now - lastTime) / 1000
     lastTime = now
 
-    const targetLinearVel = keyStates.ArrowUp ? MAX_LINEAR_VEL : keyStates.ArrowDown ? -MAX_LINEAR_VEL : 0
+    const speedMultiplier = slewMode ? 4 : 1
+
+    const targetLinearVel = (keyStates.ArrowUp ? MAX_LINEAR_VEL : keyStates.ArrowDown ? -MAX_LINEAR_VEL : 0) * speedMultiplier
 
     const targetRotVel = keyStates.ArrowLeft ? MAX_ROT_VEL : keyStates.ArrowRight ? -MAX_ROT_VEL : 0
+
+    const targetVerticalVel = slewMode ? (keyStates.q ? MAX_LINEAR_VEL * speedMultiplier : keyStates.e ? -MAX_LINEAR_VEL * speedMultiplier : 0) : 0
+
+    const targetPitchVel = slewMode ? (keyStates.w ? MAX_ROT_VEL : keyStates.s ? -MAX_ROT_VEL : 0) : 0
 
     const linearAccel = targetLinearVel !== 0 ? MAX_LINEAR_ACCEL : MAX_LINEAR_DECEL
     const rotAccel = (targetRotVel !== 0 ? MAX_ROT_ACCEL : MAX_ROT_DECEL) * 40
 
-    linearVel = calculateNewVel(targetLinearVel, linearVel, linearAccel, delta)
-    rotVel = calculateNewVel(targetRotVel, rotVel, rotAccel, delta)
+    const pitchAccel = (targetPitchVel !== 0 ? MAX_ROT_ACCEL : MAX_ROT_DECEL) * 40
+
+    if (slewMode) {
+      linearVel = targetLinearVel
+      rotVel = targetRotVel
+      verticalVel = targetVerticalVel
+      pitchVel = targetPitchVel
+    } else {
+      linearVel = calculateNewVel(targetLinearVel, linearVel, linearAccel, delta)
+      rotVel = calculateNewVel(targetRotVel, rotVel, rotAccel, delta)
+      verticalVel = calculateNewVel(targetVerticalVel, verticalVel, linearAccel, delta)
+      pitchVel = calculateNewVel(targetPitchVel, pitchVel, pitchAccel, delta)
+    }
 
     const vel = linearVel < 0 ? -linearVel : linearVel
-    dashboard?.dashboard.drawMeters(vel / MAX_LINEAR_VEL, 0.5, overlayContext)
+    const maxVelCurrent = MAX_LINEAR_VEL * (slewMode ? 4 : 1)
+    dashboard?.dashboard.drawMeters(vel / maxVelCurrent, 0.5, overlayContext)
 
     camera.rotation.y += THREE.MathUtils.degToRad(rotVel * delta)
-    camera.rotation.x = 0
+    if (slewMode) {
+      camera.rotation.x += THREE.MathUtils.degToRad(pitchVel * delta)
+      if (camera.rotation.x > Math.PI / 2) {
+        camera.rotation.x = Math.PI / 2
+      }
+      if (camera.rotation.x < -Math.PI / 2) {
+        camera.rotation.x = -Math.PI / 2
+      }
+    } else {
+      camera.rotation.x = 0
+    }
     camera.rotation.z = 0
 
     const forward = new THREE.Vector3()
     camera.getWorldDirection(forward)
+    if (slewMode) {
+      forward.y = 0
+      forward.normalize()
+    }
 
     const moveVec = forward.clone().multiplyScalar(linearVel * delta)
+    moveVec.y += verticalVel * delta
     if (moveVec.length() > 0) {
-      const ray = new THREE.Raycaster(camera.position, moveVec.clone().normalize(), 0, moveVec.length() + 0.5)
-      const hit = ray.intersectObject(obj)[0]
-      if (!hit) {
+      if (slewMode) {
         camera.position.add(moveVec)
+      } else {
+        const ray = new THREE.Raycaster(camera.position, moveVec.clone().normalize(), 0, moveVec.length() + 0.5)
+        const hit = ray.intersectObject(obj)[0]
+        if (!hit) {
+          camera.position.add(moveVec)
+        }
       }
     }
 
-    placeCameraOnGround()
+    if (!slewMode) {
+      placeCameraOnGround()
+    }
 
     if (showDebugMenu) {
       const debugVec = (vec: THREE.Vector3): string => {
         return `x: ${vec.x.toFixed(4)}, y: ${vec.y.toFixed(4)}, z: ${vec.z.toFixed(4)}`
       }
-      setPosition({ position: debugVec(camera.position), direction: debugVec(new THREE.Vector3(0, 0, 1).applyEuler(camera.rotation)) })
+      setDebugData({ position: debugVec(camera.position), direction: debugVec(new THREE.Vector3(0, 0, 1).applyEuler(camera.rotation)), slewMode })
     } else {
-      setPosition(null)
+      setDebugData(null)
     }
 
     renderer.render(scene, camera)
