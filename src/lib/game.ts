@@ -131,7 +131,7 @@ export const initGame = () => {
     }
   }
 
-  for (const plant of Plant.locationsPerPair()) {
+  for (const plant of Plant.locationsPerPair(Plant.World.ACT1)) {
     const plantName = Plant.modelName(plant.variant, plant.color)
     if (plantName) {
       const plantInstance = getModelInstanced(plantName, plant.locations.length)
