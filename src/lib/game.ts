@@ -1,6 +1,7 @@
 import * as THREE from 'three'
-import { boundaryMap, getBoundary, getBuildings, getDashboard, getModel, getModelInstanced, getModelObject } from './assets'
+import { boundaryMap, getBoundary, getBuildings, getDashboard, getModel, getModelInstanced, getModelObject, getMusic } from './assets'
 import { Dashboard, type Dashboards, dashboardForModel } from './dashboard'
+import { MusicKeys } from './music'
 import { Plant } from './plant'
 import { setDebugData } from './store'
 
@@ -35,6 +36,9 @@ export const initGame = () => {
   }
 
   const audioContext = new AudioContext()
+
+  let backgroundMusic: { key: MusicKeys; gain: GainNode; audioSource: AudioBufferSourceNode } | null = null
+  let nextBackgroundMusicSwitch = 0
 
   const resolutionRatio = 4 / 3
 
@@ -524,6 +528,49 @@ export const initGame = () => {
       setDebugData({ position: debugVec(camera.position), direction: debugVec(new THREE.Vector3(0, 0, 1).applyEuler(camera.rotation)), slewMode })
     } else {
       setDebugData(null)
+    }
+
+    if (audioContext.currentTime >= nextBackgroundMusicSwitch) {
+      const fadeInTime = 2
+      const fadeOutTime = 2
+      const possibleKeys = [
+        MusicKeys.ResidentalArea_Music,
+        MusicKeys.BeachBlvd_Music,
+        MusicKeys.Cave_Music,
+        MusicKeys.CentralRoads_Music,
+        MusicKeys.Jail_Music,
+        MusicKeys.Hospital_Music,
+        MusicKeys.InformationCenter_Music,
+        MusicKeys.PoliceStation_Music,
+        MusicKeys.Park_Music,
+        MusicKeys.CentralNorthRoad_Music,
+        MusicKeys.GarageArea_Music,
+        MusicKeys.RaceTrackRoad_Music,
+        MusicKeys.Beach_Music,
+        MusicKeys.JetskiRace_Music,
+      ]
+      const nextMusicKeyIndex = Math.floor(Math.random() * (possibleKeys.length + 1))
+      const nextMusicKey = nextMusicKeyIndex < possibleKeys.length ? possibleKeys[nextMusicKeyIndex] : null
+      if (backgroundMusic == null || backgroundMusic.key !== nextMusicKey) {
+        if (backgroundMusic != null) {
+          backgroundMusic.gain.gain.setTargetAtTime(0, audioContext.currentTime, fadeOutTime / 3)
+          backgroundMusic.audioSource.stop(audioContext.currentTime + fadeOutTime)
+          backgroundMusic = null
+        }
+        if (nextMusicKey != null) {
+          const gain = audioContext.createGain()
+          gain.connect(audioContext.destination)
+          gain.gain.value = 0
+          gain.gain.setTargetAtTime(1, audioContext.currentTime, fadeInTime / 3)
+          const audioSource = audioContext.createBufferSource()
+          audioSource.buffer = getMusic(nextMusicKey)
+          audioSource.loop = true
+          audioSource.connect(gain)
+          audioSource.start()
+          backgroundMusic = { key: nextMusicKey, gain, audioSource }
+        }
+      }
+      nextBackgroundMusicSwitch = audioContext.currentTime + 30
     }
 
     renderer.render(scene, camera)
