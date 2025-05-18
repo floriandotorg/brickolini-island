@@ -73,9 +73,9 @@ type Struct = {
 }
 
 type Face = {
-  faceIndex: number
-  ccwIndex: number
-  cwIndex: number
+  faceBoundaryIndex: number
+  ccwEdgeIndex: number
+  cwEdgeIndex: number
 }
 
 type Edge = {
@@ -88,22 +88,22 @@ type Edge = {
   unknown2: number
 }
 
-type Trigger = {
+type PathTrigger = {
   struct: Struct
   data: number
-  unknown: number
+  triggerProjection: number
 }
 
 type Boundary = {
   edges: Edge[]
   flags: number
   unknown: number
-  unknownVec4: THREE.Vector4
-  unknowns: THREE.Vector4[]
+  up: THREE.Vector4
+  planes: THREE.Vector4[]
   unknownVec3: THREE.Vector3
   unknownFloat: number
-  triggers: Trigger[]
-  optionalUnknownVec3?: THREE.Vector3
+  triggers: PathTrigger[]
+  direction?: THREE.Vector3
 }
 
 export const boundaryMap = new Map<string, Map<string, Boundary>>()
@@ -155,19 +155,23 @@ const parseBoundaries = () => {
           })
 
           if (edges[n].flags & 0x04) {
-            edges[n].faceA = {
-              faceIndex: reader.readUint16(),
-              ccwIndex: reader.readUint16(),
-              cwIndex: reader.readUint16(),
+            const face = {
+              faceBoundaryIndex: reader.readUint16(),
+              ccwEdgeIndex: reader.readUint16(),
+              cwEdgeIndex: reader.readUint16(),
             }
+
+            edges[n].faceA = face
           }
 
           if (edges[n].flags & 0x08) {
-            edges[n].faceB = {
-              faceIndex: reader.readUint16(),
-              ccwIndex: reader.readUint16(),
-              cwIndex: reader.readUint16(),
+            const face = {
+              faceBoundaryIndex: reader.readUint16(),
+              ccwEdgeIndex: reader.readUint16(),
+              cwEdgeIndex: reader.readUint16(),
             }
+
+            edges[n].faceB = face
           }
 
           edges[n].unknown = new THREE.Vector3(...reader.readVector3())
@@ -188,7 +192,7 @@ const parseBoundaries = () => {
           const flags = reader.readUint8()
           const unknown = reader.readUint8()
           const name = reader.readString('u8')
-          const unknownVec4 = new THREE.Vector4(...reader.readVector4()) // unknown
+          const up = new THREE.Vector4(...reader.readVector4())
           const unknowns: THREE.Vector4[] = []
           for (let n = 0; n < numEdges; ++n) {
             unknowns.push(new THREE.Vector4(...reader.readVector4()))
@@ -196,28 +200,28 @@ const parseBoundaries = () => {
           const unknownVec3 = new THREE.Vector3(...reader.readVector3()) // unknown
           const unknownFloat = reader.readFloat32() // unknown
           const numTriggers = reader.readUint8()
-          let optionalUnknownVec3: THREE.Vector3 | undefined
-          const triggers: Trigger[] = []
+          let direction: THREE.Vector3 | undefined
+          const triggers: PathTrigger[] = []
           if (numTriggers > 0) {
             for (let n = 0; n < numTriggers; ++n) {
               triggers.push({
                 struct: structs[reader.readUint16()],
                 data: reader.readUint32(),
-                unknown: reader.readFloat32(),
+                triggerProjection: reader.readFloat32(),
               })
             }
-            optionalUnknownVec3 = new THREE.Vector3(...reader.readVector3())
+            direction = new THREE.Vector3(...reader.readVector3())
           }
           boundaries.set(name, {
             edges: boundaryEdges,
             flags,
             unknown,
-            unknownVec4,
-            unknowns,
+            up,
+            planes: unknowns,
             unknownVec3,
             unknownFloat,
             triggers,
-            optionalUnknownVec3,
+            direction,
           })
         }
 

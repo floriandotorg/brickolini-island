@@ -4,7 +4,7 @@ import { Dashboard, type Dashboards, dashboardForModel } from './dashboard'
 import { Plant } from './plant'
 import { setDebugData } from './store'
 
-const calulcateTransformationMatrix = (location: [number, number, number], direction: [number, number, number], up: [number, number, number], matrix?: THREE.Matrix4): THREE.Matrix4 => {
+const calculateTransformationMatrix = (location: [number, number, number], direction: [number, number, number], up: [number, number, number], matrix?: THREE.Matrix4): THREE.Matrix4 => {
   const locationVector = new THREE.Vector3(...location)
   const directionVector = new THREE.Vector3(...direction).normalize()
   const upVector = new THREE.Vector3(...up).normalize()
@@ -107,6 +107,9 @@ export const initGame = () => {
   const obj = getModelObject('isle_hi')
   scene.add(obj)
 
+  const colliderGroup = new THREE.Group()
+  scene.add(colliderGroup)
+
   const transformationMatrix = new THREE.Matrix4()
   let specialModel = 0
   for (const buildingData of getBuildings()) {
@@ -117,7 +120,7 @@ export const initGame = () => {
         position.set(specialModel * 2, 0, 3)
         specialModel++
       }
-      calulcateTransformationMatrix([position.x, position.y, position.z], [-buildingData.direction[0], buildingData.direction[1], buildingData.direction[2]], [-buildingData.up[0], buildingData.up[1], buildingData.up[2]], transformationMatrix)
+      calculateTransformationMatrix([position.x, position.y, position.z], [-buildingData.direction[0], buildingData.direction[1], buildingData.direction[2]], [-buildingData.up[0], buildingData.up[1], buildingData.up[2]], transformationMatrix)
       group.applyMatrix4(transformationMatrix)
 
       const modelDashboard = dashboardForModel(buildingData.model_name)
@@ -136,7 +139,7 @@ export const initGame = () => {
     if (plantName) {
       const plantInstance = getModelInstanced(plantName, plant.locations.length)
       for (const [index, { location, direction, up }] of plant.locations.entries()) {
-        calulcateTransformationMatrix(location, direction, up, transformationMatrix)
+        calculateTransformationMatrix(location, direction, up, transformationMatrix)
         plantInstance.setMatrixAt(index, transformationMatrix)
       }
       plantInstance.addTo(scene)
@@ -159,6 +162,15 @@ export const initGame = () => {
     const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5 })
     const mesh = new THREE.Mesh(sphere, material)
     mesh.position.copy(position)
+    debugObjectGroup.add(mesh)
+  }
+
+  const debugDrawPlane = (anchor: THREE.Vector3, normal: THREE.Vector3, color: string) => {
+    const planeGeometry = new THREE.PlaneGeometry(1, 1)
+    const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5 })
+    const mesh = new THREE.Mesh(planeGeometry, material)
+    mesh.position.copy(anchor)
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal)
     debugObjectGroup.add(mesh)
   }
 
@@ -185,7 +197,6 @@ export const initGame = () => {
     debugObjectGroup.add(sprite)
   }
 
-  // const boundary = getBoundary('ISLE.SI', 'INT43')
   const allBoundaries = boundaryMap.get('ISLE.SI')
   if (!allBoundaries) {
     throw new Error('No boundaries found')
@@ -194,10 +205,55 @@ export const initGame = () => {
     if (boundary == null) {
       throw new Error('Boundary not found')
     }
+
+    if (boundary.triggers.some(trigger => trigger.struct.name[2] === 'M') && boundary.direction != null) {
+      for (const trigger of boundary.triggers) {
+        debugDrawArrow(boundary.edges[0].pointA, boundary.edges[0].pointA.clone().add(boundary.direction.clone().normalize().multiplyScalar(trigger.triggerProjection)), 'yellow')
+      }
+    }
+
     for (let n = 0; n < boundary.edges.length; ++n) {
       const edge = boundary.edges[n]
 
-      debugDrawArrow(edge.pointA, edge.pointB, 'red')
+      debugDrawArrow(edge.pointA, edge.pointB, edge.flags & 0x02 ? 'red' : 'blue')
+
+      if (!(edge.flags & 0x03)) {
+        const p1 = new THREE.Vector3(edge.pointA.x, 0, edge.pointA.z)
+        const p2 = new THREE.Vector3(edge.pointB.x, 0, edge.pointB.z)
+
+        const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5)
+        const dir = new THREE.Vector3().subVectors(p2, p1)
+        const length = dir.length()
+        const angle = Math.atan2(dir.z, dir.x)
+
+        const height = 1000
+
+        const geometry = new THREE.BoxGeometry(length, height, 0.1)
+        const material = new THREE.MeshBasicMaterial({ visible: false })
+        const wall = new THREE.Mesh(geometry, material)
+
+        wall.position.set(mid.x, height / 2, mid.z)
+        wall.rotation.y = -angle
+
+        colliderGroup.add(wall)
+      }
+
+      // console.log(boundary, edge)
+
+      // if (edge.faceA != null && edge.faceA.ccwEdgeIndex < boundary.edges.length) {
+      //   debugDrawArrow(boundary.edges[edge.faceA.ccwEdgeIndex].pointA, boundary.edges[edge.faceA.ccwEdgeIndex].pointB, 'blue')
+      // }
+
+      // if (edge.faceA != null && edge.faceA.cwEdgeIndex < boundary.edges.length) {
+      //   debugDrawArrow(boundary.edges[edge.faceA.cwEdgeIndex].pointA, boundary.edges[edge.faceA.cwEdgeIndex].pointB, 'green')
+      // }
+
+      // if (edge.faceB != null && edge.faceB.ccwEdgeIndex < boundary.edges.length) {
+      //   debugDrawArrow(boundary.edges[edge.faceB.ccwEdgeIndex].pointA, boundary.edges[edge.faceB.ccwEdgeIndex].pointB, 'green')
+      // }
+
+      // debugDrawArrow(edge.pointA, edge.pointB, 'red')
+      // debugDrawArrow(edge.pointA, edge.unknown, 'blue')
       // debugDrawText(edge.pointA.clone().add(new THREE.Vector3(0, 1 + n * 0.4, 0)), name, 'red')
     }
   }
@@ -355,6 +411,36 @@ export const initGame = () => {
     return newVel
   }
 
+  // collide-and-slide helper for smoother movement along obstacles
+  const collideAndSlide = (startPos: THREE.Vector3, moveVec: THREE.Vector3): THREE.Vector3 => {
+    const totalMove = new THREE.Vector3()
+    const remaining = moveVec.clone()
+    const pos = startPos.clone()
+    const MAX_ITERATIONS = 5
+    for (let n = 0; n < MAX_ITERATIONS && remaining.length() > EPSILON; ++n) {
+      const dir = remaining.clone().normalize()
+      const ray = new THREE.Raycaster(pos, dir, 0, remaining.length() + 0.0001)
+      const hit = ray.intersectObjects([...colliderGroup.children])[0]
+      if (!hit) {
+        totalMove.add(remaining)
+        break
+      }
+
+      const dist = Math.max(hit.distance - 0.0001, 0)
+      const moveAllowed = dir.clone().multiplyScalar(dist)
+      totalMove.add(moveAllowed)
+      pos.add(moveAllowed)
+
+      const m3 = new THREE.Matrix3().getNormalMatrix(hit.object.matrixWorld)
+      const normal = hit.face?.normal.clone().applyMatrix3(m3).normalize() ?? new THREE.Vector3()
+
+      remaining.sub(moveAllowed)
+      const projection = remaining.clone().sub(normal.multiplyScalar(remaining.dot(normal)))
+      remaining.copy(projection)
+    }
+    return totalMove
+  }
+
   const animate = () => {
     requestAnimationFrame(animate)
 
@@ -420,10 +506,9 @@ export const initGame = () => {
       if (slewMode) {
         camera.position.add(moveVec)
       } else {
-        const ray = new THREE.Raycaster(camera.position, moveVec.clone().normalize(), 0, moveVec.length() + 0.5)
-        const hit = ray.intersectObject(obj)[0]
-        if (!hit) {
-          camera.position.add(moveVec)
+        const slideMove = collideAndSlide(camera.position, moveVec)
+        if (slideMove.length() > EPSILON) {
+          camera.position.add(slideMove)
         }
       }
     }
