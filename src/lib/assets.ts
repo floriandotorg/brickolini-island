@@ -4,12 +4,14 @@ import { BinaryWriter } from './binary-writer'
 import type { Dashboards } from './dashboard'
 import { FLC } from './flc'
 import { ISO9660, ISOVariant } from './iso'
-import { SI, type SIObject, SIType } from './si'
+import { SI, SIFileType, type SIObject, SIType } from './si'
 import { Smk } from './smk'
 import { setLoading } from './store'
 import { type Animation, type Gif, type Lod, type Model, type Roi, Shading, WDB } from './wdb'
+import { MusicKeys } from './music'
 
 const siFiles: Map<string, SI> = new Map()
+const musicBuffer: Map<MusicKeys, AudioBuffer> = new Map()
 let wdb: WDB | null = null
 
 export const initAssets = async (file: File) => {
@@ -50,14 +52,38 @@ export const initAssets = async (file: File) => {
     'Lego/Scripts/SNDANIM.SI',
     'Lego/Scripts/CREDITS.SI',
   ]
+  const musicBufferPromises: Map<number, Promise<AudioBuffer>> = new Map()
   for (let n = 0; n < filenames.length; n++) {
     const filename = filenames[n].split('/').pop()
     if (filename == null) {
       throw new Error('Filename not found')
     }
-    await updateLoading(5 + (n / filenames.length) * 90, `Loading ${filename}...`)
-    siFiles.set(filename, new SI(iso.open(filenames[n])))
+    await updateLoading(5 + (n / filenames.length) * 85, `Loading ${filename}...`)
+    const si = new SI(iso.open(filenames[n]))
+    siFiles.set(filename, si)
+
+    if (filename === 'JUKEBOX.SI') {
+      const audioCtx = new AudioContext()
+      for (const value of Object.values(MusicKeys)) {
+        if (typeof value === 'number') {
+          const audio = si.objects.get(value)
+          if (audio && audio.fileType === SIFileType.WAV) {
+            const wavFile = createWAV(audio)
+            const buffer = audioCtx.decodeAudioData(wavFile)
+            musicBufferPromises.set(value, buffer)
+          }
+        }
+      }
+    }
   }
+
+  await updateLoading(90, 'Loading Music...')
+  const resolvedBuffers = await Promise.all(musicBufferPromises.values())
+
+  const keys = Array.from(musicBufferPromises.keys())
+  keys.forEach((key, i) => {
+    musicBuffer.set(key, resolvedBuffers[i])
+  })
 
   await updateLoading(95, 'Loading WDB...')
   wdb = new WDB(iso.open('DATA/disk/LEGO/data/WORLD.WDB'))
@@ -481,6 +507,17 @@ export const getDashboard = (dashboard: Dashboards): SIObject => {
     throw new Error('Dashboard not found')
   }
   return dashboardObj
+}
+
+export const getMusic = (music: MusicKeys): AudioBuffer => {
+  if (!musicBuffer) {
+    throw new Error('Assets not initialized')
+  }
+  const audioBuffer = musicBuffer.get(music)
+  if (!audioBuffer) {
+    throw new Error('Audio not found')
+  }
+  return audioBuffer
 }
 
 export const getAnimation = (siName: string, name: string): FLC => {
