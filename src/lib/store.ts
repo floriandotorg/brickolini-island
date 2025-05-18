@@ -15,7 +15,7 @@ export const initStores = () => {
   Alpine.store('state', {
     mode: 'welcome' as Mode,
     loading: null,
-    position: '',
+    debug: null,
   })
 }
 
