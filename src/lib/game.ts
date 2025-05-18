@@ -52,9 +52,9 @@ export const initGame = () => {
     const x = event.offsetX
     const y = event.offsetY
     if (dashboard) {
-      const guessX = (x * overlay.width) / overlay.clientWidth
-      const guessY = (y * overlay.height) / overlay.clientHeight
-      if (dashboard.dashboard.checkClick(guessX, guessY)) {
+      const canvasX = (x * overlay.width) / overlay.clientWidth
+      const canvasY = (y * overlay.height) / overlay.clientHeight
+      if (dashboard.dashboard.checkClick(canvasX, canvasY)) {
         dashboard.group.position.copy(camera.position).sub(new THREE.Vector3(0, CAM_HEIGHT, 0))
         dashboard.group.quaternion.copy(camera.quaternion)
         dashboard.group.visible = true
