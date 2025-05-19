@@ -4,11 +4,11 @@ import { BinaryWriter } from './binary-writer'
 import type { Dashboards } from './dashboard'
 import { FLC } from './flc'
 import { ISO9660, ISOVariant } from './iso'
+import { MusicKeys } from './music'
 import { SI, SIFileType, type SIObject, SIType } from './si'
 import { Smk } from './smk'
 import { setLoading } from './store'
 import { type Animation, type Gif, type Lod, type Model, type Roi, Shading, WDB } from './wdb'
-import { MusicKeys } from './music'
 
 const siFiles: Map<string, SI> = new Map()
 const musicBuffer: Map<MusicKeys, AudioBuffer> = new Map()
@@ -98,20 +98,68 @@ type Struct = {
   flags: number
 }
 
-type Face = {
+type FaceInfo = {
   faceBoundaryIndex: number
   ccwEdgeIndex: number
   cwEdgeIndex: number
 }
 
-type Edge = {
-  flags: number
-  pointA: THREE.Vector3
-  pointB: THREE.Vector3
-  faceA?: Face
-  faceB?: Face
-  unknown: THREE.Vector3
-  unknown2: number
+export class Edge {
+  public flags: number
+  public pointA: THREE.Vector3
+  public pointB: THREE.Vector3
+  public faceInfoA?: FaceInfo
+  public faceInfoB?: FaceInfo
+  public faceA?: Boundary
+  public faceB?: Boundary
+  public ccwEdgeA?: Edge
+  public cwEdgeA?: Edge
+  public ccwEdgeB?: Edge
+  public cwEdgeB?: Edge
+  public direction: THREE.Vector3
+  public unknown2: number
+
+  constructor(flags: number, pointA: THREE.Vector3, pointB: THREE.Vector3, faceInfoA: FaceInfo | undefined, faceInfoB: FaceInfo | undefined, direction: THREE.Vector3, unknown2: number) {
+    this.flags = flags
+    this.pointA = pointA
+    this.pointB = pointB
+    this.faceInfoA = faceInfoA
+    this.faceInfoB = faceInfoB
+    this.direction = direction
+    this.unknown2 = unknown2
+  }
+
+  public getCCWEdge(face: Boundary): Edge | null {
+    if (this.faceA === face) {
+      return this.ccwEdgeA ?? null
+    }
+    if (this.faceB === face) {
+      return this.ccwEdgeB ?? null
+    }
+    return null
+  }
+
+  public connectFaces(edges: Edge[], boundaries: Boundary[]) {
+    if (this.faceInfoA) {
+      this.faceA = boundaries[this.faceInfoA.faceBoundaryIndex]
+      this.ccwEdgeA = edges[this.faceInfoA.ccwEdgeIndex]
+      this.cwEdgeA = edges[this.faceInfoA.cwEdgeIndex]
+
+      if (this.faceA == null || this.ccwEdgeA == null || this.cwEdgeA == null) {
+        throw new Error('Face or edge not found')
+      }
+    }
+
+    if (this.faceInfoB) {
+      this.faceB = boundaries[this.faceInfoB.faceBoundaryIndex]
+      this.ccwEdgeB = edges[this.faceInfoB.ccwEdgeIndex]
+      this.cwEdgeB = edges[this.faceInfoB.cwEdgeIndex]
+
+      if (this.faceB == null || this.ccwEdgeB == null || this.cwEdgeB == null) {
+        throw new Error('Face or edge not found')
+      }
+    }
+  }
 }
 
 type PathTrigger = {
@@ -120,16 +168,28 @@ type PathTrigger = {
   triggerProjection: number
 }
 
-type Boundary = {
-  edges: Edge[]
-  flags: number
-  unknown: number
-  up: THREE.Vector4
-  planes: THREE.Vector4[]
-  unknownVec3: THREE.Vector3
-  unknownFloat: number
-  triggers: PathTrigger[]
-  direction?: THREE.Vector3
+export class Boundary {
+  public edges: Edge[]
+  public flags: number
+  public unknown: number
+  public up: THREE.Vector4
+  public planes: THREE.Vector4[]
+  public unknownVec3: THREE.Vector3
+  public unknownFloat: number
+  public triggers: PathTrigger[]
+  public direction?: THREE.Vector3
+
+  constructor(edges: Edge[], flags: number, unknown: number, up: THREE.Vector4, planes: THREE.Vector4[], unknownVec3: THREE.Vector3, unknownFloat: number, triggers: PathTrigger[], direction?: THREE.Vector3) {
+    this.edges = edges
+    this.flags = flags
+    this.unknown = unknown
+    this.up = up
+    this.planes = planes
+    this.unknownVec3 = unknownVec3
+    this.unknownFloat = unknownFloat
+    this.triggers = triggers
+    this.direction = direction
+  }
 }
 
 export const boundaryMap = new Map<string, Map<string, Boundary>>()
@@ -149,7 +209,7 @@ const parseBoundaries = () => {
         const reader = new BinaryReader(obj.data.buffer)
         const numStructs = reader.readUint16()
         const numNodes = reader.readUint16()
-        const numCtrlEdges = reader.readUint16()
+        const numEdges = reader.readUint16()
         const numBoundaries = reader.readUint16()
 
         const structs: Struct[] = []
@@ -171,40 +231,31 @@ const parseBoundaries = () => {
         }
 
         const edges: Edge[] = []
-        for (let n = 0; n < numCtrlEdges; ++n) {
-          edges.push({
-            flags: reader.readUint16(),
-            pointA: getNode(reader.readUint16()),
-            pointB: getNode(reader.readUint16()),
-            unknown: new THREE.Vector3(),
-            unknown2: 0,
-          })
+        for (let n = 0; n < numEdges; ++n) {
+          edges.push(new Edge(reader.readUint16(), getNode(reader.readUint16()), getNode(reader.readUint16()), undefined, undefined, new THREE.Vector3(), 0))
 
           if (edges[n].flags & 0x04) {
-            const face = {
+            edges[n].faceInfoA = {
               faceBoundaryIndex: reader.readUint16(),
               ccwEdgeIndex: reader.readUint16(),
               cwEdgeIndex: reader.readUint16(),
             }
-
-            edges[n].faceA = face
           }
 
           if (edges[n].flags & 0x08) {
-            const face = {
+            edges[n].faceInfoB = {
               faceBoundaryIndex: reader.readUint16(),
               ccwEdgeIndex: reader.readUint16(),
               cwEdgeIndex: reader.readUint16(),
             }
-
-            edges[n].faceB = face
           }
 
-          edges[n].unknown = new THREE.Vector3(...reader.readVector3())
+          edges[n].direction = new THREE.Vector3(...reader.readVector3())
           edges[n].unknown2 = reader.readFloat32()
         }
 
-        const boundaries: Map<string, Boundary> = new Map()
+        const boundaries: Boundary[] = []
+        const boundariesMap: Map<string, Boundary> = new Map()
         for (let n = 0; n < numBoundaries; ++n) {
           const numEdges = reader.readUint8()
           const boundaryEdges: Edge[] = []
@@ -238,20 +289,18 @@ const parseBoundaries = () => {
             }
             direction = new THREE.Vector3(...reader.readVector3())
           }
-          boundaries.set(name, {
-            edges: boundaryEdges,
-            flags,
-            unknown,
-            up,
-            planes: unknowns,
-            unknownVec3,
-            unknownFloat,
-            triggers,
-            direction,
-          })
+          const boundary = new Boundary(boundaryEdges, flags, unknown, up, unknowns, unknownVec3, unknownFloat, triggers, direction)
+          boundaries.push(boundary)
+          boundariesMap.set(name, boundary)
         }
 
-        boundaryMap.set(name, boundaries)
+        for (const boundary of boundaries) {
+          for (const edge of boundary.edges) {
+            edge.connectFaces(edges, boundaries)
+          }
+        }
+
+        boundaryMap.set(name, boundariesMap)
       }
     }
   }
