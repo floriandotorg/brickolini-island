@@ -222,22 +222,17 @@ export const initGame = () => {
       debugDrawArrow(edge.pointA, edge.pointB, edge.flags & 0x02 ? 'red' : 'blue')
 
       if (!(edge.flags & 0x03)) {
-        const p1 = new THREE.Vector3(edge.pointA.x, 0, edge.pointA.z)
-        const p2 = new THREE.Vector3(edge.pointB.x, 0, edge.pointB.z)
+        const p0 = edge.pointA.clone().sub(new THREE.Vector3(0, 1, 0))
+        const p1 = edge.pointB.clone().sub(new THREE.Vector3(0, 1, 0))
+        const p2 = edge.pointB.clone().add(new THREE.Vector3(0, 2, 0))
+        const p3 = edge.pointA.clone().add(new THREE.Vector3(0, 2, 0))
 
-        const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5)
-        const dir = new THREE.Vector3().subVectors(p2, p1)
-        const length = dir.length()
-        const angle = Math.atan2(dir.z, dir.x)
+        const geometry = new THREE.BufferGeometry()
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, p2.x, p2.y, p2.z, p3.x, p3.y, p3.z, p0.x, p0.y, p0.z]), 3))
+        geometry.computeVertexNormals()
 
-        const height = 1000
-
-        const geometry = new THREE.BoxGeometry(length, height, 0.1)
-        const material = new THREE.MeshBasicMaterial({ visible: false })
+        const material = new THREE.MeshStandardMaterial({ visible: false })
         const wall = new THREE.Mesh(geometry, material)
-
-        wall.position.set(mid.x, height / 2, mid.z)
-        wall.rotation.y = -angle
 
         colliderGroup.add(wall)
       }
@@ -270,7 +265,6 @@ export const initGame = () => {
   scene.add(directionalLight)
 
   const CAM_HEIGHT = 1
-
   const placeCameraOnGround = () => {
     const downRay = new THREE.Raycaster(new THREE.Vector3(camera.position.x, camera.position.y + 50, camera.position.z), new THREE.Vector3(0, -1, 0), 0, 1000)
     const hit = downRay.intersectObject(obj)[0]
@@ -279,7 +273,7 @@ export const initGame = () => {
     }
   }
 
-  camera.position.set(20, 10, 30)
+  camera.position.set(20, CAM_HEIGHT, 30)
   camera.lookAt(60, 0, 0)
   placeCameraOnGround()
 
