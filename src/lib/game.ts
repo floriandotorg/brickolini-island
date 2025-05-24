@@ -114,25 +114,45 @@ export const initGame = () => {
   const colliderGroup = new THREE.Group()
   scene.add(colliderGroup)
 
-  const transformationMatrix = new THREE.Matrix4()
-  let specialModel = 0
+  let transformationMatrix = new THREE.Matrix4()
   for (const buildingData of getBuildings()) {
     try {
-      const group = getModelObject(buildingData.model_name)
-      const position = new THREE.Vector3(-buildingData.location[0], buildingData.location[1], buildingData.location[2])
-      if (position.equals(new THREE.Vector3(0, 0, 0))) {
-        position.set(specialModel * 2, 0, 3)
-        specialModel++
+      const model = getModelObject(buildingData.model_name)
+      console.log(buildingData.model_name)
+      if (buildingData.model_name === 'Bike') {
+        const boundary = getBoundary('ISLE.SI', 'INT44')
+        if (boundary == null) {
+          throw new Error('Boundary not found')
+        }
+        transformationMatrix = boundary.getActorPlacement(2, 0.5, 0, 0.5)
+      } else if (buildingData.model_name === 'MotoBk') {
+        const boundary = getBoundary('ISLE.SI', 'INT43')
+        if (boundary == null) {
+          throw new Error('Boundary not found')
+        }
+        transformationMatrix = boundary.getActorPlacement(4, 0.5, 1, 0.5)
+      } else if (buildingData.model_name === 'skate') {
+        const boundary = getBoundary('ISLE.SI', 'EDG02_84')
+        if (boundary == null) {
+          throw new Error('Boundary not found')
+        }
+        transformationMatrix = boundary.getActorPlacement(4, 0.5, 0, 0.5)
+      } else {
+        const position = new THREE.Vector3(-buildingData.location[0], buildingData.location[1], buildingData.location[2])
+        calculateTransformationMatrix([position.x, position.y, position.z], [-buildingData.direction[0], buildingData.direction[1], buildingData.direction[2]], [-buildingData.up[0], buildingData.up[1], buildingData.up[2]], transformationMatrix)
       }
-      calculateTransformationMatrix([position.x, position.y, position.z], [-buildingData.direction[0], buildingData.direction[1], buildingData.direction[2]], [-buildingData.up[0], buildingData.up[1], buildingData.up[2]], transformationMatrix)
-      group.applyMatrix4(transformationMatrix)
+      model.applyMatrix4(transformationMatrix)
+
+      if (buildingData.model_name === 'skate') {
+        console.log(model.position)
+      }
 
       const modelDashboard = dashboardForModel(buildingData.model_name)
       if (modelDashboard) {
-        carsWithDashboard.push({ group, dashboard: modelDashboard })
+        carsWithDashboard.push({ group: model, dashboard: modelDashboard })
       }
 
-      scene.add(group)
+      scene.add(model)
     } catch (e) {
       console.log(`Couldn't place ${buildingData.model_name}: ${e}`)
     }
