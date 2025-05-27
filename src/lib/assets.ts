@@ -341,13 +341,13 @@ const parseBoundaries = () => {
   }
 }
 
-export const getBuildings = (): { model_name: string; location: [number, number, number]; direction: [number, number, number]; up: [number, number, number] }[] => {
+export const getBuildings = (): { modelName: string; location: [number, number, number]; direction: [number, number, number]; up: [number, number, number] }[] => {
   const si = siFiles.get('ISLE.SI')
   if (!si) {
     throw new Error('Assets not initialized')
   }
 
-  const result: { model_name: string; location: [number, number, number]; direction: [number, number, number]; up: [number, number, number] }[] = []
+  const result: { modelName: string; location: [number, number, number]; direction: [number, number, number]; up: [number, number, number] }[] = []
 
   const root = si.objects.get(0)
   if (!root) {
@@ -359,7 +359,7 @@ export const getBuildings = (): { model_name: string; location: [number, number,
       const value = model.extraValues.find('db_create')
       if (value) {
         result.push({
-          model_name: value,
+          modelName: value,
           location: parent.location,
           direction: parent.direction,
           up: parent.up,
@@ -431,12 +431,12 @@ const createTexture = (image: Gif): THREE.DataTexture => {
 
 const createMeshValues = (lod: Lod): [THREE.BufferGeometry, THREE.Material][] => {
   const result: [THREE.BufferGeometry, THREE.Material][] = []
-  for (const model_mesh of lod.meshes) {
-    const vertices: number[] = model_mesh.vertices.flat()
-    const indices: number[] = model_mesh.indices
-    const uvs: number[] = model_mesh.uvs.flat()
+  for (const modelMesh of lod.meshes) {
+    const vertices: number[] = modelMesh.vertices.flat()
+    const indices: number[] = modelMesh.indices
+    const uvs: number[] = modelMesh.uvs.flat()
     const material = (() => {
-      switch (model_mesh.shading) {
+      switch (modelMesh.shading) {
         case Shading.WireFrame:
           return new THREE.MeshBasicMaterial({ wireframe: true })
         case Shading.Gouraud:
@@ -444,21 +444,21 @@ const createMeshValues = (lod: Lod): [THREE.BufferGeometry, THREE.Material][] =>
         case Shading.Flat:
           return new THREE.MeshLambertMaterial({ flatShading: true })
         default:
-          throw new Error(`Unknown shading: ${model_mesh.shading}`)
+          throw new Error(`Unknown shading: ${modelMesh.shading}`)
       }
     })()
     const geometry = new THREE.BufferGeometry()
     geometry.setIndex(indices)
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
-    geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(model_mesh.normals.flat()), 3))
-    if (model_mesh.textureName) {
-      material.map = createTexture(getTexture(model_mesh.textureName))
+    geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(modelMesh.normals.flat()), 3))
+    if (modelMesh.textureName) {
+      material.map = createTexture(getTexture(modelMesh.textureName))
       geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
     } else {
-      material.color = new THREE.Color(model_mesh.color.red / 255, model_mesh.color.green / 255, model_mesh.color.blue / 255)
-      if (model_mesh.color.alpha < 0.99) {
+      material.color = new THREE.Color(modelMesh.color.red / 255, modelMesh.color.green / 255, modelMesh.color.blue / 255)
+      if (modelMesh.color.alpha < 0.99) {
         material.transparent = true
-        material.opacity = model_mesh.color.alpha
+        material.opacity = modelMesh.color.alpha
       }
     }
     result.push([geometry, material])
@@ -577,7 +577,7 @@ export const getTexture = (name: string): Gif => {
   if (wdb == null) {
     throw new Error('Assets not initialized')
   }
-  return wdb.texture_by_name(name)
+  return wdb.textureByName(name)
 }
 
 export const getDashboard = (dashboard: Dashboards): SIObject => {

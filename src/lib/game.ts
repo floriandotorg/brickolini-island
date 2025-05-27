@@ -117,21 +117,21 @@ export const initGame = () => {
   let transformationMatrix = new THREE.Matrix4()
   for (const buildingData of getBuildings()) {
     try {
-      const model = getModelObject(buildingData.model_name)
-      console.log(buildingData.model_name)
-      if (buildingData.model_name === 'Bike') {
+      const model = getModelObject(buildingData.modelName)
+      console.log(buildingData.modelName)
+      if (buildingData.modelName === 'Bike') {
         const boundary = getBoundary('ISLE.SI', 'INT44')
         if (boundary == null) {
           throw new Error('Boundary not found')
         }
         transformationMatrix = boundary.getActorPlacement(2, 0.5, 0, 0.5)
-      } else if (buildingData.model_name === 'MotoBk') {
+      } else if (buildingData.modelName === 'MotoBk') {
         const boundary = getBoundary('ISLE.SI', 'INT43')
         if (boundary == null) {
           throw new Error('Boundary not found')
         }
         transformationMatrix = boundary.getActorPlacement(4, 0.5, 1, 0.5)
-      } else if (buildingData.model_name === 'skate') {
+      } else if (buildingData.modelName === 'skate') {
         const boundary = getBoundary('ISLE.SI', 'EDG02_84')
         if (boundary == null) {
           throw new Error('Boundary not found')
@@ -143,18 +143,18 @@ export const initGame = () => {
       }
       model.applyMatrix4(transformationMatrix)
 
-      if (buildingData.model_name === 'skate') {
+      if (buildingData.modelName === 'skate') {
         console.log(model.position)
       }
 
-      const modelDashboard = dashboardForModel(buildingData.model_name)
+      const modelDashboard = dashboardForModel(buildingData.modelName)
       if (modelDashboard) {
         carsWithDashboard.push({ group: model, dashboard: modelDashboard })
       }
 
       scene.add(model)
     } catch (e) {
-      console.log(`Couldn't place ${buildingData.model_name}: ${e}`)
+      console.log(`Couldn't place ${buildingData.modelName}: ${e}`)
     }
   }
 
