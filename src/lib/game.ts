@@ -108,8 +108,8 @@ export const initGame = () => {
   camera.rotation.order = 'YXZ'
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
   setRendererSize()
-  const obj = getModelObject('isle_hi')
-  scene.add(obj)
+  const isle = getModelObject('isle_hi')
+  scene.add(isle)
 
   const colliderGroup = new THREE.Group()
   scene.add(colliderGroup)
@@ -286,8 +286,8 @@ export const initGame = () => {
 
   const CAM_HEIGHT = 1
   const placeCameraOnGround = () => {
-    const downRay = new THREE.Raycaster(new THREE.Vector3(camera.position.x, camera.position.y + 50, camera.position.z), new THREE.Vector3(0, -1, 0), 0, 1000)
-    const hit = downRay.intersectObject(obj)[0]
+    const downRay = new THREE.Raycaster(camera.position, new THREE.Vector3(0, -1, 0), 0, 1000)
+    const hit = downRay.intersectObject(isle)[0]
     if (hit) {
       camera.position.copy(hit.point.clone().add(new THREE.Vector3(0, CAM_HEIGHT, 0)))
     }
@@ -360,6 +360,8 @@ export const initGame = () => {
         rotVel = 0
         verticalVel = 0
         pitchVel = 0
+        camera.position.y = 100
+        placeCameraOnGround()
       }
     }
 
