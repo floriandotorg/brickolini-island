@@ -129,14 +129,56 @@ export class Edge {
     this.unknown2 = unknown2
   }
 
-  public getCCWEdge(face: Boundary): Edge | null {
+  public getCWVertex(face: Boundary): THREE.Vector3 {
     if (this.faceA === face) {
-      return this.ccwEdgeA ?? null
+      return this.pointB
     }
     if (this.faceB === face) {
-      return this.ccwEdgeB ?? null
+      return this.pointA
     }
-    return null
+    throw new Error('getCWVertex: Face not found')
+  }
+
+  public getCCWVertex(face: Boundary): THREE.Vector3 {
+    if (this.faceA === face) {
+      return this.pointA
+    }
+    if (this.faceB === face) {
+      return this.pointB
+    }
+    throw new Error('getCCWVertex: Face not found')
+  }
+
+  public getCWEdge(face: Boundary): Edge {
+    if (this.faceA === face) {
+      if (this.cwEdgeA == null) {
+        throw new Error('getCWEdge: cwEdgeA not found')
+      }
+      return this.cwEdgeA
+    }
+    if (this.faceB === face) {
+      if (this.cwEdgeB == null) {
+        throw new Error('getCWEdge: cwEdgeB not found')
+      }
+      return this.cwEdgeB
+    }
+    throw new Error('getCWEdge: Face not found')
+  }
+
+  public getCCWEdge(face: Boundary): Edge {
+    if (this.faceA === face) {
+      if (this.ccwEdgeA == null) {
+        throw new Error('getCCWEdge: ccwEdgeB not found')
+      }
+      return this.ccwEdgeA
+    }
+    if (this.faceB === face) {
+      if (this.ccwEdgeB == null) {
+        throw new Error('getCCWEdge: ccwEdgeA not found')
+      }
+      return this.ccwEdgeB
+    }
+    throw new Error('getCCWEdge: Face not found')
   }
 
   public connectFaces(edges: Edge[], boundaries: Boundary[]) {
@@ -178,6 +220,7 @@ export class Boundary {
   public unknownFloat: number
   public triggers: PathTrigger[]
   public direction?: THREE.Vector3
+  public mesh: THREE.Mesh | null = null
 
   constructor(edges: Edge[], flags: number, unknown: number, up: THREE.Vector4, planes: THREE.Vector4[], unknownVec3: THREE.Vector3, unknownFloat: number, triggers: PathTrigger[], direction?: THREE.Vector3) {
     this.edges = edges
@@ -189,6 +232,41 @@ export class Boundary {
     this.unknownFloat = unknownFloat
     this.triggers = triggers
     this.direction = direction
+    this.mesh = null
+  }
+
+  public createMesh(): THREE.Mesh {
+    if (this.mesh) {
+      return this.mesh
+    }
+
+    if (this.edges.length < 3) {
+      throw new Error('Boundary must have at least 3 edges')
+    }
+
+    const vertices = []
+    const v0 = this.edges[0].getCCWVertex(this).toArray()
+    const seq = [v0]
+    let e = this.edges[0]
+    for (let i = 0; i < this.edges.length - 1; i++) {
+      seq.push(e.getCWVertex(this).toArray())
+      e = e.getCWEdge(this)
+    }
+    for (let i = 1; i < seq.length - 1; i++) {
+      vertices.push(...v0)
+      vertices.push(...seq[i])
+      vertices.push(...seq[i + 1])
+    }
+
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
+    geometry.computeVertexNormals()
+
+    const material = new THREE.MeshLambertMaterial({ color: 0x00ff00, side: THREE.DoubleSide, transparent: true, opacity: 0.5 })
+    this.mesh = new THREE.Mesh(geometry, material)
+    this.mesh.visible = false
+
+    return this.mesh
   }
 
   public getActorPlacement(src: number, srcScale: number, dst: number, dstScale: number): THREE.Matrix4 {

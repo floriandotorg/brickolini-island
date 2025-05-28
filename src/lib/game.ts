@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { boundaryMap, getBoundary, getBuildings, getDashboard, getModel, getModelInstanced, getModelObject, getMusic } from './assets'
+import { type Boundary, type Edge, boundaryMap, getBoundary, getBuildings, getDashboard, getModel, getModelInstanced, getModelObject, getMusic } from './assets'
 import { Dashboard, type Dashboards, dashboardForModel } from './dashboard'
 import { MusicKeys } from './music'
 import { Plant } from './plant'
@@ -38,7 +38,31 @@ export const initGame = () => {
   const audioContext = new AudioContext()
 
   let backgroundMusic: { key: MusicKeys; gain: GainNode; audioSource: AudioBufferSourceNode } | null = null
-  let nextBackgroundMusicSwitch = 0
+  const switchBackgroundMusic = (nextMusicKey: MusicKeys) => {
+    const fadeInTime = 2
+    const fadeOutTime = 2
+    if (backgroundMusic == null || backgroundMusic.key !== nextMusicKey) {
+      if (backgroundMusic != null) {
+        backgroundMusic.gain.gain.setTargetAtTime(0, audioContext.currentTime, fadeOutTime / 3)
+        backgroundMusic.audioSource.stop(audioContext.currentTime + fadeOutTime)
+        backgroundMusic = null
+      }
+      if (nextMusicKey != null) {
+        const gain = audioContext.createGain()
+        gain.connect(audioContext.destination)
+        gain.gain.value = 0
+        gain.gain.setTargetAtTime(1, audioContext.currentTime, fadeInTime / 3)
+        const audioSource = audioContext.createBufferSource()
+        audioSource.buffer = getMusic(nextMusicKey)
+        audioSource.loop = true
+        audioSource.connect(gain)
+        audioSource.start()
+        backgroundMusic = { key: nextMusicKey, gain, audioSource }
+      }
+    }
+  }
+
+  switchBackgroundMusic(MusicKeys.CentralNorthRoad_Music)
 
   const resolutionRatio = 4 / 3
 
@@ -174,28 +198,31 @@ export const initGame = () => {
   debugObjectGroup.visible = import.meta.env.DEV
   scene.add(debugObjectGroup)
 
-  const debugDrawArrow = (from: THREE.Vector3, to: THREE.Vector3, color: string) => {
+  const debugDrawArrow = (from: THREE.Vector3, to: THREE.Vector3, color: string): THREE.ArrowHelper => {
     const dir = to.clone().sub(from).normalize()
     const length = from.distanceTo(to)
     const arrow = new THREE.ArrowHelper(dir, from, length, color)
     debugObjectGroup.add(arrow)
+    return arrow
   }
 
-  const debugDrawSphere = (position: THREE.Vector3, color: string, radius = 1) => {
+  const debugDrawSphere = (position: THREE.Vector3, color: string, radius = 1): THREE.Mesh => {
     const sphere = new THREE.SphereGeometry(radius)
     const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5 })
     const mesh = new THREE.Mesh(sphere, material)
     mesh.position.copy(position)
     debugObjectGroup.add(mesh)
+    return mesh
   }
 
-  const debugDrawPlane = (anchor: THREE.Vector3, normal: THREE.Vector3, color: string) => {
+  const debugDrawPlane = (anchor: THREE.Vector3, normal: THREE.Vector3, color: string): THREE.Mesh => {
     const planeGeometry = new THREE.PlaneGeometry(1, 1)
     const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5 })
     const mesh = new THREE.Mesh(planeGeometry, material)
     mesh.position.copy(anchor)
     mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal)
     debugObjectGroup.add(mesh)
+    return mesh
   }
 
   const debugDrawText = (position: THREE.Vector3, text: string, color: string) => {
@@ -221,6 +248,9 @@ export const initGame = () => {
     debugObjectGroup.add(sprite)
   }
 
+  const boundaryGroup = new THREE.Group()
+  scene.add(boundaryGroup)
+  const meshToBoundary: Map<THREE.Mesh, Boundary> = new Map()
   const allBoundaries = boundaryMap.get('ISLE.SI')
   if (!allBoundaries) {
     throw new Error('No boundaries found')
@@ -230,15 +260,12 @@ export const initGame = () => {
       throw new Error('Boundary not found')
     }
 
-    if (boundary.triggers.some(trigger => trigger.struct.name[2] === 'M') && boundary.direction != null) {
-      for (const trigger of boundary.triggers) {
-        debugDrawArrow(boundary.edges[0].pointA, boundary.edges[0].pointA.clone().add(boundary.direction.clone().normalize().multiplyScalar(trigger.triggerProjection)), 'yellow')
-      }
-    }
+    const mesh = boundary.createMesh()
+    boundaryGroup.add(mesh)
+    meshToBoundary.set(mesh, boundary)
 
     for (let n = 0; n < boundary.edges.length; ++n) {
       const edge = boundary.edges[n]
-
       debugDrawArrow(edge.pointA, edge.pointB, edge.flags & 0x02 ? 'red' : 'blue')
 
       if (!(edge.flags & 0x03)) {
@@ -256,24 +283,6 @@ export const initGame = () => {
 
         colliderGroup.add(wall)
       }
-
-      // console.log(boundary, edge)
-
-      // if (edge.faceA != null && edge.faceA.ccwEdgeIndex < boundary.edges.length) {
-      //   debugDrawArrow(boundary.edges[edge.faceA.ccwEdgeIndex].pointA, boundary.edges[edge.faceA.ccwEdgeIndex].pointB, 'blue')
-      // }
-
-      // if (edge.faceA != null && edge.faceA.cwEdgeIndex < boundary.edges.length) {
-      //   debugDrawArrow(boundary.edges[edge.faceA.cwEdgeIndex].pointA, boundary.edges[edge.faceA.cwEdgeIndex].pointB, 'green')
-      // }
-
-      // if (edge.faceB != null && edge.faceB.ccwEdgeIndex < boundary.edges.length) {
-      //   debugDrawArrow(boundary.edges[edge.faceB.ccwEdgeIndex].pointA, boundary.edges[edge.faceB.ccwEdgeIndex].pointB, 'green')
-      // }
-
-      // debugDrawArrow(edge.pointA, edge.pointB, 'red')
-      // debugDrawArrow(edge.pointA, edge.unknown, 'blue')
-      // debugDrawText(edge.pointA.clone().add(new THREE.Vector3(0, 1 + n * 0.4, 0)), name, 'red')
     }
   }
 
@@ -520,6 +529,8 @@ export const initGame = () => {
       forward.normalize()
     }
 
+    const fromPos = camera.position.clone()
+    let toPos = fromPos.clone()
     const moveVec = forward.clone().multiplyScalar(linearVel * delta)
     moveVec.y += verticalVel * delta
     if (moveVec.length() > 0) {
@@ -529,12 +540,27 @@ export const initGame = () => {
         const slideMove = collideAndSlide(camera.position, moveVec)
         if (slideMove.length() > EPSILON) {
           camera.position.add(slideMove)
+          toPos = camera.position.clone()
         }
       }
     }
 
     if (!slewMode) {
       placeCameraOnGround()
+    }
+
+    let currentBoundary: Boundary | null = null
+    for (const boundary of boundaryGroup.children) {
+      boundary.visible = false
+    }
+    const downRay = new THREE.Raycaster(camera.position, new THREE.Vector3(0, -1, 0), 0, 1000)
+    const hit = downRay.intersectObject(boundaryGroup)[0]
+    if (hit) {
+      currentBoundary = meshToBoundary.get(hit.object as THREE.Mesh) ?? null
+
+      if (showDebugMenu) {
+        hit.object.visible = true
+      }
     }
 
     if (showDebugMenu) {
@@ -546,47 +572,69 @@ export const initGame = () => {
       setDebugData(null)
     }
 
-    if (audioContext.currentTime >= nextBackgroundMusicSwitch) {
-      const fadeInTime = 2
-      const fadeOutTime = 2
-      const possibleKeys = [
-        MusicKeys.ResidentalArea_Music,
-        MusicKeys.BeachBlvd_Music,
-        MusicKeys.Cave_Music,
-        MusicKeys.CentralRoads_Music,
-        MusicKeys.Jail_Music,
-        MusicKeys.Hospital_Music,
-        MusicKeys.InformationCenter_Music,
-        MusicKeys.PoliceStation_Music,
-        MusicKeys.Park_Music,
-        MusicKeys.CentralNorthRoad_Music,
-        MusicKeys.GarageArea_Music,
-        MusicKeys.RaceTrackRoad_Music,
-        MusicKeys.Beach_Music,
-        MusicKeys.JetskiRace_Music,
-      ]
-      const nextMusicKeyIndex = Math.floor(Math.random() * (possibleKeys.length + 1))
-      const nextMusicKey = nextMusicKeyIndex < possibleKeys.length ? possibleKeys[nextMusicKeyIndex] : null
-      if (backgroundMusic == null || backgroundMusic.key !== nextMusicKey) {
-        if (backgroundMusic != null) {
-          backgroundMusic.gain.gain.setTargetAtTime(0, audioContext.currentTime, fadeOutTime / 3)
-          backgroundMusic.audioSource.stop(audioContext.currentTime + fadeOutTime)
-          backgroundMusic = null
+    const music = [
+      MusicKeys.ResidentalArea_Music,
+      MusicKeys.BeachBlvd_Music,
+      MusicKeys.Cave_Music,
+      MusicKeys.CentralRoads_Music,
+      MusicKeys.Jail_Music,
+      MusicKeys.Hospital_Music,
+      MusicKeys.InformationCenter_Music,
+      MusicKeys.PoliceStation_Music,
+      MusicKeys.Park_Music,
+      MusicKeys.CentralNorthRoad_Music,
+      MusicKeys.GarageArea_Music,
+      MusicKeys.RaceTrackRoad_Music,
+      MusicKeys.Beach_Music,
+      MusicKeys.Quiet_Audio,
+    ]
+
+    const triggersReff: [number, number][] = [
+      [11, 10],
+      [6, 10],
+      [3, 1],
+      [4, 1],
+      [1, 4],
+      [1, 4],
+      [13, 2],
+      [13, 2],
+      [13, 2],
+      [4, 10],
+      [11, 9],
+      [9, 7],
+      [8, 7],
+      [8, 5],
+      [5, 2],
+      [2, 4],
+      [4, 2],
+      [4, 5],
+      [11, 4],
+      [12, 10],
+      [10, 12],
+      [10, 12],
+      [14, 2],
+      [14, 2],
+    ]
+
+    if (currentBoundary?.direction != null && currentBoundary.triggers.length > 0) {
+      const ccw = currentBoundary.edges[0].getCCWVertex(currentBoundary)
+
+      const dot1 = fromPos.clone().sub(ccw).dot(currentBoundary.direction)
+      const dot2 = toPos.clone().sub(ccw).dot(currentBoundary.direction)
+
+      for (const trigger of currentBoundary.triggers) {
+        if (trigger.struct.name[2] !== 'M') {
+          continue
         }
-        if (nextMusicKey != null) {
-          const gain = audioContext.createGain()
-          gain.connect(audioContext.destination)
-          gain.gain.value = 0
-          gain.gain.setTargetAtTime(1, audioContext.currentTime, fadeInTime / 3)
-          const audioSource = audioContext.createBufferSource()
-          audioSource.buffer = getMusic(nextMusicKey)
-          audioSource.loop = true
-          audioSource.connect(gain)
-          audioSource.start()
-          backgroundMusic = { key: nextMusicKey, gain, audioSource }
+
+        if (dot2 > dot1 && trigger.triggerProjection >= dot1 && trigger.triggerProjection < dot2) {
+          switchBackgroundMusic(music[triggersReff[trigger.data - 1][0] - 1])
+        }
+
+        if (dot2 < dot1 && trigger.triggerProjection >= dot2 && trigger.triggerProjection < dot1) {
+          switchBackgroundMusic(music[triggersReff[trigger.data - 1][1] - 1])
         }
       }
-      nextBackgroundMusicSwitch = audioContext.currentTime + 30
     }
 
     renderer.render(scene, camera)
