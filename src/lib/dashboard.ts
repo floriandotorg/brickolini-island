@@ -41,7 +41,7 @@ class Color {
     public b: number,
   ) {}
 
-  get magenta(): boolean {
+  get isMagenta(): boolean {
     return this.r === 255 && this.g === 0 && this.b === 255
   }
 }
@@ -66,7 +66,7 @@ class ImageSection {
 
   public color(x: number, y: number): Color | null {
     const position = this.worldToSection(x, y)
-    if (position) {
+    if (position != null) {
       const index = position[0] + position[1] * this.width
       return this.image[index]
     }
@@ -74,21 +74,18 @@ class ImageSection {
   }
 
   public checkClick(x: number, y: number): boolean {
-    return !(this.color(x, y)?.magenta ?? true)
+    return this.color(x, y)?.isMagenta === false
   }
 
-  public draw(ctx: CanvasRenderingContext2D, callback?: (col: number, row: number, color: Color) => Color | null) {
+  public draw(ctx: CanvasRenderingContext2D, overwriteColor?: (col: number, row: number, color: Color) => Color | null) {
     const data = ctx.getImageData(this.x, this.y, this.width, this.height)
     for (let row = 0; row < this.height; row++) {
       for (let col = 0; col < this.width; col++) {
         const srcIndex = row * this.width + col
-        let color: Color | null = this.image[srcIndex]
-        if (callback) {
-          color = callback(col, row, color)
-        }
-        if (color) {
-          const a = color.magenta ? 0x00 : 0xff
-          data.data.set(Uint8Array.of(color.r, color.g, color.b, a), srcIndex * 4)
+        const color = overwriteColor?.(col, row, this.image[srcIndex]) ?? this.image[srcIndex]
+        if (color != null) {
+          const alpha = color.isMagenta ? 0x00 : 0xff
+          data.data.set(Uint8Array.of(color.r, color.g, color.b, alpha), srcIndex * 4)
         }
       }
     }
@@ -159,8 +156,6 @@ const loadBitmapWithColors = (obj: SIObject): { image: ImageSection; colors: Col
   }
 }
 
-const loadBitmap = (obj: SIObject): ImageSection => loadBitmapWithColors(obj).image
-
 const leftToRight = (x: number, _: number, fill: number): boolean => {
   return x < fill
 }
@@ -211,7 +206,7 @@ export class Dashboard {
   private constructor(obj: SIObject, canvasContext: CanvasRenderingContext2D, audioContext: AudioContext, hornSound: AudioBuffer | null, background?: SIObject) {
     // TODO: Determine background object, might not be the first children (e.g. jetskis)
     // TODO: Determine how the other controls are determined
-    this._background = loadBitmap(background ?? obj.children[0])
+    this._background = loadBitmapWithColors(background ?? obj.children[0]).image
     this._canvasContext = canvasContext
     this._audioContext = audioContext
 
@@ -233,13 +228,13 @@ export class Dashboard {
           console.log(`no variable for meter '${child.name}' defined`)
         } else if (variable.endsWith('speed')) {
           if (this._speedMeter) {
-            console.log(`speed meter alread defined, ignoring '${child.name}'`)
+            console.log(`speed meter already defined, ignoring '${child.name}'`)
           } else {
             this._speedMeter = meter
           }
         } else if (variable.endsWith('fuel')) {
           if (this._fuelMeter) {
-            console.log(`fuel meter alread defined, ignoring '${child.name}'`)
+            console.log(`fuel meter already defined, ignoring '${child.name}'`)
           } else {
             this._fuelMeter = meter
           }
@@ -250,8 +245,8 @@ export class Dashboard {
     }
 
     const hornCtl = obj.children.find(child => child.name.toLowerCase().endsWith('horn_ctl'))
-    if (hornCtl) {
-      if (!hornSound) {
+    if (hornCtl != null) {
+      if (hornSound == null) {
         throw new Error('Horn control defined without sound')
       }
       // Horn_Ctl
@@ -259,43 +254,43 @@ export class Dashboard {
       //  - HornDown
       //    - HornDown_Bitmap <!-- pressed image here + location
       const defaultImageObject = hornCtl.children.find(child => child.name.toLowerCase().endsWith('hornup_bitmap'))
-      if (!defaultImageObject) {
+      if (defaultImageObject == null) {
         throw new Error('Default horn bitmap missing')
       }
       const pressedImageObject = hornCtl.children.find(child => child.name.toLowerCase().endsWith('horndown'))?.children.find(child => child.name.toLowerCase().endsWith('horndown_bitmap'))
-      if (!pressedImageObject) {
+      if (pressedImageObject == null) {
         throw new Error('Pressed horn bitmap missing')
       }
       this._hornButton = {
-        image: loadBitmap(defaultImageObject),
-        imagePressed: loadBitmap(pressedImageObject),
+        image: loadBitmapWithColors(defaultImageObject).image,
+        imagePressed: loadBitmapWithColors(pressedImageObject).image,
         sound: hornSound,
         node: null,
         pressed: false,
       }
-    } else if (hornSound) {
+    } else if (hornSound != null) {
       throw new Error('Horn sound defined without control')
     } else {
       this._hornButton = null
     }
     const info = obj.children.find(child => child.name.toLowerCase().endsWith('info_ctl'))?.children[0]
-    this._infoButton = info ? loadBitmap(info) : null
+    this._infoButton = info ? loadBitmapWithColors(info).image : null
     const arms = obj.children.find(child => child.name.toLowerCase().endsWith('arms_ctl'))?.children[0]
-    if (!arms) {
+    if (arms == null) {
       throw new Error('Arms not set')
     }
-    this._arms = loadBitmap(arms)
+    this._arms = loadBitmapWithColors(arms).image
   }
 
   public static async create(obj: SIObject, canvasContext: CanvasRenderingContext2D, audioContext: AudioContext, background?: SIObject): Promise<Dashboard> {
     const hornSound = obj.children.find(child => child.name.toLowerCase().endsWith('horn_sound'))
-    const hornAudioBuffer = hornSound ? await createAudioBuffer(hornSound, audioContext) : null
+    const hornAudioBuffer = hornSound != null ? await createAudioBuffer(hornSound, audioContext) : null
     return new Dashboard(obj, canvasContext, audioContext, hornAudioBuffer, background)
   }
 
   private _drawWithBackground(image: ImageSection) {
     image.draw(this._canvasContext, (col, row, color) => {
-      if (color.magenta) {
+      if (color.isMagenta) {
         const absoluteX = image.x + col
         const absoluteY = image.y + row
         const backgroundColor = this._background.color(absoluteX, absoluteY)
@@ -308,7 +303,7 @@ export class Dashboard {
   }
 
   public mouseUp() {
-    if (this._hornButton) {
+    if (this._hornButton != null) {
       this._hornButton.pressed = false
       this.drawBackground()
     }
@@ -317,9 +312,9 @@ export class Dashboard {
   public checkClick(x: number, y: number): boolean {
     const pixelX = Math.round(x)
     const pixelY = Math.round(y)
-    if (this._hornButton?.image.checkClick(pixelX, pixelY)) {
+    if (this._hornButton?.image.checkClick(pixelX, pixelY) === true) {
       console.log('honk')
-      if (!this._hornButton.node) {
+      if (this._hornButton.node == null) {
         this._hornButton.node = this._audioContext.createBufferSource()
         this._hornButton.node.buffer = this._hornButton.sound
         this._hornButton.node.connect(this._audioContext.destination)
@@ -334,7 +329,7 @@ export class Dashboard {
       this.drawBackground()
       return false
     }
-    if (this._infoButton?.checkClick(pixelX, pixelY)) {
+    if (this._infoButton?.checkClick(pixelX, pixelY) === true) {
       console.log('info')
       return false
     }
@@ -349,7 +344,7 @@ export class Dashboard {
   public drawBackground() {
     this.clear()
     this._background.draw(this._canvasContext)
-    if (this._hornButton) {
+    if (this._hornButton != null) {
       this._drawWithBackground(this._hornButton.pressed ? this._hornButton.imagePressed : this._hornButton.image)
     }
   }
@@ -360,7 +355,7 @@ export class Dashboard {
 
   private _drawMeter(meter: Meter, ctx: CanvasRenderingContext2D, fill: number) {
     meter.image.draw(ctx, (col, row, color) => {
-      if (!color.magenta) {
+      if (!color.isMagenta) {
         const x = col / meter.image.width
         const y = row / meter.image.height
         if (meter.direction(x, y, fill)) {

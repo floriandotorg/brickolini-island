@@ -14,5 +14,5 @@ export const loadFromISO = async (file: File) => {
   }
 
   setMode('in-game')
-  initGame()
+  await initGame()
 }

@@ -19,20 +19,10 @@ const calculateTransformationMatrix = (location: [number, number, number], direc
   return transformationMatrix
 }
 
-export const initGame = () => {
+export const initGame = async () => {
   const canvas = document.getElementById('game-canvas') as HTMLCanvasElement | null
   if (!canvas) {
     throw new Error('Canvas not found')
-  }
-
-  const overlay = document.getElementById('overlay-canvas') as HTMLCanvasElement
-  if (canvas == null) {
-    throw new Error('Overlay canvas not found')
-  }
-
-  const overlayContext = overlay.getContext('2d')
-  if (overlayContext == null) {
-    throw new Error('Overlay canvas context not found')
   }
 
   const audioContext = new AudioContext()
@@ -66,22 +56,41 @@ export const initGame = () => {
 
   const resolutionRatio = 4 / 3
 
+  const hudCanvas = document.createElement('canvas')
+  hudCanvas.width = 640
+  hudCanvas.height = 480
+  const hudContext = hudCanvas.getContext('2d')
+  if (hudContext == null) {
+    throw new Error('HUD canvas context not found')
+  }
+  const hudScene = new THREE.Scene()
+  const hudTexture = new THREE.CanvasTexture(hudCanvas)
+  hudTexture.colorSpace = THREE.SRGBColorSpace
+  const hudMaterial = new THREE.MeshBasicMaterial({ map: hudTexture, transparent: true })
+  const hudMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), hudMaterial)
+  hudMesh.position.z = -1
+  const hudCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10)
+  hudScene.add(hudMesh)
+
   let dashboard: { group: THREE.Group; dashboard: Dashboard } | null = null
 
   const carsWithDashboard: { group: THREE.Group; dashboard: Dashboards }[] = []
 
-  overlay.addEventListener('mouseup', _ => {
+  document.addEventListener('mouseup', event => {
+    event.preventDefault()
+
     if (dashboard) {
       dashboard.dashboard.mouseUp()
     }
   })
 
-  overlay.addEventListener('mousedown', async event => {
-    const x = event.offsetX
-    const y = event.offsetY
-    if (dashboard) {
-      const canvasX = (x * overlay.width) / overlay.clientWidth
-      const canvasY = (y * overlay.height) / overlay.clientHeight
+  document.addEventListener('mousedown', async event => {
+    event.preventDefault()
+
+    if (dashboard != null) {
+      const rect = canvas.getBoundingClientRect()
+      const canvasX = ((event.clientX - rect.left) * hudCanvas.width) / rect.width
+      const canvasY = ((event.clientY - rect.top) * hudCanvas.height) / rect.height
       if (dashboard.dashboard.checkClick(canvasX, canvasY)) {
         dashboard.group.position.copy(camera.position).sub(new THREE.Vector3(0, CAM_HEIGHT, 0))
         dashboard.group.quaternion.copy(camera.quaternion)
@@ -90,22 +99,24 @@ export const initGame = () => {
         dashboard = null
       }
     } else {
-      const relativeX = (event.offsetX / overlay.clientWidth) * 2 - 1
-      const relativeY = -(event.offsetY / overlay.clientHeight) * 2 + 1
+      const relativeX = (event.clientX / window.innerWidth) * 2 - 1
+      const relativeY = -(event.clientY / window.innerHeight) * 2 + 1
       const raycaster = new THREE.Raycaster()
       raycaster.setFromCamera(new THREE.Vector2(relativeX, relativeY), camera)
       const intersects = raycaster.intersectObjects(carsWithDashboard.map(({ group }) => group).filter(group => group.visible))
       let obj: THREE.Object3D | null = intersects[0]?.object
-      while (obj) {
+      while (obj != null) {
         if (obj instanceof THREE.Group) {
           const hitGroup = carsWithDashboard.find(({ group }) => group === obj) ?? null
           if (hitGroup) {
             hitGroup.group.visible = false
             const dashboardObj = getDashboard(hitGroup.dashboard)
-            dashboard = { dashboard: await Dashboard.create(dashboardObj, overlayContext, audioContext), group: hitGroup.group }
+            dashboard = { dashboard: await Dashboard.create(dashboardObj, hudContext, audioContext), group: hitGroup.group }
             dashboard.dashboard.drawBackground()
-            camera.position.copy(hitGroup.group.position)
+            hudTexture.needsUpdate = true
+            camera.position.copy(hitGroup.group.position.clone().add(new THREE.Vector3(0, 1, 0)))
             camera.quaternion.copy(hitGroup.group.quaternion)
+            placeCameraOnGround()
             break
           }
         }
@@ -131,6 +142,8 @@ export const initGame = () => {
   const camera = new THREE.PerspectiveCamera(75, resolutionRatio, 0.1, 1000)
   camera.rotation.order = 'YXZ'
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
+  renderer.autoClear = false
+  renderer.toneMapping = THREE.NoToneMapping
   setRendererSize()
   const isle = getModelObject('isle_hi')
   scene.add(isle)
@@ -166,10 +179,6 @@ export const initGame = () => {
         calculateTransformationMatrix([position.x, position.y, position.z], [-buildingData.direction[0], buildingData.direction[1], buildingData.direction[2]], [-buildingData.up[0], buildingData.up[1], buildingData.up[2]], transformationMatrix)
       }
       model.applyMatrix4(transformationMatrix)
-
-      if (buildingData.modelName === 'skate') {
-        console.log(model.position)
-      }
 
       const modelDashboard = dashboardForModel(buildingData.modelName)
       if (modelDashboard) {
@@ -506,7 +515,8 @@ export const initGame = () => {
 
     const vel = linearVel < 0 ? -linearVel : linearVel
     const maxVelCurrent = MAX_LINEAR_VEL * (slewMode ? 4 : 1)
-    dashboard?.dashboard.drawMeters(vel / maxVelCurrent, 0.5, overlayContext)
+    dashboard?.dashboard.drawMeters(vel / maxVelCurrent, 0.5, hudContext)
+    hudTexture.needsUpdate = true
 
     camera.rotation.y += THREE.MathUtils.degToRad(rotVel * delta)
     if (slewMode) {
@@ -637,7 +647,9 @@ export const initGame = () => {
       }
     }
 
+    renderer.clear()
     renderer.render(scene, camera)
+    renderer.render(hudScene, hudCamera)
   }
 
   animate()
