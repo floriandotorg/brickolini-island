@@ -14,6 +14,31 @@ const siFiles: Map<string, SI> = new Map()
 const musicBuffer: Map<MusicKeys, AudioBuffer> = new Map()
 let wdb: WDB | null = null
 
+const downloadHighQualityMusic = async () => {
+  const musicFiles = new Map<MusicKeys, string>([
+    [MusicKeys.ResidentalArea_Music, 'https://lego-island.b-cdn.net/Fanfare%20Theme.m4a'],
+    [MusicKeys.Jail_Music, 'https://lego-island.b-cdn.net/Jail%20Theme.m4a'],
+    [MusicKeys.InformationCenter_Music, 'https://lego-island.b-cdn.net/Information%20Center.m4a'],
+    [MusicKeys.PoliceStation_Music, 'https://lego-island.b-cdn.net/Police%20Station.m4a'],
+    [MusicKeys.Cave_Music, 'https://lego-island.b-cdn.net/Cave%20Theme.m4a'],
+    [MusicKeys.Act2Cave, 'https://lego-island.b-cdn.net/Cave%20Theme.m4a'],
+    [MusicKeys.CentralRoads_Music, 'https://lego-island.b-cdn.net/Happy%20Roaming.m4a'],
+    [MusicKeys.Park_Music, 'https://lego-island.b-cdn.net/Park%20Theme.m4a'],
+    [MusicKeys.RaceTrackRoad_Music, 'https://lego-island.b-cdn.net/The%20Race.m4a'],
+    [MusicKeys.BrickstrChase, 'https://lego-island.b-cdn.net/Chase%20Theme.m4a'],
+    [MusicKeys.BrickHunt, 'https://lego-island.b-cdn.net/Chasing%20the%20Brickster.m4a'],
+    [MusicKeys.BeachBlvd_Music, 'https://lego-island.b-cdn.net/LEGO%20Island%20Theme-01.m4a'],
+  ])
+  for (const [key, url] of musicFiles.entries()) {
+    const response = await fetch(url)
+    const arrayBuffer = await response.arrayBuffer()
+    const audioCtx = new AudioContext()
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
+    musicBuffer.set(key, audioBuffer)
+    console.log(`Downloaded high-quality music for ${MusicKeys[key]}`)
+  }
+}
+
 export const initAssets = async (file: File) => {
   const updateLoading = async (progress: number, message: string) => {
     setLoading({ progress, message })
@@ -84,6 +109,8 @@ export const initAssets = async (file: File) => {
   keys.forEach((key, i) => {
     musicBuffer.set(key, resolvedBuffers[i])
   })
+
+  void downloadHighQualityMusic()
 
   await updateLoading(95, 'Loading WDB...')
   wdb = new WDB(iso.open('DATA/disk/LEGO/data/WORLD.WDB'))
@@ -672,9 +699,6 @@ export const getDashboard = (dashboard: Dashboards): SIObject => {
 }
 
 export const getMusic = (music: MusicKeys): AudioBuffer => {
-  if (!musicBuffer) {
-    throw new Error('Assets not initialized')
-  }
   const audioBuffer = musicBuffer.get(music)
   if (!audioBuffer) {
     throw new Error('Audio not found')
