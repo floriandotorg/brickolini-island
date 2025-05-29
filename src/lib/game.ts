@@ -232,6 +232,10 @@ export const initGame = async () => {
     }
   }
 
+  const bugy = getModelObject('dunebugy')
+  bugy.position.set(-25.5, 0, -3.4)
+  scene.add(bugy)
+
   for (const plant of Plant.locationsPerPair(Plant.World.ACT1)) {
     const plantName = Plant.modelName(plant.variant, plant.color)
     if (plantName) {

@@ -17,6 +17,7 @@ export type Mesh = {
   uvs: [number, number][]
   indices: number[]
   color: Color
+  useColorAlias: boolean
   textureName: string
   materialName: string
   shading: Shading
@@ -313,11 +314,12 @@ export class WDB {
       const blue = this._reader.readUint8()
       const alpha = 1 - this._reader.readFloat32()
       const shading = this._reader.readInt8()
-      this._reader.skip(3)
+      this._reader.skip(2)
+      const useColorAlias = this._reader.readUint8() !== 0
       const textureName = this._reader.readString()
       const materialName = this._reader.readString()
       const color: Color = { red, green, blue, alpha }
-      meshes.push({ vertices: meshVertices, normals: meshNormals, uvs: meshUvs, indices, color, textureName: textureName, materialName: materialName, shading })
+      meshes.push({ vertices: meshVertices, normals: meshNormals, uvs: meshUvs, indices, color, useColorAlias, textureName: textureName, materialName: materialName, shading })
     }
     return { meshes }
   }

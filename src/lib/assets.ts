@@ -8,7 +8,7 @@ import { MusicKeys } from './music'
 import { SI, SIFileType, type SIObject, SIType } from './si'
 import { Smk } from './smk'
 import { setLoading } from './store'
-import { type Animation, type Gif, type Lod, type Model, type Roi, Shading, WDB } from './wdb'
+import { type Animation, type Color, type Gif, type Lod, type Model, type Roi, Shading, WDB } from './wdb'
 
 const siFiles: Map<string, SI> = new Map()
 const musicBuffer: Map<MusicKeys, AudioBuffer> = new Map()
@@ -534,7 +534,21 @@ const createTexture = (image: Gif): THREE.DataTexture => {
   return tex
 }
 
-const createMeshValues = (lod: Lod): [THREE.BufferGeometry, THREE.Material][] => {
+const colorFromName = (name: string): Color | null => {
+  if (name.length > 0 && (name.toLowerCase().startsWith('indir-f-') || name.toLowerCase().startsWith('indir-g-'))) {
+    const variableName = `c_${name.substring('indir-f-'.length)}`.toLowerCase()
+    const variableValue = variableTable[variableName].toLowerCase()
+    if (variableValue != null) {
+      const aliasedColor = colorAliases[variableValue]
+      if (aliasedColor != null) {
+        return aliasedColor
+      }
+    }
+  }
+  return null
+}
+
+const createMeshValues = (lod: Lod, customColor: Color | null): [THREE.BufferGeometry, THREE.Material][] => {
   const result: [THREE.BufferGeometry, THREE.Material][] = []
   for (const modelMesh of lod.meshes) {
     const vertices: number[] = modelMesh.vertices.flat()
@@ -560,15 +574,87 @@ const createMeshValues = (lod: Lod): [THREE.BufferGeometry, THREE.Material][] =>
       material.map = createTexture(getTexture(modelMesh.textureName))
       geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
     } else {
-      material.color = new THREE.Color(modelMesh.color.red / 255, modelMesh.color.green / 255, modelMesh.color.blue / 255)
-      if (modelMesh.color.alpha < 0.99) {
+      const color = customColor ?? colorFromName(modelMesh.materialName) ?? modelMesh.color
+      material.color = new THREE.Color(color.red / 255, color.green / 255, color.blue / 255)
+      if (color.alpha < 0.99) {
         material.transparent = true
-        material.opacity = modelMesh.color.alpha
+        material.opacity = color.alpha
       }
     }
     result.push([geometry, material])
   }
   return result
+}
+
+const colorAliases: Record<string, Color> = {
+  'lego black': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
+  'lego black f': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
+  'lego black flat': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
+  'lego blue': { red: 0x00, green: 0x54, blue: 0x8c, alpha: 1 },
+  'lego blue flat': { red: 0x00, green: 0x54, blue: 0x8c, alpha: 1 },
+  'lego brown': { red: 0x4a, green: 0x23, blue: 0x1a, alpha: 1 },
+  'lego brown flt': { red: 0x4a, green: 0x23, blue: 0x1a, alpha: 1 },
+  'lego brown flat': { red: 0x4a, green: 0x23, blue: 0x1a, alpha: 1 },
+  'lego drk grey': { red: 0x40, green: 0x40, blue: 0x40, alpha: 1 },
+  'lego drk grey flt': { red: 0x40, green: 0x40, blue: 0x40, alpha: 1 },
+  'lego dk grey flt': { red: 0x40, green: 0x40, blue: 0x40, alpha: 1 },
+  'lego green': { red: 0x00, green: 0x78, blue: 0x2d, alpha: 1 },
+  'lego green flat': { red: 0x00, green: 0x78, blue: 0x2d, alpha: 1 },
+  'lego lt grey': { red: 0x82, green: 0x82, blue: 0x82, alpha: 1 },
+  'lego lt grey flt': { red: 0x82, green: 0x82, blue: 0x82, alpha: 1 },
+  'lego lt grey fla': { red: 0x82, green: 0x82, blue: 0x82, alpha: 1 },
+  'lego red': { red: 0xcb, green: 0x12, blue: 0x20, alpha: 1 },
+  'lego red flat': { red: 0xcb, green: 0x12, blue: 0x20, alpha: 1 },
+  'lego white': { red: 0xfa, green: 0xfa, blue: 0xfa, alpha: 1 },
+  'lego white flat': { red: 0xfa, green: 0xfa, blue: 0xfa, alpha: 1 },
+  'lego yellow': { red: 0xff, green: 0xb9, blue: 0x00, alpha: 1 },
+  'lego yellow flat': { red: 0xff, green: 0xb9, blue: 0x00, alpha: 1 },
+}
+
+const variableTable: Record<string, string> = {
+  c_dbbkfny0: 'lego red', // dunebuggy back fender
+  c_dbbkxly0: 'lego white', // dunebuggy back axle
+  c_chbasey0: 'lego black', // copter base
+  c_chbacky0: 'lego black', // copter back
+  c_chdishy0: 'lego white', // copter dish
+  c_chhorny0: 'lego black', // copter horn
+  c_chljety1: 'lego black', // copter left jet
+  c_chrjety1: 'lego black', // copter right jet
+  c_chmidly0: 'lego black', // copter middle
+  c_chmotry0: 'lego blue', // copter motor
+  c_chsidly0: 'lego black', // copter side left
+  c_chsidry0: 'lego black', // copter side right
+  c_chstuty0: 'lego black', // copter skids
+  c_chtaily0: 'lego black', // copter tail
+  c_chwindy1: 'lego black', // copter windshield
+  c_dbfbrdy0: 'lego red', // dunebuggy body
+  c_dbflagy0: 'lego yellow', // dunebuggy flag
+  c_dbfrfny4: 'lego red', // dunebuggy front fender
+  c_dbfrxly0: 'lego white', // dunebuggy front axle
+  c_dbhndly0: 'lego white', // dunebuggy handlebar
+  c_dbltbry0: 'lego white', // dunebuggy rear light
+  c_jsdashy0: 'lego white', // jetski dash
+  c_jsexhy0: 'lego black', // jetski exhaust
+  c_jsfrnty5: 'lego black', // jetski front
+  c_jshndly0: 'lego red', // jetski handlebar
+  c_jslsidy0: 'lego black', // jetski left side
+  c_jsrsidy0: 'lego black', // jetski right side
+  c_jsskiby0: 'lego red', // jetski base
+  c_jswnshy5: 'lego white', // jetski windshield
+  c_rcbacky6: 'lego green', // racecar back
+  c_rcedgey0: 'lego green', // racecar edge
+  c_rcfrmey0: 'lego red', // racecar frame
+  c_rcfrnty6: 'lego green', // racecar front
+  c_rcmotry0: 'lego white', // racecar motor
+  c_rcsidey0: 'lego green', // racecar side
+  c_rcstery0: 'lego white', // racecar steering wheel
+  c_rcstrpy0: 'lego yellow', // racecar stripe
+  c_rctailya: 'lego white', // racecar tail
+  c_rcwhl1y0: 'lego white', // racecar wheels 1
+  c_rcwhl2y0: 'lego white', // racecar wheels 2
+  c_jsbasey0: 'lego white', // jetski base
+  c_chblady0: 'lego black', // copter blades
+  c_chseaty0: 'lego white', // copter seat
 }
 
 const getModelObjectBase = (roi: Roi, animation: Animation.Node | undefined): THREE.Group => {
@@ -609,8 +695,9 @@ const getModelObjectBase = (roi: Roi, animation: Animation.Node | undefined): TH
       console.log(`Model ${roi.name} has ${animation.morphKeys.length} morph keys`)
     }
   }
+  const customColor: Color | null = colorFromName(roi.textureName)
   if (lod) {
-    for (const [geometry, material] of createMeshValues(lod)) {
+    for (const [geometry, material] of createMeshValues(lod, customColor)) {
       const mesh = new THREE.Mesh(geometry, material)
       group.add(mesh)
     }
@@ -669,7 +756,7 @@ export const getModelInstanced = (name: string, count: number): InstancedModel =
     throw new Error("Couldn't find lod and children")
   }
   const meshes: THREE.InstancedMesh[] = []
-  for (const [geometry, material] of createMeshValues(lod)) {
+  for (const [geometry, material] of createMeshValues(lod, null)) {
     const mesh = new THREE.InstancedMesh(geometry, material, count)
     meshes.push(mesh)
   }
