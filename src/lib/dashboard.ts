@@ -82,7 +82,10 @@ class ImageSection {
     for (let row = 0; row < this.height; row++) {
       for (let col = 0; col < this.width; col++) {
         const srcIndex = row * this.width + col
-        const color = overwriteColor?.(col, row, this.image[srcIndex]) ?? this.image[srcIndex]
+        let color: Color | null = this.image[srcIndex]
+        if (overwriteColor != null) {
+          color = overwriteColor(col, row, color)
+        }
         if (color != null) {
           const alpha = color.isMagenta ? 0x00 : 0xff
           data.data.set(Uint8Array.of(color.r, color.g, color.b, alpha), srcIndex * 4)
