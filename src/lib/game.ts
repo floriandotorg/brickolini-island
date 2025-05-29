@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { type Boundary, type Edge, boundaryMap, getBoundary, getBuildings, getDashboard, getModel, getModelInstanced, getModelObject, getMusic } from './assets'
+import { type Boundary, boundaryMap, getBoundary, getBuildings, getDashboard, getModelInstanced, getModelObject, getMusic } from './assets'
 import { Dashboard, type Dashboards, dashboardForModel } from './dashboard'
 import { MusicKeys } from './music'
 import { Plant } from './plant'
@@ -128,23 +128,64 @@ export const initGame = async () => {
     }
   })
 
-  const setRendererSize = () => {
-    const width = Math.floor(window.innerHeight * resolutionRatio)
-    if (width > window.innerWidth) {
-      const height = Math.floor(window.innerWidth / resolutionRatio)
-      renderer.setSize(window.innerWidth, height)
-    } else {
-      renderer.setSize(width, window.innerHeight)
-    }
-  }
-
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(75, resolutionRatio, 0.1, 1000)
   camera.rotation.order = 'YXZ'
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
   renderer.autoClear = false
   renderer.toneMapping = THREE.NoToneMapping
+
+  const renderTarget = new THREE.WebGLRenderTarget(1, 1)
+  const postScene = new THREE.Scene()
+  const postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
+  const postMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      tDiffuse: { value: renderTarget.texture },
+      uEnableMosaic: { value: 0.0 },
+    },
+    vertexShader: `
+      void main() {
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform float uEnableMosaic;
+
+      void main() {
+        vec2 texSize = vec2(textureSize(tDiffuse, 0));
+
+        if (uEnableMosaic > 0.0) {
+          float tileSize = 16.0;
+          vec2 fragCoord = gl_FragCoord.xy;
+          vec2 mosaicCoord = floor(fragCoord / tileSize) * tileSize;
+          vec2 uv = mosaicCoord / texSize;
+          vec3 color = texture2D(tDiffuse, uv).rgb;
+
+          gl_FragColor = linearToOutputTexel(vec4(color, 1.0));
+          return;
+        }
+        
+        vec2 uv = gl_FragCoord.xy / texSize;
+        gl_FragColor = linearToOutputTexel(texture2D(tDiffuse, uv));
+      }
+    `,
+  })
+  postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMaterial))
+
+  const setRendererSize = () => {
+    let width = Math.floor(window.innerHeight * resolutionRatio)
+    let height = window.innerHeight
+    if (width > window.innerWidth) {
+      width = window.innerWidth
+      height = Math.floor(window.innerWidth / resolutionRatio)
+    }
+    renderer.setSize(width, height)
+    renderTarget.setSize(width, height)
+  }
+
   setRendererSize()
+
   const isle = getModelObject('isle_hi')
   scene.add(isle)
 
@@ -413,6 +454,10 @@ export const initGame = async () => {
       showDebugMenu = !showDebugMenu
       debugObjectGroup.visible = showDebugMenu
     }
+
+    if (event.key === 'm') {
+      postMaterial.uniforms.uEnableMosaic.value = postMaterial.uniforms.uEnableMosaic.value === 0.0 ? 1.0 : 0.0
+    }
   })
 
   document.addEventListener('keyup', event => {
@@ -647,9 +692,14 @@ export const initGame = async () => {
       }
     }
 
+    renderer.setRenderTarget(renderTarget)
     renderer.clear()
     renderer.render(scene, camera)
     renderer.render(hudScene, hudCamera)
+
+    renderer.setRenderTarget(null)
+    renderer.clear()
+    renderer.render(postScene, postCamera)
   }
 
   animate()
