@@ -544,42 +544,42 @@ const createMeshValues = (lod: Lod): [THREE.BufferGeometry, THREE.Material][] =>
   return result
 }
 
-const getModelObjectBase = (model: Roi, animation: Animation.Node | undefined): THREE.Group => {
-  const lod = model.lods.at(-1)
-  if (!lod && !model.children) {
+const getModelObjectBase = (roi: Roi, animation: Animation.Node | undefined): THREE.Group => {
+  const lod = roi.lods.at(-1)
+  if (!lod && !roi.children) {
     throw new Error("Couldn't find lod and children")
   }
 
   const group = new THREE.Group()
-  group.name = model.name
+  group.name = roi.name
   if (animation) {
     if (animation.translationKeys.length === 1) {
       if (animation.translationKeys[0].timeAndFlags.time !== 0) {
-        console.log(`Translation key for model ${model.name} has non-zero time of ${animation.translationKeys[0].timeAndFlags.time}`)
+        console.log(`Translation key for model ${roi.name} has non-zero time of ${animation.translationKeys[0].timeAndFlags.time}`)
       }
       if (animation.translationKeys[0].timeAndFlags.flags !== 1) {
-        console.log(`Translation key for model ${model.name} has non-standard flags of ${animation.translationKeys[0].timeAndFlags.flags}`)
+        console.log(`Translation key for model ${roi.name} has non-standard flags of ${animation.translationKeys[0].timeAndFlags.flags}`)
       }
       group.position.set(...animation.translationKeys[0].vertex)
     } else if (animation.translationKeys.length > 1) {
-      console.log(`Model ${model.name} has ${animation.translationKeys.length} translation keys`)
+      console.log(`Model ${roi.name} has ${animation.translationKeys.length} translation keys`)
     }
     if (animation.rotationKeys.length === 1) {
       if (animation.rotationKeys[0].timeAndFlags.time !== 0) {
-        console.log(`Rotation key for model ${model.name} has non-zero time of ${animation.rotationKeys[0].timeAndFlags.time}`)
+        console.log(`Rotation key for model ${roi.name} has non-zero time of ${animation.rotationKeys[0].timeAndFlags.time}`)
       }
       if (animation.rotationKeys[0].timeAndFlags.flags !== 1) {
-        console.log(`Rotation key for model ${model.name} has non-standard flags of ${animation.rotationKeys[0].timeAndFlags.flags}`)
+        console.log(`Rotation key for model ${roi.name} has non-standard flags of ${animation.rotationKeys[0].timeAndFlags.flags}`)
       }
       group.quaternion.set(...animation.rotationKeys[0].quaternion)
     } else if (animation.rotationKeys.length > 1) {
-      console.log(`Model ${model.name} has ${animation.rotationKeys.length} rotation keys`)
+      console.log(`Model ${roi.name} has ${animation.rotationKeys.length} rotation keys`)
     }
     if (animation.scaleKeys.length > 0) {
-      console.log(`Model ${model.name} has ${animation.scaleKeys.length} scale keys`)
+      console.log(`Model ${roi.name} has ${animation.scaleKeys.length} scale keys`)
     }
     if (animation.morphKeys.length > 0) {
-      console.log(`Model ${model.name} has ${animation.morphKeys.length} morph keys`)
+      console.log(`Model ${roi.name} has ${animation.morphKeys.length} morph keys`)
     }
   }
   if (lod) {
@@ -588,7 +588,7 @@ const getModelObjectBase = (model: Roi, animation: Animation.Node | undefined): 
       group.add(mesh)
     }
   }
-  for (const child of model.children) {
+  for (const child of roi.children) {
     const childAnimation = animation?.children.find(n => n.name.toLowerCase() === child.name.toLowerCase())
     const childGroup = getModelObjectBase(child, childAnimation)
     group.add(childGroup)
