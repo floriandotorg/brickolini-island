@@ -76,22 +76,25 @@ export const initGame = async () => {
 
   const carsWithDashboard: { group: THREE.Group; dashboard: Dashboards }[] = []
 
-  document.addEventListener('mouseup', event => {
-    event.preventDefault()
-
-    if (dashboard) {
-      dashboard.dashboard.mouseUp()
-    }
+  canvas.addEventListener('pointerup', () => {
+    dashboard?.dashboard.pointerUp()
   })
 
-  document.addEventListener('mousedown', async event => {
+  canvas.addEventListener('pointerdown', event => {
+    const rect = canvas.getBoundingClientRect()
+    const x = ((event.clientX - rect.left) / rect.width) * hudCanvas.width
+    const y = ((event.clientY - rect.top) / rect.height) * hudCanvas.height
+    dashboard?.dashboard.pointerDown(x, y)
+  })
+
+  canvas.addEventListener('click', async event => {
     event.preventDefault()
 
     if (dashboard != null) {
       const rect = canvas.getBoundingClientRect()
-      const canvasX = ((event.clientX - rect.left) * hudCanvas.width) / rect.width
-      const canvasY = ((event.clientY - rect.top) * hudCanvas.height) / rect.height
-      if (dashboard.dashboard.checkClick(canvasX, canvasY)) {
+      const x = ((event.clientX - rect.left) / rect.width) * hudCanvas.width
+      const y = ((event.clientY - rect.top) / rect.height) * hudCanvas.height
+      if (dashboard.dashboard.checkClick(x, y) === 'exit') {
         dashboard.group.position.copy(camera.position).sub(new THREE.Vector3(0, CAM_HEIGHT, 0))
         dashboard.group.quaternion.copy(camera.quaternion)
         dashboard.group.visible = true
@@ -99,8 +102,9 @@ export const initGame = async () => {
         dashboard = null
       }
     } else {
-      const relativeX = (event.clientX / window.innerWidth) * 2 - 1
-      const relativeY = -(event.clientY / window.innerHeight) * 2 + 1
+      const rect = canvas.getBoundingClientRect()
+      const relativeX = ((event.clientX - rect.left) / rect.width) * 2 - 1
+      const relativeY = -((event.clientY - rect.top) / rect.height) * 2 + 1
       const raycaster = new THREE.Raycaster()
       raycaster.setFromCamera(new THREE.Vector2(relativeX, relativeY), camera)
       const intersects = raycaster.intersectObjects(carsWithDashboard.map(({ group }) => group).filter(group => group.visible))

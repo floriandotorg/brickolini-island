@@ -74,7 +74,7 @@ class ImageSection {
   }
 
   public checkClick(x: number, y: number): boolean {
-    return this.color(x, y)?.isMagenta === false
+    return this.color(Math.round(x), Math.round(y))?.isMagenta === false
   }
 
   public draw(ctx: CanvasRenderingContext2D, overwriteColor?: (col: number, row: number, color: Color) => Color | null) {
@@ -305,17 +305,15 @@ export class Dashboard {
     })
   }
 
-  public mouseUp() {
+  public pointerUp() {
     if (this._hornButton != null) {
       this._hornButton.pressed = false
       this.drawBackground()
     }
   }
 
-  public checkClick(x: number, y: number): boolean {
-    const pixelX = Math.round(x)
-    const pixelY = Math.round(y)
-    if (this._hornButton?.image.checkClick(pixelX, pixelY) === true) {
+  public pointerDown(x: number, y: number): void {
+    if (this._hornButton?.image.checkClick(x, y) === true) {
       console.log('honk')
       if (this._hornButton.node == null) {
         this._hornButton.node = this._audioContext.createBufferSource()
@@ -330,18 +328,21 @@ export class Dashboard {
       }
       this._hornButton.pressed = true
       this.drawBackground()
-      return false
     }
-    if (this._infoButton?.checkClick(pixelX, pixelY) === true) {
+  }
+
+  public checkClick(x: number, y: number): 'info' | 'exit' | null {
+    if (this._infoButton?.checkClick(x, y) === true) {
       console.log('info')
-      return false
+      return 'info'
     }
-    if (this._arms.checkClick(pixelX, pixelY)) {
+    if (this._arms.checkClick(x, y)) {
       console.log('exit')
-      return true
+      return 'exit'
     }
+
     console.log('none')
-    return false
+    return null
   }
 
   public drawBackground() {
