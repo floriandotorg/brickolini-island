@@ -77,10 +77,18 @@ export const initGame = async () => {
   const carsWithDashboard: { group: THREE.Group; dashboard: Dashboards }[] = []
 
   canvas.addEventListener('pointerup', () => {
+    if (isTransitioning) {
+      return
+    }
+
     dashboard?.dashboard.pointerUp()
   })
 
   canvas.addEventListener('pointerdown', event => {
+    if (isTransitioning) {
+      return
+    }
+
     const rect = canvas.getBoundingClientRect()
     const x = ((event.clientX - rect.left) / rect.width) * hudCanvas.width
     const y = ((event.clientY - rect.top) / rect.height) * hudCanvas.height
@@ -89,6 +97,10 @@ export const initGame = async () => {
 
   canvas.addEventListener('click', async event => {
     event.preventDefault()
+
+    if (isTransitioning) {
+      return
+    }
 
     if (dashboard != null) {
       const rect = canvas.getBoundingClientRect()
@@ -113,6 +125,7 @@ export const initGame = async () => {
         if (obj instanceof THREE.Group) {
           const hitGroup = carsWithDashboard.find(({ group }) => group === obj) ?? null
           if (hitGroup) {
+            await transition()
             hitGroup.group.visible = false
             const dashboardObj = getDashboard(hitGroup.dashboard)
             dashboard = { dashboard: await Dashboard.create(dashboardObj, hudContext, audioContext), group: hitGroup.group }
@@ -145,7 +158,8 @@ export const initGame = async () => {
   const postMaterial = new THREE.ShaderMaterial({
     uniforms: {
       tDiffuse: { value: renderTarget.texture },
-      uEnableMosaic: { value: 0.0 },
+      uMosaicProgress: { value: 0.0 },
+      uTileSize: { value: 1.0 },
     },
     vertexShader: `
       void main() {
@@ -154,20 +168,28 @@ export const initGame = async () => {
     `,
     fragmentShader: `
       uniform sampler2D tDiffuse;
-      uniform float uEnableMosaic;
+      uniform float uMosaicProgress;
+      uniform float uTileSize;
+
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+      }
 
       void main() {
         vec2 texSize = vec2(textureSize(tDiffuse, 0));
 
-        if (uEnableMosaic > 0.0) {
-          float tileSize = 16.0;
+        if (uMosaicProgress > 0.0) {
           vec2 fragCoord = gl_FragCoord.xy;
-          vec2 mosaicCoord = floor(fragCoord / tileSize) * tileSize;
-          vec2 uv = mosaicCoord / texSize;
-          vec3 color = texture2D(tDiffuse, uv).rgb;
+          vec2 mosaicCoord = floor(fragCoord / uTileSize) * uTileSize;
+          mosaicCoord.y += uTileSize - 1.0;
 
-          gl_FragColor = linearToOutputTexel(vec4(color, 1.0));
-          return;
+          if (hash(mosaicCoord) < uMosaicProgress) {
+            vec2 uv = mosaicCoord / texSize;
+            vec3 color = texture2D(tDiffuse, uv).rgb;
+
+            gl_FragColor = linearToOutputTexel(vec4(color, 1.0));
+            return;
+          }
         }
         
         vec2 uv = gl_FragCoord.xy / texSize;
@@ -176,6 +198,33 @@ export const initGame = async () => {
     `,
   })
   postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMaterial))
+
+  let isTransitioning = false
+  const transition = (): Promise<void> =>
+    new Promise(resolve => {
+      isTransitioning = true
+      postMaterial.uniforms.uTileSize.value = Math.ceil(Math.max(canvas.width / 640, canvas.height / 480) * 10)
+      const progressPerTick = 1 / 16
+
+      const start = performance.now()
+      const advance = () => {
+        const ticks = Math.floor((performance.now() - start) / 50)
+        postMaterial.uniforms.uMosaicProgress.value = progressPerTick * ticks
+        if (postMaterial.uniforms.uMosaicProgress.value < 1.0) {
+          requestAnimationFrame(advance)
+        } else {
+          // arbitrary wait time to give the transition more weight (the original had loading times, here everything is instant)
+          setTimeout(() => {
+            isTransitioning = false
+            postMaterial.uniforms.uMosaicProgress.value = 0.0
+            resolve()
+          }, 200)
+        }
+      }
+      advance()
+    })
+
+  postMaterial.uniforms.uMosaicProgress.value = 0.0
 
   const setRendererSize = () => {
     let width = Math.floor(window.innerHeight * resolutionRatio)
@@ -415,7 +464,13 @@ export const initGame = async () => {
 
   let showDebugMenu = import.meta.env.DEV
 
-  document.addEventListener('keydown', event => {
+  document.addEventListener('keydown', async event => {
+    event.preventDefault()
+
+    if (isTransitioning) {
+      return
+    }
+
     if (event.key in keyStates) {
       keyStates[event.key as keyof typeof keyStates] = true
     }
@@ -461,10 +516,6 @@ export const initGame = async () => {
     if (event.key === 'd') {
       showDebugMenu = !showDebugMenu
       debugObjectGroup.visible = showDebugMenu
-    }
-
-    if (event.key === 'm') {
-      postMaterial.uniforms.uEnableMosaic.value = postMaterial.uniforms.uEnableMosaic.value === 0.0 ? 1.0 : 0.0
     }
   })
 
