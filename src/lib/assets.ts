@@ -110,7 +110,9 @@ export const initAssets = async (file: File) => {
     musicBuffer.set(key, resolvedBuffers[i])
   })
 
-  void downloadHighQualityMusic()
+  if (import.meta.env.DEV !== true) {
+    void downloadHighQualityMusic()
+  }
 
   await updateLoading(95, 'Loading WDB...')
   wdb = new WDB(iso.open('DATA/disk/LEGO/data/WORLD.WDB'))
