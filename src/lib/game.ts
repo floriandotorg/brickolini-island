@@ -158,7 +158,9 @@ export const initGame = async () => {
   renderer.autoClear = false
   renderer.toneMapping = THREE.NoToneMapping
 
-  const renderTarget = new THREE.WebGLRenderTarget(1, 1)
+  const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
+    samples: 4,
+  })
   const postScene = new THREE.Scene()
   const postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
   const postMaterial = new THREE.ShaderMaterial({
