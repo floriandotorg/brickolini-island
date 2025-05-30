@@ -682,16 +682,18 @@ export const initGame = async () => {
       const dot2 = toPos.clone().sub(ccw).dot(currentBoundary.direction)
 
       for (const trigger of currentBoundary.triggers) {
-        if (trigger.struct.name[2] !== 'M') {
-          continue
-        }
-
         if (dot2 > dot1 && trigger.triggerProjection >= dot1 && trigger.triggerProjection < dot2) {
-          switchBackgroundMusic(music[triggersReff[trigger.data - 1][0] - 1])
+          console.log(`trigger: ${trigger.struct.name} ${trigger.data}`)
+          if (trigger.struct.name[2] === 'M') {
+            switchBackgroundMusic(music[triggersReff[trigger.data - 1][0] - 1])
+          }
         }
 
         if (dot2 < dot1 && trigger.triggerProjection >= dot2 && trigger.triggerProjection < dot1) {
-          switchBackgroundMusic(music[triggersReff[trigger.data - 1][1] - 1])
+          console.log(`trigger: ${trigger.struct.name} ${trigger.data}`)
+          if (trigger.struct.name[2] === 'M') {
+            switchBackgroundMusic(music[triggersReff[trigger.data - 1][1] - 1])
+          }
         }
       }
     }
