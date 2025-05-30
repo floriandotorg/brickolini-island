@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { BinaryReader } from './binary-reader'
 import { BinaryWriter } from './binary-writer'
-import type { Dashboards } from './dashboard'
+import { Dashboards, getDuneCarBackground, getJetskiBackground } from './dashboard'
 import { FLC } from './flc'
 import { ISO9660, ISOVariant } from './iso'
 import { MusicKeys } from './music'
@@ -774,7 +774,7 @@ export const getTexture = (name: string): Gif => {
   return wdb.textureByName(name)
 }
 
-export const getDashboard = (dashboard: Dashboards): SIObject => {
+export const getDashboard = (dashboard: Dashboards): { dashboardObj: SIObject; backgroundObj?: SIObject } => {
   const si = siFiles.get('ISLE.SI')
   if (si == null) {
     throw new Error('Assets not initialized')
@@ -784,7 +784,27 @@ export const getDashboard = (dashboard: Dashboards): SIObject => {
   if (!dashboardObj) {
     throw new Error('Dashboard not found')
   }
-  return dashboardObj
+
+  const backgroundId = (() => {
+    switch (dashboard) {
+      case Dashboards.DuneCar: {
+        const color = variableTable.c_dbfrfny4
+        return getDuneCarBackground(color)
+      }
+      case Dashboards.Jetski: {
+        const windshield = variableTable.c_jswnshy5
+        const front = variableTable.c_jsfrnty5
+        return getJetskiBackground(windshield, front)
+      }
+    }
+    return null
+  })()
+
+  const backgroundObj = backgroundId != null ? si.objects.get(backgroundId) : undefined
+  if (backgroundId != null && backgroundObj == null) {
+    throw new Error('Background not found')
+  }
+  return { dashboardObj, backgroundObj }
 }
 
 export const getMusic = (music: MusicKeys): AudioBuffer => {

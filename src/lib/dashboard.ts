@@ -5,11 +5,11 @@ import type { SIObject } from './si'
 export enum Dashboards {
   Bike = 10,
   Helicopter = 21,
-  // Jetski = 97,
+  Jetski = 97,
   MotoBk = 150,
   Ambulance = 160,
   TowTrack = 170,
-  // DuneCar = 187,
+  DuneCar = 187,
   Skate = 193,
 }
 
@@ -19,19 +19,48 @@ export const dashboardForModel = (modelName: string): Dashboards | undefined => 
       return Dashboards.Bike
     case 'Helicopter':
       return Dashboards.Helicopter
-    // case 'Jetski':
-    //   return Dashboards.Jetski
+    case 'Jetski':
+      return Dashboards.Jetski
     case 'MotoBk':
       return Dashboards.MotoBk
     case 'Ambul':
       return Dashboards.Ambulance
     case 'Towtk':
       return Dashboards.TowTrack
-    // case 'DuneCar':
-    //   return Dashboards.DuneCar
+    case 'DuneCar':
+      return Dashboards.DuneCar
     case 'skate':
       return Dashboards.Skate
   }
+}
+
+const getColorOffset = (color: string): number => {
+  switch (color.toLowerCase()) {
+    case 'lego red':
+      return 2
+    case 'lego yellow':
+      return 3
+    case 'lego black':
+      return 4
+    case 'lego blue':
+      return 5
+    case 'lego white':
+      return 6
+    //case 'lego green':
+    default:
+      return 1
+  }
+}
+
+export const getDuneCarBackground = (color: string): number => {
+  const offset = getColorOffset(color)
+  return 180 + offset
+}
+
+export const getJetskiBackground = (windshield: string, front: string): number => {
+  const windshieldOffset = getColorOffset(windshield)
+  const frontOffset = getColorOffset(front)
+  return 10 * (windshieldOffset + 3) + frontOffset
 }
 
 class Color {

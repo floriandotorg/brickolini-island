@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { type Boundary, boundaryMap, getBoundary, getBuildings, getDashboard, getModelInstanced, getModelObject, getMusic } from './assets'
-import { Dashboard, type Dashboards, dashboardForModel } from './dashboard'
+import { Dashboard, Dashboards, dashboardForModel } from './dashboard'
 import { MusicKeys } from './music'
 import { Plant } from './plant'
 import { setDebugData } from './store'
@@ -74,7 +74,7 @@ export const initGame = async () => {
 
   let dashboard: { group: THREE.Group; dashboard: Dashboard } | null = null
 
-  const carsWithDashboard: { group: THREE.Group; dashboard: Dashboards }[] = []
+  const carsWithDashboard: { group: THREE.Group; onClick: () => Promise<Dashboard> }[] = []
 
   canvas.addEventListener('pointerup', () => {
     if (isTransitioning) {
@@ -83,6 +83,13 @@ export const initGame = async () => {
 
     dashboard?.dashboard.pointerUp()
   })
+
+  const getDefaultDashboard = (dashboard: Dashboards): (() => Promise<Dashboard>) => {
+    return async () => {
+      const { dashboardObj, backgroundObj } = getDashboard(dashboard)
+      return await Dashboard.create(dashboardObj, hudContext, audioContext, backgroundObj)
+    }
+  }
 
   canvas.addEventListener('pointerdown', event => {
     if (isTransitioning) {
@@ -127,8 +134,7 @@ export const initGame = async () => {
           if (hitGroup) {
             await transition()
             hitGroup.group.visible = false
-            const dashboardObj = getDashboard(hitGroup.dashboard)
-            dashboard = { dashboard: await Dashboard.create(dashboardObj, hudContext, audioContext), group: hitGroup.group }
+            dashboard = { dashboard: await hitGroup.onClick(), group: hitGroup.group }
             dashboard.dashboard.drawBackground()
             hudTexture.needsUpdate = true
             camera.position.copy(hitGroup.group.position.clone().add(new THREE.Vector3(0, 1, 0)))
@@ -276,7 +282,7 @@ export const initGame = async () => {
 
       const modelDashboard = dashboardForModel(buildingData.modelName)
       if (modelDashboard) {
-        carsWithDashboard.push({ group: model, dashboard: modelDashboard })
+        carsWithDashboard.push({ group: model, onClick: getDefaultDashboard(modelDashboard) })
       }
 
       scene.add(model)
@@ -288,6 +294,10 @@ export const initGame = async () => {
   const bugy = getModelObject('dunebugy')
   bugy.position.set(-25.5, 0, -3.4)
   scene.add(bugy)
+  carsWithDashboard.push({
+    group: bugy,
+    onClick: getDefaultDashboard(Dashboards.DuneCar),
+  })
 
   for (const plant of Plant.locationsPerPair(Plant.World.ACT1)) {
     const plantName = Plant.modelName(plant.variant, plant.color)
