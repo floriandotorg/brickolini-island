@@ -662,7 +662,7 @@ const variableTable: Record<string, string> = {
 
 const getModelObjectBase = (roi: Roi, animation: Animation.Node | undefined): THREE.Group => {
   const lod = roi.lods.at(-1)
-  if (!lod && !roi.children) {
+  if (lod === null && roi.children.length < 1) {
     throw new Error("Couldn't find lod and children")
   }
 
@@ -699,7 +699,7 @@ const getModelObjectBase = (roi: Roi, animation: Animation.Node | undefined): TH
     }
   }
   const customColor: Color | null = colorFromName(roi.textureName)
-  if (lod) {
+  if (lod != null) {
     for (const [geometry, material] of createMeshValues(lod, customColor)) {
       const mesh = new THREE.Mesh(geometry, material)
       group.add(mesh)
@@ -716,6 +716,23 @@ const getModelObjectBase = (roi: Roi, animation: Animation.Node | undefined): TH
 export const getModelObject = (name: string): THREE.Group => {
   const model = getModel(name)
   return getModelObjectBase(model.roi, model.animation)
+}
+
+export const getPart = (name: string, source: 'global' | 'world', color: Color): THREE.Group => {
+  const part = source === 'global' ? wdb?.globalParts.find(p => p.name === name) : wdb?.parts.find(p => p.name === name)
+  if (!part) {
+    throw new Error(`Part ${name} not found`)
+  }
+  const lod = part.lods.at(-1)
+  if (!lod) {
+    throw new Error("Couldn't find lod and children")
+  }
+  const group = new THREE.Group()
+  for (const [geometry, material] of createMeshValues(lod, color)) {
+    const mesh = new THREE.Mesh(geometry, material)
+    group.add(mesh)
+  }
+  return group
 }
 
 export class InstancedModel {

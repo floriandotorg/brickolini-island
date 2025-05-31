@@ -25,6 +25,7 @@ export type Mesh = {
 export type Model = { roi: Roi; animation: Animation.Node }
 export type Roi = { name: string; lods: Lod[]; children: Roi[]; textureName: string }
 export type Lod = { meshes: Mesh[] }
+export type Part = { name: string; lods: Lod[] }
 export namespace Animation {
   export type TimeAndFlags = { time: number; flags: number }
   export type VertexKey = { timeAndFlags: TimeAndFlags; vertex: Vertex }
@@ -39,23 +40,25 @@ export class WDB {
   private _textures: Gif[] = []
   private _modelTextures: Gif[] = []
   private _models: Model[] = []
+  private _parts: Part[] = []
+  private _globalParts: Part[] = []
 
   constructor(buffer: ArrayBuffer) {
     this._reader = new BinaryReader(buffer)
     const numWorlds = this._reader.readUint32()
     const partsOffsets: number[] = []
     const modelsOffsets: number[] = []
-    for (let w = 0; w < numWorlds; w += 1) {
+    for (let n = 0; n < numWorlds; ++n) {
       const worldName = this._reader.readString()
       const numParts = this._reader.readUint32()
-      for (let p = 0; p < numParts; p += 1) {
+      for (let m = 0; m < numParts; ++m) {
         this._reader.readString()
         const itemSize = this._reader.readUint32()
         const offset = this._reader.readUint32()
         partsOffsets.push(offset)
       }
       const numModels = this._reader.readUint32()
-      for (let m = 0; m < numModels; m += 1) {
+      for (let m = 0; m < numModels; ++m) {
         this._reader.readString()
         const size = this._reader.readUint32()
         const offset = this._reader.readUint32()
@@ -69,21 +72,14 @@ export class WDB {
     }
     const gifChunkSize = this._reader.readUint32()
     const numFrames = this._reader.readUint32()
-    for (let i = 0; i < numFrames; i += 1) {
+    for (let n = 0; n < numFrames; ++n) {
       this._images.push(this._readGif())
     }
+    const modelChunkSize = this._reader.readUint32()
+    this._globalParts = this._readParts(this._reader.position)
     for (const offset of partsOffsets) {
       this._reader.seek(offset)
-      const textureInfoOffset = this._reader.readUint32()
-      this._reader.seek(offset + textureInfoOffset)
-      const numTextures = this._reader.readUint32()
-      for (let i = 0; i < numTextures; i += 1) {
-        const texture = this._readGif()
-        this._textures.push(texture)
-        if (texture.title.startsWith('^')) {
-          this._textures.push(this._readGif(texture.title.slice(1)))
-        }
-      }
+      this._parts.push(...this._readParts(offset))
     }
     const scannedOffsets = new Set<number>()
     const scannedModelNames = new Set<string>()
@@ -132,6 +128,12 @@ export class WDB {
   get models(): Model[] {
     return this._models
   }
+  get parts(): Part[] {
+    return this._parts
+  }
+  get globalParts(): Part[] {
+    return this._globalParts
+  }
 
   textureByName = (name: string): Gif => {
     const tex = this._modelTextures.find(t => t.title === name)
@@ -158,7 +160,7 @@ export class WDB {
       const numLods = this._reader.readUint32()
       if (numLods !== 0) {
         const endComponentOffset = this._reader.readUint32()
-        for (let l = 0; l < numLods; l += 1) {
+        for (let n = 0; n < numLods; ++n) {
           lods.push(this._readLod())
         }
         this._reader.seek(offset + endComponentOffset)
@@ -168,7 +170,7 @@ export class WDB {
     }
     const children: Roi[] = []
     const numRois = this._reader.readUint32()
-    for (let i = 0; i < numRois; i++) {
+    for (let n = 0; n < numRois; ++n) {
       children.push(this._readRoi(offset, scannedModelNames))
     }
     return { name: modelName, lods, children, textureName }
@@ -322,5 +324,39 @@ export class WDB {
       meshes.push({ vertices: meshVertices, normals: meshNormals, uvs: meshUvs, indices, color, useColorAlias, textureName: textureName, materialName: materialName, shading })
     }
     return { meshes }
+  }
+
+  private _readParts = (offset: number): Part[] => {
+    const parts: Part[] = []
+    const textureInfoOffset = this._reader.readUint32()
+    const numRois = this._reader.readUint32()
+
+    for (let i = 0; i < numRois; ++i) {
+      const roiName = this._reader.readString()
+
+      const numLods = this._reader.readUint32()
+      const _roiInfoOffset = this._reader.readUint32()
+
+      const lods: Lod[] = []
+      for (let n = 0; n < numLods; ++n) {
+        const lod = this._readLod()
+        if (lod.meshes.length !== 0) {
+          lods.push(lod)
+        }
+      }
+
+      parts.push({ name: roiName, lods })
+    }
+
+    this._reader.seek(offset + textureInfoOffset)
+    const numTextures = this._reader.readUint32()
+    for (let t = 0; t < numTextures; ++t) {
+      const texture = this._readGif()
+      this._textures.push(texture)
+      if (texture.title.startsWith('^')) {
+        this._textures.push(this._readGif(texture.title.slice(1)))
+      }
+    }
+    return parts
   }
 }
