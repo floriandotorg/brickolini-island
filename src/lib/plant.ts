@@ -23,40 +23,50 @@ export namespace Plant {
     ACT3 = 1 << 16,
   }
 
-  export const modelName = (variant: Variant, color: Color): string | undefined => {
+  export const partName = (variant: Variant, color: Color): string | undefined => {
     switch (true) {
+      case variant === Variant.Flower && color === Color.White:
+        return 'flwrwht'
+      case variant === Variant.Flower && color === Color.Black:
+        return 'flwrblk'
       case variant === Variant.Flower && color === Color.Yellow:
         return 'flwryel'
       case variant === Variant.Flower && color === Color.Red:
         return 'flwrred'
+      case variant === Variant.Flower && color === Color.Green:
+        return 'flwrgrn'
+      case variant === Variant.Tree && color === Color.White:
+        return 'treewht'
+      case variant === Variant.Tree && color === Color.Black:
+        return 'treeblk'
       case variant === Variant.Tree && color === Color.Yellow:
         return 'treeyel'
+      case variant === Variant.Tree && color === Color.Red:
+        return 'treered'
       case variant === Variant.Tree && color === Color.Green:
         return 'tree'
+      case variant === Variant.Bush && color === Color.White:
+        return 'bushwht'
+      case variant === Variant.Bush && color === Color.Black:
+        return 'bushblk'
+      case variant === Variant.Bush && color === Color.Yellow:
+        return 'bushyel'
+      case variant === Variant.Bush && color === Color.Red:
+        return 'bushred'
       case variant === Variant.Bush && color === Color.Green:
         return 'bush'
       case variant === Variant.Palm && color === Color.White:
         return 'palmwht'
+      case variant === Variant.Palm && color === Color.Black:
+        return 'palmblk'
+      case variant === Variant.Palm && color === Color.Yellow:
+        return 'palmyel'
       case variant === Variant.Palm && color === Color.Red:
         return 'palmred'
       case variant === Variant.Palm && color === Color.Green:
         return 'palm'
-      // For these combinations, there is no model
-      case variant === Variant.Flower && color === Color.White:
-      case variant === Variant.Flower && color === Color.Black:
-      case variant === Variant.Flower && color === Color.Green:
-      case variant === Variant.Tree && color === Color.White:
-      case variant === Variant.Tree && color === Color.Black:
-      case variant === Variant.Tree && color === Color.Red:
-      case variant === Variant.Bush && color === Color.White:
-      case variant === Variant.Bush && color === Color.Black:
-      case variant === Variant.Bush && color === Color.Yellow:
-      case variant === Variant.Bush && color === Color.Red:
-      case variant === Variant.Palm && color === Color.Black:
-      case variant === Variant.Palm && color === Color.Yellow:
-        console.log(`combination of ${variant} and ${color} is not supported`)
-        break
       default:
+        console.log(`combination of ${variant} and ${color} is not supported`)
         break
     }
   }

@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { type Boundary, boundaryMap, colorAliases, getBoundary, getBuildings, getDashboard, getModelInstanced, getModelObject, getMusic, getPart } from './assets'
+import { type Boundary, boundaryMap, colorAliases, getBoundary, getBuildings, getDashboard, getModelObject, getMusic, getPart } from './assets'
 import { Dashboard, Dashboards, dashboardForModel } from './dashboard'
 import { MusicKeys } from './music'
 import { Plant } from './plant'
@@ -307,14 +307,15 @@ export const initGame = async () => {
   })
 
   for (const plant of Plant.locationsPerPair(Plant.World.ACT1)) {
-    const plantName = Plant.modelName(plant.variant, plant.color)
+    const plantName = Plant.partName(plant.variant, plant.color)
     if (plantName) {
-      const plantInstance = getModelInstanced(plantName, plant.locations.length)
-      for (const [index, { location, direction, up }] of plant.locations.entries()) {
+      const part = getPart(plantName, 'global', null, null)
+      for (const { location, direction, up } of plant.locations) {
         calculateTransformationMatrix(location, direction, up, transformationMatrix)
-        plantInstance.setMatrixAt(index, transformationMatrix)
+        const partInstance = part.clone()
+        partInstance.applyMatrix4(transformationMatrix)
+        scene.add(partInstance)
       }
-      plantInstance.addTo(scene)
     }
   }
 
