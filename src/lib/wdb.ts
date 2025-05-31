@@ -197,10 +197,10 @@ export class WDB {
       console.log(`Already scanned model '${modelName}'!`)
     }
     scannedModelNames.add(modelName)
-    this._readVertex()
+    this._reader.readVector3()
     this._reader.readFloat32()
-    this._readVertex()
-    this._readVertex()
+    this._reader.readVector3()
+    this._reader.readVector3()
     const textureName = this._reader.readString()
     const definedElsewhere = this._reader.readInt8()
     const lods: Lod[] = []
@@ -248,8 +248,7 @@ export class WDB {
     return { title, width, height, image }
   }
 
-  private _readVertex = (): Vertex => [-this._reader.readFloat32(), this._reader.readFloat32(), this._reader.readFloat32()]
-  private _readVertices = (count: number): Vertex[] => Array.from({ length: count }, () => this._readVertex())
+  private _readVertices = (count: number): Vertex[] => Array.from({ length: count }, () => this._reader.readVector3())
 
   private _readLod = (): Lod => {
     const unknown8 = this._reader.readUint32()
