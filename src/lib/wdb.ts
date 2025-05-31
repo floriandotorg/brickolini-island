@@ -32,6 +32,54 @@ export namespace Animation {
   export type RotationKey = { timeAndFlags: TimeAndFlags; quaternion: [number, number, number, number] }
   export type MorphKey = { timeAndFlags: TimeAndFlags; bool: boolean }
   export type Node = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Node[] }
+
+  const readTimeAndFlags = (reader: BinaryReader): Animation.TimeAndFlags => {
+    const tf = reader.readUint32()
+    const flags = tf >>> 24
+    const time = tf & 0xffffff
+    return { time, flags }
+  }
+
+  export const readAnimationTree = (reader: BinaryReader): Node => {
+    const name = reader.readString()
+    const translations: Animation.VertexKey[] = []
+    const numTranslationKeys = reader.readUint16()
+    for (let i = 0; i < numTranslationKeys; i += 1) {
+      const timeAndFlags = readTimeAndFlags(reader)
+      const vertex = reader.readVector3()
+      translations.push({ timeAndFlags, vertex })
+    }
+    const rotations: Animation.RotationKey[] = []
+    const numRotationKeys = reader.readUint16()
+    for (let i = 0; i < numRotationKeys; i += 1) {
+      const timeAndFlags = readTimeAndFlags(reader)
+      const w = reader.readFloat32()
+      const x = -reader.readFloat32()
+      const y = reader.readFloat32()
+      const z = reader.readFloat32()
+      rotations.push({ timeAndFlags, quaternion: [x, y, z, w] })
+    }
+    const scales: Animation.VertexKey[] = []
+    const numScaleKeys = reader.readUint16()
+    for (let i = 0; i < numScaleKeys; i += 1) {
+      const timeAndFlags = readTimeAndFlags(reader)
+      const vertex = reader.readVector3()
+      scales.push({ timeAndFlags, vertex })
+    }
+    const morphs: Animation.MorphKey[] = []
+    const numMorphKeys = reader.readUint16()
+    for (let i = 0; i < numMorphKeys; i += 1) {
+      const timeAndFlags = readTimeAndFlags(reader)
+      const bool = reader.readInt8() !== 0
+      morphs.push({ timeAndFlags, bool })
+    }
+    const children = []
+    const numChildren = reader.readUint32()
+    for (let i = 0; i < numChildren; i += 1) {
+      children.push(readAnimationTree(reader))
+    }
+    return { name, translationKeys: translations, rotationKeys: rotations, scaleKeys: scales, morphKeys: morphs, children }
+  }
 }
 
 export class WDB {
@@ -100,7 +148,7 @@ export class WDB {
         throw new Error('animations not supported')
       }
       this._reader.readUint32()
-      const animation = this._readAnimationTree()
+      const animation = Animation.readAnimationTree(this._reader)
       const roi = this._readRoi(offset, scannedModelNames)
       this._models.push({ roi, animation })
       this._reader.seek(offset + textureInfoOffset)
@@ -202,54 +250,6 @@ export class WDB {
 
   private _readVertex = (): Vertex => [-this._reader.readFloat32(), this._reader.readFloat32(), this._reader.readFloat32()]
   private _readVertices = (count: number): Vertex[] => Array.from({ length: count }, () => this._readVertex())
-
-  private _readTimeAndFlags = (): Animation.TimeAndFlags => {
-    const tf = this._reader.readUint32()
-    const flags = tf >>> 24
-    const time = tf & 0xffffff
-    return { time, flags }
-  }
-
-  private _readAnimationTree = (): Animation.Node => {
-    const name = this._reader.readString()
-    const translations: Animation.VertexKey[] = []
-    const numTranslationKeys = this._reader.readUint16()
-    for (let i = 0; i < numTranslationKeys; i += 1) {
-      const timeAndFlags = this._readTimeAndFlags()
-      const vertex = this._readVertex()
-      translations.push({ timeAndFlags, vertex })
-    }
-    const rotations: Animation.RotationKey[] = []
-    const numRotationKeys = this._reader.readUint16()
-    for (let i = 0; i < numRotationKeys; i += 1) {
-      const timeAndFlags = this._readTimeAndFlags()
-      const w = this._reader.readFloat32()
-      const x = -this._reader.readFloat32()
-      const y = this._reader.readFloat32()
-      const z = this._reader.readFloat32()
-      rotations.push({ timeAndFlags, quaternion: [x, y, z, w] })
-    }
-    const scales: Animation.VertexKey[] = []
-    const numScaleKeys = this._reader.readUint16()
-    for (let i = 0; i < numScaleKeys; i += 1) {
-      const timeAndFlags = this._readTimeAndFlags()
-      const vertex = this._readVertex()
-      scales.push({ timeAndFlags, vertex })
-    }
-    const morphs: Animation.MorphKey[] = []
-    const numMorphKeys = this._reader.readUint16()
-    for (let i = 0; i < numMorphKeys; i += 1) {
-      const timeAndFlags = this._readTimeAndFlags()
-      const bool = this._reader.readInt8() !== 0
-      morphs.push({ timeAndFlags, bool })
-    }
-    const children = []
-    const numChildren = this._reader.readUint32()
-    for (let i = 0; i < numChildren; i += 1) {
-      children.push(this._readAnimationTree())
-    }
-    return { name, translationKeys: translations, rotationKeys: rotations, scaleKeys: scales, morphKeys: morphs, children }
-  }
 
   private _readLod = (): Lod => {
     const unknown8 = this._reader.readUint32()
