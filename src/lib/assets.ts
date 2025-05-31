@@ -551,7 +551,7 @@ const colorFromName = (name: string): Color | null => {
   return null
 }
 
-const createMeshValues = (lod: Lod, customColor: Color | null): [THREE.BufferGeometry, THREE.Material][] => {
+const createMeshValues = (lod: Lod, customColor: Color | null, textureName: string | null = null): [THREE.BufferGeometry, THREE.Material][] => {
   const result: [THREE.BufferGeometry, THREE.Material][] = []
   for (const modelMesh of lod.meshes) {
     const vertices: number[] = modelMesh.vertices.flat()
@@ -574,7 +574,7 @@ const createMeshValues = (lod: Lod, customColor: Color | null): [THREE.BufferGeo
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
     geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(modelMesh.normals.flat()), 3))
     if (modelMesh.textureName) {
-      material.map = createTexture(getTexture(modelMesh.textureName))
+      material.map = createTexture(getTexture(textureName ?? modelMesh.textureName, textureName ? 'global' : 'model'))
       geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
     } else {
       const color = customColor ?? colorFromName(modelMesh.materialName) ?? modelMesh.color
@@ -589,7 +589,7 @@ const createMeshValues = (lod: Lod, customColor: Color | null): [THREE.BufferGeo
   return result
 }
 
-const colorAliases: Record<string, Color> = {
+export const colorAliases: Record<string, Color> = {
   'lego black': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
   'lego black f': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
   'lego black flat': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
@@ -718,8 +718,8 @@ export const getModelObject = (name: string): THREE.Group => {
   return getModelObjectBase(model.roi, model.animation)
 }
 
-export const getPart = (name: string, source: 'global' | 'world', color: Color): THREE.Group => {
-  const part = source === 'global' ? wdb?.globalParts.find(p => p.name === name) : wdb?.parts.find(p => p.name === name)
+export const getPart = (name: string, source: 'global' | 'world', color: Color | null, textureName: string | null): THREE.Group => {
+  const part = source === 'global' ? wdb?.globalParts.find(p => p.name.toLowerCase() === name.toLowerCase()) : wdb?.parts.find(p => p.name.toLowerCase() === name.toLowerCase())
   if (!part) {
     throw new Error(`Part ${name} not found`)
   }
@@ -728,7 +728,7 @@ export const getPart = (name: string, source: 'global' | 'world', color: Color):
     throw new Error("Couldn't find lod and children")
   }
   const group = new THREE.Group()
-  for (const [geometry, material] of createMeshValues(lod, color)) {
+  for (const [geometry, material] of createMeshValues(lod, color, textureName)) {
     const mesh = new THREE.Mesh(geometry, material)
     group.add(mesh)
   }
@@ -785,11 +785,11 @@ export const getModelInstanced = (name: string, count: number): InstancedModel =
   return result
 }
 
-export const getTexture = (name: string): Gif => {
+export const getTexture = (name: string, source: 'model' | 'global' = 'model'): Gif => {
   if (wdb == null) {
     throw new Error('Assets not initialized')
   }
-  return wdb.textureByName(name)
+  return wdb.textureByName(name, source)
 }
 
 export const getDashboard = (dashboard: Dashboards): { dashboardObj: SIObject; backgroundObj?: SIObject } => {
@@ -833,7 +833,7 @@ export const getMusic = (music: MusicKeys): AudioBuffer => {
   return audioBuffer
 }
 
-export const getAnimation = (siName: string, name: string): FLC => {
+export const get2DAnimation = (siName: string, name: string): FLC => {
   const si = siFiles.get(siName)
   if (si == null) {
     throw new Error('Assets not initialized')

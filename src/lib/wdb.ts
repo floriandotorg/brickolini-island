@@ -44,14 +44,14 @@ export namespace Animation {
     const name = reader.readString()
     const translations: Animation.VertexKey[] = []
     const numTranslationKeys = reader.readUint16()
-    for (let i = 0; i < numTranslationKeys; i += 1) {
+    for (let n = 0; n < numTranslationKeys; ++n) {
       const timeAndFlags = readTimeAndFlags(reader)
       const vertex = reader.readVector3()
       translations.push({ timeAndFlags, vertex })
     }
     const rotations: Animation.RotationKey[] = []
     const numRotationKeys = reader.readUint16()
-    for (let i = 0; i < numRotationKeys; i += 1) {
+    for (let n = 0; n < numRotationKeys; ++n) {
       const timeAndFlags = readTimeAndFlags(reader)
       const w = reader.readFloat32()
       const x = -reader.readFloat32()
@@ -61,21 +61,21 @@ export namespace Animation {
     }
     const scales: Animation.VertexKey[] = []
     const numScaleKeys = reader.readUint16()
-    for (let i = 0; i < numScaleKeys; i += 1) {
+    for (let n = 0; n < numScaleKeys; ++n) {
       const timeAndFlags = readTimeAndFlags(reader)
       const vertex = reader.readVector3()
       scales.push({ timeAndFlags, vertex })
     }
     const morphs: Animation.MorphKey[] = []
     const numMorphKeys = reader.readUint16()
-    for (let i = 0; i < numMorphKeys; i += 1) {
+    for (let n = 0; n < numMorphKeys; ++n) {
       const timeAndFlags = readTimeAndFlags(reader)
       const bool = reader.readInt8() !== 0
       morphs.push({ timeAndFlags, bool })
     }
     const children = []
     const numChildren = reader.readUint32()
-    for (let i = 0; i < numChildren; i += 1) {
+    for (let n = 0; n < numChildren; ++n) {
       children.push(readAnimationTree(reader))
     }
     return { name, translationKeys: translations, rotationKeys: rotations, scaleKeys: scales, morphKeys: morphs, children }
@@ -183,9 +183,10 @@ export class WDB {
     return this._globalParts
   }
 
-  textureByName = (name: string): Gif => {
-    const tex = this._modelTextures.find(t => t.title === name)
+  textureByName = (name: string, source: 'model' | 'global' = 'model'): Gif => {
+    const tex = source === 'model' ? this._modelTextures.find(t => t.title.toLowerCase() === name.toLowerCase()) : this._images.find(t => t.title.toLowerCase() === name.toLowerCase())
     if (!tex) {
+      console.log(this._textures)
       throw new Error('texture not found')
     }
     return tex

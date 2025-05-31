@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { type Boundary, boundaryMap, getBoundary, getBuildings, getDashboard, getModelInstanced, getModelObject, getMusic } from './assets'
+import { type Boundary, boundaryMap, colorAliases, getBoundary, getBuildings, getDashboard, getModelInstanced, getModelObject, getMusic, getPart } from './assets'
 import { Dashboard, Dashboards, dashboardForModel } from './dashboard'
 import { MusicKeys } from './music'
 import { Plant } from './plant'
@@ -429,6 +429,73 @@ export const initGame = async () => {
   camera.position.set(20, CAM_HEIGHT, 30)
   camera.lookAt(60, 0, 0)
   placeCameraOnGround()
+
+  const lods: [string, string | { red: number; green: number; blue: number; alpha: number }, string, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number][] = [
+    ['top', 'top', 'top', 0, 0.000267, 0.780808, -0.01906, 0.951612, -0.461166, -0.002794, -0.299442, 0.4617, 1.56441, 0.261321, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
+    ['body', 'infochst.gif', 'bodyred', 1, 0.00158332, 0.401828, -0.00048697, 0.408071, -0.287507, 0.150419, -0.147452, 0.289219, 0.649774, 0.14258, -0.00089, 0.436353, 0.007277, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
+    ['infohat', 'infohat', 'icap', 2, 0.0, -0.00938, -0.01955, 0.35, -0.231822, -0.140237, -0.320954, 0.234149, 0.076968, 0.249083, 0.000191, 1.519793, 0.001767, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
+    ['infogron', colorAliases['lego white'], 'infogron', 2, 0.0, 0.11477, 0.00042, 0.26, -0.285558, -0.134391, -0.142231, 0.285507, 0.152986, 0.143071, -0.00089, 0.436353, 0.007277, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
+    ['head', 'Infoface.GIF', 'head', 1, 0.0, -0.03006, 0.0, 0.3, -0.189506, -0.209665, -0.189824, 0.189532, 0.228822, 0.194945, -0.00105, 1.293115, 0.001781, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
+    ['arm-lft', colorAliases['lego black'], 'arm-lft', 2, -0.06815, -0.0973747, 0.0154655, 0.237, -0.137931, -0.282775, -0.105316, 0.000989, 0.100221, 0.140759, -0.225678, 0.963312, 0.023286, -0.003031, -0.017187, 0.999848, 0.173622, 0.984658, 0.017453],
+    ['arm-rt', colorAliases['lego black'], 'arm-rt', 2, 0.0680946, -0.097152, 0.0152722, 0.237, 0.00141, -0.289604, -0.100831, 0.138786, 0.09291, 0.145437, 0.223494, 0.963583, 0.018302, 0.0, 0.0, 1.0, -0.173648, 0.984808, 0.0],
+    ['claw-lft', colorAliases['lego white'], 'claw-lft', 2, 0.000773381, -0.101422, -0.0237761, 0.15, -0.089838, -0.246208, -0.117735, 0.091275, 0.000263, 0.07215, -0.341869, 0.700355, 0.092779, 0.000001, 0.000003, 1.0, 0.190812, 0.981627, -0.000003],
+    ['claw-rt', colorAliases['lego white'], 'claw-lft', 2, 0.000773381, -0.101422, -0.0237761, 0.15, -0.095016, -0.245349, -0.117979, 0.086528, 0.00067, 0.069743, 0.343317, 0.69924, 0.096123, 0.00606, -0.034369, 0.999391, -0.190704, 0.981027, 0.034894],
+    ['leg-lft', colorAliases['lego white'], 'leg', 2, 0.00433584, -0.177404, -0.0313928, 0.33, -0.129782, -0.440428, -0.184207, 0.13817, 0.118415, 0.122607, -0.156339, 0.436087, 0.006822, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
+    ['leg-rt', colorAliases['lego white'], 'leg', 2, 0.00433584, -0.177404, -0.0313928, 0.33, -0.132864, -0.437138, -0.183944, 0.134614, 0.12043, 0.121888, 0.151154, 0.436296, 0.007373, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
+  ]
+  // name / parent:name / flags / boundingsphere / boundngbox/ pos / dir /up 22
+
+  const top = new THREE.Group()
+  const genPart = (lod: (typeof lods)[number]): THREE.Group => {
+    const part = getPart(lod[2], 'global', typeof lod[1] === 'string' ? null : lod[1], typeof lod[1] === 'string' ? (lod[2] === lod[1] ? null : lod[1]) : null)
+    calculateTransformationMatrix([-lod[13], lod[14], lod[15]], [-lod[16], lod[17], lod[18]], [-lod[19], lod[20], lod[21]], transformationMatrix)
+    part.applyMatrix4(transformationMatrix)
+    part.name = lod[0]
+    return part
+  }
+  const infogron = genPart(lods[3])
+  const body = genPart(lods[1])
+  const armRt = genPart(lods[6])
+  const clawRt = genPart(lods[8])
+  // armRt.add(clawRt)
+
+  const armLft = genPart(lods[5])
+  const clawLft = genPart(lods[7])
+  // armLft.add(clawLft)
+
+  const head = genPart(lods[4])
+  const infohat = genPart(lods[2])
+  // head.add(infohat)
+
+  // body.add(head)
+  // body.add(armRt)
+  // body.add(armLft)
+  // infogron.add(body)
+
+  const legLft = genPart(lods[9])
+  const legRt = genPart(lods[10])
+  top.add(infogron)
+  top.add(legLft)
+  top.add(legRt)
+
+  top.add(body)
+  top.add(head)
+  top.add(armRt)
+  top.add(armLft)
+  top.add(clawRt)
+  top.add(clawLft)
+  top.add(infohat)
+
+  const lod = lods[0]
+  // top.applyMatrix4(calculateTransformationMatrix([-lod[13], lod[14], lod[15]], [-lod[16], lod[17], lod[18]], [-lod[19], lod[20], lod[21]]))
+  // top.scale.set(1, 1, 1)
+  // top.quaternion.set(0, 0, 0, 1)
+  const minifig = new THREE.Group()
+  minifig.add(top)
+  scene.add(minifig)
+  minifig.rotateX(-Math.PI / 2)
+  minifig.rotateZ(-Math.PI)
+  minifig.position.copy(camera.position.clone().sub(new THREE.Vector3(-2, 1, 1)))
 
   const keyStates = {
     ArrowUp: false,
