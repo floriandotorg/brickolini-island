@@ -1,9 +1,11 @@
 import * as THREE from 'three'
-import { type Boundary, boundaryMap, colorAliases, getBoundary, getBuildings, getDashboard, getModelObject, getMusic, getPart } from './assets'
+import { type Boundary, boundaryMap, colorAliases, copyWithAlpha, get2DSoundAnimation, getBoundary, getBuildings, getDashboard, getModelObject, getMusic, getPart, getTexture } from './assets'
 import { Dashboard, Dashboards, dashboardForModel } from './dashboard'
+import type { FLC } from './flc'
 import { MusicKeys } from './music'
 import { Plant } from './plant'
 import { setDebugData } from './store'
+import type { Gif } from './wdb'
 
 const calculateTransformationMatrix = (location: [number, number, number], direction: [number, number, number], up: [number, number, number], matrix?: THREE.Matrix4): THREE.Matrix4 => {
   const locationVector = new THREE.Vector3(...location)
@@ -17,6 +19,77 @@ const calculateTransformationMatrix = (location: [number, number, number], direc
   transformationMatrix.makeBasis(right, newUp, directionVector)
   transformationMatrix.setPosition(locationVector)
   return transformationMatrix
+}
+
+class FLCTexture {
+  private readonly _animation: FLC
+  private readonly _stillImage: Uint8Array
+  private readonly _canvas: HTMLCanvasElement
+  private readonly _context: CanvasRenderingContext2D
+  public readonly texture: THREE.CanvasTexture
+
+  private _animationState: { frameIndex: number; startTime: number } | null
+
+  public constructor(animation: FLC, stillImage: Gif) {
+    this._animation = animation
+    this._stillImage = new Uint8Array(stillImage.image.length)
+    const STEP_WIDTH = 3
+    for (let index = 0; index < stillImage.image.length; index += STEP_WIDTH) {
+      const srcIndex = stillImage.image.length - index - STEP_WIDTH
+      this._stillImage.set(stillImage.image.subarray(srcIndex, srcIndex + STEP_WIDTH), index)
+    }
+    this._canvas = document.createElement('canvas')
+    this._canvas.width = animation.width
+    this._canvas.height = animation.height
+    const flcContext = this._canvas.getContext('2d')
+    if (flcContext == null) {
+      throw new Error('Animation context not found')
+    }
+    this._context = flcContext
+    this.texture = new THREE.CanvasTexture(this._canvas)
+    this._animationState = null
+    this.draw(this._stillImage)
+  }
+
+  public dispose() {
+    this.texture.dispose()
+  }
+
+  public get running() {
+    return this._animationState != null
+  }
+
+  public updateAnimation(currentTime: number, forceReset = false) {
+    const newFrame = (() => {
+      if (this._animationState == null || forceReset === true) {
+        this._animationState = { frameIndex: 0, startTime: currentTime }
+        return true
+      }
+      const elapsedTime = currentTime - this._animationState.startTime
+      const msPerFrame = 1 / this._animation.frameRate
+      const frameIndex = Math.floor(elapsedTime / msPerFrame)
+      if (frameIndex === this._animationState.frameIndex) {
+        return false
+      }
+      if (frameIndex >= this._animation.numFrames) {
+        this._animationState = null
+      } else {
+        this._animationState.frameIndex = frameIndex
+      }
+      return true
+    })()
+    if (newFrame) {
+      const frame = this._animationState != null ? this._animation.frames()[this._animationState.frameIndex] : this._stillImage
+      this.draw(frame)
+    }
+  }
+
+  private draw(frame: Uint8Array) {
+    const imageData = this._context.getImageData(0, 0, this._animation.width, this._animation.height)
+    copyWithAlpha(frame, imageData.data)
+    this._context.putImageData(imageData, 0, 0)
+    this.texture.needsUpdate = true
+  }
 }
 
 export const initGame = async () => {
@@ -431,12 +504,18 @@ export const initGame = async () => {
   camera.lookAt(60, 0, 0)
   placeCameraOnGround()
 
+  const { audio, animation } = get2DSoundAnimation('ISLE.SI', 'sba001bu_RunAnim')
+
+  const listener = new THREE.AudioListener()
+  camera.add(listener)
+  const buffer = await audioContext.decodeAudioData(audio)
+
   const lods: [string, string | { red: number; green: number; blue: number; alpha: number }, string, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number][] = [
     ['top', 'top', 'top', 0, 0.000267, 0.780808, -0.01906, 0.951612, -0.461166, -0.002794, -0.299442, 0.4617, 1.56441, 0.261321, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
     ['body', 'infochst.gif', 'bodyred', 1, 0.00158332, 0.401828, -0.00048697, 0.408071, -0.287507, 0.150419, -0.147452, 0.289219, 0.649774, 0.14258, -0.00089, 0.436353, 0.007277, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
     ['infohat', 'infohat', 'icap', 2, 0.0, -0.00938, -0.01955, 0.35, -0.231822, -0.140237, -0.320954, 0.234149, 0.076968, 0.249083, 0.000191, 1.519793, 0.001767, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
     ['infogron', colorAliases['lego white'], 'infogron', 2, 0.0, 0.11477, 0.00042, 0.26, -0.285558, -0.134391, -0.142231, 0.285507, 0.152986, 0.143071, -0.00089, 0.436353, 0.007277, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
-    ['head', 'Infoface.GIF', 'head', 1, 0.0, -0.03006, 0.0, 0.3, -0.189506, -0.209665, -0.189824, 0.189532, 0.228822, 0.194945, -0.00105, 1.293115, 0.001781, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
+    ['head', 'smile.gif', 'head', 1, 0.0, -0.03006, 0.0, 0.3, -0.189506, -0.209665, -0.189824, 0.189532, 0.228822, 0.194945, -0.00105, 1.293115, 0.001781, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
     ['arm-lft', colorAliases['lego black'], 'arm-lft', 2, -0.06815, -0.0973747, 0.0154655, 0.237, -0.137931, -0.282775, -0.105316, 0.000989, 0.100221, 0.140759, -0.225678, 0.963312, 0.023286, -0.003031, -0.017187, 0.999848, 0.173622, 0.984658, 0.017453],
     ['arm-rt', colorAliases['lego black'], 'arm-rt', 2, 0.0680946, -0.097152, 0.0152722, 0.237, 0.00141, -0.289604, -0.100831, 0.138786, 0.09291, 0.145437, 0.223494, 0.963583, 0.018302, 0.0, 0.0, 1.0, -0.173648, 0.984808, 0.0],
     ['claw-lft', colorAliases['lego white'], 'claw-lft', 2, 0.000773381, -0.101422, -0.0237761, 0.15, -0.089838, -0.246208, -0.117735, 0.091275, 0.000263, 0.07215, -0.341869, 0.700355, 0.092779, 0.000001, 0.000003, 1.0, 0.190812, 0.981627, -0.000003],
@@ -446,9 +525,20 @@ export const initGame = async () => {
   ]
   // name / parent:name / flags / boundingsphere / boundngbox/ pos / dir /up 22
 
+  const headTexture = (() => {
+    for (const lod of lods) {
+      if (lod[0] === 'head' && typeof lod[1] === 'string') {
+        const stillImage = getTexture(lod[1], 'global')
+        return new FLCTexture(animation, stillImage)
+      }
+    }
+    throw new Error('Cannot find head')
+  })()
+
   const top = new THREE.Group()
   const genPart = (lod: (typeof lods)[number]): THREE.Group => {
-    const part = getPart(lod[2], 'global', typeof lod[1] === 'string' ? null : lod[1], typeof lod[1] === 'string' ? (lod[2] === lod[1] ? null : lod[1]) : null)
+    const texture = lod[0] === 'head' ? headTexture.texture : typeof lod[1] === 'string' ? (lod[2] === lod[1] ? null : lod[1]) : null
+    const part = getPart(lod[2], 'global', typeof lod[1] === 'string' ? null : lod[1], texture)
     calculateTransformationMatrix([-lod[13], lod[14], lod[15]], [-lod[16], lod[17], lod[18]], [-lod[19], lod[20], lod[21]], transformationMatrix)
     part.applyMatrix4(transformationMatrix)
     part.name = lod[0]
@@ -487,6 +577,11 @@ export const initGame = async () => {
   top.add(clawLft)
   top.add(infohat)
 
+  const cameraDirection = new THREE.Vector3()
+  camera.getWorldDirection(cameraDirection)
+  const pos = camera.position.clone().add(cameraDirection.multiplyScalar(6))
+  pos.y -= 1
+
   const lod = lods[0]
   // top.applyMatrix4(calculateTransformationMatrix([-lod[13], lod[14], lod[15]], [-lod[16], lod[17], lod[18]], [-lod[19], lod[20], lod[21]]))
   // top.scale.set(1, 1, 1)
@@ -496,7 +591,7 @@ export const initGame = async () => {
   scene.add(minifig)
   minifig.rotateX(-Math.PI / 2)
   minifig.rotateZ(-Math.PI)
-  minifig.position.copy(camera.position.clone().sub(new THREE.Vector3(-2, 1, 1)))
+  minifig.position.copy(pos)
 
   const keyStates = {
     ArrowUp: false,
@@ -608,6 +703,7 @@ export const initGame = async () => {
       if (defaultMusicGain < -0.05) {
         defaultMusicGain = MAX_MUSIC_GAIN
       }
+      musicGain.gain.value = defaultMusicGain * (headTexture.running != null ? 0.5 : 1)
     }
   })
 
@@ -842,6 +938,36 @@ export const initGame = async () => {
             switchBackgroundMusic(music[triggersReff[trigger.data - 1][1] - 1])
           }
         }
+      }
+    }
+
+    if (!headTexture.running) {
+      const worldPos = new THREE.Vector3()
+      head.getWorldPosition(worldPos)
+      if (camera.position.distanceToSquared(worldPos) < 10) {
+        musicGain.gain.value = defaultMusicGain * 0.5
+
+        headTexture.updateAnimation(audioContext.currentTime, true)
+
+        const sound = new THREE.PositionalAudio(listener)
+        sound.setBuffer(buffer)
+        sound.gain.gain.value = 0.2
+        sound.setRefDistance(20)
+        sound.play()
+        head.add(sound)
+      }
+    } else {
+      headTexture.updateAnimation(audioContext.currentTime)
+      if (!headTexture.running) {
+        musicGain.gain.value = defaultMusicGain
+      } else {
+        const worldPos = new THREE.Vector3()
+        head.getWorldPosition(worldPos)
+        const dx = camera.position.x - worldPos.x
+        const dz = camera.position.z - worldPos.z
+
+        const angle = Math.atan2(dx, dz)
+        head.rotation.y = angle
       }
     }
 

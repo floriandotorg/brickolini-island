@@ -564,7 +564,7 @@ const colorFromName = (name: string): Color | null => {
   return null
 }
 
-const createMeshValues = (lod: Lod, customColor: Color | null, textureName: string | null = null): [THREE.BufferGeometry, THREE.Material][] => {
+const createMeshValues = (lod: Lod, customColor: Color | null, texture: string | THREE.Texture | null = null): [THREE.BufferGeometry, THREE.Material][] => {
   const result: [THREE.BufferGeometry, THREE.Material][] = []
   for (const modelMesh of lod.meshes) {
     const vertices: number[] = modelMesh.vertices.flat()
@@ -587,7 +587,11 @@ const createMeshValues = (lod: Lod, customColor: Color | null, textureName: stri
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
     geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(modelMesh.normals.flat()), 3))
     if (modelMesh.textureName) {
-      material.map = createTexture(getTexture(textureName ?? modelMesh.textureName, textureName ? 'global' : 'model'))
+      if (texture instanceof THREE.Texture) {
+        material.map = texture
+      } else {
+        material.map = createTexture(getTexture(texture ?? modelMesh.textureName, texture ? 'global' : 'model'))
+      }
       geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
     } else {
       const color = customColor ?? colorFromName(modelMesh.materialName) ?? modelMesh.color
@@ -731,7 +735,7 @@ export const getModelObject = (name: string): THREE.Group => {
   return getModelObjectBase(model.roi, model.animation)
 }
 
-export const getPart = (name: string, source: 'global' | 'world', color: Color | null, textureName: string | null): THREE.Group => {
+export const getPart = (name: string, source: 'global' | 'world', color: Color | null, texture: string | THREE.Texture | null): THREE.Group => {
   const part = source === 'global' ? wdb?.globalParts.find(p => p.name.toLowerCase() === name.toLowerCase()) : wdb?.parts.find(p => p.name.toLowerCase() === name.toLowerCase())
   if (!part) {
     throw new Error(`Part ${name} not found`)
@@ -741,7 +745,7 @@ export const getPart = (name: string, source: 'global' | 'world', color: Color |
     throw new Error("Couldn't find lod and children")
   }
   const group = new THREE.Group()
-  for (const [geometry, material] of createMeshValues(lod, color, textureName)) {
+  for (const [geometry, material] of createMeshValues(lod, color, texture)) {
     const mesh = new THREE.Mesh(geometry, material)
     group.add(mesh)
   }
@@ -846,22 +850,10 @@ export const getMusic = (music: MusicKeys): AudioBuffer => {
   return audioBuffer
 }
 
-export const get2DAnimation = (siName: string, name: string): FLC => {
-  const si = siFiles.get(siName)
-  if (si == null) {
-    throw new Error('Assets not initialized')
-  }
-
-  const flc = Array.from(si.objects.values()).find(o => o.name === name)
-  if (flc == null) {
-    throw new Error('Animation not found')
-  }
-
+const get2DAnimationObject = (flc: SIObject): FLC => {
   const dest = new BinaryWriter()
   let offset = 0
   for (const [index, chunkSize] of flc.chunkSizes.entries()) {
-    console.log(index, chunkSize)
-
     let chunk = flc.data.subarray(offset, offset + chunkSize)
     if (index > 0) {
       if (chunkSize === 20) {
@@ -876,6 +868,44 @@ export const get2DAnimation = (siName: string, name: string): FLC => {
     offset += chunkSize
   }
   return new FLC(dest.buffer)
+}
+
+export const get2DAnimation = (siName: string, name: string): FLC => {
+  const si = siFiles.get(siName)
+  if (si == null) {
+    throw new Error('Assets not initialized')
+  }
+
+  const flc = Array.from(si.objects.values()).find(o => o.name === name)
+  if (flc == null) {
+    throw new Error('Animation not found')
+  }
+
+  return get2DAnimationObject(flc)
+}
+
+export const get2DSoundAnimation = (siName: string, name: string): { audio: ArrayBuffer; animation: FLC } => {
+  const si = siFiles.get(siName)
+  if (si == null) {
+    throw new Error('Assets not initialized')
+  }
+
+  const flc = Array.from(si.objects.values()).find(o => o.name === name)
+  if (flc == null) {
+    throw new Error('Animation not found')
+  }
+
+  const audio = flc.children.find(c => c.type === SIType.Sound)
+  if (audio == null) {
+    throw new Error('Audio not found')
+  }
+
+  const video = flc.children.find(c => c.type === SIType.Anim)
+  if (video == null) {
+    throw new Error('Video not found')
+  }
+
+  return { audio: createWAV(audio), animation: get2DAnimationObject(video) }
 }
 
 export const getMovie = (name: string): { audio: ArrayBuffer; video: Smk } => {
