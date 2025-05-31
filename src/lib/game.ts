@@ -26,6 +26,11 @@ export const initGame = async () => {
   }
 
   const audioContext = new AudioContext()
+  const musicGain = audioContext.createGain()
+  musicGain.connect(audioContext.destination)
+  const MAX_MUSIC_GAIN = 0.3
+  let defaultMusicGain = MAX_MUSIC_GAIN
+  musicGain.gain.value = defaultMusicGain
 
   let backgroundMusic: { key: MusicKeys; gain: GainNode; audioSource: AudioBufferSourceNode } | null = null
   const switchBackgroundMusic = (nextMusicKey: MusicKeys) => {
@@ -39,7 +44,7 @@ export const initGame = async () => {
       }
       if (nextMusicKey != null) {
         const gain = audioContext.createGain()
-        gain.connect(audioContext.destination)
+        gain.connect(musicGain)
         gain.gain.value = 0
         gain.gain.setTargetAtTime(1, audioContext.currentTime, fadeInTime / 3)
         const audioSource = audioContext.createBufferSource()
@@ -528,6 +533,13 @@ export const initGame = async () => {
     if (event.key === 'd') {
       showDebugMenu = !showDebugMenu
       debugObjectGroup.visible = showDebugMenu
+    }
+
+    if (event.key === 'm') {
+      defaultMusicGain -= 0.1
+      if (defaultMusicGain < -0.05) {
+        defaultMusicGain = MAX_MUSIC_GAIN
+      }
     }
   })
 
