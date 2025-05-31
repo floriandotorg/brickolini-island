@@ -326,6 +326,7 @@ export class Boundary {
     const dir = p2.clone()
     dir.sub(p1)
     dir.normalize()
+    dir.multiplyScalar(-1)
 
     const right = new THREE.Vector3(this.up.x, this.up.y, this.up.z).cross(dir)
     const matrix = new THREE.Matrix4()
