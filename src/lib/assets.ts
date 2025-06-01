@@ -736,7 +736,7 @@ export const getModelObject = (name: string): THREE.Group => {
 }
 
 export const getPart = (name: string, source: 'global' | 'world', color: Color | null, texture: string | THREE.Texture | null): THREE.Group => {
-  const part = source === 'global' ? wdb?.globalParts.find(p => p.name.toLowerCase() === name.toLowerCase()) : wdb?.parts.find(p => p.name.toLowerCase() === name.toLowerCase())
+  const part = (source === 'global' ? wdb?.globalParts : wdb?.parts)?.find(p => p.name.toLowerCase() === name.toLowerCase())
   if (!part) {
     throw new Error(`Part ${name} not found`)
   }
