@@ -1,4 +1,4 @@
-import { getMovie } from './assets'
+import { copyWithAlpha, getMovie } from './assets'
 import { setMode } from './store'
 
 let skipCutscene = false
@@ -34,14 +34,7 @@ export const playCutscene = async (name: string) => {
     canvas.width = video.width
     canvas.height = video.height
     const imageData = ctx.createImageData(video.width, video.height)
-    for (let n = 0; n < video.width * video.height; ++n) {
-      const i = n * 3
-      const j = n * 4
-      imageData.data[j] = frame[i]
-      imageData.data[j + 1] = frame[i + 1]
-      imageData.data[j + 2] = frame[i + 2]
-      imageData.data[j + 3] = 255
-    }
+    copyWithAlpha(frame, imageData.data)
     return imageData
   }
   let n = 0

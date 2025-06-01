@@ -520,15 +520,28 @@ export const getModel = (name: string): Model => {
   return model
 }
 
+export const copyWithAlpha = (image: Uint8Array, imageWithAlpha: Uint8Array | Uint8ClampedArray) => {
+  if (image.length % 3 !== 0) {
+    throw new Error('Source image is not a valid RGB array')
+  }
+  if (imageWithAlpha.length % 4 !== 0) {
+    throw new Error('Target image is not a valid RGBA array')
+  }
+  const pixelCount = image.length / 3
+  if (pixelCount !== imageWithAlpha.length / 4) {
+    throw new Error('Source and target image have not the same pixel count')
+  }
+  for (let index = 0; index < pixelCount; index++) {
+    const destIndex = index * 4
+    const srcIndex = index * 3
+    imageWithAlpha.set(image.subarray(srcIndex, srcIndex + 3), destIndex)
+    imageWithAlpha[destIndex + 3] = 0xff
+  }
+}
+
 const createTexture = (image: Gif): THREE.DataTexture => {
   const data = new Uint8Array(image.width * image.height * 4)
-
-  for (let index = 0; index < image.width * image.height; index++) {
-    const texIndex = index * 4
-    const gifIndex = index * 3
-    data.set(image.image.subarray(gifIndex, gifIndex + 3), texIndex)
-    data[texIndex + 3] = 0xff
-  }
+  copyWithAlpha(image.image, data)
 
   const tex = new THREE.DataTexture(data, image.width, image.height)
   tex.wrapS = THREE.RepeatWrapping
