@@ -187,7 +187,7 @@ export class WDB {
     const tex = (source === 'model' ? this._modelTextures : this._images).find(t => t.title.toLowerCase() === name.toLowerCase())
     if (!tex) {
       console.log(this._textures)
-      throw new Error('texture not found')
+      throw new Error(`texture '${name}' in ${source} not found`)
     }
     return tex
   }
