@@ -152,7 +152,7 @@ export const initGame = async () => {
 
   let dashboard: { group: THREE.Group; dashboard: Dashboard } | null = null
 
-  const carsWithDashboard: { group: THREE.Group; onClick: () => Promise<Dashboard> }[] = []
+  const clickableGroups: { group: THREE.Group; onClick: () => Promise<void> }[] = []
 
   canvas.addEventListener('pointerup', () => {
     if (isTransitioning) {
@@ -162,10 +162,17 @@ export const initGame = async () => {
     dashboard?.dashboard.pointerUp()
   })
 
-  const getDefaultDashboard = (dashboard: Dashboards): (() => Promise<Dashboard>) => {
+  const clickedOnCar = (hitGroup: THREE.Group, dashboardId: Dashboards): (() => Promise<void>) => {
     return async () => {
-      const { dashboardObj, backgroundObj } = getDashboard(dashboard)
-      return await Dashboard.create(dashboardObj, hudContext, audioContext, backgroundObj)
+      await transition()
+      hitGroup.visible = false
+      const { dashboardObj, backgroundObj } = getDashboard(dashboardId)
+      dashboard = { dashboard: await Dashboard.create(dashboardObj, hudContext, audioContext, backgroundObj), group: hitGroup }
+      dashboard.dashboard.drawBackground()
+      hudTexture.needsUpdate = true
+      camera.position.copy(hitGroup.position.clone().add(new THREE.Vector3(0, 1, 0)))
+      camera.quaternion.copy(hitGroup.quaternion)
+      placeCameraOnGround()
     }
   }
 
@@ -204,20 +211,13 @@ export const initGame = async () => {
       const relativeY = -((event.clientY - rect.top) / rect.height) * 2 + 1
       const raycaster = new THREE.Raycaster()
       raycaster.setFromCamera(new THREE.Vector2(relativeX, relativeY), camera)
-      const intersects = raycaster.intersectObjects(carsWithDashboard.map(({ group }) => group).filter(group => group.visible))
+      const intersects = raycaster.intersectObjects(clickableGroups.map(({ group }) => group).filter(group => group.visible))
       let obj: THREE.Object3D | null = intersects[0]?.object
       while (obj != null) {
         if (obj instanceof THREE.Group) {
-          const hitGroup = carsWithDashboard.find(({ group }) => group === obj) ?? null
+          const hitGroup = clickableGroups.find(({ group }) => group === obj) ?? null
           if (hitGroup) {
-            await transition()
-            hitGroup.group.visible = false
-            dashboard = { dashboard: await hitGroup.onClick(), group: hitGroup.group }
-            dashboard.dashboard.drawBackground()
-            hudTexture.needsUpdate = true
-            camera.position.copy(hitGroup.group.position.clone().add(new THREE.Vector3(0, 1, 0)))
-            camera.quaternion.copy(hitGroup.group.quaternion)
-            placeCameraOnGround()
+            hitGroup.onClick()
             break
           }
         }
@@ -362,7 +362,7 @@ export const initGame = async () => {
 
       const modelDashboard = dashboardForModel(buildingData.modelName)
       if (modelDashboard) {
-        carsWithDashboard.push({ group: model, onClick: getDefaultDashboard(modelDashboard) })
+        clickableGroups.push({ group: model, onClick: clickedOnCar(model, modelDashboard) })
       }
 
       scene.add(model)
@@ -374,9 +374,9 @@ export const initGame = async () => {
   const bugy = getModelObject('dunebugy')
   bugy.position.set(-25.5, 0, -3.4)
   scene.add(bugy)
-  carsWithDashboard.push({
+  clickableGroups.push({
     group: bugy,
-    onClick: getDefaultDashboard(Dashboards.DuneCar),
+    onClick: clickedOnCar(bugy, Dashboards.DuneCar),
   })
 
   for (const plant of Plant.locationsPerPair(Plant.World.ACT1)) {
