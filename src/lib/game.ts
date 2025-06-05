@@ -510,10 +510,13 @@ export const initGame = async () => {
   camera.add(listener)
   const buffer = await audioContext.decodeAudioData(audio)
 
+  const hatParts = ['baseball', 'chef', 'cap', 'cophat', 'helmet', 'ponytail', 'pageboy', 'shrthair', 'bald', 'flower', 'cboyhat', 'cuphat', 'cathat', 'backbcap', 'pizhat', 'caprc', 'capch', 'capdb', 'capjs', 'capmd', 'sheet', 'phat', 'icap']
+  let hatPartIndex = hatParts.indexOf('icap')
+
   const lods: [string, string | { red: number; green: number; blue: number; alpha: number }, string, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number][] = [
     ['top', 'top', 'top', 0, 0.000267, 0.780808, -0.01906, 0.951612, -0.461166, -0.002794, -0.299442, 0.4617, 1.56441, 0.261321, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
     ['body', 'infochst.gif', 'bodyred', 1, 0.00158332, 0.401828, -0.00048697, 0.408071, -0.287507, 0.150419, -0.147452, 0.289219, 0.649774, 0.14258, -0.00089, 0.436353, 0.007277, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
-    ['infohat', 'infohat', 'icap', 2, 0.0, -0.00938, -0.01955, 0.35, -0.231822, -0.140237, -0.320954, 0.234149, 0.076968, 0.249083, 0.000191, 1.519793, 0.001767, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
+    ['infohat', colorAliases['lego red'], 'icap', 2, 0.0, -0.00938, -0.01955, 0.35, -0.231822, -0.140237, -0.320954, 0.234149, 0.076968, 0.249083, 0.000191, 1.519793, 0.001767, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
     ['infogron', colorAliases['lego white'], 'infogron', 2, 0.0, 0.11477, 0.00042, 0.26, -0.285558, -0.134391, -0.142231, 0.285507, 0.152986, 0.143071, -0.00089, 0.436353, 0.007277, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
     ['head', 'smile.gif', 'head', 1, 0.0, -0.03006, 0.0, 0.3, -0.189506, -0.209665, -0.189824, 0.189532, 0.228822, 0.194945, -0.00105, 1.293115, 0.001781, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
     ['arm-lft', colorAliases['lego black'], 'arm-lft', 2, -0.06815, -0.0973747, 0.0154655, 0.237, -0.137931, -0.282775, -0.105316, 0.000989, 0.100221, 0.140759, -0.225678, 0.963312, 0.023286, -0.003031, -0.017187, 0.999848, 0.173622, 0.984658, 0.017453],
@@ -538,7 +541,8 @@ export const initGame = async () => {
   const top = new THREE.Group()
   const genPart = (lod: (typeof lods)[number]): THREE.Group => {
     const texture = lod[0] === 'head' ? headTexture.texture : typeof lod[1] === 'string' ? (lod[2] === lod[1] ? null : lod[1]) : null
-    const part = getPart(lod[2], 'global', typeof lod[1] === 'string' ? null : lod[1], texture)
+    const partName = lod[0] === 'infohat' ? hatParts[hatPartIndex] : lod[2]
+    const part = getPart(partName, 'global', typeof lod[1] === 'string' ? null : lod[1], texture)
     calculateTransformationMatrix([-lod[13], lod[14], lod[15]], [-lod[16], lod[17], lod[18]], [-lod[19], lod[20], lod[21]], transformationMatrix)
     part.applyMatrix4(transformationMatrix)
     part.name = lod[0]
@@ -555,7 +559,7 @@ export const initGame = async () => {
   // armLft.add(clawLft)
 
   const head = genPart(lods[4])
-  const infohat = genPart(lods[2])
+  let infohat = genPart(lods[2])
   // head.add(infohat)
 
   // body.add(head)
@@ -576,6 +580,19 @@ export const initGame = async () => {
   top.add(clawRt)
   top.add(clawLft)
   top.add(infohat)
+
+  clickableGroups.push({
+    group: top,
+    onClick: async () => {
+      hatPartIndex++
+      if (hatPartIndex >= hatParts.length) {
+        hatPartIndex = 0
+      }
+      top.remove(infohat)
+      infohat = genPart(lods[2])
+      top.add(infohat)
+    },
+  })
 
   const cameraDirection = new THREE.Vector3()
   camera.getWorldDirection(cameraDirection)
