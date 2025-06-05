@@ -34,9 +34,9 @@ class FLCTexture {
     this._animation = animation
     this._stillImage = new Uint8Array(stillImage.image.length)
     const STEP_WIDTH = 3
-    for (let index = 0; index < stillImage.image.length; index += STEP_WIDTH) {
-      const srcIndex = stillImage.image.length - index - STEP_WIDTH
-      this._stillImage.set(stillImage.image.subarray(srcIndex, srcIndex + STEP_WIDTH), index)
+    for (let index = 0; index < stillImage.image.length; index += STEP_WIDTH * stillImage.width) {
+      const srcIndex = stillImage.image.length - index - STEP_WIDTH * stillImage.width
+      this._stillImage.set(stillImage.image.subarray(srcIndex, srcIndex + STEP_WIDTH * stillImage.width), index)
     }
     this._canvas = document.createElement('canvas')
     this._canvas.width = animation.width
