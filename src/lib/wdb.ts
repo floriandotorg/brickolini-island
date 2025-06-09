@@ -24,7 +24,20 @@ export type Mesh = {
 }
 export type Model = { roi: Roi; animation: Animation.Node }
 export type Roi = { name: string; lods: Lod[]; children: Roi[]; textureName: string }
-export type Lod = { meshes: Mesh[] }
+export class Lod {
+  public constructor(
+    public readonly meshesBeforeOffset: Mesh[],
+    public readonly meshesAfterOffset: Mesh[],
+  ) {}
+
+  public get length() {
+    return this.meshesBeforeOffset.length + this.meshesAfterOffset.length
+  }
+
+  public get meshes() {
+    return this.meshesBeforeOffset.concat(this.meshesAfterOffset)
+  }
+}
 export type Part = { name: string; lods: Lod[] }
 export namespace Animation {
   export type TimeAndFlags = { time: number; flags: number }
@@ -258,7 +271,7 @@ export class WDB {
     }
     const numMeshes = this._reader.readUint32()
     if (numMeshes === 0) {
-      return { meshes: [] }
+      return new Lod([], [])
     }
     const numVerts = this._reader.readUint16()
     let numNormals = this._reader.readUint16()
@@ -267,7 +280,8 @@ export class WDB {
     const vertices = this._readVertices(numVerts)
     const normals = this._readVertices(numNormals)
     const uvs: [number, number][] = Array.from({ length: numTextVerts }, () => [this._reader.readFloat32(), this._reader.readFloat32()])
-    const meshes: Mesh[] = []
+    const meshesBeforeOffset: Mesh[] = []
+    const meshesAfterOffset: Mesh[] = []
     for (let m = 0; m < numMeshes; m += 1) {
       const numPolys = this._reader.readUint16()
       const numMeshVerts = this._reader.readUint16()
@@ -321,9 +335,10 @@ export class WDB {
       const textureName = this._reader.readString()
       const materialName = this._reader.readString()
       const color: Color = { red, green, blue, alpha }
+      const meshes = textureName.toLowerCase().startsWith('inh') || materialName.toLowerCase().startsWith('inh') ? meshesAfterOffset : meshesBeforeOffset
       meshes.push({ vertices: meshVertices, normals: meshNormals, uvs: meshUvs, indices, color, useColorAlias, textureName: textureName, materialName: materialName, shading })
     }
-    return { meshes }
+    return new Lod(meshesBeforeOffset, meshesAfterOffset)
   }
 
   private _readParts = (offset: number): Part[] => {
@@ -340,7 +355,7 @@ export class WDB {
       const lods: Lod[] = []
       for (let n = 0; n < numLods; ++n) {
         const lod = this._readLod()
-        if (lod.meshes.length !== 0) {
+        if (lod.length !== 0) {
           lods.push(lod)
         }
       }

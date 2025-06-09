@@ -8,7 +8,7 @@ import { MusicKeys } from './music'
 import { SI, SIFileType, type SIObject, SIType } from './si'
 import { Smk } from './smk'
 import { setLoading } from './store'
-import { type Animation, type Color, type Gif, type Lod, type Model, type Roi, Shading, WDB } from './wdb'
+import { type Animation, type Color, type Gif, type Lod, type Mesh, type Model, type Roi, Shading, WDB } from './wdb'
 
 const siFiles: Map<string, SI> = new Map()
 const musicBuffer: Map<MusicKeys, AudioBuffer> = new Map()
@@ -564,43 +564,52 @@ const colorFromName = (name: string): Color | null => {
   return null
 }
 
+const createMesh = (modelMesh: Mesh, customColor: Color | null, texture: string | THREE.Texture | null): [THREE.BufferGeometry, THREE.Material] => {
+  const vertices: number[] = modelMesh.vertices.flat()
+  const indices: number[] = modelMesh.indices
+  const uvs: number[] = modelMesh.uvs.flat()
+  const material = (() => {
+    switch (modelMesh.shading) {
+      case Shading.WireFrame:
+        return new THREE.MeshBasicMaterial({ wireframe: true })
+      case Shading.Gouraud:
+        return new THREE.MeshLambertMaterial()
+      case Shading.Flat:
+        return new THREE.MeshLambertMaterial({ flatShading: true })
+      default:
+        throw new Error(`Unknown shading: ${modelMesh.shading}`)
+    }
+  })()
+  const geometry = new THREE.BufferGeometry()
+  geometry.setIndex(indices)
+  geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
+  geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(modelMesh.normals.flat()), 3))
+  if (modelMesh.textureName) {
+    if (texture instanceof THREE.Texture) {
+      material.map = texture
+    } else {
+      material.map = createTexture(getTexture(texture ?? modelMesh.textureName, texture ? 'global' : 'model'))
+    }
+    geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
+  } else {
+    const color = customColor ?? colorFromName(modelMesh.materialName) ?? modelMesh.color
+    material.color = new THREE.Color(color.red / 255, color.green / 255, color.blue / 255)
+    if (color.alpha < 0.99) {
+      material.transparent = true
+      material.opacity = color.alpha
+    }
+  }
+  return [geometry, material]
+}
+
 const createMeshValues = (lod: Lod, customColor: Color | null, texture: string | THREE.Texture | null = null): [THREE.BufferGeometry, THREE.Material][] => {
   const result: [THREE.BufferGeometry, THREE.Material][] = []
-  for (const modelMesh of lod.meshes) {
-    const vertices: number[] = modelMesh.vertices.flat()
-    const indices: number[] = modelMesh.indices
-    const uvs: number[] = modelMesh.uvs.flat()
-    const material = (() => {
-      switch (modelMesh.shading) {
-        case Shading.WireFrame:
-          return new THREE.MeshBasicMaterial({ wireframe: true })
-        case Shading.Gouraud:
-          return new THREE.MeshLambertMaterial()
-        case Shading.Flat:
-          return new THREE.MeshLambertMaterial({ flatShading: true })
-        default:
-          throw new Error(`Unknown shading: ${modelMesh.shading}`)
-      }
-    })()
-    const geometry = new THREE.BufferGeometry()
-    geometry.setIndex(indices)
-    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
-    geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(modelMesh.normals.flat()), 3))
-    if (modelMesh.textureName) {
-      if (texture instanceof THREE.Texture) {
-        material.map = texture
-      } else {
-        material.map = createTexture(getTexture(texture ?? modelMesh.textureName, texture ? 'global' : 'model'))
-      }
-      geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
-    } else {
-      const color = customColor ?? colorFromName(modelMesh.materialName) ?? modelMesh.color
-      material.color = new THREE.Color(color.red / 255, color.green / 255, color.blue / 255)
-      if (color.alpha < 0.99) {
-        material.transparent = true
-        material.opacity = color.alpha
-      }
-    }
+  for (const modelMesh of lod.meshesBeforeOffset) {
+    const [geometry, material] = createMesh(modelMesh, null, null)
+    result.push([geometry, material])
+  }
+  for (const modelMesh of lod.meshesAfterOffset) {
+    const [geometry, material] = createMesh(modelMesh, customColor, texture)
     result.push([geometry, material])
   }
   return result
