@@ -564,7 +564,7 @@ const colorFromName = (name: string): Color | null => {
   return null
 }
 
-const createMesh = (modelMesh: Mesh, customColor: Color | null, texture: string | THREE.Texture | null): [THREE.BufferGeometry, THREE.Material] => {
+const createMesh = (modelMesh: Mesh, customColor: Color | null, texture: string | THREE.Texture | null, type: 'model' | 'part'): [THREE.BufferGeometry, THREE.Material] => {
   const vertices: number[] = modelMesh.vertices.flat()
   const indices: number[] = modelMesh.indices
   const uvs: number[] = modelMesh.uvs.flat()
@@ -588,7 +588,7 @@ const createMesh = (modelMesh: Mesh, customColor: Color | null, texture: string 
     if (texture instanceof THREE.Texture) {
       material.map = texture
     } else {
-      material.map = createTexture(getTexture(texture ?? modelMesh.textureName, texture ? 'global' : 'model'))
+      material.map = createTexture(getTexture(texture ?? modelMesh.textureName, texture ? 'image' : type))
     }
     geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
   } else {
@@ -602,14 +602,14 @@ const createMesh = (modelMesh: Mesh, customColor: Color | null, texture: string 
   return [geometry, material]
 }
 
-const createMeshValues = (lod: Lod, customColor: Color | null, texture: string | THREE.Texture | null = null): [THREE.BufferGeometry, THREE.Material][] => {
+const createMeshValues = (lod: Lod, customColor: Color | null, texture: string | THREE.Texture | null, type: 'model' | 'part'): [THREE.BufferGeometry, THREE.Material][] => {
   const result: [THREE.BufferGeometry, THREE.Material][] = []
   for (const modelMesh of lod.meshesBeforeOffset) {
-    const [geometry, material] = createMesh(modelMesh, null, null)
+    const [geometry, material] = createMesh(modelMesh, null, null, type)
     result.push([geometry, material])
   }
   for (const modelMesh of lod.meshesAfterOffset) {
-    const [geometry, material] = createMesh(modelMesh, customColor, texture)
+    const [geometry, material] = createMesh(modelMesh, customColor, texture, type)
     result.push([geometry, material])
   }
   return result
@@ -726,7 +726,7 @@ const getModelObjectBase = (roi: Roi, animation: Animation.Node | undefined): TH
   }
   const customColor: Color | null = colorFromName(roi.textureName)
   if (lod != null) {
-    for (const [geometry, material] of createMeshValues(lod, customColor)) {
+    for (const [geometry, material] of createMeshValues(lod, customColor, null, 'model')) {
       const mesh = new THREE.Mesh(geometry, material)
       group.add(mesh)
     }
@@ -754,7 +754,7 @@ export const getPart = (name: string, source: 'global' | 'world', color: Color |
     throw new Error("Couldn't find lod and children")
   }
   const group = new THREE.Group()
-  for (const [geometry, material] of createMeshValues(lod, color, texture)) {
+  for (const [geometry, material] of createMeshValues(lod, color, texture, 'part')) {
     const mesh = new THREE.Mesh(geometry, material)
     group.add(mesh)
   }
@@ -802,7 +802,7 @@ export const getModelInstanced = (name: string, count: number): InstancedModel =
     throw new Error("Couldn't find lod and children")
   }
   const meshes: THREE.InstancedMesh[] = []
-  for (const [geometry, material] of createMeshValues(lod, null)) {
+  for (const [geometry, material] of createMeshValues(lod, null, null, 'model')) {
     const mesh = new THREE.InstancedMesh(geometry, material, count)
     meshes.push(mesh)
   }
@@ -811,7 +811,7 @@ export const getModelInstanced = (name: string, count: number): InstancedModel =
   return result
 }
 
-export const getTexture = (name: string, source: 'model' | 'global' = 'model'): Gif => {
+export const getTexture = (name: string, source: 'model' | 'part' | 'image'): Gif => {
   if (wdb == null) {
     throw new Error('Assets not initialized')
   }

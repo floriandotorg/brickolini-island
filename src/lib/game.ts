@@ -531,7 +531,7 @@ export const initGame = async () => {
   const headTexture = (() => {
     for (const lod of lods) {
       if (lod[0] === 'head' && typeof lod[1] === 'string') {
-        const stillImage = getTexture(lod[1], 'global')
+        const stillImage = getTexture(lod[1], 'image')
         return new FLCTexture(animation, stillImage)
       }
     }

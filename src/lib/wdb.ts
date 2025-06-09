@@ -196,10 +196,20 @@ export class WDB {
     return this._globalParts
   }
 
-  textureByName = (name: string, source: 'model' | 'global' = 'model'): Gif => {
-    const tex = (source === 'model' ? this._modelTextures : this._images).find(t => t.title.toLowerCase() === name.toLowerCase())
+  textureByName = (name: string, source: 'model' | 'part' | 'image'): Gif => {
+    const textures = (() => {
+      switch (source) {
+        case 'model':
+          return this._modelTextures
+        case 'part':
+          return this._textures
+        case 'image':
+          return this._images
+      }
+    })()
+    const tex = textures.find(t => t.title.toLowerCase() === name.toLowerCase())
     if (!tex) {
-      console.log(this._textures)
+      console.log(textures)
       throw new Error(`texture '${name}' in ${source} not found`)
     }
     return tex
