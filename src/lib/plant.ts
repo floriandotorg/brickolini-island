@@ -6,6 +6,19 @@ export namespace Plant {
     Palm = 3,
   }
 
+  const nextVariant = (variant: Variant): Variant => {
+    switch (variant) {
+      case Variant.Flower:
+        return Variant.Tree
+      case Variant.Tree:
+        return Variant.Bush
+      case Variant.Bush:
+        return Variant.Palm
+      case Variant.Palm:
+        return Variant.Flower
+    }
+  }
+
   export enum Color {
     White = 0,
     Black = 1,
@@ -23,7 +36,7 @@ export namespace Plant {
     ACT3 = 1 << 16,
   }
 
-  export const partName = (variant: Variant, color: Color): string | undefined => {
+  export const partName = (variant: Variant, color: Color): string => {
     switch (true) {
       case variant === Variant.Flower && color === Color.White:
         return 'flwrwht'
@@ -66,14 +79,13 @@ export namespace Plant {
       case variant === Variant.Palm && color === Color.Green:
         return 'palm'
       default:
-        console.log(`combination of ${variant} and ${color} is not supported`)
-        break
+        throw new Error(`combination of ${variant} and ${color} is not supported`)
     }
   }
 
   type LocationAndDirection = { location: [number, number, number]; direction: [number, number, number]; up: [number, number, number] }
 
-  type PlantInfo = { worlds: World; variant: Variant; color: Color; locationAndDirection: LocationAndDirection }
+  export type PlantInfo = { worlds: World; variant: Variant; color: Color; locationAndDirection: LocationAndDirection }
 
   // information based on legoplants.cpp
   const plants: PlantInfo[] = [
@@ -160,22 +172,28 @@ export namespace Plant {
     { worlds: World.IISLE, variant: Variant.Flower, color: Color.Red, locationAndDirection: { location: [-1.801479, -0.52473, -11.75], direction: [0.0175, 0.0, -0.9998], up: [0.0, 1.0, 0.0] } },
   ]
 
-  export type PlantLocations = { variant: Variant; color: Color; locations: LocationAndDirection[] }
+  export type PlantLocations = { variant: Variant; color: Color; plants: PlantInfo[] }
 
   export const locationsPerPair = (world: World): PlantLocations[] => {
     const result: PlantLocations[] = []
-    for (const { worlds, variant, color, locationAndDirection } of plants) {
-      if ((worlds & world) !== 0) {
+    for (const plant of plants) {
+      if ((plant.worlds & world) !== 0) {
+        const variant = plant.variant
+        const color = plant.color
         const locations =
           result.find(({ variant: variant2, color: color2 }) => variant2 === variant && color2 === color) ??
           ((): PlantLocations => {
-            const newEntry: PlantLocations = { variant, color, locations: [] }
+            const newEntry: PlantLocations = { variant, color, plants: [] }
             result.push(newEntry)
             return newEntry
           })()
-        locations.locations.push(locationAndDirection)
+        locations.plants.push(plant)
       }
     }
     return result
+  }
+
+  export const switchVariant = (plant: PlantInfo) => {
+    plant.variant = nextVariant(plant.variant)
   }
 }

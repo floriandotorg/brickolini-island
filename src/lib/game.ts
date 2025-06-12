@@ -381,14 +381,23 @@ export const initGame = async () => {
 
   for (const plant of Plant.locationsPerPair(Plant.World.ACT1)) {
     const plantName = Plant.partName(plant.variant, plant.color)
-    if (plantName) {
-      const part = getPart(plantName, 'global', null, null)
-      for (const { location, direction, up } of plant.locations) {
-        calculateTransformationMatrix(location, direction, up, transformationMatrix)
-        const partInstance = part.clone()
-        partInstance.applyMatrix4(transformationMatrix)
-        scene.add(partInstance)
-      }
+    const part = getPart(plantName, 'global', null, null)
+    for (const plantInfo of plant.plants) {
+      calculateTransformationMatrix(plantInfo.locationAndDirection.location, plantInfo.locationAndDirection.direction, plantInfo.locationAndDirection.up, transformationMatrix)
+      const partInstance = part.clone()
+      const plantGroup = new THREE.Group()
+      plantGroup.applyMatrix4(transformationMatrix)
+      plantGroup.add(partInstance)
+      scene.add(plantGroup)
+      clickableGroups.push({
+        group: plantGroup,
+        onClick: async () => {
+          Plant.switchVariant(plantInfo)
+          plantGroup.clear()
+          const newPlant = getPart(Plant.partName(plantInfo.variant, plantInfo.color), 'global', null, null)
+          plantGroup.add(newPlant)
+        },
+      })
     }
   }
 
