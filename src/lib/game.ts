@@ -152,7 +152,7 @@ export const initGame = async () => {
 
   let dashboard: { group: THREE.Group; dashboard: Dashboard } | null = null
 
-  const clickableGroups: { group: THREE.Group; onClick: () => Promise<void> }[] = []
+  const clickableGroups: { group: THREE.Group; onClick: (alternative: boolean) => Promise<void> }[] = []
 
   canvas.addEventListener('pointerup', () => {
     if (isTransitioning) {
@@ -217,7 +217,7 @@ export const initGame = async () => {
         if (obj instanceof THREE.Group) {
           const hitGroup = clickableGroups.find(({ group }) => group === obj) ?? null
           if (hitGroup) {
-            hitGroup.onClick()
+            hitGroup.onClick(event.getModifierState('Control'))
             break
           }
         }
@@ -391,8 +391,13 @@ export const initGame = async () => {
       scene.add(plantGroup)
       clickableGroups.push({
         group: plantGroup,
-        onClick: async () => {
-          Plant.switchVariant(plantInfo)
+        onClick: async (alternative: boolean) => {
+          console.log(`clicked plant with ${alternative}`)
+          if (alternative) {
+            Plant.switchColor(plantInfo)
+          } else {
+            Plant.switchVariant(plantInfo)
+          }
           plantGroup.clear()
           const newPlant = getPart(Plant.partName(plantInfo.variant, plantInfo.color), 'global', null, null)
           plantGroup.add(newPlant)

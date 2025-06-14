@@ -27,6 +27,21 @@ export namespace Plant {
     Green = 4,
   }
 
+  const nextColor = (color: Color): Color => {
+    switch (color) {
+      case Color.White:
+        return Color.Black
+      case Color.Black:
+        return Color.Yellow
+      case Color.Yellow:
+        return Color.Red
+      case Color.Red:
+        return Color.Green
+      case Color.Green:
+        return Color.White
+    }
+  }
+
   export enum World {
     ACT1 = 1 << 0,
     IMAIN = 1 << 1,
@@ -195,5 +210,9 @@ export namespace Plant {
 
   export const switchVariant = (plant: PlantInfo) => {
     plant.variant = nextVariant(plant.variant)
+  }
+
+  export const switchColor = (plant: PlantInfo) => {
+    plant.color = nextColor(plant.color)
   }
 }
