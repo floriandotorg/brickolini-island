@@ -940,3 +940,58 @@ export const getMovie = (name: string): { audio: ArrayBuffer; video: Smk } => {
 
   return { audio: createWAV(audio), video: new Smk(new BinaryReader(video.data.buffer)) }
 }
+
+export type TimeAndFlags = { time: number; flags: number }
+export type VertexKey = { timeAndFlags: TimeAndFlags; vertex: THREE.Vector3 }
+export type RotationKey = { timeAndFlags: TimeAndFlags; quaternion: THREE.Quaternion }
+export type MorphKey = { timeAndFlags: TimeAndFlags; bool: boolean }
+export type Animation3DNode = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Animation3DNode[] }
+
+export const get3DAnimation = (siFile: string, name: number): Animation3DNode[] => {
+  const si = siFiles.get(siFile)
+  if (si == null) {
+    throw new Error('Assets not initialized')
+  }
+
+  const ani = si.objects.get(name)
+  if (ani == null) {
+    throw new Error('Animation not found')
+  }
+
+  const reader = new BinaryReader(ani.data.buffer)
+  const magic = reader.readInt32()
+  if (magic !== 17) {
+    throw new Error('Invalid magic number')
+  }
+  const unknownFloat = reader.readFloat32()
+  const unknownVector = reader.readVector3()
+  const parseScene = reader.readInt32()
+  if (parseScene !== 0) {
+    throw new Error('Parse scene not supported')
+  }
+  const val3 = reader.readInt32()
+  const numAnimations = reader.readUint32()
+  const nodes: WDB.Animation.Node[] = []
+  for (let n = 0; n < numAnimations; ++n) {
+    const animationName = reader.readString()
+    if (animationName.length > 0) {
+      const unknown = reader.readInt32()
+    }
+    const duration = reader.readInt32()
+    const animation = WDB.Animation.readAnimationTree(reader)
+    nodes.push(animation)
+  }
+  const convertNode = (node: WDB.Animation.Node): Animation3DNode => ({
+    name: node.name,
+    translationKeys: node.translationKeys.map(t => ({ timeAndFlags: t.timeAndFlags, vertex: new THREE.Vector3(...t.vertex) })),
+    rotationKeys: node.rotationKeys.map(t => ({ timeAndFlags: t.timeAndFlags, quaternion: new THREE.Quaternion(...t.quaternion) })),
+    scaleKeys: node.scaleKeys.map(t => ({ timeAndFlags: t.timeAndFlags, vertex: new THREE.Vector3(...t.vertex) })),
+    morphKeys: node.morphKeys.map(t => ({ timeAndFlags: t.timeAndFlags, bool: t.bool })),
+    children: node.children.map(convertNode),
+  })
+  const result: Animation3DNode[] = []
+  for (const animation of nodes) {
+    result.push(convertNode(animation))
+  }
+  return result
+}

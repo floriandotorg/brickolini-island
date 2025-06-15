@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { type Boundary, boundaryMap, colorAliases, copyWithAlpha, get2DSoundAnimation, getBoundary, getBuildings, getDashboard, getModelObject, getMusic, getPart, getTexture } from './assets'
+import { type Animation3DNode, type Boundary, boundaryMap, colorAliases, copyWithAlpha, get2DSoundAnimation, get3DAnimation, getBoundary, getBuildings, getDashboard, getModelObject, getMusic, getPart, getTexture } from './assets'
 import { Dashboard, Dashboards, dashboardForModel } from './dashboard'
 import type { FLC } from './flc'
 import { MusicKeys } from './music'
@@ -527,25 +527,134 @@ export const initGame = async () => {
   const hatParts = ['baseball', 'chef', 'cap', 'cophat', 'helmet', 'ponytail', 'pageboy', 'shrthair', 'bald', 'flower', 'cboyhat', 'cuphat', 'cathat', 'backbcap', 'pizhat', 'caprc', 'capch', 'capdb', 'capjs', 'capmd', 'sheet', 'phat', 'icap']
   let hatPartIndex = hatParts.indexOf('icap')
 
-  const lods: [string, string | { red: number; green: number; blue: number; alpha: number }, string, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number][] = [
-    ['top', 'top', 'top', 0, 0.000267, 0.780808, -0.01906, 0.951612, -0.461166, -0.002794, -0.299442, 0.4617, 1.56441, 0.261321, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
-    ['body', 'infochst.gif', 'bodyred', 1, 0.00158332, 0.401828, -0.00048697, 0.408071, -0.287507, 0.150419, -0.147452, 0.289219, 0.649774, 0.14258, -0.00089, 0.436353, 0.007277, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
-    ['infohat', colorAliases['lego red'], 'icap', 2, 0.0, -0.00938, -0.01955, 0.35, -0.231822, -0.140237, -0.320954, 0.234149, 0.076968, 0.249083, 0.000191, 1.519793, 0.001767, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
-    ['infogron', colorAliases['lego white'], 'infogron', 2, 0.0, 0.11477, 0.00042, 0.26, -0.285558, -0.134391, -0.142231, 0.285507, 0.152986, 0.143071, -0.00089, 0.436353, 0.007277, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
-    ['head', 'smile.gif', 'head', 1, 0.0, -0.03006, 0.0, 0.3, -0.189506, -0.209665, -0.189824, 0.189532, 0.228822, 0.194945, -0.00105, 1.293115, 0.001781, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
-    ['arm-lft', colorAliases['lego black'], 'arm-lft', 2, -0.06815, -0.0973747, 0.0154655, 0.237, -0.137931, -0.282775, -0.105316, 0.000989, 0.100221, 0.140759, -0.225678, 0.963312, 0.023286, -0.003031, -0.017187, 0.999848, 0.173622, 0.984658, 0.017453],
-    ['arm-rt', colorAliases['lego black'], 'arm-rt', 2, 0.0680946, -0.097152, 0.0152722, 0.237, 0.00141, -0.289604, -0.100831, 0.138786, 0.09291, 0.145437, 0.223494, 0.963583, 0.018302, 0.0, 0.0, 1.0, -0.173648, 0.984808, 0.0],
-    ['claw-lft', colorAliases['lego white'], 'claw-lft', 2, 0.000773381, -0.101422, -0.0237761, 0.15, -0.089838, -0.246208, -0.117735, 0.091275, 0.000263, 0.07215, -0.341869, 0.700355, 0.092779, 0.000001, 0.000003, 1.0, 0.190812, 0.981627, -0.000003],
-    ['claw-rt', colorAliases['lego white'], 'claw-lft', 2, 0.000773381, -0.101422, -0.0237761, 0.15, -0.095016, -0.245349, -0.117979, 0.086528, 0.00067, 0.069743, 0.343317, 0.69924, 0.096123, 0.00606, -0.034369, 0.999391, -0.190704, 0.981027, 0.034894],
-    ['leg-lft', colorAliases['lego white'], 'leg', 2, 0.00433584, -0.177404, -0.0313928, 0.33, -0.129782, -0.440428, -0.184207, 0.13817, 0.118415, 0.122607, -0.156339, 0.436087, 0.006822, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
-    ['leg-rt', colorAliases['lego white'], 'leg', 2, 0.00433584, -0.177404, -0.0313928, 0.33, -0.132864, -0.437138, -0.183944, 0.134614, 0.12043, 0.121888, 0.151154, 0.436296, 0.007373, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
-  ]
-  // name / parent:name / flags / boundingsphere / boundngbox/ pos / dir /up 22
+  const lods: {
+    [key in 'top' | 'body' | 'infohat' | 'infogron' | 'head' | 'arm-lft' | 'arm-rt' | 'claw-lft' | 'claw-rt' | 'leg-lft' | 'leg-rt']: {
+      color: string | { red: number; green: number; blue: number; alpha: number }
+      lodName: string
+      flags: number
+      boundingSphere: [number, number, number, number]
+      boundingBox: [number, number, number, number, number, number]
+      pos: [number, number, number]
+      dir: [number, number, number]
+      up: [number, number, number]
+    }
+  } = {
+    top: {
+      color: 'top',
+      lodName: 'top',
+      flags: 0,
+      boundingSphere: [0.000267, 0.780808, -0.01906, 0.951612],
+      boundingBox: [-0.461166, -0.002794, -0.299442, 0.4617, 1.56441, 0.261321],
+      pos: [0.0, 0.0, 0.0],
+      dir: [0.0, 1.0, 0.0],
+      up: [1.0, 0.0, 1.0],
+    },
+    body: {
+      color: 'infochst.gif',
+      lodName: 'bodyred',
+      flags: 1,
+      boundingSphere: [0.00158332, 0.401828, -0.00048697, 0.408071],
+      boundingBox: [-0.287507, 0.150419, -0.147452, 0.289219, 0.649774, 0.14258],
+      pos: [-0.00089, 0.436353, 0.007277],
+      dir: [0.0, 0.0, 1.0],
+      up: [0.0, 1.0, 0.0],
+    },
+    infohat: {
+      color: 'infohat',
+      lodName: 'icap',
+      flags: 2,
+      boundingSphere: [0.0, -0.00938, -0.01955, 0.35],
+      boundingBox: [-0.231822, -0.140237, -0.320954, 0.234149, 0.076968, 0.249083],
+      pos: [0.000191, 1.519793, 0.001767],
+      dir: [0.0, 0.0, 1.0],
+      up: [0.0, 1.0, 0.0],
+    },
+    infogron: {
+      color: colorAliases['lego white'],
+      lodName: 'infogron',
+      flags: 2,
+      boundingSphere: [0.0, 0.11477, 0.00042, 0.26],
+      boundingBox: [-0.285558, -0.134391, -0.142231, 0.285507, 0.152986, 0.143071],
+      pos: [-0.00089, 0.436353, 0.007277],
+      dir: [0.0, 0.0, 1.0],
+      up: [0.0, 1.0, 0.0],
+    },
+    head: {
+      color: 'smile.gif',
+      lodName: 'head',
+      flags: 1,
+      boundingSphere: [0.0, -0.03006, 0.0, 0.3],
+      boundingBox: [-0.189506, -0.209665, -0.189824, 0.189532, 0.228822, 0.194945],
+      pos: [-0.00105, 1.293115, 0.001781],
+      dir: [0.0, 0.0, 1.0],
+      up: [0.0, 1.0, 0.0],
+    },
+    'arm-lft': {
+      color: colorAliases['lego black'],
+      lodName: 'arm-lft',
+      flags: 2,
+      boundingSphere: [-0.06815, -0.0973747, 0.0154655, 0.237],
+      boundingBox: [-0.137931, -0.282775, -0.105316, 0.000989, 0.100221, 0.140759],
+      pos: [-0.225678, 0.963312, 0.023286],
+      dir: [-0.003031, -0.017187, 0.999848],
+      up: [0.173622, 0.984658, 0.017453],
+    },
+    'arm-rt': {
+      color: colorAliases['lego black'],
+      lodName: 'arm-rt',
+      flags: 2,
+      boundingSphere: [0.0680946, -0.097152, 0.0152722, 0.237],
+      boundingBox: [0.00141, -0.289604, -0.100831, 0.138786, 0.09291, 0.145437],
+      pos: [0.223494, 0.963583, 0.018302],
+      dir: [0.0, 0.0, 1.0],
+      up: [-0.173648, 0.984808, 0.0],
+    },
+    'claw-lft': {
+      color: colorAliases['lego white'],
+      lodName: 'claw-lft',
+      flags: 2,
+      boundingSphere: [0.000773381, -0.101422, -0.0237761, 0.15],
+      boundingBox: [-0.089838, -0.246208, -0.117735, 0.091275, 0.000263, 0.07215],
+      pos: [-0.341869, 0.700355, 0.092779],
+      dir: [0.000001, 0.000003, 1.0],
+      up: [0.190812, 0.981627, -0.000003],
+    },
+    'claw-rt': {
+      color: colorAliases['lego white'],
+      lodName: 'claw-lft',
+      flags: 2,
+      boundingSphere: [0.000773381, -0.101422, -0.0237761, 0.15],
+      boundingBox: [-0.095016, -0.245349, -0.117979, 0.086528, 0.00067, 0.069743],
+      pos: [0.343317, 0.69924, 0.096123],
+      dir: [0.00606, -0.034369, 0.999391],
+      up: [-0.190704, 0.981027, 0.034894],
+    },
+    'leg-lft': {
+      color: colorAliases['lego white'],
+      lodName: 'leg',
+      flags: 2,
+      boundingSphere: [0.00433584, -0.177404, -0.0313928, 0.33],
+      boundingBox: [-0.129782, -0.440428, -0.184207, 0.13817, 0.118415, 0.122607],
+      pos: [-0.156339, 0.436087, 0.006822],
+      dir: [0.0, 0.0, 1.0],
+      up: [0.0, 1.0, 0.0],
+    },
+    'leg-rt': {
+      color: colorAliases['lego white'],
+      lodName: 'leg',
+      flags: 2,
+      boundingSphere: [0.00433584, -0.177404, -0.0313928, 0.33],
+      boundingBox: [-0.132864, -0.437138, -0.183944, 0.134614, 0.12043, 0.121888],
+      pos: [0.151154, 0.436296, 0.007373],
+      dir: [0.0, 0.0, 1.0],
+      up: [0.0, 1.0, 0.0],
+    },
+  }
 
   const headTexture = (() => {
-    for (const lod of lods) {
-      if (lod[0] === 'head' && typeof lod[1] === 'string') {
-        const stillImage = getTexture(lod[1], 'image')
+    for (const [name, lod] of Object.entries(lods)) {
+      if (name === 'head' && typeof lod.color === 'string') {
+        const stillImage = getTexture(lod.color, 'image')
         return new FLCTexture(animation, stillImage)
       }
     }
@@ -553,75 +662,179 @@ export const initGame = async () => {
   })()
 
   const top = new THREE.Group()
-  const genPart = (lod: (typeof lods)[number]): THREE.Group => {
-    const texture = lod[0] === 'head' ? headTexture.texture : typeof lod[1] === 'string' ? (lod[2] === lod[1] ? null : lod[1]) : null
-    const partName = lod[0] === 'infohat' ? hatParts[hatPartIndex] : lod[2]
-    const part = getPart(partName, 'global', typeof lod[1] === 'string' ? null : lod[1], texture)
-    calculateTransformationMatrix([-lod[13], lod[14], lod[15]], [-lod[16], lod[17], lod[18]], [-lod[19], lod[20], lod[21]], transformationMatrix)
+  const genPart = (name: keyof typeof lods): THREE.Group => {
+    const lod = lods[name]
+    const texture = name === 'head' ? headTexture.texture : typeof lod.color === 'string' ? (lod.lodName === lod.color ? null : lod.color) : null
+    const partName = name === 'infohat' ? hatParts[hatPartIndex] : lod.lodName
+    const part = getPart(partName, 'global', typeof lod.color === 'string' ? null : lod.color, texture)
+    calculateTransformationMatrix(lod.pos, lod.dir, lod.up, transformationMatrix)
     part.applyMatrix4(transformationMatrix)
-    part.name = lod[0]
+    part.name = name
     return part
   }
-  const infogron = genPart(lods[3])
-  const body = genPart(lods[1])
-  const armRt = genPart(lods[6])
-  const clawRt = genPart(lods[8])
-  // armRt.add(clawRt)
-
-  const armLft = genPart(lods[5])
-  const clawLft = genPart(lods[7])
-  // armLft.add(clawLft)
-
-  const head = genPart(lods[4])
-  let infohat = genPart(lods[2])
-  // head.add(infohat)
-
-  // body.add(head)
-  // body.add(armRt)
-  // body.add(armLft)
-  // infogron.add(body)
-
-  const legLft = genPart(lods[9])
-  const legRt = genPart(lods[10])
-  top.add(infogron)
-  top.add(legLft)
-  top.add(legRt)
-
-  top.add(body)
+  top.add(genPart('infogron'))
+  top.add(genPart('leg-lft'))
+  top.add(genPart('leg-rt'))
+  top.add(genPart('body'))
+  const head = genPart('head')
   top.add(head)
-  top.add(armRt)
-  top.add(armLft)
-  top.add(clawRt)
-  top.add(clawLft)
+  top.add(genPart('arm-rt'))
+  top.add(genPart('arm-lft'))
+  top.add(genPart('claw-rt'))
+  top.add(genPart('claw-lft'))
+  let infohat = genPart('infohat')
   top.add(infohat)
 
   clickableGroups.push({
     group: top,
     onClick: async () => {
-      hatPartIndex++
-      if (hatPartIndex >= hatParts.length) {
-        hatPartIndex = 0
-      }
+      hatPartIndex = (hatPartIndex + 1) % hatParts.length
       top.remove(infohat)
-      infohat = genPart(lods[2])
+      infohat = genPart('infohat')
       top.add(infohat)
     },
   })
+
+  const animation3d = get3DAnimation('ISLE.SI', 471)[0].children[0].children[0]
+
+  const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTrack[] => {
+    const getDurationMs = (animation: Animation3DNode): number => Math.max(animation.translationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.rotationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.scaleKeys.at(-1)?.timeAndFlags.time ?? 0, ...animation.children.map(getDurationMs))
+
+    const getValues = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name = '', parent: THREE.Matrix4 = new THREE.Matrix4().identity()): void => {
+      const push = (key: string, values: number[]) => {
+        valueMap.set([name, key].join('.'), [...(valueMap.get([name, key].join('.')) ?? []), ...values])
+      }
+
+      const t = (before: { timeAndFlags: { time: number } }, after: { timeAndFlags: { time: number } }) => (time - before.timeAndFlags.time) / (after.timeAndFlags.time - before.timeAndFlags.time)
+
+      const getBeforeAndAfter = <T extends { timeAndFlags: { time: number } }>(keys: T[]): { before: T | null; after: T | null } => {
+        const idx = keys.findIndex(k => k.timeAndFlags.time > time)
+        return { before: keys[Math.max(0, idx - 1)], after: keys[idx] }
+      }
+
+      const translateBy = (mat: THREE.Matrix4, vertex: THREE.Vector3) => {
+        mat.elements[12] += vertex.x
+        mat.elements[13] += vertex.y
+        mat.elements[14] += vertex.z
+      }
+
+      const getRotation = (): THREE.Matrix4 => {
+        const { before, after } = getBeforeAndAfter(animation.rotationKeys)
+        if (before == null) {
+          throw new Error('No keyframes found')
+        }
+        if (after == null) {
+          if (before.timeAndFlags.flags & 1) {
+            return new THREE.Matrix4().makeRotationFromQuaternion(before.quaternion)
+          }
+        } else if (before.timeAndFlags.flags & 1 || after.timeAndFlags.flags & 1) {
+          if (after.timeAndFlags.flags & 4) {
+            return new THREE.Matrix4().makeRotationFromQuaternion(before.quaternion)
+          }
+
+          const afterQuat = after.timeAndFlags.flags & 2 ? new THREE.Quaternion(-after.quaternion.x, -after.quaternion.y, -after.quaternion.z, -after.quaternion.w) : after.quaternion
+          return new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().slerpQuaternions(before.quaternion, afterQuat, t(before, after)))
+        }
+
+        return new THREE.Matrix4().identity()
+      }
+
+      let mat = new THREE.Matrix4().identity()
+
+      if (animation.scaleKeys.length > 0) {
+        const { before, after } = getBeforeAndAfter(animation.scaleKeys)
+        if (before == null) {
+          throw new Error('No keyframes found')
+        }
+        if (after == null) {
+          mat.scale(before.vertex)
+        } else {
+          const scale = new THREE.Vector3().lerpVectors(before.vertex, after.vertex, t(before, after))
+          mat.scale(scale)
+        }
+
+        if (animation.rotationKeys.length > 0) {
+          mat = getRotation().multiply(mat)
+        }
+      } else if (animation.rotationKeys.length > 0) {
+        mat = getRotation()
+      }
+
+      if (animation.translationKeys.length > 0) {
+        const { before, after } = getBeforeAndAfter(animation.translationKeys)
+        if (before == null) {
+          throw new Error('No keyframes found')
+        }
+        if (after == null) {
+          if (before.timeAndFlags.flags & 1) {
+            translateBy(mat, before.vertex)
+          }
+        } else if (before.timeAndFlags.flags & 1 || after.timeAndFlags.flags & 1) {
+          translateBy(mat, new THREE.Vector3().lerpVectors(before.vertex, after.vertex, t(before, after)))
+        }
+      }
+
+      if (animation.morphKeys.length > 0) {
+        throw new Error('Morph keys not yet supported')
+      }
+
+      mat = parent.clone().multiply(mat)
+
+      const position = new THREE.Vector3()
+      const quaternion = new THREE.Quaternion()
+      const scale = new THREE.Vector3()
+      mat.decompose(position, quaternion, scale)
+      push('position', position.toArray())
+      push('quaternion', quaternion.toArray())
+      push('scale', scale.toArray())
+
+      for (const child of animation.children) {
+        getValues(child, time, valueMap, child.name.toLowerCase(), mat)
+      }
+    }
+
+    const valueMap = new Map<string, number[]>()
+    const resolution = 100
+    const times = Array.from({ length: Math.floor(getDurationMs(animation) / resolution) }, (_, i) => i * resolution)
+    for (const time of times) {
+      getValues(animation, time, valueMap)
+    }
+
+    const timesSec = times.map(t => t / 1000)
+    return Array.from(valueMap.entries()).map(([name, values]) => {
+      if (name.includes('position')) {
+        return new THREE.VectorKeyframeTrack(name, timesSec, values)
+      }
+      if (name.includes('quaternion')) {
+        return new THREE.QuaternionKeyframeTrack(name, timesSec, values)
+      }
+      if (name.includes('scale')) {
+        return new THREE.VectorKeyframeTrack(name, timesSec, values)
+      }
+      throw new Error(`Unknown track: ${name}`)
+    })
+  }
+
+  const clip = new THREE.AnimationClip('test', -1, animationToTracks(animation3d))
+  const mixer = new THREE.AnimationMixer(top)
+  const action = mixer.clipAction(clip)
+  action.setLoop(THREE.LoopRepeat, Number.POSITIVE_INFINITY)
+  action.play()
+
+  const clock = new THREE.Clock()
+  const mixers: THREE.AnimationMixer[] = []
+
+  mixers.push(mixer)
 
   const cameraDirection = new THREE.Vector3()
   camera.getWorldDirection(cameraDirection)
   const pos = camera.position.clone().add(cameraDirection.multiplyScalar(6))
   pos.y -= 1
 
-  const lod = lods[0]
-  // top.applyMatrix4(calculateTransformationMatrix([-lod[13], lod[14], lod[15]], [-lod[16], lod[17], lod[18]], [-lod[19], lod[20], lod[21]]))
-  // top.scale.set(1, 1, 1)
-  // top.quaternion.set(0, 0, 0, 1)
+  const lod = lods.top
   const minifig = new THREE.Group()
   minifig.add(top)
   scene.add(minifig)
-  minifig.rotateX(-Math.PI / 2)
-  minifig.rotateZ(-Math.PI)
   minifig.position.copy(pos)
 
   const keyStates = {
@@ -758,7 +971,6 @@ export const initGame = async () => {
 
   let linearVel = 0
   let rotVel = 0
-  let lastTime = performance.now()
 
   const calculateNewVel = (targetVel: number, currentVel: number, accel: number, delta: number) => {
     let newVel = currentVel
@@ -805,9 +1017,10 @@ export const initGame = async () => {
   const animate = () => {
     requestAnimationFrame(animate)
 
-    const now = performance.now()
-    const delta = (now - lastTime) / 1000
-    lastTime = now
+    const delta = clock.getDelta()
+    for (const mixer of mixers) {
+      mixer.update(delta)
+    }
 
     const speedMultiplier = slewMode ? 4 : 1
 
@@ -992,13 +1205,12 @@ export const initGame = async () => {
       if (!headTexture.running) {
         musicGain.gain.value = defaultMusicGain
       } else {
-        const worldPos = new THREE.Vector3()
-        head.getWorldPosition(worldPos)
-        const dx = camera.position.x - worldPos.x
-        const dz = camera.position.z - worldPos.z
-
-        const angle = Math.atan2(dx, dz)
-        head.rotation.y = angle
+        // const worldPos = new THREE.Vector3()
+        // head.getWorldPosition(worldPos)
+        // const dx = camera.position.x - worldPos.x
+        // const dz = camera.position.z - worldPos.z
+        // const angle = Math.atan2(dx, dz)
+        // head.rotation.y = angle
       }
     }
 
