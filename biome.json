@@ -17,6 +17,9 @@
   "linter": {
     "enabled": true,
     "rules": {
+      "style": {
+        "noParameterAssign": "off"
+      },
       "nursery": {
         "noDuplicateElseIf": "error",
         "noDuplicateProperties": "error",
