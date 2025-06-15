@@ -8,11 +8,11 @@ import { MusicKeys } from './music'
 import { SI, SIFileType, type SIObject, SIType } from './si'
 import { Smk } from './smk'
 import { setLoading } from './store'
-import { type Animation, type Color, type Gif, type Lod, type Mesh, type Model, type Roi, Shading, WDB } from './wdb'
+import { WDB } from './wdb'
 
 const siFiles: Map<string, SI> = new Map()
 const musicBuffer: Map<MusicKeys, AudioBuffer> = new Map()
-let wdb: WDB | null = null
+let wdb: WDB.File | null = null
 
 const downloadHighQualityMusic = async () => {
   const musicFiles = new Map<MusicKeys, string>([
@@ -115,7 +115,7 @@ export const initAssets = async (file: File) => {
   }
 
   await updateLoading(95, 'Loading WDB...')
-  wdb = new WDB(iso.open('DATA/disk/LEGO/data/WORLD.WDB'))
+  wdb = new WDB.File(iso.open('DATA/disk/LEGO/data/WORLD.WDB'))
 
   parseBoundaries()
 
@@ -508,7 +508,7 @@ export const createAudioBuffer = async (obj: SIObject, audioCtx: AudioContext): 
   return await audioCtx.decodeAudioData(wav)
 }
 
-export const getModel = (name: string): Model => {
+export const getModel = (name: string): WDB.Model => {
   if (wdb == null) {
     throw new Error('Assets not initialized')
   }
@@ -539,7 +539,7 @@ export const copyWithAlpha = (image: Uint8Array, imageWithAlpha: Uint8Array | Ui
   }
 }
 
-const createTexture = (image: Gif): THREE.DataTexture => {
+const createTexture = (image: WDB.Gif): THREE.DataTexture => {
   const data = new Uint8Array(image.width * image.height * 4)
   copyWithAlpha(image.image, data)
 
@@ -550,7 +550,7 @@ const createTexture = (image: Gif): THREE.DataTexture => {
   return tex
 }
 
-const colorFromName = (name: string): Color | null => {
+const colorFromName = (name: string): WDB.Color | null => {
   if (name.length > 0 && (name.toLowerCase().startsWith('indir-f-') || name.toLowerCase().startsWith('indir-g-'))) {
     const variableName = `c_${name.substring('indir-f-'.length)}`.toLowerCase()
     const variableValue = variableTable[variableName].toLowerCase()
@@ -564,17 +564,17 @@ const colorFromName = (name: string): Color | null => {
   return null
 }
 
-const createMesh = (modelMesh: Mesh, customColor: Color | null, texture: string | THREE.Texture | null, type: 'model' | 'part'): [THREE.BufferGeometry, THREE.Material] => {
+const createMesh = (modelMesh: WDB.Mesh, customColor: WDB.Color | null, texture: string | THREE.Texture | null, type: 'model' | 'part'): [THREE.BufferGeometry, THREE.Material] => {
   const vertices: number[] = modelMesh.vertices.flat()
   const indices: number[] = modelMesh.indices
   const uvs: number[] = modelMesh.uvs.flat()
   const material = (() => {
     switch (modelMesh.shading) {
-      case Shading.WireFrame:
+      case WDB.Shading.WireFrame:
         return new THREE.MeshBasicMaterial({ wireframe: true })
-      case Shading.Gouraud:
+      case WDB.Shading.Gouraud:
         return new THREE.MeshLambertMaterial()
-      case Shading.Flat:
+      case WDB.Shading.Flat:
         return new THREE.MeshLambertMaterial({ flatShading: true })
       default:
         throw new Error(`Unknown shading: ${modelMesh.shading}`)
@@ -602,7 +602,7 @@ const createMesh = (modelMesh: Mesh, customColor: Color | null, texture: string 
   return [geometry, material]
 }
 
-const createMeshValues = (lod: Lod, customColor: Color | null, texture: string | THREE.Texture | null, type: 'model' | 'part'): [THREE.BufferGeometry, THREE.Material][] => {
+const createMeshValues = (lod: WDB.Lod, customColor: WDB.Color | null, texture: string | THREE.Texture | null, type: 'model' | 'part'): [THREE.BufferGeometry, THREE.Material][] => {
   const result: [THREE.BufferGeometry, THREE.Material][] = []
   for (const modelMesh of lod.meshesBeforeOffset) {
     const [geometry, material] = createMesh(modelMesh, null, null, type)
@@ -615,7 +615,7 @@ const createMeshValues = (lod: Lod, customColor: Color | null, texture: string |
   return result
 }
 
-export const colorAliases: Record<string, Color> = {
+export const colorAliases: Record<string, WDB.Color> = {
   'lego black': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
   'lego black f': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
   'lego black flat': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
@@ -686,7 +686,7 @@ const variableTable: Record<string, string> = {
   c_chseaty0: 'lego white', // copter seat
 }
 
-const getModelObjectBase = (roi: Roi, animation: Animation.Node | undefined): THREE.Group => {
+const getModelObjectBase = (roi: WDB.Roi, animation: WDB.Animation.Node | undefined): THREE.Group => {
   const lod = roi.lods.at(-1)
   if (lod === null && roi.children.length < 1) {
     throw new Error("Couldn't find lod and children")
@@ -724,7 +724,7 @@ const getModelObjectBase = (roi: Roi, animation: Animation.Node | undefined): TH
       console.log(`Model ${roi.name} has ${animation.morphKeys.length} morph keys`)
     }
   }
-  const customColor: Color | null = colorFromName(roi.textureName)
+  const customColor: WDB.Color | null = colorFromName(roi.textureName)
   if (lod != null) {
     for (const [geometry, material] of createMeshValues(lod, customColor, null, 'model')) {
       const mesh = new THREE.Mesh(geometry, material)
@@ -744,7 +744,7 @@ export const getModelObject = (name: string): THREE.Group => {
   return getModelObjectBase(model.roi, model.animation)
 }
 
-export const getPart = (name: string, source: 'global' | 'world', color: Color | null, texture: string | THREE.Texture | null): THREE.Group => {
+export const getPart = (name: string, source: 'global' | 'world', color: WDB.Color | null, texture: string | THREE.Texture | null): THREE.Group => {
   const part = (source === 'global' ? wdb?.globalParts : wdb?.parts)?.find(p => p.name.toLowerCase() === name.toLowerCase())
   if (!part) {
     throw new Error(`Part ${name} not found`)
@@ -811,7 +811,7 @@ export const getModelInstanced = (name: string, count: number): InstancedModel =
   return result
 }
 
-export const getTexture = (name: string, source: 'model' | 'part' | 'image'): Gif => {
+export const getTexture = (name: string, source: 'model' | 'part' | 'image'): WDB.Gif => {
   if (wdb == null) {
     throw new Error('Assets not initialized')
   }

@@ -5,7 +5,7 @@ import type { FLC } from './flc'
 import { MusicKeys } from './music'
 import { Plant } from './plant'
 import { setDebugData } from './store'
-import type { Gif } from './wdb'
+import type { WDB } from './wdb'
 
 const calculateTransformationMatrix = (location: [number, number, number], direction: [number, number, number], up: [number, number, number], matrix?: THREE.Matrix4): THREE.Matrix4 => {
   const locationVector = new THREE.Vector3(...location)
@@ -30,7 +30,7 @@ class FLCTexture {
 
   private _animationState: { frameIndex: number; startTime: number } | null
 
-  public constructor(animation: FLC, stillImage: Gif) {
+  public constructor(animation: FLC, stillImage: WDB.Gif) {
     this._animation = animation
     this._stillImage = new Uint8Array(stillImage.image.length)
     const STEP_WIDTH = 3
