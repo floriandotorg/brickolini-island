@@ -81,22 +81,23 @@ export class SIObject {
   private _extraValues: ExtraValues = new ExtraValues([])
 
   constructor(
-    public type: SIType,
-    public presenter: string,
-    public name: string,
-    public id: number,
-    public flags: number,
-    public duration: number,
-    public loops: number,
-    public location: [number, number, number],
-    public direction: [number, number, number],
-    public up: [number, number, number],
-    public extraData: string,
-    public filename?: string,
-    public fileType?: SIFileType,
-    public volume?: number,
-    public chunkSizes: number[] = [],
-    public children: SIObject[] = [],
+    public readonly type: SIType,
+    public readonly presenter: string,
+    public readonly name: string,
+    public readonly id: number,
+    public readonly flags: number,
+    public readonly startTime: number,
+    public readonly duration: number,
+    public readonly loops: number,
+    public readonly location: [number, number, number],
+    public readonly direction: [number, number, number],
+    public readonly up: [number, number, number],
+    public readonly extraData: string,
+    public readonly filename?: string,
+    public readonly fileType?: SIFileType,
+    public readonly volume?: number,
+    public readonly chunkSizes: number[] = [],
+    public readonly children: SIObject[] = [],
   ) {}
 
   get data() {
@@ -245,7 +246,7 @@ export class SI {
             volume = reader.readUint32()
           }
         }
-        const obj = new SIObject(type, presenter, name, id, flags, duration, loops, [coords[0], coords[1], coords[2]], [coords[3], coords[4], coords[5]], [coords[6], coords[7], coords[8]], extraData, filename, fileType, volume)
+        const obj = new SIObject(type, presenter, name, id, flags, startTime, duration, loops, [coords[0], coords[1], coords[2]], [coords[3], coords[4], coords[5]], [coords[6], coords[7], coords[8]], extraData, filename, fileType, volume)
         this.objectList.set(id, obj)
         const parent = parents.at(-1)
         if (parent) {

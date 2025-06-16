@@ -917,6 +917,64 @@ export const get2DSoundAnimation = (siName: string, name: string): { audio: Arra
   return { audio: createWAV(audio), animation: get2DAnimationObject(video) }
 }
 
+export namespace LegoScene {
+  export type StartAt<T> = { startTime: number; media: T }
+  export type Actor = { faces: StartAt<FLC>[]; voices: StartAt<ArrayBuffer>[] }
+  export type Scene = { actors: { [name: string]: Actor }; animation: Animation3DNode }
+}
+
+export const getLegoScene = (siName: string, name: string): LegoScene.Scene => {
+  const si = siFiles.get(siName)
+  if (si == null) {
+    throw new Error('Assets not initialized')
+  }
+
+  const scene = Array.from(si.objects.values()).find(o => o.name === name)
+  if (scene == null) {
+    throw new Error('Animation not found')
+  }
+
+  const actors: { [name: string]: LegoScene.Actor } = {}
+  const getActor = (name: string): LegoScene.Actor => {
+    if (!(name in actors)) {
+      actors[name] = { faces: [], voices: [] }
+    }
+    return actors[name]
+  }
+
+  let animation = null
+  for (const child of scene.children) {
+    switch (child.type) {
+      case SIType.ObjectAction:
+        if (animation != null) {
+          throw new Error('Multiple 3D animations')
+        }
+        animation = parse3DAnimation(child)
+        break
+      case SIType.Sound: {
+        const wav = createWAV(child)
+        if (wav == null) {
+          throw new Error('Audio not found')
+        }
+        getActor(child.extraData).voices.push({ startTime: 0, media: wav })
+        break
+      }
+      case SIType.Anim: {
+        const anim = get2DAnimationObject(child)
+        if (anim == null) {
+          throw new Error('Audio not found')
+        }
+        getActor(child.extraData).faces.push({ startTime: 0, media: anim })
+        break
+      }
+    }
+  }
+  if (animation == null) {
+    throw new Error('3D animation not found')
+  }
+  return { actors, animation }
+}
+
 export const getMovie = (name: string): { audio: ArrayBuffer; video: Smk } => {
   const si = siFiles.get('INTRO.SI')
   if (si == null) {
@@ -957,7 +1015,10 @@ export const get3DAnimation = (siFile: string, name: number): Animation3DNode =>
   if (ani == null) {
     throw new Error('Animation not found')
   }
+  return parse3DAnimation(ani)
+}
 
+const parse3DAnimation = (ani: SIObject): Animation3DNode => {
   const reader = new BinaryReader(ani.data.buffer)
   const magic = reader.readInt32()
   if (magic !== 17) {
