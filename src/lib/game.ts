@@ -695,7 +695,7 @@ export const initGame = async () => {
     },
   })
 
-  const animation3d = get3DAnimation('ISLE.SI', 471)[0].children[0].children[0]
+  const animation3d = get3DAnimation('ISLE.SI', 471).children[0].children[0]
 
   const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTrack[] => {
     const getDurationMs = (animation: Animation3DNode): number => Math.max(animation.translationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.rotationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.scaleKeys.at(-1)?.timeAndFlags.time ?? 0, ...animation.children.map(getDurationMs))

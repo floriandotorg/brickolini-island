@@ -741,7 +741,7 @@ const getModelObjectBase = (roi: WDB.Roi, animation: WDB.Animation.Node | undefi
 
 export const getModelObject = (name: string): THREE.Group => {
   const model = getModel(name)
-  return getModelObjectBase(model.roi, model.animation)
+  return getModelObjectBase(model.roi, model.animation.tree)
 }
 
 export const getPart = (name: string, source: 'global' | 'world', color: WDB.Color | null, texture: string | THREE.Texture | null): THREE.Group => {
@@ -947,7 +947,7 @@ export type RotationKey = { timeAndFlags: TimeAndFlags; quaternion: THREE.Quater
 export type MorphKey = { timeAndFlags: TimeAndFlags; bool: boolean }
 export type Animation3DNode = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Animation3DNode[] }
 
-export const get3DAnimation = (siFile: string, name: number): Animation3DNode[] => {
+export const get3DAnimation = (siFile: string, name: number): Animation3DNode => {
   const si = siFiles.get(siFile)
   if (si == null) {
     throw new Error('Assets not initialized')
@@ -970,17 +970,7 @@ export const get3DAnimation = (siFile: string, name: number): Animation3DNode[] 
     throw new Error('Parse scene not supported')
   }
   const val3 = reader.readInt32()
-  const numAnimations = reader.readUint32()
-  const nodes: WDB.Animation.Node[] = []
-  for (let n = 0; n < numAnimations; ++n) {
-    const animationName = reader.readString()
-    if (animationName.length > 0) {
-      const unknown = reader.readInt32()
-    }
-    const duration = reader.readInt32()
-    const animation = WDB.Animation.readAnimationTree(reader)
-    nodes.push(animation)
-  }
+  const animation = WDB.Animation.readAnimation(reader)
   const convertNode = (node: WDB.Animation.Node): Animation3DNode => ({
     name: node.name,
     translationKeys: node.translationKeys.map(t => ({ timeAndFlags: t.timeAndFlags, vertex: new THREE.Vector3(...t.vertex) })),
@@ -989,9 +979,5 @@ export const get3DAnimation = (siFile: string, name: number): Animation3DNode[] 
     morphKeys: node.morphKeys.map(t => ({ timeAndFlags: t.timeAndFlags, bool: t.bool })),
     children: node.children.map(convertNode),
   })
-  const result: Animation3DNode[] = []
-  for (const animation of nodes) {
-    result.push(convertNode(animation))
-  }
-  return result
+  return convertNode(animation.tree)
 }

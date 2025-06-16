@@ -23,7 +23,7 @@ export namespace WDB {
     materialName: string
     shading: Shading
   }
-  export type Model = { roi: Roi; animation: Animation.Node }
+  export type Model = { roi: Roi; animation: Animation.Animation }
   export type Roi = { name: string; lods: Lod[]; children: Roi[]; textureName: string }
   export class Lod {
     public constructor(
@@ -46,6 +46,7 @@ export namespace WDB {
     export type RotationKey = { timeAndFlags: TimeAndFlags; quaternion: [number, number, number, number] }
     export type MorphKey = { timeAndFlags: TimeAndFlags; bool: boolean }
     export type Node = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Node[] }
+    export type Animation = { actors: string[]; tree: Node; duration: number }
 
     const readTimeAndFlags = (reader: BinaryReader): Animation.TimeAndFlags => {
       const tf = reader.readUint32()
@@ -54,7 +55,7 @@ export namespace WDB {
       return { time, flags }
     }
 
-    export const readAnimationTree = (reader: BinaryReader): Node => {
+    const readAnimationTree = (reader: BinaryReader): Node => {
       const name = reader.readString()
       const translations: Animation.VertexKey[] = []
       const numTranslationKeys = reader.readUint16()
@@ -93,6 +94,21 @@ export namespace WDB {
         children.push(readAnimationTree(reader))
       }
       return { name, translationKeys: translations, rotationKeys: rotations, scaleKeys: scales, morphKeys: morphs, children }
+    }
+
+    export const readAnimation = (reader: BinaryReader): Animation => {
+      const numActors = reader.readUint32()
+      const actors: string[] = []
+      for (let n = 0; n < numActors; ++n) {
+        const actor = reader.readString()
+        if (actor.length > 0) {
+          reader.readUint32()
+        }
+        actors.push(actor)
+      }
+      const duration = reader.readInt32()
+      const tree = readAnimationTree(reader)
+      return { actors, tree, duration }
     }
   }
 
@@ -157,12 +173,7 @@ export namespace WDB {
         }
         const textureInfoOffset = this._reader.readUint32()
         const numRois = this._reader.readUint32()
-        const numAnimations = this._reader.readUint32()
-        if (numAnimations > 0) {
-          throw new Error('animations not supported')
-        }
-        this._reader.readUint32()
-        const animation = Animation.readAnimationTree(this._reader)
+        const animation = Animation.readAnimation(this._reader)
         const roi = this._readRoi(offset, scannedModelNames)
         this._models.push({ roi, animation })
         this._reader.seek(offset + textureInfoOffset)
