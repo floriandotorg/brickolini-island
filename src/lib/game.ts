@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { type Animation3DNode, type Boundary, boundaryMap, colorAliases, copyWithAlpha, get2DSoundAnimation, get3DAnimation, getBoundary, getBuildings, getDashboard, getModelObject, getMusic, getPart, getTexture } from './assets'
+import { type Animation3DNode, type Boundary, boundaryMap, colorAliases, copyWithAlpha, getBoundary, getBuildings, getDashboard, getLegoScene, getModelObject, getMusic, getPart, getTexture } from './assets'
 import { Dashboard, Dashboards, dashboardForModel } from './dashboard'
 import type { FLC } from './flc'
 import { MusicKeys } from './music'
@@ -518,11 +518,12 @@ export const initGame = async () => {
   camera.lookAt(60, 0, 0)
   placeCameraOnGround()
 
-  const { audio, animation } = get2DSoundAnimation('ISLE.SI', 'sba001bu_RunAnim')
+  const animationScene = getLegoScene('ISLE.SI', 'sns001nu_RunAnim')
+  const actor = 'nu'
 
   const listener = new THREE.AudioListener()
   camera.add(listener)
-  const buffer = await audioContext.decodeAudioData(audio)
+  const buffers = await Promise.all(animationScene.actors[actor].voices.map(buffer => audioContext.decodeAudioData(buffer.media)))
 
   const hatParts = ['baseball', 'chef', 'cap', 'cophat', 'helmet', 'ponytail', 'pageboy', 'shrthair', 'bald', 'flower', 'cboyhat', 'cuphat', 'cathat', 'backbcap', 'pizhat', 'caprc', 'capch', 'capdb', 'capjs', 'capmd', 'sheet', 'phat', 'icap']
   let hatPartIndex = hatParts.indexOf('icap')
@@ -655,7 +656,7 @@ export const initGame = async () => {
     for (const [name, lod] of Object.entries(lods)) {
       if (name === 'head' && typeof lod.color === 'string') {
         const stillImage = getTexture(lod.color, 'image')
-        return new FLCTexture(animation, stillImage)
+        return new FLCTexture(animationScene.actors[actor].faces[0].media, stillImage)
       }
     }
     throw new Error('Cannot find head')
@@ -695,7 +696,7 @@ export const initGame = async () => {
     },
   })
 
-  const animation3d = get3DAnimation('ISLE.SI', 471).children[0].children[0]
+  const animation3d = animationScene.animation.children[0].children[0]
 
   const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTrack[] => {
     const getDurationMs = (animation: Animation3DNode): number => Math.max(animation.translationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.rotationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.scaleKeys.at(-1)?.timeAndFlags.time ?? 0, ...animation.children.map(getDurationMs))
@@ -1194,7 +1195,7 @@ export const initGame = async () => {
         headTexture.updateAnimation(audioContext.currentTime, true)
 
         const sound = new THREE.PositionalAudio(listener)
-        sound.setBuffer(buffer)
+        sound.setBuffer(buffers[0])
         sound.gain.gain.value = 0.2
         sound.setRefDistance(20)
         sound.play()

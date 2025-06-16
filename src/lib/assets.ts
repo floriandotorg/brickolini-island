@@ -893,30 +893,6 @@ export const get2DAnimation = (siName: string, name: string): FLC => {
   return get2DAnimationObject(flc)
 }
 
-export const get2DSoundAnimation = (siName: string, name: string): { audio: ArrayBuffer; animation: FLC } => {
-  const si = siFiles.get(siName)
-  if (si == null) {
-    throw new Error('Assets not initialized')
-  }
-
-  const flc = Array.from(si.objects.values()).find(o => o.name === name)
-  if (flc == null) {
-    throw new Error('Animation not found')
-  }
-
-  const audio = flc.children.find(c => c.type === SIType.Sound)
-  if (audio == null) {
-    throw new Error('Audio not found')
-  }
-
-  const video = flc.children.find(c => c.type === SIType.Anim)
-  if (video == null) {
-    throw new Error('Video not found')
-  }
-
-  return { audio: createWAV(audio), animation: get2DAnimationObject(video) }
-}
-
 export namespace LegoScene {
   export type StartAt<T> = { startTime: number; media: T }
   export type Actor = { faces: StartAt<FLC>[]; voices: StartAt<ArrayBuffer>[] }
@@ -956,7 +932,7 @@ export const getLegoScene = (siName: string, name: string): LegoScene.Scene => {
         if (wav == null) {
           throw new Error('Audio not found')
         }
-        getActor(child.extraData).voices.push({ startTime: 0, media: wav })
+        getActor(child.extraData).voices.push({ startTime: child.startTime, media: wav })
         break
       }
       case SIType.Anim: {
@@ -964,7 +940,7 @@ export const getLegoScene = (siName: string, name: string): LegoScene.Scene => {
         if (anim == null) {
           throw new Error('Audio not found')
         }
-        getActor(child.extraData).faces.push({ startTime: 0, media: anim })
+        getActor(child.extraData).faces.push({ startTime: child.startTime, media: anim })
         break
       }
     }
