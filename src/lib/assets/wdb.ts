@@ -1,7 +1,5 @@
 import { BinaryReader } from './binary-reader'
 
-const decoder = new TextDecoder('ascii')
-
 export namespace WDB {
   export enum Shading {
     Flat = 0,
@@ -23,8 +21,8 @@ export namespace WDB {
     materialName: string
     shading: Shading
   }
-  export type Model = { roi: Roi; animation: Animation.Animation }
-  export type Roi = { name: string; lods: Lod[]; children: Roi[]; textureName: string }
+  export type Model = { roi: Roi; animation: Animation.Animation; position: [number, number, number]; rotation: [number, number, number]; up: [number, number, number]; visible: boolean }
+  export type Roi = { name: string; lods: Lod[]; children: Roi[]; textureName: string; position: [number, number, number] }
   export class Lod {
     public constructor(
       public readonly meshesBeforeOffset: Mesh[],
@@ -112,80 +110,99 @@ export namespace WDB {
     }
   }
 
+  export class World {
+    public name: string = ''
+    public parts: Part[] = []
+    public models: Model[] = []
+  }
+
   export class File {
     private _reader: BinaryReader
     private _images: Gif[] = []
     private _textures: Gif[] = []
     private _modelTextures: Gif[] = []
-    private _models: Model[] = []
-    private _parts: Part[] = []
     private _globalParts: Part[] = []
+    private _worlds: World[] = []
 
     constructor(buffer: ArrayBuffer) {
       this._reader = new BinaryReader(buffer)
       const numWorlds = this._reader.readUint32()
-      const partsOffsets: number[] = []
-      const modelsOffsets: number[] = []
+      const worlds = new Map<
+        string,
+        {
+          name: string
+          partsOffsets: number[]
+          modelsOffsets: {
+            offset: number
+            position: [number, number, number]
+            rotation: [number, number, number]
+            up: [number, number, number]
+            visible: boolean
+          }[]
+        }
+      >()
       for (let n = 0; n < numWorlds; ++n) {
         const worldName = this._reader.readString()
         const numParts = this._reader.readUint32()
+        const partsOffsets = []
         for (let m = 0; m < numParts; ++m) {
           this._reader.readString()
-          const itemSize = this._reader.readUint32()
+          const _itemSize = this._reader.readUint32()
           const offset = this._reader.readUint32()
           partsOffsets.push(offset)
         }
         const numModels = this._reader.readUint32()
+        const modelsOffsets = []
         for (let m = 0; m < numModels; ++m) {
           this._reader.readString()
-          const size = this._reader.readUint32()
+          const _size = this._reader.readUint32()
           const offset = this._reader.readUint32()
           this._reader.readString()
-          for (let i = 0; i < 9; i += 1) {
-            this._reader.readFloat32()
-          }
-          this._reader.skip(1)
-          modelsOffsets.push(offset)
+          const position = this._reader.readVector3()
+          const rotation = this._reader.readVector3()
+          const up = this._reader.readVector3()
+          const visible = this._reader.readInt8() !== 0
+          modelsOffsets.push({ position, rotation, up, offset, visible })
         }
+        worlds.set(worldName, { name: worldName, partsOffsets, modelsOffsets })
       }
-      const gifChunkSize = this._reader.readUint32()
+      const _gifChunkSize = this._reader.readUint32()
       const numFrames = this._reader.readUint32()
       for (let n = 0; n < numFrames; ++n) {
         this._images.push(this._readGif())
       }
-      const modelChunkSize = this._reader.readUint32()
+      const _modelChunkSize = this._reader.readUint32()
       this._globalParts = this._readParts(this._reader.position)
-      for (const offset of partsOffsets) {
-        this._reader.seek(offset)
-        this._parts.push(...this._readParts(offset))
-      }
-      const scannedOffsets = new Set<number>()
-      const scannedModelNames = new Set<string>()
-      for (const offset of modelsOffsets) {
-        if (scannedOffsets.has(offset)) {
-          continue
+      for (const [worldName, { partsOffsets, modelsOffsets }] of worlds) {
+        const world = new World()
+        world.name = worldName
+        for (const offset of partsOffsets) {
+          this._reader.seek(offset)
+          world.parts.push(...this._readParts(offset))
         }
-        scannedOffsets.add(offset)
-        this._reader.seek(offset)
-        const version = this._reader.readUint32()
-        if (version !== 19) {
-          throw new Error('invalid version')
-        }
-        const textureInfoOffset = this._reader.readUint32()
-        const numRois = this._reader.readUint32()
-        const animation = Animation.readAnimation(this._reader)
-        const roi = this._readRoi(offset, scannedModelNames)
-        this._models.push({ roi, animation })
-        this._reader.seek(offset + textureInfoOffset)
-        const numTextures = this._reader.readUint32()
-        const skipTextures = this._reader.readUint32()
-        for (let i = 0; i < numTextures; i += 1) {
-          const texture = this._readGif()
-          this._modelTextures.push(texture)
-          if (texture.title.startsWith('^')) {
-            this._modelTextures.push(this._readGif(texture.title.slice(1)))
+        for (const { offset, position, rotation, up, visible } of modelsOffsets) {
+          this._reader.seek(offset)
+          const version = this._reader.readUint32()
+          if (version !== 19) {
+            throw new Error('invalid version')
+          }
+          const textureInfoOffset = this._reader.readUint32()
+          const _numRois = this._reader.readUint32()
+          const animation = Animation.readAnimation(this._reader)
+          const roi = this._readRoi(offset)
+          world.models.push({ roi, animation, position, rotation, up, visible })
+          this._reader.seek(offset + textureInfoOffset)
+          const numTextures = this._reader.readUint32()
+          const _skipTextures = this._reader.readUint32()
+          for (let i = 0; i < numTextures; i += 1) {
+            const texture = this._readGif()
+            this._modelTextures.push(texture)
+            if (texture.title.startsWith('^')) {
+              this._modelTextures.push(this._readGif(texture.title.slice(1)))
+            }
           }
         }
+        this._worlds.push(world)
       }
     }
 
@@ -198,11 +215,8 @@ export namespace WDB {
     get modelTextures(): Gif[] {
       return this._modelTextures
     }
-    get models(): Model[] {
-      return this._models
-    }
-    get parts(): Part[] {
-      return this._parts
+    get worlds(): World[] {
+      return this._worlds
     }
     get globalParts(): Part[] {
       return this._globalParts
@@ -227,16 +241,12 @@ export namespace WDB {
       return tex
     }
 
-    private _readRoi = (offset: number, scannedModelNames: Set<string>): Roi => {
+    private _readRoi = (offset: number): Roi => {
       const modelName = this._reader.readString()
-      if (scannedModelNames.has(modelName)) {
-        console.log(`Already scanned model '${modelName}'!`)
-      }
-      scannedModelNames.add(modelName)
-      this._reader.readVector3()
-      this._reader.readFloat32()
-      this._reader.readVector3()
-      this._reader.readVector3()
+      const _sphereCenter = this._reader.readVector3()
+      const _sphereRadius = this._reader.readFloat32()
+      const _boxMin = this._reader.readVector3()
+      const _boxMax = this._reader.readVector3()
       const textureName = this._reader.readString()
       const definedElsewhere = this._reader.readInt8()
       const lods: Lod[] = []
@@ -255,9 +265,9 @@ export namespace WDB {
       const children: Roi[] = []
       const numRois = this._reader.readUint32()
       for (let n = 0; n < numRois; ++n) {
-        children.push(this._readRoi(offset, scannedModelNames))
+        children.push(this._readRoi(offset))
       }
-      return { name: modelName, lods, children, textureName }
+      return { name: modelName, lods, children, textureName, position: _sphereCenter }
     }
 
     private _readGif = (maybeTitle?: string): Gif => {

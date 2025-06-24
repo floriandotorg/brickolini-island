@@ -25,3 +25,6 @@ dist-ssr
 *.iso
 TODO.md
 LI1_Cassetes-v3
+public/org
+public/hd
+.env

@@ -1,103 +1,59 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lego Island Remastered – An Open-Source Web-Based Remaster of LEGO Island (1997)</title>
+    <meta name="title" content="Lego Island Remastered – An Open-Source Web-Based Remaster of LEGO Island (1997)">
+    <meta name="description" content="Lego Island Remastered is an open-source web-based remaster of LEGO Island (1997).">
+    <meta name="google-site-verification" content="La7odqDYVSiOCGvjzK-mEIxvmJCMQApzqbz5cHXXW68" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Brickolini Island – Modern LEGO Island 1997 Remake</title>
-  <meta name="title" content="Brickolini Island – Modern LEGO Island 1997 Remake">
-  <meta name="description" content="Brickolini Island is an authentic LEGO Island 1997 remake directly in your browser.">
-  <meta name="google-site-verification" content="La7odqDYVSiOCGvjzK-mEIxvmJCMQApzqbz5cHXXW68" />
-</head>
-
-<body>
-  <div class="fixed inset-0 bg-black flex justify-center items-center"
-    :class="{ 'pointer-none': $store.state.mode !== 'in-game', 'invisible': $store.state.mode !== 'in-game' }" x-data>
-    <div class="aspect-[4/3] h-full max-w-full flex items-center justify-center relative">
-      <div class="absolute top-4 left-4 p-1 text-white bg-black font-mono" x-data x-show="$store.state.debug" x-cloak>
-        <div class="text-red-500" x-data x-show="$store.state.debug?.slewMode" x-cloak>
-          SLEW MODE
+  <body class="bg-black text-white">
+    <div class="fixed inset-0 flex justify-center items-center">
+      <div class="aspect-[4/3] h-full max-w-full flex items-center justify-center relative">
+        <div id="debug" class="absolute top-4 left-4 p-1 text-white bg-black font-mono hidden">
+          <div id="debug-slew-mode" class="text-red-500">
+            SLEW MODE
+          </div>
+          <div>
+            position: <span id="debug-position"></span>
+          </div>
+          <div>
+            direction: <span id="debug-direction"></span>
+          </div>
         </div>
-        <div>
-          position: <span x-data x-text="$store.state.debug?.position"></span>
-        </div>
-        <div>
-          direction: <span x-data x-text="$store.state.debug?.direction"></span>
-        </div>
+        <canvas id="game" class="select-none aspect-[4/3] h-full max-w-full"></canvas>
       </div>
-      <canvas id="game-canvas" class="select-none aspect-[4/3] h-full max-w-full"></canvas>
     </div>
-  </div>
 
-  <div class="fixed inset-0 bg-black flex justify-center items-center"
-    :class="{ 'pointer-none': $store.state.mode !== 'cutscene', 'invisible': $store.state.mode !== 'cutscene' }" x-data
-    @click="skipCutscene()">
-    <canvas id="cutscene-canvas" class="pointer-events-none aspect-[4/3] h-full max-w-full"></canvas>
-  </div>
+    <div id="menu" class="flex flex-col justify-center items-center h-screen gap-8 relative">
+      <a class="absolute top-4 right-4 flex items-center opacity-50 hover:opacity-100 transition-opacity duration-100" href="https://github.com/floriandotorg/brickolini-island" target="_blank">
+        <img src="github.svg" alt="Fork me on GitHub" class="h-7"/>
+      </a>
 
-  <div id="loading-screen" class="fixed inset-0 flex flex-col justify-center items-center bg-white/90 text-[#333333]"
-    x-data x-cloak x-show="$store.state.mode === 'loading'">
-    <img src="/title.png" alt="Brickolini Title" class="w-[20rem] h-auto mb-5" />
-    <div class="flex flex-col gap-2 items-center" x-data x-show="$store.state.loading != null" x-cloak>
-      <div class="w-[10rem] h-2 bg-gray-200 rounded-full">
-        <div class="h-full bg-blue-500 rounded-full" x-data :style="{ width: $store.state.loading?.progress + '%' }">
-        </div>
-      </div>
-      <p class="text-sm text-gray-500" x-data x-text="$store.state.loading?.message"></p>
-    </div>
-  </div>
+      <img src="/logo.png" alt="Lego Island Remastered" class="h-30 lg:h-40" />
+      <button id="play-button" class="bg-gradient-to-b from-yellow-400 via-orange-500 to-red-600 text-black font-bold text-xl px-6 py-3 lg:px-8 lg:py-4 rounded-xl shadow-lg hover:from-yellow-300 hover:to-red-500 transition-transform duration-200 transform hover:scale-105 tracking-wide cursor-pointer">
+        PLAY NOW
+      </button>
 
-  <div
-    class="font-['Nunito',_'Arial_Rounded_MT_Bold',_sans-serif] bg-[url('/texture.png')] bg-[length:150px] bg-repeat min-h-screen flex flex-col justify-center items-center px-10"
-    x-data x-cloak x-show="$store.state.mode === 'welcome'">
-    <div
-      class="flex flex-col gap-5 justify-center items-center m-0 text-[#333333] p-7.5 text-center bg-white/90 rounded-xl shadow-[0_6px_12px_rgba(0,0,0,0.2)] border-4 border-[#333333]">
-      <img src="/title.png" alt="Brickolini Title" class="w-[25rem] h-auto mx-auto mb-5" />
-      <p class="text-[#333333] mx-5">
-        To play, you'll need the original game's ISO file.
-        You can download it from the Internet Archive:
-        <a href="https://archive.org/details/lego-islandi" target="_blank" rel="noopener noreferrer"
-          class="text-[#005eb8] font-bold underline hover:text-[#d9001c]">Download ISO</a>
+      <p class="text-xs lg:text-sm text-gray-400 absolute bottom-4 w-10/12 text-center">
+        LEGO® and LEGO Island™ are registered trademarks of the LEGO Group. This project is a fan-made creation and is neither authorized nor sponsored by the LEGO Group.
       </p>
-      <div id="drop-zone" x-data="dropZoneComponent()" @dragover.prevent="dragging = true"
-        @dragleave.prevent="dragging = false" @drop.prevent="handleDrop($event)"
-        :class="{ 'border-[#009743] bg-[#e0e0e0]': dragging }"
-        class="border-4 border-dashed border-[#005eb8] p-8 rounded-lg bg-[#f2f2f2] cursor-pointer transition-colors duration-300 ease-in-out hover:bg-[#e0e0e0] hover:border-[#009743] w-full">
-        <p class="m-[10px_0] text-[1.3em] font-bold">Drag & Drop your game ISO here</p>
-        <p class="m-[10px_0] text-[1.3em] font-bold">or</p>
-        <label for="iso-input" @click.prevent="$refs.isoInput.click()"
-          class="inline-block bg-[#ffcd00] text-[#333333] py-3 px-6 rounded-lg cursor-pointer font-black text-lg border-3 border-[#d9001c] mt-4 uppercase shadow-[0_4px_0px_#d9001c] hover:bg-[#e4a700] active:translate-y-[2px] active:shadow-[0_2px_0px_#d9001c]">Select
-          ISO File</label>
-        <input type="file" id="iso-input" x-ref="isoInput" accept=".iso" class="hidden"
-          @change="handleFileSelect($event.target.files)">
-      </div>
     </div>
-  </div>
 
-  <main x-data x-show="$store.state.mode === 'seo'">
-    <h1>Brickolini Island – A Web-Based Remake of LEGO Island (1997)</h1>
+    <main style="display: none">
+      <h1>Lego Island Remastered – An Open-Source Web-Based Remaster of LEGO Island (1997)</h1>
+      <p>A remake of the 1997 classic LEGO Island from 1997. Play it directly in your browser.</p>
 
-    <p>A remake of the 1997 classic LEGO Island from 1997. Play it directly in your browser. Immerse yourself once again in the colorful, brick-built world full of adventure and playful interactions.</p>
+      <h2>A Faithful Web-Based Remake</h2>
+      <p>No downloads needed—simply launch and <strong>play LEGO Island</strong> directly from your browser.</p>
 
-    <h2>A Faithful Web-Based Remake</h2>
+      <h2>An Authentic LEGO Island Remake</h2>
+      <p>Brickolini Island meticulously preserves the original game’s playful aesthetic and atmosphere.</p>
+    </main>
 
-    <p>Brickolini Island is a web-based remake of the iconic LEGO Island game from 1997. Designed to replicate the charm and whimsical gameplay of the original, this project brings the beloved title back to life with minor, thoughtful enhancements.</p>
-
-    <p>No downloads needed—simply launch and <strong>play LEGO Island</strong> directly from your browser.</p>
-
-    <h2>An Authentic LEGO Island Remake</h2>
-
-    <p>Brickolini Island meticulously preserves the original game’s playful aesthetic and atmosphere.</p>
-
-    <ul>
-      <li><strong>Explore the Island:</strong> Wander freely and discover hidden secrets.</li>
-      <li><strong>Interact with Characters:</strong> Meet familiar LEGO personalities like Pepper Roni, Mama and Papa Brickolini, and the notorious Brickster.</li>
-      <li><strong>Nostalgic Gameplay:</strong> Experience classic missions and adventures authentically recreated.</li>
-    </ul>
-  </main>
-
-  <script type="module" src="/src/main.ts"></script>
-</body>
-
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>

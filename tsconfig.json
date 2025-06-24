@@ -15,7 +15,8 @@
     "lib": ["es2022", "dom", "dom.iterable"],
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "types": ["vite-plugin-glsl/ext"]
   },
   "include": ["src"]
 }

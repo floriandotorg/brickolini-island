@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      VITE_USE_HD_ASSETS: 'true'
 
     steps:
     - name: Checkout code

@@ -1,41 +1,30 @@
+import { Intro_Movie, Lego_Movie, Mindscape_Movie } from './actions/intro'
+import { engine } from './lib/engine'
+import { Isle } from './lib/world/isle'
 import './style.css'
-import Alpine from 'alpinejs'
-import { loadFromISO } from './lib/load'
-import { initStores } from './lib/store'
 
-initStores()
+const playButton = document.getElementById('play-button')
+if (playButton == null || !(playButton instanceof HTMLButtonElement)) {
+  throw new Error('Play button not found')
+}
 
-Alpine.data('dropZoneComponent', () => ({
-  dragging: false,
+const start = async () => {
+  playButton.disabled = true
 
-  handleFileSelect(files: FileList | null) {
-    const file = files?.[0] ?? null
-    if (!file) {
-      throw new Error('No file selected.')
-    }
+  await engine.setWorld(new Isle())
+  engine.start()
 
-    if (!file.name.toLowerCase().endsWith('.iso')) {
-      throw new Error('Invalid file type. Please select an ISO file.')
-    }
+  document.getElementById('menu')?.classList.add('hidden')
 
-    loadFromISO(file)
-  },
+  if (!import.meta.env.DEV) {
+    await engine.playCutscene(Lego_Movie)
+    await engine.playCutscene(Mindscape_Movie)
+    await engine.playCutscene(Intro_Movie)
+  }
+}
 
-  handleDrop(event: DragEvent) {
-    this.dragging = false
-    const files = event.dataTransfer?.files
-    this.handleFileSelect(files ?? null)
-  },
-}))
-
-Alpine.start()
+playButton.addEventListener('click', start)
 
 if (import.meta.env.DEV) {
-  const res = await fetch('/LEGO_ISLANDI.ISO')
-  if (!res.ok) {
-    throw new Error(`Failed to fetch ISO: ${res.status}`)
-  }
-  const blob = await res.blob()
-  const file = new File([blob], 'your.iso', { type: 'application/octet-stream' })
-  loadFromISO(file)
+  start()
 }

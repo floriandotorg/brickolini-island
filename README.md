@@ -38,7 +38,40 @@ Also, please feel free to open an issue or submit a pull request.
 
 ⬜ = Not started &nbsp;&nbsp; 🟡 = In progress &nbsp;&nbsp; ✅ = Done
 
-## Running the project
+## Installation
+
+### Prerequisites
+
+Before running this project, you need to extract the game assets from your LEGO Island ISO file:
+
+1. Clone the [lego-island-asset-ripper](https://github.com/floriandotorg/lego-island-asset-ripper) repository:
+   ```bash
+   git clone https://github.com/floriandotorg/lego-island-asset-ripper.git
+   cd lego-island-asset-ripper
+   ```
+
+2. Checkout the `hd` branch:
+   ```bash
+   git checkout hd
+   ```
+
+3. Extract the assets from your ISO file:
+   ```bash
+   python extract.py <ISO_FILE>
+   ```
+   Replace `<ISO_FILE>` with the path to your LEGO Island ISO file. Full extract takes around 5-10 minutes.
+   
+   Example:
+   ```bash
+   python extract.py lego_island.iso
+   ```
+
+4. Copy the `extract` folder to this project's `public` directory and rename it to `org`:
+   ```bash
+   cp -r extract /path/to/brickolini/public/org
+   ```
+
+### Running the Project
 
 1.  Install dependencies:
     ```bash
@@ -48,7 +81,7 @@ Also, please feel free to open an issue or submit a pull request.
     ```bash
     npm start
     ```
-3.  Open your browser to the specified local address (usually `http://localhost:5173`). 
+3.  Open your browser to the specified local address (usually `http://localhost:5173`).
 
 ## Development Tools
 
