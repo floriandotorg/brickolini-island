@@ -48,7 +48,7 @@ export abstract class World {
     let hit: THREE.Object3D | null = this._raycaster.intersectObjects(Array.from(this._clickListeners.keys()))[0]?.object
     while (hit != null) {
       const onClick = this._clickListeners.get(hit)
-      if (onClick != null) {
+      if (hit.visible && onClick != null) {
         onClick(event)
         break
       }

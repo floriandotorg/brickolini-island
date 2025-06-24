@@ -210,7 +210,15 @@ const roiToMesh = async (roi: WDB.Roi, animation: WDB.Animation.Node | undefined
     } else if (animation.rotationKeys.length > 1) {
       console.log(`Model ${roi.name} has ${animation.rotationKeys.length} rotation keys`)
     }
-    if (animation.scaleKeys.length > 0) {
+    if (animation.scaleKeys.length === 1) {
+      if (animation.scaleKeys[0].timeAndFlags.time !== 0) {
+        console.log(`Scale key for model ${roi.name} has non-zero time of ${animation.scaleKeys[0].timeAndFlags.time}`)
+      }
+      if (animation.scaleKeys[0].timeAndFlags.flags !== 1) {
+        console.log(`Scale key for model ${roi.name} has non-standard flags of ${animation.scaleKeys[0].timeAndFlags.flags}`)
+      }
+      result.scale.set(...animation.scaleKeys[0].vertex)
+    } else if (animation.scaleKeys.length > 1) {
       console.log(`Model ${roi.name} has ${animation.scaleKeys.length} scale keys`)
     }
     if (animation.morphKeys.length > 0) {

@@ -12,7 +12,7 @@ class Mask {
 
   constructor(image: CanvasImageSource, x: number, y: number) {
     const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d')
+    const context = canvas.getContext('2d', { willReadFrequently: true })
     if (context == null) {
       throw new Error('Unable to create canvas context')
     }
