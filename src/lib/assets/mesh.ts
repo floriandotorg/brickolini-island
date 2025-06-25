@@ -121,10 +121,10 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
       const material = new THREE.MeshPhysicalMaterial({ flatShading: true, metalness: 0, roughness: 1 })
 
       if (!modelMesh.materialName.toLowerCase().includes('grass') && !modelMesh.materialName.toLowerCase().includes('rock')) {
-        material.roughness = 0.7
+        material.roughness = 0.5
         material.metalness = 0
         material.clearcoat = 0.5
-        material.clearcoatRoughness = 0.8
+        material.clearcoatRoughness = 0.5
         material.reflectivity = 0.3
       }
 

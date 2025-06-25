@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { Sky } from 'three/addons/objects/Sky.js'
 import { AmbulanceDashboard, BikeDashboard, IslePath, MotoBikeDashboard, SkateDashboard } from '../../actions/isle'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../../actions/jukebox'
 import { getBoundaries } from '../assets/boundary'
@@ -29,6 +30,11 @@ export class Isle extends World {
   private _boundaryManager = new BoundaryManager([])
   private _dashboard = new Dashboard()
   private _vehicleMesh: THREE.Mesh | null = null
+  private _sky: Sky | null = null
+  private _ambientLight: THREE.AmbientLight | null = null
+  private _sunLight: THREE.DirectionalLight | null = null
+  private _dayTime = 0
+  private _lastSunUpdate = engine.clock.elapsedTime
 
   async init(): Promise<void> {
     const world = await getWorld('ACT1')
@@ -47,55 +53,63 @@ export class Isle extends World {
       })
     }
 
-    const ambientLight = new THREE.AmbientLight(new THREE.Color(0.3, 0.3, 0.3))
-    this._scene.add(ambientLight)
-    const sunLight = new THREE.PointLight(0xffffff, 1, 1000, 0)
     if (engine.hdRender) {
-      sunLight.castShadow = true
-      sunLight.shadow.mapSize.width = 4096
-      sunLight.shadow.mapSize.height = 4096
-      sunLight.shadow.camera.near = 0.5
-      sunLight.shadow.camera.far = 500
-    }
-    this._scene.add(sunLight)
-    const directionalLight = new THREE.DirectionalLight(0xffffff)
-    if (engine.hdRender) {
-      directionalLight.castShadow = true
-      directionalLight.shadow.mapSize.width = 4096
-      directionalLight.shadow.mapSize.height = 4096
-      directionalLight.shadow.camera.near = 0.5
-      directionalLight.shadow.camera.far = 200
-      directionalLight.shadow.camera.left = -50
-      directionalLight.shadow.camera.right = 50
-      directionalLight.shadow.camera.top = 50
-      directionalLight.shadow.camera.bottom = -50
-      directionalLight.shadow.bias = -0.0005
-    }
-    this._scene.add(directionalLight)
+      this._sky = new Sky()
+      this._sky.scale.setScalar(10000)
+      this._scene.add(this._sky)
+      this._sky.material.uniforms.turbidity.value = 10
+      this._sky.material.uniforms.rayleigh.value = 2
+      this._sky.material.uniforms.mieCoefficient.value = 0.005
+      this._sky.material.uniforms.mieDirectionalG.value = 0.8
 
-    const setSkyColor = (hsl: { h: number; s: number; l: number }) => {
-      const color = new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l)
-      this._scene.background = color
-      const lightColor = new THREE.Color(Math.min(color.r * (1 / 0.23), 1), Math.min(color.g * (1 / 0.63), 1), Math.min(color.b * (1 / 0.85), 1))
-      directionalLight.color = lightColor
-      sunLight.color = lightColor
-    }
-    setSkyColor({ h: 0.56, s: 0.54, l: 0.68 })
+      this._ambientLight = new THREE.AmbientLight()
+      this._scene.add(this._ambientLight)
 
-    const setLightPosition = (index: number) => {
-      const lights: [number, number, number, number, number, number][] = [
-        [1.0, 0.0, 0.0, -150.0, 50.0, -50.0],
-        [0.809, -0.588, 0.0, -75.0, 50.0, -50.0],
-        [0.0, -1.0, 0.0, 0.0, 150.0, -150.0],
-        [-0.309, -0.951, 0.0, 25.0, 50.0, -50.0],
-        [-0.809, -0.588, 0.0, 75.0, 50.0, -50.0],
-        [-1.0, 0.0, 0.0, 150.0, 50.0, -50.0],
-      ]
-      sunLight.position.set(lights[index][3], lights[index][4], lights[index][5])
-      sunLight.lookAt(lights[index][0], lights[index][1], lights[index][2])
-      directionalLight.position.set(lights[index][0], lights[index][1], lights[index][2])
+      this._sunLight = new THREE.DirectionalLight()
+      this._sunLight.castShadow = true
+      this._sunLight.shadow.mapSize.set(4096, 4096)
+      this._sunLight.shadow.camera.near = 0.5
+      this._sunLight.shadow.camera.far = 500
+      this._sunLight.shadow.camera.left = -200
+      this._sunLight.shadow.camera.right = 200
+      this._sunLight.shadow.camera.top = 200
+      this._sunLight.shadow.camera.bottom = -200
+      this._scene.add(this._sunLight)
+
+      this._dayTime = 0.5
+      this._updateSun()
+    } else {
+      const ambientLight = new THREE.AmbientLight(new THREE.Color(0.3, 0.3, 0.3))
+      this._scene.add(ambientLight)
+      const sunLight = new THREE.PointLight(0xffffff, 1, 1000, 0)
+      this._scene.add(sunLight)
+      const directionalLight = new THREE.DirectionalLight(0xffffff)
+      this._scene.add(directionalLight)
+
+      const setSkyColor = (hsl: { h: number; s: number; l: number }) => {
+        const color = new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l)
+        this._scene.background = color
+        const lightColor = new THREE.Color(Math.min(color.r * (1 / 0.23), 1), Math.min(color.g * (1 / 0.63), 1), Math.min(color.b * (1 / 0.85), 1))
+        directionalLight.color = lightColor
+        sunLight.color = lightColor
+      }
+      setSkyColor({ h: 0.56, s: 0.54, l: 0.68 })
+
+      const setLightPosition = (index: number) => {
+        const lights: [number, number, number, number, number, number][] = [
+          [1.0, 0.0, 0.0, -150.0, 50.0, -50.0],
+          [0.809, -0.588, 0.0, -75.0, 50.0, -50.0],
+          [0.0, -1.0, 0.0, 0.0, 150.0, -150.0],
+          [-0.309, -0.951, 0.0, 25.0, 50.0, -50.0],
+          [-0.809, -0.588, 0.0, 75.0, 50.0, -50.0],
+          [-1.0, 0.0, 0.0, 150.0, 50.0, -50.0],
+        ]
+        sunLight.position.set(lights[index][3], lights[index][4], lights[index][5])
+        sunLight.lookAt(lights[index][0], lights[index][1], lights[index][2])
+        directionalLight.position.set(lights[index][0], lights[index][1], lights[index][2])
+      }
+      setLightPosition(0)
     }
-    setLightPosition(0)
 
     engine.switchBackgroundMusic(CentralNorthRoad_Music)
 
@@ -210,6 +224,32 @@ export class Isle extends World {
     this._placeObjectOnGround(this._camera)
   }
 
+  private _updateSun(): void {
+    if (this._sky == null || this._ambientLight == null || this._sunLight == null) {
+      return
+    }
+
+    const elevationDeg = Math.sin(Math.PI * this._dayTime) * 90 // 0-90-0°
+    const phi = THREE.MathUtils.degToRad(90 - elevationDeg)
+    const theta = THREE.MathUtils.degToRad(135) // fixed azimuth
+
+    const sunDir = new THREE.Vector3().setFromSphericalCoords(1, phi, theta)
+
+    this._sky.material.uniforms.sunPosition.value.copy(sunDir)
+
+    const intensity = 0.25 + 0.75 * Math.sin(Math.PI * this._dayTime) // 0.25-1-0.25
+    const warm = new THREE.Color(0xff9f46) // ≈ 2500 K
+    const cold = new THREE.Color(0xfffefa) // ≈ 6500 K
+    const color = warm.clone().lerp(cold, Math.sin(Math.PI * this._dayTime)) // warm → cold → warm
+
+    this._ambientLight.intensity = 0.4
+    this._ambientLight.color.copy(color)
+
+    this._sunLight.position.copy(sunDir).multiplyScalar(100)
+    this._sunLight.intensity = intensity
+    this._sunLight.color.copy(color)
+  }
+
   private _showDashboard(): void {
     if (this._vehicleMesh == null) {
       return
@@ -287,6 +327,11 @@ export class Isle extends World {
         this._placeObjectOnGround(this._camera)
       }
     }
+
+    if (key === 'm') {
+      this._dayTime = (Math.round(((this._dayTime + 0.25) % 1) / 0.25) * 0.25) % 1
+      this._updateSun()
+    }
   }
 
   private _calculateNewVel(targetVel: number, currentVel: number, accel: number, delta: number): number {
@@ -331,6 +376,13 @@ export class Isle extends World {
   }
 
   async update(delta: number): Promise<void> {
+    this._dayTime = (this._dayTime + delta * 0.0001) % 1
+
+    if (engine.clock.elapsedTime - this._lastSunUpdate > 10) {
+      this._updateSun()
+      this._lastSunUpdate = engine.clock.elapsedTime
+    }
+
     const speedMultiplier = this._slewMode ? 4 : 1
 
     const targetLinearVel = (engine.isKeyDown('ArrowUp') ? MAX_LINEAR_VEL : engine.isKeyDown('ArrowDown') ? -MAX_LINEAR_VEL : 0) * speedMultiplier

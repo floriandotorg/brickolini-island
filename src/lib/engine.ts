@@ -73,6 +73,10 @@ class Engine {
     return this._canvas.height
   }
 
+  public get clock(): THREE.Clock {
+    return this._clock
+  }
+
   constructor() {
     this._cutsceneVideo = document.createElement('video')
 
@@ -84,12 +88,12 @@ class Engine {
 
     this._renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
     this._renderer.autoClear = false
-
+    this._renderer.setPixelRatio(window.devicePixelRatio)
     if (!this.hdRender) {
       this._renderer.toneMapping = THREE.NoToneMapping
     } else {
       this._renderer.toneMapping = THREE.ACESFilmicToneMapping
-      this._renderer.toneMappingExposure = 1.0
+      this._renderer.toneMappingExposure = 0.5
       this._renderer.shadowMap.enabled = true
       this._renderer.shadowMap.type = THREE.PCFSoftShadowMap
     }
