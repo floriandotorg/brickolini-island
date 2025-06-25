@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
+import { engine } from '../engine'
 
 THREE.Cache.enabled = !import.meta.env.DEV
 
@@ -138,7 +139,7 @@ const fileLoader = new THREE.FileLoader(manager)
 fileLoader.setResponseType('arraybuffer')
 
 export const getFileUrl = (path: string) => {
-  if (import.meta.env.VITE_USE_HD_ASSETS === 'true' && hdFiles.has(path)) {
+  if (import.meta.env.VITE_USE_HD_ASSETS === 'true' && engine.hdRender && hdFiles.has(path)) {
     return `hd/${path}`
   }
   return `/org/${path}`
