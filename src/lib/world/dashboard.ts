@@ -39,10 +39,12 @@ export class Dashboard {
   private _material: THREE.MeshBasicMaterial
   private _mesh: THREE.Mesh
   private _velocity: number = 0
+  private _dashboardImage: HTMLImageElement | null = null
   private _armsMask: Mask | null = null
   private _hornMask: Mask | null = null
-  private _hornPosition = new THREE.Vector2()
+  private _hornUpPosition = new THREE.Vector2()
   private _hornUpImage: HTMLImageElement | null = null
+  private _hornDownPosition = new THREE.Vector2()
   private _hornDownImage: HTMLImageElement | null = null
   private _hornSound: AudioAction | null = null
   private _infoMask: Mask | null = null
@@ -74,6 +76,7 @@ export class Dashboard {
   public resize(width: number, height: number): void {
     this._canvas.width = width
     this._canvas.height = height
+    this._camera.updateProjectionMatrix()
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): void {
@@ -82,8 +85,12 @@ export class Dashboard {
     }
 
     if (this._hornMask?.test(normalizedX, normalizedY)) {
-      if (this._hornDownImage != null) {
-        this._drawImage(this._hornDownImage, this._hornPosition.x, this._hornPosition.y)
+      if (this._hornDownImage != null && this._infoUpImage != null) {
+        this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
+        this._drawDashboard()
+        this._drawImage(this._hornDownImage, this._hornDownPosition.x, this._hornDownPosition.y)
+        this._drawImage(this._infoUpImage, this._infoPosition.x, this._infoPosition.y)
+        this._texture.needsUpdate = true
       }
 
       if (this._hornSound != null) {
@@ -102,7 +109,10 @@ export class Dashboard {
 
   public pointerUp(): void {
     if (this._hornUpImage != null) {
-      this._drawImage(this._hornUpImage, this._hornPosition.x, this._hornPosition.y)
+      this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
+      this._drawDashboard()
+      this._drawImage(this._hornUpImage, this._hornUpPosition.x, this._hornUpPosition.y)
+      this._texture.needsUpdate = true
     }
 
     if (this._infoUpImage != null) {
@@ -119,6 +129,19 @@ export class Dashboard {
     this._texture.needsUpdate = true
   }
 
+  private _drawDashboard(): void {
+    if (this._dashboardImage == null) {
+      return
+    }
+
+    const aspect = this._dashboardImage.width / this._dashboardImage.height
+    const drawWidth = this._canvas.width
+    const drawHeight = drawWidth / aspect
+    const y = this._canvas.height - drawHeight
+    this._context.drawImage(this._dashboardImage, 0, y, drawWidth, drawHeight)
+    this._texture.needsUpdate = true
+  }
+
   public async show(action: { type: Action.Type.ParallelAction; children: readonly Child[] }): Promise<void> {
     this.clear()
 
@@ -132,13 +155,8 @@ export class Dashboard {
       throw new Error('Dashboard image not found')
     }
 
-    const dashboardImage = await getImage(dashboardAction)
-    const aspect = dashboardImage.width / dashboardImage.height
-    const drawWidth = this._canvas.width
-    const drawHeight = drawWidth / aspect
-    const y = this._canvas.height - drawHeight
-    this._context.drawImage(dashboardImage, 0, y, drawWidth, drawHeight)
-    this._texture.needsUpdate = true
+    this._dashboardImage = await getImage(dashboardAction)
+    this._drawDashboard()
 
     const armsAction = action.children.find(child => child.presenter === 'MxControlPresenter' && child.name.endsWith('Arms_Ctl'))?.children.find(child => child.type === Action.Type.Still && child.name.endsWith('Arms_Mask_Bitmap'))
     if (!isImageAction(armsAction)) {
@@ -163,7 +181,7 @@ export class Dashboard {
       this._hornUpImage = await getImage(hornUpAction)
       this._drawImage(this._hornUpImage, hornUpAction.location[0], hornUpAction.location[1])
       this._hornMask = new Mask(this._hornUpImage, hornUpAction.location[0], hornUpAction.location[1])
-      this._hornPosition.set(hornUpAction.location[0], hornUpAction.location[1])
+      this._hornUpPosition.set(hornUpAction.location[0], hornUpAction.location[1])
 
       const hornDownAction = hornAction.children.find(child => child.type === Action.Type.ParallelAction && child.name.endsWith('HornDown'))?.children.find(child => child.type === Action.Type.Still && child.name.endsWith('Down_Bitmap'))
       if (!isImageAction(hornDownAction)) {
@@ -171,6 +189,7 @@ export class Dashboard {
       }
 
       this._hornDownImage = await getImage(hornDownAction)
+      this._hornDownPosition.set(hornDownAction.location[0], hornDownAction.location[1])
     }
 
     const infoAction = action.children.find(child => child.presenter === 'MxControlPresenter' && child.name.endsWith('Info_Ctl'))
