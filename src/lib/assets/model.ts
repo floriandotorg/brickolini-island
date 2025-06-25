@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { engine } from '../engine'
 import { getFile, getFileUrl } from './load'
 import { colorFromName, createGeometryAndMaterials } from './mesh'
 import { WDB } from './wdb'
@@ -111,6 +112,10 @@ const roiToMesh = async (roi: WDB.Roi, animation: WDB.Animation.Node | undefined
     for (const [geometry, material] of createGeometryAndMaterials(lod, customColor, null, 'model')) {
       const mesh = new THREE.Mesh(geometry, material)
       mesh.name = `${path.join('-')}-${++n}`
+      if (engine.hdRender) {
+        mesh.castShadow = true
+        mesh.receiveShadow = true
+      }
       result.add(mesh)
       meshes.push(mesh)
     }
@@ -165,6 +170,10 @@ export const getPart = async (name: string, color: WDB.Color | null, texture: st
   for (const [geometry, material] of createGeometryAndMaterials(lod, color, texture, 'part')) {
     const mesh = new THREE.Mesh(geometry, material)
     mesh.name = `${name}-${++n}`
+    if (engine.hdRender) {
+      mesh.castShadow = true
+      mesh.receiveShadow = true
+    }
     result.add(mesh)
     meshes.push(mesh)
   }

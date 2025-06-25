@@ -61,6 +61,10 @@ class Engine {
     return this._world
   }
 
+  public get renderer(): THREE.WebGLRenderer {
+    return this._renderer
+  }
+
   public get width(): number {
     return this._canvas.width
   }
@@ -86,6 +90,8 @@ class Engine {
     } else {
       this._renderer.toneMapping = THREE.ACESFilmicToneMapping
       this._renderer.toneMappingExposure = 1.0
+      this._renderer.shadowMap.enabled = true
+      this._renderer.shadowMap.type = THREE.PCFSoftShadowMap
     }
 
     this._cutsceneMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))

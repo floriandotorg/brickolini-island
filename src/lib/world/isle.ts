@@ -50,8 +50,27 @@ export class Isle extends World {
     const ambientLight = new THREE.AmbientLight(new THREE.Color(0.3, 0.3, 0.3))
     this._scene.add(ambientLight)
     const sunLight = new THREE.PointLight(0xffffff, 1, 1000, 0)
+    if (engine.hdRender) {
+      sunLight.castShadow = true
+      sunLight.shadow.mapSize.width = 4096
+      sunLight.shadow.mapSize.height = 4096
+      sunLight.shadow.camera.near = 0.5
+      sunLight.shadow.camera.far = 500
+    }
     this._scene.add(sunLight)
     const directionalLight = new THREE.DirectionalLight(0xffffff)
+    if (engine.hdRender) {
+      directionalLight.castShadow = true
+      directionalLight.shadow.mapSize.width = 4096
+      directionalLight.shadow.mapSize.height = 4096
+      directionalLight.shadow.camera.near = 0.5
+      directionalLight.shadow.camera.far = 200
+      directionalLight.shadow.camera.left = -50
+      directionalLight.shadow.camera.right = 50
+      directionalLight.shadow.camera.top = 50
+      directionalLight.shadow.camera.bottom = -50
+      directionalLight.shadow.bias = -0.0005
+    }
     this._scene.add(directionalLight)
 
     const setSkyColor = (hsl: { h: number; s: number; l: number }) => {
