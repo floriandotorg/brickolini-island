@@ -275,7 +275,7 @@ export class Isle extends World {
   public override keyPressed(key: string): void {
     super.keyPressed(key)
 
-    if (key === 'f') {
+    if (key === 'f' && import.meta.env.DEV) {
       this._slewMode = !this._slewMode
 
       if (!this._slewMode) {

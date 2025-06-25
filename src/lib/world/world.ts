@@ -30,7 +30,7 @@ export abstract class World {
     this._debugDirection = getElement('debug-direction')
     this._debugSlewMode = getElement('debug-slew-mode')
 
-    this.debugMode = import.meta.env.DEV
+    this.debugMode = false
 
     this._scene.add(this._debugGroup)
   }
@@ -84,7 +84,7 @@ export abstract class World {
   }
 
   public keyPressed(key: string): void {
-    if (key === 'd') {
+    if (key === 'd' && import.meta.env.DEV) {
       this.debugMode = !this.debugMode
     }
   }
