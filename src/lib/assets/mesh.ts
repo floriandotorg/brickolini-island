@@ -106,6 +106,10 @@ const createTexture = async (name: string, source: 'model' | 'part' | 'image'): 
   texture.wrapT = THREE.RepeatWrapping
   texture.magFilter = THREE.NearestFilter
   texture.minFilter = THREE.NearestFilter
+  if (engine.hdRender) {
+    texture.generateMipmaps = false
+    texture.anisotropy = engine.renderer.capabilities.getMaxAnisotropy()
+  }
   return texture
 }
 
@@ -114,10 +118,6 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
   const indices: number[] = modelMesh.indices
   const uvs: number[] = modelMesh.uvs.flat()
   const material = (() => {
-    if (engine.hdRender) {
-      return new THREE.MeshPhysicalMaterial()
-    }
-
     switch (modelMesh.shading) {
       case WDB.Shading.WireFrame:
         return new THREE.MeshBasicMaterial({ wireframe: true })
