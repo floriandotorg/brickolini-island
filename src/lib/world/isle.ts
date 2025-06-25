@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Sky } from 'three/addons/objects/Sky.js'
 import type { Water } from 'three/addons/objects/Water.js'
-import { AmbulanceDashboard, BikeDashboard, IslePath, MotoBikeDashboard, SkateDashboard } from '../../actions/isle'
+import { AmbulanceDashboard, BikeDashboard, IslePath, MotoBikeDashboard, SkateDashboard, TowTrackDashboard } from '../../actions/isle'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../../actions/jukebox'
 import { getBoundaries } from '../assets/boundary'
 import { getWorld } from '../assets/model'
@@ -177,6 +177,7 @@ export class Isle extends World {
     const motobkMesh = findMesh('motobk')
     const skateMesh = findMesh('skate')
     const ambulanceMesh = findMesh('ambul')
+    const towtruckMesh = findMesh('towtk')
 
     this._boundaryManager.placeObject(bikeMesh, 'INT44', 2, 0.5, 0, 0.5)
     this._boundaryManager.placeObject(motobkMesh, 'INT43', 4, 0.5, 1, 0.5)
@@ -219,6 +220,9 @@ export class Isle extends World {
     })
     this.addClickListener(ambulanceMesh, async () => {
       await enterVehicle(ambulanceMesh)
+    })
+    this.addClickListener(towtruckMesh, async () => {
+      await enterVehicle(towtruckMesh)
     })
 
     this._dashboard.onExit = () => {
@@ -278,6 +282,9 @@ export class Isle extends World {
         break
       case 'ambul':
         this._dashboard.show(AmbulanceDashboard)
+        break
+      case 'towtk':
+        this._dashboard.show(TowTrackDashboard)
         break
       default:
         throw new Error(`Unknown vehicle: ${this._vehicleMesh.name}`)
