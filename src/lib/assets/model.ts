@@ -1,5 +1,7 @@
 import * as THREE from 'three'
+import { Water } from 'three/addons/objects/Water.js'
 import { engine } from '../engine'
+import { Isle } from '../world/isle'
 import { getFile, getFileUrl } from './load'
 import { colorFromName, createGeometryAndMaterials } from './mesh'
 import { WDB } from './wdb'
@@ -110,6 +112,24 @@ const roiToMesh = async (roi: WDB.Roi, animation: WDB.Animation.Node | undefined
     const meshes: THREE.Mesh[] = []
     let n = 0
     for (const [geometry, material] of createGeometryAndMaterials(lod, customColor, null, 'model')) {
+      if (engine.hdRender && import.meta.env.VITE_USE_HD_ASSETS && material.name.toLowerCase() === 'ocean flat') {
+        const mesh = new Water(geometry, {
+          textureWidth: 512,
+          textureHeight: 512,
+          waterNormals: new THREE.TextureLoader().load('hd/textures/waternormals.jpg', texture => {
+            texture.wrapS = texture.wrapT = THREE.RepeatWrapping
+          }),
+          distortionScale: 5,
+        })
+        mesh.material.uniforms.size.value = 7
+        mesh.name = `${path.join('-')}-${++n}`
+        result.add(mesh)
+        if (engine.currentWorld instanceof Isle) {
+          engine.currentWorld.water = mesh
+        }
+        continue
+      }
+
       const mesh = new THREE.Mesh(geometry, material)
       mesh.name = `${path.join('-')}-${++n}`
       if (engine.hdRender) {

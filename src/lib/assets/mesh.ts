@@ -171,10 +171,12 @@ export const createGeometryAndMaterials = (lod: WDB.Lod, customColor: WDB.Color 
   const result: [THREE.BufferGeometry, THREE.Material][] = []
   for (const modelMesh of lod.meshesBeforeOffset) {
     const [geometry, material] = createGeometryAndMaterial(modelMesh, null, null, type)
+    material.name = modelMesh.materialName
     result.push([geometry, material])
   }
   for (const modelMesh of lod.meshesAfterOffset) {
     const [geometry, material] = createGeometryAndMaterial(modelMesh, customColor, texture, type)
+    material.name = modelMesh.materialName
     result.push([geometry, material])
   }
   return result

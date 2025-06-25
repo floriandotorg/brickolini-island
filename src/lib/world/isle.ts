@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { Sky } from 'three/addons/objects/Sky.js'
+import type { Water } from 'three/addons/objects/Water.js'
 import { AmbulanceDashboard, BikeDashboard, IslePath, MotoBikeDashboard, SkateDashboard } from '../../actions/isle'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../../actions/jukebox'
 import { getBoundaries } from '../assets/boundary'
@@ -35,6 +36,11 @@ export class Isle extends World {
   private _sunLight: THREE.DirectionalLight | null = null
   private _dayTime = 0
   private _lastSunUpdate = engine.clock.elapsedTime
+  private _water: Water | null = null
+
+  public set water(water: Water) {
+    this._water = water
+  }
 
   async init(): Promise<void> {
     const world = await getWorld('ACT1')
@@ -248,6 +254,11 @@ export class Isle extends World {
     this._sunLight.position.copy(sunDir).multiplyScalar(100)
     this._sunLight.intensity = intensity
     this._sunLight.color.copy(color)
+
+    if (this._water != null) {
+      this._water.material.uniforms.sunColor.value.copy(color)
+      this._water.material.uniforms.sunDirection.value.copy(sunDir.normalize())
+    }
   }
 
   private _showDashboard(): void {
@@ -381,6 +392,10 @@ export class Isle extends World {
     if (engine.clock.elapsedTime - this._lastSunUpdate > 10) {
       this._updateSun()
       this._lastSunUpdate = engine.clock.elapsedTime
+    }
+
+    if (this._water != null) {
+      this._water.material.uniforms.time.value += delta * 0.1
     }
 
     const speedMultiplier = this._slewMode ? 4 : 1
