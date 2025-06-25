@@ -29,6 +29,8 @@ class Engine {
   private _transitionStart: number = 0
   private _transitionPromiseResolve: (() => void) | null = null
 
+  public hdRender: boolean = false
+
   public async switchBackgroundMusic(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }): Promise<void> {
     const audio = await getAudio(action)
     audio.loop = true
@@ -78,7 +80,13 @@ class Engine {
 
     this._renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
     this._renderer.autoClear = false
-    this._renderer.toneMapping = THREE.NoToneMapping
+
+    if (!this.hdRender) {
+      this._renderer.toneMapping = THREE.NoToneMapping
+    } else {
+      this._renderer.toneMapping = THREE.ACESFilmicToneMapping
+      this._renderer.toneMappingExposure = 1.0
+    }
 
     this._cutsceneMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
     this._cutsceneCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10)

@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { engine } from '../engine'
 import { getFileUrl, manager } from './load'
 import { WDB } from './wdb'
 
@@ -98,7 +99,9 @@ const createTexture = async (name: string, source: 'model' | 'part' | 'image'): 
     image: 'images',
   }
   const texture = await textureLoader.loadAsync(getFileUrl(`world/${sourceToPath[source]}/${name}.png`))
-  texture.colorSpace = THREE.SRGBColorSpace
+  if (!engine.hdRender) {
+    texture.colorSpace = THREE.SRGBColorSpace
+  }
   texture.wrapS = THREE.RepeatWrapping
   texture.wrapT = THREE.RepeatWrapping
   texture.magFilter = THREE.NearestFilter
@@ -111,6 +114,10 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
   const indices: number[] = modelMesh.indices
   const uvs: number[] = modelMesh.uvs.flat()
   const material = (() => {
+    if (engine.hdRender) {
+      return new THREE.MeshPhysicalMaterial()
+    }
+
     switch (modelMesh.shading) {
       case WDB.Shading.WireFrame:
         return new THREE.MeshBasicMaterial({ wireframe: true })
