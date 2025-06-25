@@ -214,18 +214,18 @@ export namespace Plants {
     return result
   }
 
-  export const place = async (world: WorldType, plantWorld: World): Promise<void> => {
+  export const place = async (world: WorldType, plantWorld: World): Promise<THREE.Group> => {
+    const group = new THREE.Group()
     for (const plant of locationsPerPair(plantWorld)) {
       const plantName = partName(plant.variant, plant.color)
-      const part = await getPart(plantName, null, null)
       for (const plantInfo of plant.plants) {
         const matrix = new THREE.Matrix4()
         calculateTransformationMatrix(plantInfo.locationAndDirection.location, plantInfo.locationAndDirection.direction, plantInfo.locationAndDirection.up, matrix)
         const mesh = new THREE.Mesh()
         mesh.name = `plant-${Variant[plantInfo.variant]}-${Color[plantInfo.color]}`
         matrix.decompose(mesh.position, mesh.quaternion, mesh.scale)
-        mesh.add(part.clone())
-        world.scene.add(mesh)
+        mesh.add(await getPart(plantName, null, null))
+        group.add(mesh)
         world.addClickListener(mesh, async event => {
           if (event.getModifierState('Control')) {
             plantInfo.color = nextColor(plantInfo.color)
@@ -237,5 +237,6 @@ export namespace Plants {
         })
       }
     }
+    return group
   }
 }

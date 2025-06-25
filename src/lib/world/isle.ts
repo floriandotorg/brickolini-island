@@ -25,15 +25,27 @@ export class Isle extends World {
   private _verticalVel = 0
   private _pitchVel = 0
   private _groundGroup: THREE.Mesh[] = []
+  private _plantGroup: THREE.Group = new THREE.Group()
   private _boundaryManager = new BoundaryManager([])
-  private _dashboard = new Dashboard(this)
+  private _dashboard = new Dashboard()
   private _vehicleMesh: THREE.Mesh | null = null
 
   async init(): Promise<void> {
     const world = await getWorld('ACT1')
     this._scene.add(world)
 
-    await Plants.place(this, Plants.World.ACT1)
+    this._plantGroup = await Plants.place(this, Plants.World.ACT1)
+    this._scene.add(this._plantGroup)
+    if (import.meta.hot) {
+      import.meta.hot.accept('./plants', async newModule => {
+        if (newModule == null) {
+          return
+        }
+        this._scene.remove(this._plantGroup)
+        this._plantGroup = await newModule.Plants.place(this, Plants.World.ACT1)
+        this._scene.add(this._plantGroup)
+      })
+    }
 
     const ambientLight = new THREE.AmbientLight(new THREE.Color(0.3, 0.3, 0.3))
     this._scene.add(ambientLight)
@@ -140,22 +152,21 @@ export class Isle extends World {
       this._camera.quaternion.copy(vehicle.quaternion)
       this._placeObjectOnGround(this._camera)
 
-      switch (vehicle.name) {
-        case 'bike':
-          this._dashboard.show(BikeDashboard)
-          break
-        case 'motobk':
-          this._dashboard.show(MotoBikeDashboard)
-          break
-        case 'skate':
-          this._dashboard.show(SkateDashboard)
-          break
-        case 'ambul':
-          this._dashboard.show(AmbulanceDashboard)
-          break
-        default:
-          throw new Error(`Unknown vehicle: ${vehicle.name}`)
-      }
+      this._showDashboard()
+    }
+
+    if (import.meta.hot) {
+      import.meta.hot.accept('./dashboard', newModule => {
+        if (newModule == null) {
+          return
+        }
+        this._dashboard = new newModule.Dashboard()
+        this._dashboard.onExit = () => {
+          this._exitVehicle()
+        }
+        this._dashboard.resize(engine.width, engine.height)
+        this._showDashboard()
+      })
     }
 
     this.addClickListener(bikeMesh, async () => {
@@ -172,24 +183,51 @@ export class Isle extends World {
     })
 
     this._dashboard.onExit = () => {
-      if (this._vehicleMesh == null) {
-        return
-      }
-
-      this._vehicleMesh.position.copy(this._camera.position)
-      this._vehicleMesh.quaternion.copy(this._camera.quaternion)
-      this._placeObjectOnGround(this._vehicleMesh, new THREE.Vector3(0, 0, 0))
-      this._vehicleMesh.visible = true
-
-      this._camera.position.add(new THREE.Vector3(0, 0, -2).applyQuaternion(this._camera.quaternion))
-      this._placeObjectOnGround(this._camera)
-
-      this._dashboard.clear()
+      this._exitVehicle()
     }
 
     this._camera.position.set(20, CAM_HEIGHT, 30)
     this._camera.lookAt(60, 0, 0)
     this._placeObjectOnGround(this._camera)
+  }
+
+  private _showDashboard(): void {
+    if (this._vehicleMesh == null) {
+      return
+    }
+
+    switch (this._vehicleMesh.name) {
+      case 'bike':
+        this._dashboard.show(BikeDashboard)
+        break
+      case 'motobk':
+        this._dashboard.show(MotoBikeDashboard)
+        break
+      case 'skate':
+        this._dashboard.show(SkateDashboard)
+        break
+      case 'ambul':
+        this._dashboard.show(AmbulanceDashboard)
+        break
+      default:
+        throw new Error(`Unknown vehicle: ${this._vehicleMesh.name}`)
+    }
+  }
+
+  private _exitVehicle(): void {
+    if (this._vehicleMesh == null) {
+      return
+    }
+
+    this._vehicleMesh.position.copy(this._camera.position)
+    this._vehicleMesh.quaternion.copy(this._camera.quaternion)
+    this._placeObjectOnGround(this._vehicleMesh, new THREE.Vector3(0, 0, 0))
+    this._vehicleMesh.visible = true
+
+    this._camera.position.add(new THREE.Vector3(0, 0, -2).applyQuaternion(this._camera.quaternion))
+    this._placeObjectOnGround(this._camera)
+
+    this._dashboard.clear()
   }
 
   public override resize(width: number, height: number): void {

@@ -3,7 +3,6 @@ import { Action } from '../../actions/types'
 import type { AudioAction } from '../assets'
 import { getImage } from '../assets/image'
 import { engine } from '../engine'
-import type { World } from './world'
 
 type Child = { id: number; type: Action.Type; siFile: string; fileType?: Action.FileType; children: readonly Child[]; name: string; presenter: string | null; location: readonly [number, number, number]; volume?: number }
 
@@ -32,7 +31,6 @@ class Mask {
 }
 
 export class Dashboard {
-  private _world: World
   private _scene: THREE.Scene
   private _camera: THREE.OrthographicCamera
   private _canvas: HTMLCanvasElement
@@ -55,9 +53,7 @@ export class Dashboard {
   public onExit: () => void = () => {}
   public onInfoButtonClicked: () => void = () => {}
 
-  constructor(world: World) {
-    this._world = world
-
+  constructor() {
     this._canvas = document.createElement('canvas')
     const context = this._canvas.getContext('2d')
     if (context == null) {

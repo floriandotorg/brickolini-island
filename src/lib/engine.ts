@@ -52,11 +52,19 @@ class Engine {
     return this._audioListener
   }
 
-  get currentWorld(): World {
+  public get currentWorld(): World {
     if (this._world == null) {
       throw new Error('No world set')
     }
     return this._world
+  }
+
+  public get width(): number {
+    return this._canvas.width
+  }
+
+  public get height(): number {
+    return this._canvas.height
   }
 
   constructor() {
