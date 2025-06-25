@@ -107,7 +107,6 @@ const createTexture = async (name: string, source: 'model' | 'part' | 'image'): 
   texture.magFilter = THREE.NearestFilter
   texture.minFilter = THREE.NearestFilter
   if (engine.hdRender) {
-    texture.generateMipmaps = false
     texture.anisotropy = engine.renderer.capabilities.getMaxAnisotropy()
   }
   return texture
@@ -118,6 +117,20 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
   const indices: number[] = modelMesh.indices
   const uvs: number[] = modelMesh.uvs.flat()
   const material = (() => {
+    if (engine.hdRender) {
+      const material = new THREE.MeshPhysicalMaterial({ flatShading: true, metalness: 0, roughness: 1 })
+
+      if (!modelMesh.materialName.toLowerCase().includes('grass') && !modelMesh.materialName.toLowerCase().includes('rock')) {
+        material.roughness = 0.7
+        material.metalness = 0
+        material.clearcoat = 0.5
+        material.clearcoatRoughness = 0.8
+        material.reflectivity = 0.3
+      }
+
+      return material
+    }
+
     switch (modelMesh.shading) {
       case WDB.Shading.WireFrame:
         return new THREE.MeshBasicMaterial({ wireframe: true })
