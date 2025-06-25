@@ -100,6 +100,7 @@ class Engine {
 
     this._renderTarget = new THREE.WebGLRenderTarget(1, 1, {
       samples: 4,
+      type: THREE.FloatType,
     })
     this._postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
     this._postCamera.add(this._audioListener)
