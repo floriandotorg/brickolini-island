@@ -1,15 +1,15 @@
 import * as THREE from 'three'
 import { Sky } from 'three/addons/objects/Sky.js'
 import type { Water } from 'three/addons/objects/Water.js'
-import { AmbulanceDashboard, BikeDashboard, IslePath, MotoBikeDashboard, SkateDashboard, TowTrackDashboard } from '../../actions/isle'
-import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../../actions/jukebox'
-import { getBoundaries } from '../assets/boundary'
-import { getWorld } from '../assets/model'
-import { engine } from '../engine'
-import { BoundaryManager } from './boundary-manager'
-import { Dashboard } from './dashboard'
-import { Plants } from './plants'
-import { World } from './world'
+import { AmbulanceDashboard, BikeDashboard, IslePath, MotoBikeDashboard, SkateDashboard, TowTrackDashboard } from '../actions/isle'
+import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../actions/jukebox'
+import { getBoundaries } from '../lib/assets/boundary'
+import { getWorld } from '../lib/assets/model'
+import { engine } from '../lib/engine'
+import { BoundaryManager } from '../lib/world/boundary-manager'
+import { Dashboard } from '../lib/world/dashboard'
+import { Plants } from '../lib/world/plants'
+import { World } from '../lib/world/world'
 
 const CAM_HEIGHT = 1
 const MAX_LINEAR_VEL = 10
@@ -49,7 +49,7 @@ export class Isle extends World {
     this._plantGroup = await Plants.place(this, Plants.World.ACT1)
     this._scene.add(this._plantGroup)
     if (import.meta.hot) {
-      import.meta.hot.accept('./plants', async newModule => {
+      import.meta.hot.accept('../lib/world/plants', async newModule => {
         if (newModule == null) {
           return
         }
@@ -196,7 +196,7 @@ export class Isle extends World {
     }
 
     if (import.meta.hot) {
-      import.meta.hot.accept('./dashboard', newModule => {
+      import.meta.hot.accept('../lib/world/dashboard', newModule => {
         if (newModule == null) {
           return
         }

@@ -1,6 +1,6 @@
 import { Intro_Movie, Lego_Movie, Mindscape_Movie } from './actions/intro'
 import { engine } from './lib/engine'
-import { Isle } from './lib/world/isle'
+import { Isle } from './worlds/isle'
 import './style.css'
 
 const playButton = document.getElementById('play-button')

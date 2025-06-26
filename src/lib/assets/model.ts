@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Water } from 'three/addons/objects/Water.js'
+import { Isle } from '../../worlds/isle'
 import { engine } from '../engine'
-import { Isle } from '../world/isle'
 import { getFile, getFileUrl } from './load'
 import { colorFromName, createGeometryAndMaterials } from './mesh'
 import { WDB } from './wdb'
