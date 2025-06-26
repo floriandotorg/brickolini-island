@@ -347,6 +347,27 @@ export class Isle extends World {
     }
   }
 
+  private _calculateSlopeTilt(): number {
+    const downRay = new THREE.Raycaster(this._camera.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0), 0, 10)
+    const hit = downRay.intersectObjects(this._groundGroup)[0]
+
+    if (hit && hit.face) {
+      const worldNormal = hit.face.normal.clone()
+      worldNormal.transformDirection(hit.object.matrixWorld)
+
+      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this._camera.quaternion)
+      forward.y = 0
+      forward.normalize()
+
+      const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), forward)
+      const slopeAngle = Math.atan2(worldNormal.dot(forward), worldNormal.y)
+
+      return -slopeAngle
+    }
+
+    return 0
+  }
+
   public override keyPressed(key: string): void {
     super.keyPressed(key)
 
@@ -464,7 +485,7 @@ export class Isle extends World {
         this._camera.rotation.x = -Math.PI / 2
       }
     } else {
-      this._camera.rotation.x = 0
+      this._camera.rotation.x = this._calculateSlopeTilt()
     }
     this._camera.rotation.z = 0
 
