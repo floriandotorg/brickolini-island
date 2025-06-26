@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { engine } from '../engine'
+import { getSettings } from '../settings'
 import { getFileUrl, manager } from './load'
 import { WDB } from './wdb'
 
@@ -99,14 +100,14 @@ const createTexture = async (name: string, source: 'model' | 'part' | 'image'): 
     image: 'images',
   }
   const texture = await textureLoader.loadAsync(getFileUrl(`world/${sourceToPath[source]}/${name}.png`))
-  if (!engine.hdRender) {
+  if (getSettings().toneMapping === 'none') {
     texture.colorSpace = THREE.SRGBColorSpace
   }
   texture.wrapS = THREE.RepeatWrapping
   texture.wrapT = THREE.RepeatWrapping
   texture.magFilter = THREE.NearestFilter
   texture.minFilter = THREE.NearestFilter
-  if (engine.hdRender) {
+  if (getSettings().toneMapping === 'filmic') {
     texture.anisotropy = engine.renderer.capabilities.getMaxAnisotropy()
   }
   return texture
@@ -117,7 +118,7 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
   const indices: number[] = modelMesh.indices
   const uvs: number[] = modelMesh.uvs.flat()
   const material = (() => {
-    if (engine.hdRender) {
+    if (getSettings().pbrMaterials) {
       const material = new THREE.MeshPhysicalMaterial({ flatShading: true, metalness: 0, roughness: 1 })
 
       if (!modelMesh.materialName.toLowerCase().includes('grass') && !modelMesh.materialName.toLowerCase().includes('rock')) {

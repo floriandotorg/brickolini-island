@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { Water } from 'three/addons/objects/Water.js'
 import { Isle } from '../../worlds/isle'
 import { engine } from '../engine'
+import { getSettings } from '../settings'
 import { getFile, getFileUrl } from './load'
 import { colorFromName, createGeometryAndMaterials } from './mesh'
 import { WDB } from './wdb'
@@ -112,7 +113,7 @@ const roiToMesh = async (roi: WDB.Roi, animation: WDB.Animation.Node | undefined
     const meshes: THREE.Mesh[] = []
     let n = 0
     for (const [geometry, material] of createGeometryAndMaterials(lod, customColor, null, 'model')) {
-      if (engine.hdRender && import.meta.env.VITE_USE_HD_ASSETS && material.name.toLowerCase() === 'ocean flat') {
+      if (getSettings().realisticWater && import.meta.env.VITE_HD_ASSETS_AVAILABLE === 'true' && material.name.toLowerCase() === 'ocean flat') {
         const mesh = new Water(geometry, {
           textureWidth: 512,
           textureHeight: 512,
@@ -132,7 +133,7 @@ const roiToMesh = async (roi: WDB.Roi, animation: WDB.Animation.Node | undefined
 
       const mesh = new THREE.Mesh(geometry, material)
       mesh.name = `${path.join('-')}-${++n}`
-      if (engine.hdRender) {
+      if (getSettings().shadows) {
         mesh.castShadow = true
         mesh.receiveShadow = true
       }
@@ -190,7 +191,7 @@ export const getPart = async (name: string, color: WDB.Color | null, texture: st
   for (const [geometry, material] of createGeometryAndMaterials(lod, color, texture, 'part')) {
     const mesh = new THREE.Mesh(geometry, material)
     mesh.name = `${name}-${++n}`
-    if (engine.hdRender) {
+    if (getSettings().shadows) {
       mesh.castShadow = true
       mesh.receiveShadow = true
     }

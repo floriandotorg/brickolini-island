@@ -6,6 +6,7 @@ import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, Centr
 import { getBoundaries } from '../lib/assets/boundary'
 import { getWorld } from '../lib/assets/model'
 import { engine } from '../lib/engine'
+import { getSettings } from '../lib/settings'
 import { BoundaryManager } from '../lib/world/boundary-manager'
 import { Dashboard } from '../lib/world/dashboard'
 import { Plants } from '../lib/world/plants'
@@ -59,7 +60,7 @@ export class Isle extends World {
       })
     }
 
-    if (engine.hdRender) {
+    if (getSettings().sun) {
       this._sky = new Sky()
       this._sky.scale.setScalar(10000)
       this._scene.add(this._sky)

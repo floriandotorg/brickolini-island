@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import type { Action } from '../actions/types'
 import { getActionFileUrl, getAudio } from './assets'
+import { getSettings } from './settings'
 import postFrag from './shader/post-frag.glsl'
 import postVert from './shader/post-vert.glsl'
 import type { World } from './world/world'
@@ -28,8 +29,6 @@ class Engine {
   private _backgroundAudio: THREE.Audio | null = null
   private _transitionStart: number = 0
   private _transitionPromiseResolve: (() => void) | null = null
-
-  public hdRender: boolean = false
 
   public async switchBackgroundMusic(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }): Promise<void> {
     const audio = await getAudio(action)
@@ -89,11 +88,16 @@ class Engine {
     this._renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
     this._renderer.autoClear = false
     this._renderer.setPixelRatio(window.devicePixelRatio)
-    if (!this.hdRender) {
+
+    const settings = getSettings()
+    if (settings.toneMapping === 'none') {
       this._renderer.toneMapping = THREE.NoToneMapping
     } else {
       this._renderer.toneMapping = THREE.ACESFilmicToneMapping
       this._renderer.toneMappingExposure = 0.5
+    }
+
+    if (settings.shadows) {
       this._renderer.shadowMap.enabled = true
       this._renderer.shadowMap.type = THREE.PCFSoftShadowMap
     }
@@ -113,10 +117,10 @@ class Engine {
         tDiffuse: { value: this._renderTarget.texture },
         uMosaicProgress: { value: 0.0 },
         uTileSize: { value: 1.0 },
-        uVibrance: { value: this.hdRender ? 0.3 : 0.0 },
-        uSaturation: { value: this.hdRender ? 1.1 : 1.0 },
-        uContrast: { value: this.hdRender ? 1.0 : 1.0 },
-        uBrightness: { value: this.hdRender ? 1.1 : 1.0 },
+        uVibrance: { value: settings.postProcessing ? 0.3 : 0.0 },
+        uSaturation: { value: settings.postProcessing ? 1.1 : 1.0 },
+        uContrast: { value: settings.postProcessing ? 1.0 : 1.0 },
+        uBrightness: { value: settings.postProcessing ? 1.1 : 1.0 },
       },
       vertexShader: postVert,
       fragmentShader: postFrag,
