@@ -38,6 +38,7 @@ export class Isle extends World {
   private _dayTime = 0
   private _lastSunUpdate = engine.clock.elapsedTime
   private _water: Water | null = null
+  private _isleMesh: THREE.Mesh | null = null
 
   public set water(water: Water) {
     this._water = water
@@ -181,6 +182,8 @@ export class Isle extends World {
       }
       return isle
     }
+
+    this._isleMesh = findMesh('isle_hi')
 
     // spell-checker: ignore brdg jailbrdg racebrdg
     for (const name of ['isle_hi', 'inf-brdg', 'jailbrdg', 'racebrdg']) {
@@ -386,7 +389,7 @@ export class Isle extends World {
     for (let n = 0; n < MAX_ITERATIONS && remaining.length() > EPSILON; ++n) {
       const dir = remaining.clone().normalize()
       const ray = new THREE.Raycaster(pos, dir, 0, remaining.length() + 0.0001)
-      const hit = ray.intersectObject(this._boundaryManager.walls)[0]
+      const hit = getSettings().freeRoam && this._isleMesh != null ? ray.intersectObject(this._isleMesh)[0] : ray.intersectObject(this._boundaryManager.walls)[0]
       if (!hit) {
         totalMove.add(remaining)
         break

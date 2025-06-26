@@ -56,6 +56,11 @@ if (toneMappingCheckbox == null || !(toneMappingCheckbox instanceof HTMLInputEle
   throw new Error('Tone mapping checkbox not found')
 }
 
+const freeRoamCheckbox = document.getElementById('free-roam-checkbox')
+if (freeRoamCheckbox == null || !(freeRoamCheckbox instanceof HTMLInputElement)) {
+  throw new Error('Free roam checkbox not found')
+}
+
 const updateControlsFromSettings = () => {
   const settings = getSettings()
   presetSelect.value = settings.graphics.preset
@@ -66,6 +71,7 @@ const updateControlsFromSettings = () => {
   shadowsCheckbox.checked = settings.graphics.shadows
   postProcessingCheckbox.checked = settings.graphics.postProcessing
   toneMappingCheckbox.checked = settings.graphics.toneMapping === 'filmic'
+  freeRoamCheckbox.checked = settings.freeRoam
 }
 
 const updateSettingsFromCheckboxes = () => {
@@ -80,6 +86,7 @@ const updateSettingsFromCheckboxes = () => {
       postProcessing: postProcessingCheckbox.checked,
       toneMapping: toneMappingCheckbox.checked ? 'filmic' : 'none',
     },
+    freeRoam: freeRoamCheckbox.checked,
   })
 }
 
@@ -105,3 +112,7 @@ for (const checkbox of [realisticWaterCheckbox, sunCheckbox, hdTexturesCheckbox,
     updateSettingsFromCheckboxes()
   })
 }
+
+freeRoamCheckbox.addEventListener('change', () => {
+  updateSettingsFromCheckboxes()
+})

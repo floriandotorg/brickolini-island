@@ -11,6 +11,7 @@ export interface Settings {
     postProcessing: boolean
     toneMapping: 'none' | 'filmic'
   }
+  freeRoam: boolean
 }
 
 export const setSettings = (settings: Partial<Settings>) => {
@@ -24,6 +25,9 @@ export const setSettings = (settings: Partial<Settings>) => {
     localStorage.setItem('settings.graphics.shadows', settings.graphics.shadows ? 'true' : 'false')
     localStorage.setItem('settings.graphics.postProcessing', settings.graphics.postProcessing ? 'true' : 'false')
     localStorage.setItem('settings.graphics.toneMapping', settings.graphics.toneMapping)
+  }
+  if (settings.freeRoam != null) {
+    localStorage.setItem('settings.freeRoam', settings.freeRoam ? 'true' : 'false')
   }
 }
 
@@ -62,5 +66,6 @@ export const getSettings = (): Settings => {
       toneMapping: localStorage.getItem('settings.graphics.toneMapping') as 'none' | 'filmic',
       postProcessing: localStorage.getItem('settings.graphics.postProcessing') === 'true',
     },
+    freeRoam: localStorage.getItem('settings.freeRoam') === 'true',
   }
 }
