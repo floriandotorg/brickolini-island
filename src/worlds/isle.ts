@@ -60,7 +60,8 @@ export class Isle extends World {
       })
     }
 
-    if (getSettings().sun) {
+    const settings = getSettings()
+    if (settings.sun) {
       this._sky = new Sky()
       this._sky.scale.setScalar(10000)
       this._scene.add(this._sky)
@@ -73,14 +74,16 @@ export class Isle extends World {
       this._scene.add(this._ambientLight)
 
       this._sunLight = new THREE.DirectionalLight()
-      this._sunLight.castShadow = true
-      this._sunLight.shadow.mapSize.set(4096, 4096)
-      this._sunLight.shadow.camera.near = 0.5
-      this._sunLight.shadow.camera.far = 500
-      this._sunLight.shadow.camera.left = -200
-      this._sunLight.shadow.camera.right = 200
-      this._sunLight.shadow.camera.top = 200
-      this._sunLight.shadow.camera.bottom = -200
+      if (settings.shadows) {
+        this._sunLight.castShadow = true
+        this._sunLight.shadow.mapSize.set(4096, 4096)
+        this._sunLight.shadow.camera.near = 0.5
+        this._sunLight.shadow.camera.far = 500
+        this._sunLight.shadow.camera.left = -200
+        this._sunLight.shadow.camera.right = 200
+        this._sunLight.shadow.camera.top = 200
+        this._sunLight.shadow.camera.bottom = -200
+      }
       this._scene.add(this._sunLight)
 
       this._dayTime = 0.5
@@ -91,6 +94,16 @@ export class Isle extends World {
       const sunLight = new THREE.PointLight(0xffffff, 1, 1000, 0)
       this._scene.add(sunLight)
       const directionalLight = new THREE.DirectionalLight(0xffffff)
+      if (settings.shadows) {
+        directionalLight.castShadow = true
+        directionalLight.shadow.mapSize.set(4096, 4096)
+        directionalLight.shadow.camera.near = 0.5
+        directionalLight.shadow.camera.far = 500
+        directionalLight.shadow.camera.left = -200
+        directionalLight.shadow.camera.right = 200
+        directionalLight.shadow.camera.top = 200
+        directionalLight.shadow.camera.bottom = -200
+      }
       this._scene.add(directionalLight)
 
       const setSkyColor = (hsl: { h: number; s: number; l: number }) => {
