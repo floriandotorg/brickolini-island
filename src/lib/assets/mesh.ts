@@ -100,14 +100,14 @@ const createTexture = async (name: string, source: 'model' | 'part' | 'image'): 
     image: 'images',
   }
   const texture = await textureLoader.loadAsync(getFileUrl(`world/${sourceToPath[source]}/${name}.png`))
-  if (getSettings().toneMapping === 'none') {
+  if (getSettings().graphics.toneMapping === 'none') {
     texture.colorSpace = THREE.SRGBColorSpace
   }
   texture.wrapS = THREE.RepeatWrapping
   texture.wrapT = THREE.RepeatWrapping
   texture.magFilter = THREE.NearestFilter
   texture.minFilter = THREE.NearestFilter
-  if (getSettings().toneMapping === 'filmic') {
+  if (getSettings().graphics.toneMapping === 'filmic') {
     texture.anisotropy = engine.renderer.capabilities.getMaxAnisotropy()
   }
   return texture
@@ -118,7 +118,7 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
   const indices: number[] = modelMesh.indices
   const uvs: number[] = modelMesh.uvs.flat()
   const material = (() => {
-    if (getSettings().pbrMaterials) {
+    if (getSettings().graphics.pbrMaterials) {
       const material = new THREE.MeshPhysicalMaterial({ flatShading: true, metalness: 0, roughness: 1 })
 
       if (!modelMesh.materialName.toLowerCase().includes('grass') && !modelMesh.materialName.toLowerCase().includes('rock')) {

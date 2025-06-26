@@ -90,14 +90,14 @@ class Engine {
     this._renderer.setPixelRatio(window.devicePixelRatio)
 
     const settings = getSettings()
-    if (settings.toneMapping === 'none') {
+    if (settings.graphics.toneMapping === 'none') {
       this._renderer.toneMapping = THREE.NoToneMapping
     } else {
       this._renderer.toneMapping = THREE.ACESFilmicToneMapping
       this._renderer.toneMappingExposure = 0.5
     }
 
-    if (settings.shadows) {
+    if (settings.graphics.shadows) {
       this._renderer.shadowMap.enabled = true
       this._renderer.shadowMap.type = THREE.PCFSoftShadowMap
     }
@@ -117,10 +117,10 @@ class Engine {
         tDiffuse: { value: this._renderTarget.texture },
         uMosaicProgress: { value: 0.0 },
         uTileSize: { value: 1.0 },
-        uVibrance: { value: settings.postProcessing ? 0.3 : 0.0 },
-        uSaturation: { value: settings.postProcessing ? 1.1 : 1.0 },
-        uContrast: { value: settings.postProcessing ? 1.0 : 1.0 },
-        uBrightness: { value: settings.postProcessing ? 1.1 : 1.0 },
+        uVibrance: { value: settings.graphics.postProcessing ? 0.3 : 0.0 },
+        uSaturation: { value: settings.graphics.postProcessing ? 1.1 : 1.0 },
+        uContrast: { value: settings.graphics.postProcessing ? 1.0 : 1.0 },
+        uBrightness: { value: settings.graphics.postProcessing ? 1.1 : 1.0 },
       },
       vertexShader: postVert,
       fragmentShader: postFrag,

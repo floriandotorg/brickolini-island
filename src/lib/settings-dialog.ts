@@ -1,5 +1,5 @@
 import type { Preset } from './settings'
-import { getPreset, getSettings, setPreset, setSettings } from './settings'
+import { getSettings, setPreset, setSettings } from './settings'
 
 const settingsButton = document.getElementById('settings-button')
 if (settingsButton == null || !(settingsButton instanceof HTMLButtonElement)) {
@@ -56,36 +56,35 @@ if (toneMappingCheckbox == null || !(toneMappingCheckbox instanceof HTMLInputEle
   throw new Error('Tone mapping checkbox not found')
 }
 
-const updateCheckboxesFromSettings = () => {
+const updateControlsFromSettings = () => {
   const settings = getSettings()
-  realisticWaterCheckbox.checked = settings.realisticWater
-  sunCheckbox.checked = settings.sun
-  hdTexturesCheckbox.checked = settings.hdTextures
-  pbrMaterialsCheckbox.checked = settings.pbrMaterials
-  shadowsCheckbox.checked = settings.shadows
-  postProcessingCheckbox.checked = settings.postProcessing
-  toneMappingCheckbox.checked = settings.toneMapping === 'filmic'
+  presetSelect.value = settings.graphics.preset
+  realisticWaterCheckbox.checked = settings.graphics.realisticWater
+  sunCheckbox.checked = settings.graphics.sun
+  hdTexturesCheckbox.checked = settings.graphics.hdTextures
+  pbrMaterialsCheckbox.checked = settings.graphics.pbrMaterials
+  shadowsCheckbox.checked = settings.graphics.shadows
+  postProcessingCheckbox.checked = settings.graphics.postProcessing
+  toneMappingCheckbox.checked = settings.graphics.toneMapping === 'filmic'
 }
 
 const updateSettingsFromCheckboxes = () => {
   setSettings({
-    realisticWater: realisticWaterCheckbox.checked,
-    sun: sunCheckbox.checked,
-    hdTextures: hdTexturesCheckbox.checked,
-    pbrMaterials: pbrMaterialsCheckbox.checked,
-    shadows: shadowsCheckbox.checked,
-    postProcessing: postProcessingCheckbox.checked,
-    toneMapping: toneMappingCheckbox.checked ? 'filmic' : 'none',
+    graphics: {
+      preset: presetSelect.value as Preset,
+      realisticWater: realisticWaterCheckbox.checked,
+      sun: sunCheckbox.checked,
+      hdTextures: hdTexturesCheckbox.checked,
+      pbrMaterials: pbrMaterialsCheckbox.checked,
+      shadows: shadowsCheckbox.checked,
+      postProcessing: postProcessingCheckbox.checked,
+      toneMapping: toneMappingCheckbox.checked ? 'filmic' : 'none',
+    },
   })
 }
 
-const updatePresetFromLocalStorage = () => {
-  presetSelect.value = getPreset()
-}
-
 settingsButton.addEventListener('click', () => {
-  updatePresetFromLocalStorage()
-  updateCheckboxesFromSettings()
+  updateControlsFromSettings()
   settingsDialog.showModal()
 })
 
@@ -95,18 +94,14 @@ closeSettingsButton.addEventListener('click', () => {
 })
 
 presetSelect.addEventListener('change', () => {
-  const preset = presetSelect.value as Preset
-  if (preset !== 'custom') {
-    setPreset(preset)
-    updateCheckboxesFromSettings()
-  }
+  setPreset(presetSelect.value as Preset)
+  updateControlsFromSettings()
 })
 
-const checkboxes = [realisticWaterCheckbox, sunCheckbox, hdTexturesCheckbox, pbrMaterialsCheckbox, shadowsCheckbox, postProcessingCheckbox, toneMappingCheckbox]
-checkboxes.forEach(checkbox => {
+for (const checkbox of [realisticWaterCheckbox, sunCheckbox, hdTexturesCheckbox, pbrMaterialsCheckbox, shadowsCheckbox, postProcessingCheckbox, toneMappingCheckbox]) {
   checkbox.addEventListener('change', () => {
-    localStorage.setItem('preset', 'custom')
-    updatePresetFromLocalStorage()
+    setPreset('custom')
+    presetSelect.value = 'custom'
     updateSettingsFromCheckboxes()
   })
-})
+}

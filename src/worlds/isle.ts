@@ -61,7 +61,7 @@ export class Isle extends World {
     }
 
     const settings = getSettings()
-    if (settings.sun) {
+    if (settings.graphics.sun) {
       this._sky = new Sky()
       this._sky.scale.setScalar(10000)
       this._scene.add(this._sky)
@@ -74,7 +74,7 @@ export class Isle extends World {
       this._scene.add(this._ambientLight)
 
       this._sunLight = new THREE.DirectionalLight()
-      if (settings.shadows) {
+      if (settings.graphics.shadows) {
         this._sunLight.castShadow = true
         this._sunLight.shadow.mapSize.set(4096, 4096)
         this._sunLight.shadow.camera.near = 0.5
@@ -94,7 +94,7 @@ export class Isle extends World {
       const sunLight = new THREE.PointLight(0xffffff, 1, 1000, 0)
       this._scene.add(sunLight)
       const directionalLight = new THREE.DirectionalLight(0xffffff)
-      if (settings.shadows) {
+      if (settings.graphics.shadows) {
         directionalLight.castShadow = true
         directionalLight.shadow.mapSize.set(4096, 4096)
         directionalLight.shadow.camera.near = 0.5
