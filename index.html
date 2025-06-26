@@ -37,6 +37,9 @@
       <button id="play-button" class="bg-gradient-to-b from-yellow-400 via-orange-500 to-red-600 text-black font-bold text-xl px-6 py-3 lg:px-8 lg:py-4 rounded-xl shadow-lg hover:from-yellow-300 hover:to-red-500 transition-transform duration-200 transform hover:scale-105 tracking-wide cursor-pointer">
         PLAY NOW
       </button>
+      <button id="settings-button" class="bg-gradient-to-b from-gray-600 to-gray-800 text-white font-semibold text-sm px-5 py-2 lg:px-6 lg:py-2.5 rounded-xl shadow hover:from-gray-500 hover:to-gray-700 transition-all duration-200 tracking-wide cursor-pointer">
+        Settings
+      </button>
 
       <p class="text-xs lg:text-sm text-gray-400 absolute bottom-4 w-10/12 text-center">
         LEGO® and LEGO Island™ are registered trademarks of the LEGO Group. This project is a fan-made creation and is neither authorized nor sponsored by the LEGO Group.
@@ -53,6 +56,81 @@
       <h2>An Authentic LEGO Island Remake</h2>
       <p>Brickolini Island meticulously preserves the original game’s playful aesthetic and atmosphere.</p>
     </main>
+
+    <dialog id="settings-dialog" class="win95">
+      <div class="dialog">
+        <div class="dialog-header">
+          <h2>Settings</h2>
+        </div>
+        <div class="dialog-body">
+          <div class="field-group">
+            <div class="input-group">
+              <label for="preset-select">Graphics Preset</label>
+              <select id="preset-select">
+                <option value="original">Original (1997)</option>
+                <option value="hd">HD Remaster</option>
+                <option value="next-gen">Next-Gen</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+
+            <fieldset>
+              <legend>Graphics Options</legend>
+              <div class="input-group">
+                <label for="realistic-water-checkbox" class="checkbox">
+                  <input type="checkbox" id="realistic-water-checkbox">
+                  Realistic Water
+                </label>
+              </div>
+              
+              <div class="input-group">
+                <label for="sun-checkbox" class="checkbox">
+                  <input type="checkbox" id="sun-checkbox">
+                  Sun Lighting
+                </label>
+              </div>
+              
+              <div class="input-group">
+                <label for="hd-textures-checkbox" class="checkbox">
+                  <input type="checkbox" id="hd-textures-checkbox">
+                  HD Textures
+                </label>
+              </div>
+              
+              <div class="input-group">
+                <label for="pbr-materials-checkbox" class="checkbox">
+                  <input type="checkbox" id="pbr-materials-checkbox">
+                  PBR Materials
+                </label>
+              </div>
+              
+              <div class="input-group">
+                <label for="shadows-checkbox" class="checkbox">
+                  <input type="checkbox" id="shadows-checkbox">
+                  Shadows
+                </label>
+              </div>
+              
+              <div class="input-group">
+                <label for="post-processing-checkbox" class="checkbox">
+                  <input type="checkbox" id="post-processing-checkbox">
+                  Post Processing
+                </label>
+              </div>
+              
+              <div class="input-group">
+                <label for="tone-mapping-checkbox" class="checkbox">
+                  <input type="checkbox" id="tone-mapping-checkbox">
+                  Filmic Tone Mapping
+                </label>
+              </div>
+            </fieldset>
+
+            <button id="close-settings-button">OK</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

@@ -1,5 +1,6 @@
 import { Intro_Movie, Lego_Movie, Mindscape_Movie } from './actions/intro'
 import { engine } from './lib/engine'
+import './lib/settings-dialog'
 import { Isle } from './worlds/isle'
 import './style.css'
 

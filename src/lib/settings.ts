@@ -8,7 +8,7 @@ export interface Settings {
   toneMapping: 'none' | 'filmic'
 }
 
-export type Preset = 'original' | 'hd' | 'next-gen'
+export type Preset = 'original' | 'hd' | 'next-gen' | 'custom'
 
 export const setSettings = (settings: Settings) => {
   localStorage.setItem('settings.realisticWater', settings.realisticWater ? 'true' : 'false')
@@ -36,10 +36,16 @@ export const setPreset = (preset: Preset) => {
   }
 }
 
-export const getSettings = (): Settings => {
+export const getPreset = (): Preset => {
   if (localStorage.getItem('preset') == null) {
     setPreset(import.meta.env.VITE_HD_ASSETS_AVAILABLE === 'true' ? 'hd' : 'original')
   }
+
+  return localStorage.getItem('preset') as Preset
+}
+
+export const getSettings = (): Settings => {
+  getPreset() // ensure preset is set
 
   return {
     realisticWater: localStorage.getItem('settings.realisticWater') === 'true',
