@@ -386,16 +386,17 @@ export class Isle extends World {
     const remaining = moveVec.clone()
     const pos = startPos.clone()
     const MAX_ITERATIONS = 5
+    const COLLISION_BUFFER = 0.5
     for (let n = 0; n < MAX_ITERATIONS && remaining.length() > EPSILON; ++n) {
       const dir = remaining.clone().normalize()
-      const ray = new THREE.Raycaster(pos, dir, 0, remaining.length() + 0.0001)
+      const ray = new THREE.Raycaster(pos, dir, 0, remaining.length() + COLLISION_BUFFER)
       const hit = getSettings().freeRoam && this._isleMesh != null ? ray.intersectObject(this._isleMesh)[0] : ray.intersectObject(this._boundaryManager.walls)[0]
       if (!hit) {
         totalMove.add(remaining)
         break
       }
 
-      const dist = Math.max(hit.distance - 0.0001, 0)
+      const dist = Math.max(hit.distance - COLLISION_BUFFER, 0)
       const moveAllowed = dir.clone().multiplyScalar(dist)
       totalMove.add(moveAllowed)
       pos.add(moveAllowed)
