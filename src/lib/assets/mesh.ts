@@ -93,24 +93,24 @@ export const colorFromName = (name: string): WDB.Color | null => {
   return null
 }
 
-const createTexture = async (name: string, source: 'model' | 'part' | 'image'): Promise<THREE.Texture> => {
+const createTexture = (name: string, source: 'model' | 'part' | 'image'): THREE.Texture => {
   const sourceToPath = {
     model: 'model_textures',
     part: 'part_textures',
     image: 'images',
   }
-  const texture = await textureLoader.loadAsync(getFileUrl(`world/${sourceToPath[source]}/${name}.png`))
-  if (getSettings().graphics.toneMapping === 'none') {
-    texture.colorSpace = THREE.SRGBColorSpace
-  }
-  texture.wrapS = THREE.RepeatWrapping
-  texture.wrapT = THREE.RepeatWrapping
-  texture.magFilter = THREE.NearestFilter
-  texture.minFilter = THREE.NearestFilter
-  if (getSettings().graphics.toneMapping === 'filmic') {
-    texture.anisotropy = engine.renderer.capabilities.getMaxAnisotropy()
-  }
-  return texture
+  return textureLoader.load(getFileUrl(`world/${sourceToPath[source]}/${name.toLowerCase()}.png`), texture => {
+    if (getSettings().graphics.toneMapping === 'none') {
+      texture.colorSpace = THREE.SRGBColorSpace
+    }
+    texture.wrapS = THREE.RepeatWrapping
+    texture.wrapT = THREE.RepeatWrapping
+    texture.magFilter = THREE.NearestFilter
+    texture.minFilter = THREE.NearestFilter
+    if (getSettings().graphics.toneMapping === 'filmic') {
+      texture.anisotropy = engine.renderer.capabilities.getMaxAnisotropy()
+    }
+  })
 }
 
 const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color | null, texture: string | THREE.Texture | null, type: 'model' | 'part'): [THREE.BufferGeometry, THREE.Material] => {
@@ -151,10 +151,7 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
     if (texture instanceof THREE.Texture) {
       material.map = texture
     } else {
-      void createTexture(texture ?? modelMesh.textureName, texture ? 'image' : type).then(texture => {
-        material.map = texture
-        material.needsUpdate = true
-      })
+      material.map = createTexture(texture ?? modelMesh.textureName, texture ? 'image' : type)
     }
     geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
   } else {
