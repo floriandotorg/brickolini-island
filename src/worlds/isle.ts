@@ -7,6 +7,7 @@ import { getBoundaries } from '../lib/assets/boundary'
 import { getWorld } from '../lib/assets/model'
 import { engine } from '../lib/engine'
 import { getSettings } from '../lib/settings'
+import { Actor } from '../lib/world/actor'
 import { BoundaryManager } from '../lib/world/boundary-manager'
 import { Dashboard } from '../lib/world/dashboard'
 import { Plants } from '../lib/world/plants'
@@ -47,6 +48,11 @@ export class Isle extends World {
   async init(): Promise<void> {
     const world = await getWorld('ACT1')
     this._scene.add(world)
+
+    const actor = await Actor.create('ml')
+    actor.mesh.position.set(22, 1, 30)
+    actor.mesh.rotateY(Math.PI / 2)
+    this._scene.add(actor.mesh)
 
     this._plantGroup = await Plants.place(this, Plants.World.ACT1)
     this._scene.add(this._plantGroup)
@@ -247,7 +253,7 @@ export class Isle extends World {
     }
 
     this._camera.position.set(20, CAM_HEIGHT, 30)
-    this._camera.lookAt(60, 0, 0)
+    this._camera.lookAt(60, 0, 25)
     this._placeObjectOnGround(this._camera)
   }
 
@@ -351,7 +357,7 @@ export class Isle extends World {
     const downRay = new THREE.Raycaster(this._camera.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0), 0, 10)
     const hit = downRay.intersectObjects(this._groundGroup)[0]
 
-    if (hit && hit.face) {
+    if (hit?.face != null) {
       const worldNormal = hit.face.normal.clone()
       worldNormal.transformDirection(hit.object.matrixWorld)
 
@@ -359,7 +365,6 @@ export class Isle extends World {
       forward.y = 0
       forward.normalize()
 
-      const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), forward)
       const slopeAngle = Math.atan2(worldNormal.dot(forward), worldNormal.y)
 
       return -slopeAngle
