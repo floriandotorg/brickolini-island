@@ -14,6 +14,8 @@ export abstract class World {
   private _raycaster = new THREE.Raycaster()
   private _clickListeners = new Map<THREE.Object3D, (event: MouseEvent) => void>()
 
+  public currentActor: 'pepper' | 'nick' = 'nick'
+
   constructor() {
     this._camera.rotation.order = 'YXZ'
 
