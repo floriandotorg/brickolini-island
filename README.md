@@ -81,7 +81,7 @@ Before running this project, you need to extract the game assets from your LEGO 
     ```bash
     npm start
     ```
-3.  Open your browser to the specified local address (usually `http://localhost:5173`).
+3.  Open your browser to the specified local address (usually `http://localhost:5174`).
 
 ## Development Tools
 
