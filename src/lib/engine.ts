@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import type { Action } from '../actions/types'
-import { getActionFileUrl, getAudio } from './assets'
+import { getActionFileUrl, getAudio, getPositionalAudio } from './assets'
 import { getSettings } from './settings'
 import postFrag from './shader/post-frag.glsl'
 import postVert from './shader/post-vert.glsl'
@@ -213,7 +213,17 @@ class Engine {
     })
   }
 
-  public async playAudio(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }): Promise<void> {
+  public async playAudio(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }, parent?: THREE.Object3D): Promise<void> {
+    if (parent != null) {
+      const audio = await getPositionalAudio(action)
+      parent.add(audio)
+      audio.onEnded = () => {
+        parent.remove(audio)
+      }
+      audio.play()
+      return
+    }
+
     const audio = await getAudio(action)
     audio.play()
   }

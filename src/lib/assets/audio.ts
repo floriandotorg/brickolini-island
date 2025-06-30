@@ -13,3 +13,11 @@ export const getAudio = async (action: AudioAction): Promise<THREE.Audio> => {
   audio.setVolume(action.volume / 100)
   return audio
 }
+
+export const getPositionalAudio = async (action: AudioAction): Promise<THREE.PositionalAudio> => {
+  const audio = new THREE.PositionalAudio(engine.audioListener)
+  audio.setBuffer(await audioLoader.loadAsync(getActionFileUrl(action)))
+  audio.setVolume(action.volume / 100)
+  audio.setRefDistance(20)
+  return audio
+}
