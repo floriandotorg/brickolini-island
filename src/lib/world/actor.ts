@@ -1334,6 +1334,10 @@ export class Actor {
 
       const info = ACTORS[name]
 
+      if (partName === 'hat' && info.hatParts[info.hatPart] === 'bald') {
+        continue
+      }
+
       const mesh = await (() => {
         switch (partName) {
           case 'hat':
@@ -1346,7 +1350,6 @@ export class Actor {
           case 'groin':
             return getPart('infogron', colorAliases[COLOR[info.groinColor]], null)
           case 'head':
-            console.log(info.faceTexture)
             return getPart('head', null, info.faceTexture)
           case 'arm-lft':
             return getPart('arm-lft', colorAliases[COLOR[info.leftArmColor]], null)

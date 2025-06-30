@@ -182,7 +182,7 @@ export const getPart = async (name: string, color: WDB.Color | null, texture: st
   }
   const lod = part.lods.at(-1)
   if (!lod) {
-    throw new Error("Couldn't find lod and children")
+    throw new Error(`Couldn't find lod and children for part ${name}`)
   }
   const result = new THREE.Mesh()
   const meshes: THREE.Mesh[] = []
