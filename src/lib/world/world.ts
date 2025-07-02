@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import type { Action } from '../../actions/types'
+import { getPositionalAudio } from '../assets/audio'
 import { RESOLUTION_RATIO } from '../engine'
 
 export abstract class World {
@@ -13,11 +15,13 @@ export abstract class World {
 
   private _raycaster = new THREE.Raycaster()
   private _clickListeners = new Map<THREE.Object3D, (event: MouseEvent) => void>()
+  private _audioListener = new THREE.AudioListener()
 
   public currentActor: 'pepper' | 'nick' = 'nick'
 
   constructor() {
     this._camera.rotation.order = 'YXZ'
+    this._camera.add(this._audioListener)
 
     const getElement = (id: string): HTMLElement => {
       const element = document.getElementById(id)
@@ -78,6 +82,15 @@ export abstract class World {
 
   abstract init(): Promise<void>
   abstract update(delta: number): Promise<void>
+
+  public async playPositionAudio(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }, parent: THREE.Object3D): Promise<void> {
+    const audio = await getPositionalAudio(this._audioListener, action)
+    parent.add(audio)
+    audio.onEnded = () => {
+      parent.remove(audio)
+    }
+    audio.play()
+  }
 
   public resize(_width: number, _height: number): void {}
 

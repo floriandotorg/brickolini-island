@@ -31,7 +31,7 @@ class Engine {
   private _transitionPromiseResolve: (() => void) | null = null
 
   public async switchBackgroundMusic(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }): Promise<void> {
-    const audio = await getAudio(action)
+    const audio = await getAudio(this._audioListener, action)
     audio.loop = true
 
     if (this._backgroundAudio == null) {
@@ -213,24 +213,14 @@ class Engine {
     })
   }
 
-  public async playAudio(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }, parent?: THREE.Object3D): Promise<void> {
-    if (parent != null) {
-      const audio = await getPositionalAudio(action)
-      parent.add(audio)
-      audio.onEnded = () => {
-        parent.remove(audio)
-      }
-      audio.play()
-      return
-    }
-
-    const audio = await getAudio(action)
+  public async playAudio(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }): Promise<void> {
+    const audio = await getAudio(this._audioListener, action)
     audio.play()
   }
 
   public async playCutscene(action: { presenter: 'MxCompositeMediaPresenter'; children: readonly [{ id: number; siFile: string; fileType: Action.FileType.SMK }, { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }] }): Promise<void> {
     this._state = 'cutscene'
-    this._cutsceneAudio = await getAudio(action.children[1])
+    this._cutsceneAudio = await getAudio(this._audioListener, action.children[1])
     this._cutsceneVideo.src = getActionFileUrl(action.children[0])
     const map = new THREE.VideoTexture(this._cutsceneVideo)
     map.colorSpace = THREE.SRGBColorSpace
