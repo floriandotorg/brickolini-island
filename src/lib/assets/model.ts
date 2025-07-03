@@ -62,7 +62,7 @@ export const calculateTransformationMatrix = (location: [number, number, number]
 
 const roiToMesh = async (roi: WDB.Roi, animation: WDB.Animation.Node | undefined, path: string[] = []): Promise<THREE.Mesh> => {
   const result = new THREE.Mesh()
-  result.name = roi.name
+  result.name = roi.name.toLowerCase()
 
   if (path.length < 1) {
     path.push(roi.name)
@@ -123,7 +123,7 @@ const roiToMesh = async (roi: WDB.Roi, animation: WDB.Animation.Node | undefined
           distortionScale: 5,
         })
         mesh.material.uniforms.size.value = 7
-        mesh.name = `${path.join('-')}-${++n}`
+        mesh.name = `${path.join('-')}-${++n}`.toLowerCase()
         result.add(mesh)
         if (engine.currentWorld instanceof Isle) {
           engine.currentWorld.water = mesh
@@ -132,7 +132,7 @@ const roiToMesh = async (roi: WDB.Roi, animation: WDB.Animation.Node | undefined
       }
 
       const mesh = new THREE.Mesh(geometry, material)
-      mesh.name = `${path.join('-')}-${++n}`
+      mesh.name = `${path.join('-')}-${++n}`.toLowerCase()
       if (getSettings().graphics.shadows) {
         mesh.castShadow = true
         mesh.receiveShadow = true
@@ -175,7 +175,7 @@ export const getWorld = async (name: string): Promise<THREE.Group> => {
   return group
 }
 
-export const getPart = async (name: string, color: WDB.Color | null, texture: string | THREE.Texture | null): Promise<THREE.Mesh> => {
+export const getPart = async (name: string, color: WDB.Color | null, texture: string | THREE.Texture | null): Promise<THREE.Group> => {
   const part = (await getWdb()).globalParts.find(p => p.name.toLowerCase() === name.toLowerCase())
   if (!part) {
     throw new Error(`Part ${name} not found`)
@@ -184,13 +184,13 @@ export const getPart = async (name: string, color: WDB.Color | null, texture: st
   if (!lod) {
     throw new Error(`Couldn't find lod and children for part ${name}`)
   }
-  const result = new THREE.Mesh()
+  const result = new THREE.Group()
   const meshes: THREE.Mesh[] = []
-  result.name = name
+  result.name = name.toLowerCase()
   let n = 0
   for (const [geometry, material] of createGeometryAndMaterials(lod, color, texture, 'part')) {
     const mesh = new THREE.Mesh(geometry, material)
-    mesh.name = `${name}-${++n}`
+    mesh.name = `${name}-${++n}`.toLowerCase()
     if (getSettings().graphics.shadows) {
       mesh.castShadow = true
       mesh.receiveShadow = true
