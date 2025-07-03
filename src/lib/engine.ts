@@ -19,6 +19,7 @@ class Engine {
   private _renderTarget: THREE.WebGLRenderTarget
   private _postScene = new THREE.Scene()
   private _audioListener = new THREE.AudioListener()
+  private _backgroundAudioListener = new THREE.AudioListener()
   private _postCamera: THREE.OrthographicCamera
   private _postMaterial: THREE.ShaderMaterial
   private _cutsceneScene = new THREE.Scene()
@@ -30,8 +31,8 @@ class Engine {
   private _transitionStart: number = 0
   private _transitionPromiseResolve: (() => void) | null = null
 
-  public async switchBackgroundMusic(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }): Promise<void> {
-    const audio = await getAudio(this._audioListener, action)
+  public async switchBackgroundMusic(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number; presenter: null }): Promise<void> {
+    const audio = await getAudio(this._backgroundAudioListener, action)
     audio.loop = true
 
     if (this._backgroundAudio == null) {
@@ -112,6 +113,8 @@ class Engine {
     })
     this._postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
     this._postCamera.add(this._audioListener)
+    this._postCamera.add(this._backgroundAudioListener)
+    this._backgroundAudioListener.setMasterVolume(settings.musicVolume)
     this._postMaterial = new THREE.ShaderMaterial({
       uniforms: {
         tDiffuse: { value: this._renderTarget.texture },

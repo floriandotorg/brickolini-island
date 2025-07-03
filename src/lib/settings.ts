@@ -11,6 +11,7 @@ export interface Settings {
     postProcessing: boolean
     toneMapping: 'none' | 'filmic'
   }
+  musicVolume: number
   freeRoam: boolean
 }
 
@@ -25,6 +26,9 @@ export const setSettings = (settings: Partial<Settings>) => {
     localStorage.setItem('settings.graphics.shadows', settings.graphics.shadows ? 'true' : 'false')
     localStorage.setItem('settings.graphics.postProcessing', settings.graphics.postProcessing ? 'true' : 'false')
     localStorage.setItem('settings.graphics.toneMapping', settings.graphics.toneMapping)
+  }
+  if (settings.musicVolume != null) {
+    localStorage.setItem('settings.musicVolume', settings.musicVolume.toString())
   }
   if (settings.freeRoam != null) {
     localStorage.setItem('settings.freeRoam', settings.freeRoam ? 'true' : 'false')
@@ -55,6 +59,8 @@ export const getSettings = (): Settings => {
     setPreset(import.meta.env.VITE_HD_ASSETS_AVAILABLE === 'true' ? 'hd' : 'original')
   }
 
+  const musicVolume = localStorage.getItem('settings.musicVolume')
+
   return {
     graphics: {
       preset: localStorage.getItem('settings.graphics.preset') as Preset,
@@ -66,6 +72,7 @@ export const getSettings = (): Settings => {
       toneMapping: localStorage.getItem('settings.graphics.toneMapping') as 'none' | 'filmic',
       postProcessing: localStorage.getItem('settings.graphics.postProcessing') === 'true',
     },
+    musicVolume: musicVolume != null ? parseInt(musicVolume) : 1,
     freeRoam: localStorage.getItem('settings.freeRoam') === 'true',
   }
 }
