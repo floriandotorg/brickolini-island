@@ -13,7 +13,7 @@ import { Dashboard } from '../lib/world/dashboard'
 import { Plants } from '../lib/world/plants'
 import { World } from '../lib/world/world'
 
-const CAM_HEIGHT = 1
+const CAM_HEIGHT = 1.3
 const MAX_LINEAR_VEL = 10
 const MAX_ROT_VEL = 80
 const MAX_LINEAR_ACCEL = 15
