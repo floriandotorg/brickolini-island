@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import type { Action } from '../actions/types'
-import { getActionFileUrl, getAudio, getPositionalAudio } from './assets'
+import { getActionFileUrl, getAudio } from './assets'
 import { getSettings } from './settings'
 import postFrag from './shader/post-frag.glsl'
 import postVert from './shader/post-vert.glsl'
@@ -216,12 +216,12 @@ class Engine {
     })
   }
 
-  public async playAudio(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }): Promise<void> {
+  public async playAudio(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number; presenter: null }): Promise<void> {
     const audio = await getAudio(this._audioListener, action)
     audio.play()
   }
 
-  public async playCutscene(action: { presenter: 'MxCompositeMediaPresenter'; children: readonly [{ id: number; siFile: string; fileType: Action.FileType.SMK }, { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }] }): Promise<void> {
+  public async playCutscene(action: { presenter: 'MxCompositeMediaPresenter'; children: readonly [{ id: number; siFile: string; fileType: Action.FileType.SMK; presenter: null }, { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number; presenter: null }] }): Promise<void> {
     this._state = 'cutscene'
     this._cutsceneAudio = await getAudio(this._audioListener, action.children[1])
     this._cutsceneVideo.src = getActionFileUrl(action.children[0])

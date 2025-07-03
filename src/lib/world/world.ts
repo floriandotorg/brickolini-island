@@ -16,8 +16,12 @@ export abstract class World {
   private _raycaster = new THREE.Raycaster()
   private _clickListeners = new Map<THREE.Object3D, (event: MouseEvent) => void>()
   private _audioListener = new THREE.AudioListener()
+  private _runningAnimations: {
+    mixer: THREE.AnimationMixer
+    resolve: () => void
+  }[] = []
 
-  public currentActor: 'pepper' | 'nick' = 'nick'
+  public currentActor: 'pepper' | 'papa' | 'mama' | 'nick' | 'laura' = 'pepper'
 
   constructor() {
     this._camera.rotation.order = 'YXZ'
@@ -43,6 +47,20 @@ export abstract class World {
 
   public get scene(): THREE.Scene {
     return this._scene
+  }
+
+  public playAnimation(mesh: THREE.Object3D, animation: THREE.AnimationClip): Promise<void> {
+    const mixer = new THREE.AnimationMixer(mesh)
+    const action = mixer.clipAction(animation)
+    action.loop = THREE.LoopOnce
+    action.play()
+    return new Promise(resolve => {
+      this._runningAnimations.push({ mixer, resolve })
+      mixer.addEventListener('finished', () => {
+        this._runningAnimations = this._runningAnimations.filter(a => a.mixer !== mixer)
+        resolve()
+      })
+    })
   }
 
   public addClickListener(objects: THREE.Object3D, onClick: (event: MouseEvent) => void): void {
@@ -81,10 +99,15 @@ export abstract class World {
   }
 
   abstract init(): Promise<void>
-  abstract update(delta: number): Promise<void>
+  public update(delta: number): void {
+    for (const { mixer } of this._runningAnimations) {
+      mixer.update(delta)
+    }
+  }
 
-  public async playPositionAudio(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }, parent: THREE.Object3D): Promise<void> {
+  public async playPositionAudio(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number; presenter: 'Lego3DWavePresenter' }, parent: THREE.Object3D): Promise<void> {
     const audio = await getPositionalAudio(this._audioListener, action)
+    audio.setRefDistance(20)
     parent.add(audio)
     audio.onEnded = () => {
       parent.remove(audio)
@@ -101,6 +124,27 @@ export abstract class World {
   public keyPressed(key: string): void {
     if (key === 'd' && import.meta.env.DEV) {
       this.debugMode = !this.debugMode
+    }
+
+    if (key === 'c') {
+      switch (this.currentActor) {
+        case 'pepper':
+          this.currentActor = 'papa'
+          break
+        case 'papa':
+          this.currentActor = 'mama'
+          break
+        case 'mama':
+          this.currentActor = 'nick'
+          break
+        case 'nick':
+          this.currentActor = 'laura'
+          break
+        case 'laura':
+          this.currentActor = 'pepper'
+          break
+      }
+      console.log(`Current actor: ${this.currentActor}`)
     }
   }
 

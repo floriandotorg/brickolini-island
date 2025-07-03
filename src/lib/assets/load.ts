@@ -166,13 +166,19 @@ export const getFile = async (path: string): Promise<ArrayBuffer> => {
   return res
 }
 
-const getExtension = (fileType: Action.FileType) => {
+const getExtension = (fileType: Action.FileType, presenter: string | null) => {
   switch (fileType) {
     case Action.FileType.SMK:
       return 'mp4'
     case Action.FileType.WAV:
       return 'm4a'
     case Action.FileType.OBJ:
+      if (presenter == null) {
+        throw new Error(`Presenter is null for file type: ${fileType}`)
+      }
+      if (presenter === 'LegoAnimPresenter') {
+        return 'ani'
+      }
       return 'gph'
     case Action.FileType.STL:
       return 'png'
@@ -181,6 +187,6 @@ const getExtension = (fileType: Action.FileType) => {
   throw new Error(`Unknown file type: ${fileType}`)
 }
 
-export const getActionFileUrl = (action: { id: number; siFile: string; fileType: Action.FileType }) => getFileUrl(`${action.siFile}/${action.id}.${getExtension(action.fileType)}`)
+export const getActionFileUrl = (action: { id: number; siFile: string; fileType: Action.FileType; presenter: string | null }) => getFileUrl(`${action.siFile}/${action.id}.${getExtension(action.fileType, action.presenter)}`)
 
-export const getAction = async (action: { id: number; siFile: string; fileType: Action.FileType }): Promise<ArrayBuffer> => getFile(getActionFileUrl(action))
+export const getAction = async (action: { id: number; siFile: string; fileType: Action.FileType; presenter: string | null }): Promise<ArrayBuffer> => getFile(getActionFileUrl(action))

@@ -147,8 +147,8 @@ export class Dashboard {
 
     // enforce type narrowing, for some reason ts fails to infer fileType as non-null
     const isImageAction = (child?: Child): child is { id: number; type: Action.Type; siFile: string; fileType: Action.FileType.STL; children: readonly Child[]; name: string; presenter: string | null; location: readonly [number, number, number] } => child?.fileType === Action.FileType.STL
-    const isAudioAction = (child?: Child): child is { id: number; type: Action.Type; siFile: string; fileType: Action.FileType.WAV; children: readonly Child[]; name: string; presenter: string | null; location: readonly [number, number, number]; volume: number } =>
-      child?.fileType === Action.FileType.WAV && 'volume' in child
+    const isAudioAction = (child?: Child): child is { id: number; type: Action.Type; siFile: string; fileType: Action.FileType.WAV; children: readonly Child[]; name: string; presenter: null; location: readonly [number, number, number]; volume: number } =>
+      child?.fileType === Action.FileType.WAV && 'volume' in child && child.presenter === null
 
     const dashboardAction = action.children.find(child => child.type === Action.Type.Still && child.name.endsWith('Dashboard_Bitmap'))
     if (!isImageAction(dashboardAction)) {

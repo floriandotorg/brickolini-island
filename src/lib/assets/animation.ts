@@ -1,5 +1,7 @@
 import * as THREE from 'three'
+import type { Action } from '../../actions/types'
 import { BinaryReader } from './binary-reader'
+import { getAction } from './load'
 import { WDB } from './wdb'
 
 export type TimeAndFlags = { time: number; flags: number }
@@ -8,7 +10,7 @@ export type RotationKey = { timeAndFlags: TimeAndFlags; quaternion: THREE.Quater
 export type MorphKey = { timeAndFlags: TimeAndFlags; bool: boolean }
 export type Animation3DNode = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Animation3DNode[] }
 
-export const parse3DAnimation = (buffer: ArrayBuffer): Animation3DNode => {
+export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<string, string>): Animation3DNode => {
   const reader = new BinaryReader(buffer)
   const magic = reader.readInt32()
   if (magic !== 17) {
@@ -23,7 +25,7 @@ export const parse3DAnimation = (buffer: ArrayBuffer): Animation3DNode => {
   const _val3 = reader.readInt32()
   const animation = WDB.Animation.readAnimation(reader)
   const convertNode = (node: WDB.Animation.Node): Animation3DNode => ({
-    name: node.name,
+    name: substitutions[node.name.toLowerCase()] ?? node.name.toLowerCase(),
     translationKeys: node.translationKeys.map(t => ({ timeAndFlags: t.timeAndFlags, vertex: new THREE.Vector3(...t.vertex) })),
     rotationKeys: node.rotationKeys.map(t => ({ timeAndFlags: t.timeAndFlags, quaternion: new THREE.Quaternion(...t.quaternion) })),
     scaleKeys: node.scaleKeys.map(t => ({ timeAndFlags: t.timeAndFlags, vertex: new THREE.Vector3(...t.vertex) })),
@@ -151,4 +153,10 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
   })
 }
 
-// const clip = new THREE.AnimationClip('test', -1, animationToTracks(animation3d))
+export type AnimationAction = { type: Action.Type.ObjectAction; presenter: 'LegoAnimPresenter'; name: string; siFile: string; id: number; fileType: Action.FileType }
+
+export const getAnimation = async (action: AnimationAction, substitutions: Record<string, string> = {}): Promise<THREE.AnimationClip> => {
+  const animation = parse3DAnimation(await getAction(action), substitutions)
+  console.log(animation)
+  return new THREE.AnimationClip(action.name, -1, animationToTracks(animation))
+}

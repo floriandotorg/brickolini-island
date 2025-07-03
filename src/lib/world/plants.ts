@@ -1,5 +1,7 @@
 import * as THREE from 'three'
-import { calculateTransformationMatrix, getPart } from '../assets'
+import { AnimB1, AnimB2, AnimB3, AnimF1, AnimF2, AnimF3, AnimP1, AnimP2, AnimP3, AnimT1, AnimT2, AnimT3, Sound8, Sound9, Sound10, Sound11, Sound12, Sound13, Sound14, Sound15, Sound16, Sound17 } from '../../actions/sndanim'
+import { calculateTransformationMatrix, getPart, type PositionalAudioAction } from '../assets'
+import { type AnimationAction, getAnimation } from '../assets/animation'
 import type { World as WorldType } from './world'
 
 export namespace Plants {
@@ -104,6 +106,17 @@ export namespace Plants {
     }
   }
 
+  const animations: {
+    [key in Variant]: AnimationAction[]
+  } = {
+    [Variant.Flower]: [AnimF1, AnimF2, AnimF3],
+    [Variant.Tree]: [AnimT1, AnimT2, AnimT3],
+    [Variant.Bush]: [AnimB1, AnimB2, AnimB3],
+    [Variant.Palm]: [AnimP1, AnimP2, AnimP3],
+  }
+
+  const sounds: PositionalAudioAction[] = [Sound8, Sound9, Sound10, Sound11, Sound12, Sound13, Sound14, Sound15, Sound16]
+
   type LocationAndDirection = { location: [number, number, number]; direction: [number, number, number]; up: [number, number, number] }
 
   type PlantInfo = { worlds: Plants.World; variant: Variant; color: Color; locationAndDirection: LocationAndDirection }
@@ -193,49 +206,84 @@ export namespace Plants {
     { worlds: Plants.World.IISLE, variant: Variant.Flower, color: Color.Red, locationAndDirection: { location: [-1.801479, -0.52473, -11.75], direction: [0.0175, 0.0, -0.9998], up: [0.0, 1.0, 0.0] } },
   ]
 
-  type PlantLocations = { variant: Variant; color: Color; plants: PlantInfo[] }
+  const storedPlantStates = localStorage.getItem('gameState.plantStates')
 
-  const locationsPerPair = (world: Plants.World): PlantLocations[] => {
-    const result: PlantLocations[] = []
-    for (const plant of plants) {
-      if ((plant.worlds & world) !== 0) {
-        const variant = plant.variant
-        const color = plant.color
-        const locations =
-          result.find(({ variant: variant2, color: color2 }) => variant2 === variant && color2 === color) ??
-          ((): PlantLocations => {
-            const newEntry: PlantLocations = { variant, color, plants: [] }
-            result.push(newEntry)
-            return newEntry
-          })()
-        locations.plants.push(plant)
-      }
-    }
-    return result
-  }
+  const plantStates: {
+    color: Color
+    variant: Variant
+    animationIndex: number
+    soundIndex: number
+  }[] =
+    storedPlantStates != null
+      ? JSON.parse(storedPlantStates)
+      : plants.map(plant => ({
+          color: plant.color,
+          variant: plant.variant,
+          animationIndex: 0,
+          soundIndex: 0,
+        }))
 
   export const place = async (world: WorldType, plantWorld: World): Promise<THREE.Group> => {
     const group = new THREE.Group()
-    for (const plant of locationsPerPair(plantWorld)) {
-      const plantName = partName(plant.variant, plant.color)
-      for (const plantInfo of plant.plants) {
-        const matrix = new THREE.Matrix4()
-        calculateTransformationMatrix(plantInfo.locationAndDirection.location, plantInfo.locationAndDirection.direction, plantInfo.locationAndDirection.up, matrix)
-        const mesh = new THREE.Mesh()
-        mesh.name = `plant-${Variant[plantInfo.variant]}-${Color[plantInfo.color]}`
-        matrix.decompose(mesh.position, mesh.quaternion, mesh.scale)
-        mesh.add(await getPart(plantName, null, null))
-        group.add(mesh)
-        world.addClickListener(mesh, async event => {
-          if (event.getModifierState('Control')) {
-            plantInfo.color = nextColor(plantInfo.color)
-          } else {
-            plantInfo.variant = nextVariant(plantInfo.variant)
-          }
-          mesh.clear()
-          mesh.add(await getPart(partName(plantInfo.variant, plantInfo.color), null, null))
-        })
+    if (plantStates.length !== plants.length) {
+      throw new Error('Plant states length mismatch')
+    }
+    for (let n = 0; n < plantStates.length; ++n) {
+      const plantInfo = plants[n]
+      const plantState = plantStates[n]
+
+      if ((plantInfo.worlds & plantWorld) === 0) {
+        continue
       }
+
+      const plantName = partName(plantState.variant, plantState.color)
+      const matrix = new THREE.Matrix4()
+      calculateTransformationMatrix(plantInfo.locationAndDirection.location, plantInfo.locationAndDirection.direction, plantInfo.locationAndDirection.up, matrix)
+      const mesh = new THREE.Group()
+      mesh.name = `plant-${Variant[plantInfo.variant]}-${Color[plantInfo.color]}`.toLowerCase()
+      matrix.decompose(mesh.position, mesh.quaternion, mesh.scale)
+      const animationRoot = new THREE.Group()
+      animationRoot.name = 'animation'
+      mesh.add(animationRoot)
+      animationRoot.add(await getPart(plantName, null, null))
+      group.add(mesh)
+      world.addClickListener(mesh, async () => {
+        switch (world.currentActor) {
+          case 'pepper':
+            plantState.variant = nextVariant(plantState.variant)
+            break
+          case 'nick':
+            plantState.color = nextColor(plantState.color)
+            break
+          case 'papa':
+            plantState.animationIndex = (plantState.animationIndex + 1) % animations[plantState.variant].length
+            break
+          case 'mama':
+            plantState.soundIndex = (plantState.soundIndex + 1) % sounds.length
+            break
+        }
+        localStorage.setItem('gameState.plantStates', JSON.stringify(plantStates))
+        mesh.clear()
+        const animationRoot = new THREE.Group()
+        animationRoot.name = 'animation'
+        mesh.add(animationRoot)
+        animationRoot.add(await getPart(partName(plantState.variant, plantState.color), null, null))
+        const animation = await getAnimation(animations[plantState.variant][plantState.animationIndex], {
+          '-flower': 'animation',
+          '-360': 'animation',
+          '-move': 'animation',
+          flwrred: animationRoot.children[0].name,
+          flwgrn: animationRoot.children[0].name,
+          tree: animationRoot.children[0].name,
+          bush: animationRoot.children[0].name,
+          palm: animationRoot.children[0].name,
+        })
+        if (world.currentActor === 'laura') {
+          void world.playPositionAudio(Sound17, mesh)
+        }
+        void world.playPositionAudio(sounds[plantState.soundIndex], mesh)
+        void world.playAnimation(animationRoot, animation)
+      })
     }
     return group
   }

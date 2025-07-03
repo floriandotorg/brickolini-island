@@ -2,7 +2,6 @@ import * as THREE from 'three'
 import { Sound10 } from '../../actions/sndanim'
 import { calculateTransformationMatrix, getPart } from '../assets'
 import { colorAliases } from '../assets/mesh'
-import { engine } from '../engine'
 import type { World } from './world'
 
 enum Flags {
@@ -1349,7 +1348,7 @@ export class Actor {
 
   static async create(world: World, name: Name): Promise<Actor> {
     const actor = new Actor(ACTORS[name])
-    actor.mesh.name = name
+    actor.mesh.name = name.toLowerCase()
 
     for (const [partName, part] of Object.entries(BODY_PARTS)) {
       if (partName === 'top') {
@@ -1388,7 +1387,7 @@ export class Actor {
       })()
 
       const parentMesh = new THREE.Group()
-      parentMesh.name = partName
+      parentMesh.name = partName.toLowerCase()
       parentMesh.add(mesh)
       actor.mesh.add(parentMesh)
 
