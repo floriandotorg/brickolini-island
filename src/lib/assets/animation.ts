@@ -8,7 +8,7 @@ import { WDB } from './wdb'
 export type TimeAndFlags = { time: number; flags: number }
 export type VertexKey = { timeAndFlags: TimeAndFlags; vertex: THREE.Vector3 }
 export type RotationKey = { timeAndFlags: TimeAndFlags; quaternion: THREE.Quaternion }
-export type MorphKey = { timeAndFlags: TimeAndFlags; bool: boolean }
+export type MorphKey = { timeAndFlags: TimeAndFlags; visible: boolean }
 export type Animation3DNode = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Animation3DNode[] }
 
 export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<string, string> = {}) => {
@@ -30,7 +30,7 @@ export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<stri
     translationKeys: node.translationKeys.map(t => ({ timeAndFlags: t.timeAndFlags, vertex: new THREE.Vector3(...t.vertex) })),
     rotationKeys: node.rotationKeys.map(t => ({ timeAndFlags: t.timeAndFlags, quaternion: new THREE.Quaternion(...t.quaternion) })),
     scaleKeys: node.scaleKeys.map(t => ({ timeAndFlags: t.timeAndFlags, vertex: new THREE.Vector3(...t.vertex) })),
-    morphKeys: node.morphKeys.map(t => ({ timeAndFlags: t.timeAndFlags, bool: t.bool })),
+    morphKeys: node.morphKeys.map(t => ({ timeAndFlags: t.timeAndFlags, visible: t.bool })),
     children: node.children.map(convertNode),
   })
   return {
@@ -115,7 +115,8 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
     }
 
     if (animation.morphKeys.length > 0) {
-      throw new Error('Morph keys not yet supported')
+      const { before } = getBeforeAndAfter(animation.morphKeys)
+      push('visible', [before.visible ? 1 : 0])
     }
 
     mat = parent.clone().multiply(mat)
@@ -151,6 +152,9 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
     }
     if (name.includes('scale')) {
       return new THREE.VectorKeyframeTrack(name, timesSec, values)
+    }
+    if (name.includes('visible')) {
+      return new THREE.BooleanKeyframeTrack(name, timesSec, values)
     }
     throw new Error(`Unknown track: ${name}`)
   })
