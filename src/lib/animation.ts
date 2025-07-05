@@ -18,11 +18,31 @@ export const playAnimation = async (world: World, action: ParallelAction<Animati
   const actors = new THREE.Group()
 
   for (const actor of animation.actors) {
-    if (actor.type === WDB.ActorType.ManagedActor) {
-      const minifig = await Actor.create(world, actor.name)
-      actors.add(minifig.mesh)
-    } else {
-      throw new Error(`Unsupported actor type: ${actor.type}`)
+    switch (actor.type) {
+      case WDB.ActorType.ManagedActor: {
+        const minifig = await Actor.create(world, actor.name)
+        actors.add(minifig.mesh)
+        break
+      }
+      case WDB.ActorType.Unknown: {
+        const node = world.scene.getObjectByName(actor.name)
+        if (node == null) {
+          throw new Error(`Actor not found: ${actor.name}`)
+        }
+        actors.add(node)
+        break
+      }
+      case WDB.ActorType.SceneRoi1:
+      case WDB.ActorType.SceneRoi2: {
+        const node = world.scene.getObjectByName(actor.name)
+        if (node == null) {
+          throw new Error(`Actor not found: ${actor.name}`)
+        }
+        actors.add(node)
+        break
+      }
+      default:
+        throw new Error(`Unsupported actor type ${actor.type} for ${actor.name}`)
     }
   }
 
