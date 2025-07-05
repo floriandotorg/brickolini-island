@@ -95,6 +95,20 @@ settingsButton.addEventListener('click', () => {
   settingsDialog.showModal()
 })
 
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+
+    if (settingsDialog.open) {
+      updateSettingsFromCheckboxes()
+      settingsDialog.close()
+    } else {
+      updateControlsFromSettings()
+      settingsDialog.showModal()
+    }
+  }
+})
+
 closeSettingsButton.addEventListener('click', () => {
   updateSettingsFromCheckboxes()
   settingsDialog.close()
