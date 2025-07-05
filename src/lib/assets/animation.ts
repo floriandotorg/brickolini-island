@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import type { Action } from '../../actions/types'
+import type { AnimationAction } from '../action-types'
+import { ACTORS } from '../world/actor'
 import { BinaryReader } from './binary-reader'
 import { getAction } from './load'
 import { WDB } from './wdb'
@@ -10,7 +11,7 @@ export type RotationKey = { timeAndFlags: TimeAndFlags; quaternion: THREE.Quater
 export type MorphKey = { timeAndFlags: TimeAndFlags; bool: boolean }
 export type Animation3DNode = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Animation3DNode[] }
 
-export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<string, string> = {}): Animation3DNode => {
+export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<string, string> = {}) => {
   const reader = new BinaryReader(buffer)
   const magic = reader.readInt32()
   if (magic !== 17) {
@@ -32,22 +33,32 @@ export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<stri
     morphKeys: node.morphKeys.map(t => ({ timeAndFlags: t.timeAndFlags, bool: t.bool })),
     children: node.children.map(convertNode),
   })
-  return convertNode(animation.tree)
+  return {
+    ...animation,
+    tree: convertNode(animation.tree),
+  }
 }
 
 export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTrack[] => {
   const getDurationMs = (animation: Animation3DNode): number => Math.max(animation.translationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.rotationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.scaleKeys.at(-1)?.timeAndFlags.time ?? 0, ...animation.children.map(getDurationMs))
 
-  const getValues = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name = '', parent: THREE.Matrix4 = new THREE.Matrix4().identity()): void => {
+  const getValues = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name = '', parent: THREE.Matrix4 = new THREE.Matrix4().identity(), shouldPassTransform = false): void => {
     const push = (key: string, values: number[]) => {
       valueMap.set([name, key].join('.'), [...(valueMap.get([name, key].join('.')) ?? []), ...values])
     }
 
     const t = (before: { timeAndFlags: { time: number } }, after: { timeAndFlags: { time: number } }) => (time - before.timeAndFlags.time) / (after.timeAndFlags.time - before.timeAndFlags.time)
 
-    const getBeforeAndAfter = <T extends { timeAndFlags: { time: number } }>(keys: T[]): { before: T | null; after: T | null } => {
-      const idx = keys.findIndex(k => k.timeAndFlags.time > time)
-      return { before: keys[Math.max(0, idx - 1)], after: keys[idx] }
+    const getBeforeAndAfter = <T extends { timeAndFlags: { time: number } }>(keys: T[]): { before: T; after: T | null } => {
+      let idx = keys.findIndex(k => k.timeAndFlags.time > time)
+      if (idx < 0) {
+        idx = keys.length
+      }
+      const before = keys[Math.max(0, idx - 1)]
+      if (before == null) {
+        throw new Error('No keyframes found')
+      }
+      return { before, after: keys[idx] }
     }
 
     const translateBy = (mat: THREE.Matrix4, vertex: THREE.Vector3) => {
@@ -58,9 +69,6 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
 
     const getRotation = (): THREE.Matrix4 => {
       const { before, after } = getBeforeAndAfter(animation.rotationKeys)
-      if (before == null) {
-        throw new Error('No keyframes found')
-      }
       if (after == null) {
         if (before.timeAndFlags.flags & 1) {
           return new THREE.Matrix4().makeRotationFromQuaternion(before.quaternion)
@@ -81,9 +89,6 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
 
     if (animation.scaleKeys.length > 0) {
       const { before, after } = getBeforeAndAfter(animation.scaleKeys)
-      if (before == null) {
-        throw new Error('No keyframes found')
-      }
       if (after == null) {
         mat.scale(before.vertex)
       } else {
@@ -100,9 +105,6 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
 
     if (animation.translationKeys.length > 0) {
       const { before, after } = getBeforeAndAfter(animation.translationKeys)
-      if (before == null) {
-        throw new Error('No keyframes found')
-      }
       if (after == null) {
         if (before.timeAndFlags.flags & 1) {
           translateBy(mat, before.vertex)
@@ -126,8 +128,9 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
     push('quaternion', quaternion.toArray())
     push('scale', scale.toArray())
 
+    const isActor = Object.keys(ACTORS).includes(animation.name)
     for (const child of animation.children) {
-      getValues(child, time, valueMap, child.name.toLowerCase(), mat)
+      getValues(child, time, valueMap, isActor ? `${animation.name.toLowerCase()}/${child.name.toLowerCase()}` : child.name.toLowerCase(), shouldPassTransform ? mat : new THREE.Matrix4().identity(), shouldPassTransform || isActor)
     }
   }
 
@@ -153,9 +156,7 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
   })
 }
 
-export type AnimationAction = { type: Action.Type.ObjectAction; presenter: 'LegoAnimPresenter'; name: string; siFile: string; id: number; fileType: Action.FileType }
-
 export const getAnimation = async (action: AnimationAction, substitutions: Record<string, string> = {}): Promise<THREE.AnimationClip> => {
   const animation = parse3DAnimation(await getAction(action), substitutions)
-  return new THREE.AnimationClip(action.name, -1, animationToTracks(animation))
+  return new THREE.AnimationClip(action.name, -1, animationToTracks(animation.tree))
 }

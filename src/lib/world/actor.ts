@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Sound10 } from '../../actions/sndanim'
-import { calculateTransformationMatrix, getPart } from '../assets'
 import { colorAliases } from '../assets/mesh'
+import { calculateTransformationMatrix, getPart } from '../assets/model'
 import type { World } from './world'
 
 enum Flags {
@@ -10,7 +10,7 @@ enum Flags {
 }
 
 const BODY_PARTS: {
-  [key in 'top' | 'body' | 'hat' | 'groin' | 'head' | 'arm-lft' | 'arm-rt' | 'claw-lft' | 'claw-rt' | 'leg-lft' | 'leg-rt']: {
+  [key in 'top' | 'body' | 'infohat' | 'infogron' | 'head' | 'arm-lft' | 'arm-rt' | 'claw-lft' | 'claw-rt' | 'leg-lft' | 'leg-rt']: {
     flags: number
     boundingSphere: [number, number, number, number]
     boundingBox: [number, number, number, number, number, number]
@@ -35,7 +35,7 @@ const BODY_PARTS: {
     dir: [0.0, 0.0, 1.0],
     up: [0.0, 1.0, 0.0],
   },
-  hat: {
+  infohat: {
     flags: Flags.UseColor,
     boundingSphere: [0.0, -0.00938, -0.01955, 0.35],
     boundingBox: [-0.231822, -0.140237, -0.320954, 0.234149, 0.076968, 0.249083],
@@ -43,7 +43,7 @@ const BODY_PARTS: {
     dir: [0.0, 0.0, 1.0],
     up: [0.0, 1.0, 0.0],
   },
-  groin: {
+  infogron: {
     flags: Flags.UseTexture,
     boundingSphere: [0.0, 0.11477, 0.00042, 0.26],
     boundingBox: [-0.285558, -0.134391, -0.142231, 0.285507, 0.152986, 0.143071],
@@ -326,7 +326,7 @@ const nextColor = (color: Color) => {
   }
 }
 
-const ACTORS: {
+export const ACTORS: {
   [key in Name]: {
     bodyPart: BodyPart
     hatParts: HatPart[]
@@ -1346,27 +1346,27 @@ export class Actor {
 
   private constructor(private _info: (typeof ACTORS)[keyof typeof ACTORS]) {}
 
-  static async create(world: World, name: Name): Promise<Actor> {
-    const actor = new Actor(ACTORS[name])
+  public static async create(world: World, name: string): Promise<Actor> {
+    const actor = new Actor(ACTORS[name as keyof typeof ACTORS])
     actor.mesh.name = name.toLowerCase()
 
-    for (const [partName, part] of Object.entries(BODY_PARTS)) {
-      if (partName === 'top') {
+    for (const [bodyPartName, part] of Object.entries(BODY_PARTS)) {
+      if (bodyPartName === 'top') {
         continue
       }
 
-      if (partName === 'hat' && actor._info.hatParts[actor._info.hatPart] === 'bald') {
+      if (bodyPartName === 'infohat' && actor._info.hatParts[actor._info.hatPart] === 'bald') {
         continue
       }
 
-      const mesh = await (() => {
-        switch (partName) {
-          case 'hat':
+      const mesh = await (async () => {
+        switch (bodyPartName) {
+          case 'infohat':
             return getPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null)
           case 'body': {
             return getPart(actor._info.bodyPart, 'color' in actor._info.body ? colorAliases[actor._info.body.color] : null, 'color' in actor._info.body ? null : actor._info.body.texture)
           }
-          case 'groin':
+          case 'infogron':
             return getPart('infogron', colorAliases[actor._info.groinColor], null)
           case 'head':
             return getPart('head', null, actor._info.faceTexture)
@@ -1383,30 +1383,31 @@ export class Actor {
           case 'leg-rt':
             return getPart('leg', colorAliases[actor._info.rightLegColor], null)
         }
-        throw new Error(`Unknown part: ${partName}`)
+        throw new Error(`Unknown part: ${bodyPartName}`)
       })()
 
       const parentMesh = new THREE.Group()
-      parentMesh.name = partName.toLowerCase()
+      parentMesh.name = bodyPartName.toLowerCase()
       parentMesh.add(mesh)
+      mesh.name = `${mesh.name}-part`
       actor.mesh.add(parentMesh)
 
       world.addClickListener(parentMesh, async () => {
         if (world.currentActor === 'nick') {
-          switch (partName) {
+          switch (bodyPartName) {
             case 'head':
-            case 'hat':
+            case 'infohat':
               actor._info.hatColor = nextColor(actor._info.hatColor)
               actor._mesh
-                .getObjectByName('hat')
+                .getObjectByName('infohat')
                 ?.clear()
                 .add(await getPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null))
               break
             case 'body':
-            case 'groin':
+            case 'infogron':
               actor._info.groinColor = nextColor(actor._info.groinColor)
               actor._mesh
-                .getObjectByName('groin')
+                .getObjectByName('infogron')
                 ?.clear()
                 .add(await getPart('infogron', colorAliases[actor._info.groinColor], null))
               break
@@ -1441,7 +1442,7 @@ export class Actor {
                 .add(await getPart('leg', colorAliases[actor._info.rightLegColor], null))
               break
             default:
-              throw new Error(`Unknown part: ${partName}`)
+              throw new Error(`Unknown part: ${bodyPartName}`)
           }
 
           world.playPositionalAudio(Sound10, parentMesh)
@@ -1454,7 +1455,7 @@ export class Actor {
 
     world.addClickListener(actor.mesh, async () => {
       if (world.currentActor === 'pepper') {
-        const hatParentMesh = actor.mesh.getObjectByName('hat')
+        const hatParentMesh = actor.mesh.getObjectByName('infohat')
         if (hatParentMesh == null) {
           return
         }
