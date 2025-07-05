@@ -6,6 +6,8 @@ THREE.Cache.enabled = !import.meta.env.DEV
 
 const hdFiles = new Set<string>([
   // spellchecker: disable
+  'hospital/5.jpeg',
+  'infomain/39.jpeg',
   'jukebox/0.m4a',
   'jukebox/1.m4a',
   'jukebox/11.m4a',
@@ -152,8 +154,13 @@ const fileLoader = new THREE.FileLoader(manager)
 fileLoader.setResponseType('arraybuffer')
 
 export const getFileUrl = (path: string) => {
-  if (import.meta.env.VITE_HD_ASSETS_AVAILABLE === 'true' && getSettings().graphics.hdTextures && hdFiles.has(path)) {
-    return `hd/${path}`
+  if (import.meta.env.VITE_HD_ASSETS_AVAILABLE === 'true' && getSettings().graphics.hdTextures) {
+    if (hdFiles.has(path)) {
+      return `hd/${path}`
+    }
+    if (hdFiles.has(path.replace('.png', '.jpeg'))) {
+      return `hd/${path.replace('.png', '.jpeg')}`
+    }
   }
   return `/org/${path}`
 }
