@@ -156,13 +156,13 @@ export abstract class World {
     this._camera.remove(engine.audioListener)
   }
 
-  public async playPositionalAudio(action: PositionalAudioAction, parent: THREE.Object3D): Promise<void> {
+  public async playPositionalAudio(action: PositionalAudioAction, parent: THREE.Object3D, delay?: number): Promise<void> {
     const audio = await getPositionalAudio(engine.audioListener, action)
     parent.add(audio)
     audio.onEnded = () => {
       parent.remove(audio)
     }
-    audio.play()
+    audio.play(delay)
   }
 
   public resize(_width: number, _height: number): void {}

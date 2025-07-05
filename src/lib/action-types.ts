@@ -4,7 +4,7 @@ export type AudioActionBase = { id: number; siFile: string; fileType: Action.Fil
 
 export type AudioAction = AudioActionBase & { presenter: null }
 
-export type PositionalAudioAction = AudioActionBase & { presenter: 'Lego3DWavePresenter'; extra: string }
+export type PositionalAudioAction = AudioActionBase & { presenter: 'Lego3DWavePresenter'; extra: string; startTime: number }
 
 export type ParallelAction<T> = { id: number; siFile: string; type: Action.Type.ParallelAction; presenter: null; children: readonly T[] }
 

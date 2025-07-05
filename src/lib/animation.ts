@@ -31,7 +31,7 @@ export const playAnimation = async (world: World, action: ParallelAction<Animati
     if (actor == null) {
       throw new Error(`Actor not found: ${audio.extra}`)
     }
-    world.playPositionalAudio(audio, actor)
+    world.playPositionalAudio(audio, actor, audio.startTime / 1_000)
   }
 
   world.scene.add(actors)
