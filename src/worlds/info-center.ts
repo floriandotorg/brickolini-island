@@ -1,24 +1,14 @@
 import * as THREE from 'three'
-import { wgs023nu_RunAnim } from '../actions/garage'
-import { hho006cl_RunAnim } from '../actions/hospital'
 import { Background_Bitmap, iic027in_RunAnim } from '../actions/infomain'
 import { playAnimation } from '../lib/animation'
-import { getWorld } from '../lib/assets/model'
-import { createTexture } from '../lib/assets/texture'
+import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
-import { World } from '../lib/world/world'
 
-export class InfoCenter extends World {
-  private _backgroundScene = new THREE.Scene()
-  private _backgroundCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
-  private _backgroundMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
-
+export class InfoCenter extends Building {
   public override async init(): Promise<void> {
-    const world = await getWorld('HOSP')
-    this._scene.add(world)
+    await super.init()
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2)
-    this._scene.add(ambientLight)
+    await this.loadWorld('IMAIN', Background_Bitmap)
 
     const leftPointLight = new THREE.PointLight(0xffffff, 140)
     leftPointLight.position.set(7, 4, 4.5)
@@ -38,16 +28,6 @@ export class InfoCenter extends World {
 
     this._scene.add(await Plants.place(this, Plants.World.IMAIN))
 
-    this._backgroundMesh.material = new THREE.MeshBasicMaterial({ map: createTexture(Background_Bitmap) })
-    this._backgroundScene.add(this._backgroundMesh)
-
-    await playAnimation(this, hho006cl_RunAnim)
-    // await playAnimation(this, hho006cl_RunAnim)
-  }
-
-  public override render(renderer: THREE.WebGLRenderer): void {
-    renderer.render(this._backgroundScene, this._backgroundCamera)
-    renderer.clearDepth()
-    super.render(renderer)
+    await playAnimation(this, iic027in_RunAnim)
   }
 }

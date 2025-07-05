@@ -3,6 +3,8 @@ import { engine } from './lib/engine'
 import './lib/settings-dialog'
 import { Isle } from './worlds/isle'
 import './style.css'
+import { Garage } from './worlds/garage'
+import { Hospital } from './worlds/hospital'
 import { InfoCenter } from './worlds/info-center'
 
 const playButton = document.getElementById('play-button')
@@ -18,6 +20,10 @@ const start = async () => {
       switch (new URLSearchParams(window.location.search).get('world')) {
         case 'info':
           return new InfoCenter()
+        case 'hospital':
+          return new Hospital()
+        case 'garage':
+          return new Garage()
         default:
           return new Isle()
       }
