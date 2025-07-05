@@ -225,6 +225,7 @@ export namespace Plants {
 
   export const place = async (world: WorldType, plantWorld: World): Promise<THREE.Group> => {
     const group = new THREE.Group()
+    group.name = 'plants'
     if (plantStates.length !== plants.length) {
       throw new Error('Plant states length mismatch')
     }

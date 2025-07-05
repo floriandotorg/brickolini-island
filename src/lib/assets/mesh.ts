@@ -4,7 +4,7 @@ import { getSettings } from '../settings'
 import { getFileUrl, manager } from './load'
 import { WDB } from './wdb'
 
-const textureLoader = new THREE.TextureLoader(manager)
+export const textureLoader = new THREE.TextureLoader(manager)
 
 export const colorAliases: Record<string, WDB.Color> = {
   'lego black': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },

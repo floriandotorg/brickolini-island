@@ -3,6 +3,7 @@ import { engine } from './lib/engine'
 import './lib/settings-dialog'
 import { Isle } from './worlds/isle'
 import './style.css'
+import { InfoCenter } from './worlds/info-center'
 
 const playButton = document.getElementById('play-button')
 if (playButton == null || !(playButton instanceof HTMLButtonElement)) {
@@ -12,7 +13,17 @@ if (playButton == null || !(playButton instanceof HTMLButtonElement)) {
 const start = async () => {
   playButton.disabled = true
 
-  await engine.setWorld(new Isle())
+  await engine.setWorld(
+    (() => {
+      switch (new URLSearchParams(window.location.search).get('world')) {
+        case 'info':
+          return new InfoCenter()
+        default:
+          return new Isle()
+      }
+    })(),
+  )
+
   engine.start()
 
   document.getElementById('menu')?.classList.add('hidden')

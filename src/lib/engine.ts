@@ -23,8 +23,8 @@ class Engine {
   private _postCamera: THREE.OrthographicCamera
   private _postMaterial: THREE.ShaderMaterial
   private _cutsceneScene = new THREE.Scene()
-  private _cutsceneCamera: THREE.OrthographicCamera
-  private _cutsceneMesh: THREE.Mesh
+  private _cutsceneCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10)
+  private _cutsceneMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
   private _world: World | null = null
   private _keyStates: Set<string> = new Set()
   private _backgroundAudio: THREE.Audio | null = null
@@ -103,8 +103,6 @@ class Engine {
       this._renderer.shadowMap.type = THREE.PCFSoftShadowMap
     }
 
-    this._cutsceneMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
-    this._cutsceneCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10)
     this._cutsceneScene.add(this._cutsceneMesh)
 
     this._renderTarget = new THREE.WebGLRenderTarget(1, 1, {
