@@ -439,7 +439,9 @@ export class Isle extends World {
     return totalMove
   }
 
-  async update(delta: number): Promise<void> {
+  public override update(delta: number): void {
+    super.update(delta)
+
     this._dayTime = (this._dayTime + delta * 0.0001) % 1
 
     if (engine.clock.elapsedTime - this._lastSunUpdate > 10) {
