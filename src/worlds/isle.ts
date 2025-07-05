@@ -45,7 +45,9 @@ export class Isle extends World {
     this._water = water
   }
 
-  async init(): Promise<void> {
+  override async init(): Promise<void> {
+    await super.init()
+
     const world = await getWorld('ACT1')
     this._scene.add(world)
 

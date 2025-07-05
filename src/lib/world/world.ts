@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import type { Action } from '../../actions/types'
 import { getPositionalAudio } from '../assets/audio'
-import { RESOLUTION_RATIO } from '../engine'
+import { engine, RESOLUTION_RATIO } from '../engine'
 
 export abstract class World {
   protected _scene = new THREE.Scene()
@@ -15,7 +15,6 @@ export abstract class World {
 
   private _raycaster = new THREE.Raycaster()
   private _clickListeners = new Map<THREE.Object3D, (event: MouseEvent) => void>()
-  private _audioListener = new THREE.AudioListener()
   private _runningAnimations: {
     mixer: THREE.AnimationMixer
     resolve: () => void
@@ -25,7 +24,6 @@ export abstract class World {
 
   constructor() {
     this._camera.rotation.order = 'YXZ'
-    this._camera.add(this._audioListener)
 
     const getElement = (id: string): HTMLElement => {
       const element = document.getElementById(id)
@@ -98,16 +96,36 @@ export abstract class World {
     this._debugSlewMode.classList.toggle('hidden', !slewMode)
   }
 
-  abstract init(): Promise<void>
+  private _initialized = false
+
+  public get initialized(): boolean {
+    return this._initialized
+  }
+
+  public async init(): Promise<void> {
+    if (this._initialized) {
+      throw new Error('World already initialized')
+    }
+
+    this._initialized = true
+  }
+
   public update(delta: number): void {
     for (const { mixer } of this._runningAnimations) {
       mixer.update(delta)
     }
   }
 
-  public async playPositionAudio(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number; presenter: 'Lego3DWavePresenter' }, parent: THREE.Object3D): Promise<void> {
-    const audio = await getPositionalAudio(this._audioListener, action)
-    audio.setRefDistance(20)
+  public activate(): void {
+    this._camera.add(engine.audioListener)
+  }
+
+  public deactivate(): void {
+    this._camera.remove(engine.audioListener)
+  }
+
+  public async playPositionalAudio(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number; presenter: 'Lego3DWavePresenter' }, parent: THREE.Object3D): Promise<void> {
+    const audio = await getPositionalAudio(engine.audioListener, action)
     parent.add(audio)
     audio.onEnded = () => {
       parent.remove(audio)

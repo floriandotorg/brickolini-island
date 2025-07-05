@@ -1444,7 +1444,7 @@ export class Actor {
               throw new Error(`Unknown part: ${partName}`)
           }
 
-          world.playPositionAudio(Sound10, parentMesh)
+          world.playPositionalAudio(Sound10, parentMesh)
         }
       })
 

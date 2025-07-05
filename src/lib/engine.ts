@@ -19,7 +19,6 @@ class Engine {
   private _renderTarget: THREE.WebGLRenderTarget
   private _postScene = new THREE.Scene()
   private _audioListener = new THREE.AudioListener()
-  private _backgroundAudioListener = new THREE.AudioListener()
   private _postCamera: THREE.OrthographicCamera
   private _postMaterial: THREE.ShaderMaterial
   private _cutsceneScene = new THREE.Scene()
@@ -32,8 +31,9 @@ class Engine {
   private _transitionPromiseResolve: (() => void) | null = null
 
   public async switchBackgroundMusic(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number; presenter: null }): Promise<void> {
-    const audio = await getAudio(this._backgroundAudioListener, action)
+    const audio = await getAudio(this._audioListener, action)
     audio.loop = true
+    audio.setVolume(audio.getVolume() * getSettings().musicVolume)
 
     if (this._backgroundAudio == null) {
       this._backgroundAudio = audio
@@ -46,7 +46,7 @@ class Engine {
 
     this._backgroundAudio = audio
     this._backgroundAudio.gain.gain.value = 0
-    this._backgroundAudio.gain.gain.setTargetAtTime(1, audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
+    this._backgroundAudio.gain.gain.setTargetAtTime(audio.getVolume(), audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
     this._backgroundAudio.play()
   }
 
@@ -110,9 +110,6 @@ class Engine {
       type: THREE.FloatType,
     })
     this._postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
-    this._postCamera.add(this._audioListener)
-    this._postCamera.add(this._backgroundAudioListener)
-    this._backgroundAudioListener.setMasterVolume(settings.musicVolume)
     this._postMaterial = new THREE.ShaderMaterial({
       uniforms: {
         tDiffuse: { value: this._renderTarget.texture },
@@ -199,9 +196,13 @@ class Engine {
   }
 
   public async setWorld(world: World) {
+    this._world?.deactivate()
     this._world = world
     this._world.resize(this._canvas.width, this._canvas.height)
-    await this._world.init()
+    if (!this._world.initialized) {
+      await this._world.init()
+    }
+    this._world.activate()
   }
 
   public async transition(): Promise<void> {

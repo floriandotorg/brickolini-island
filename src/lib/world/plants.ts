@@ -280,9 +280,9 @@ export namespace Plants {
           palm: animationRoot.children[0].name,
         })
         if (world.currentActor === 'laura') {
-          void world.playPositionAudio(Sound17, mesh)
+          void world.playPositionalAudio(Sound17, mesh)
         }
-        void world.playPositionAudio(sounds[plantState.soundIndex], mesh)
+        void world.playPositionalAudio(sounds[plantState.soundIndex], mesh)
         void world.playAnimation(animationRoot, animation)
       })
     }
