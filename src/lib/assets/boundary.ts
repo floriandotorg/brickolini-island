@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { Action } from '../../actions/types'
+import type { BoundaryAction } from '../action-types'
 import { BinaryReader } from './binary-reader'
 import { getAction } from './load'
 
@@ -218,7 +218,7 @@ export class Boundary {
   }
 }
 
-export const getBoundaries = async (action: { id: number; siFile: string; presenter: 'LegoPathPresenter'; fileType: Action.FileType; location: readonly [number, number, number] }): Promise<Boundary[]> => {
+export const getBoundaries = async (action: BoundaryAction): Promise<Boundary[]> => {
   const reader = new BinaryReader(await getAction(action))
   const numStructs = reader.readUint16()
   const numNodes = reader.readUint16()

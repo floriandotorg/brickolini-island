@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
-import type { AudioAction } from '../assets'
+import type { AudioAction } from '../action-types'
 import { getImage } from '../assets/image'
 import { engine } from '../engine'
 

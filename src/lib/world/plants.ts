@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 import { AnimB1, AnimB2, AnimB3, AnimF1, AnimF2, AnimF3, AnimP1, AnimP2, AnimP3, AnimT1, AnimT2, AnimT3, Sound8, Sound9, Sound10, Sound11, Sound12, Sound13, Sound14, Sound15, Sound16, Sound17 } from '../../actions/sndanim'
-import { calculateTransformationMatrix, getPart, type PositionalAudioAction } from '../assets'
-import { type AnimationAction, getAnimation } from '../assets/animation'
+import type { AnimationAction, PositionalAudioAction } from '../action-types'
+import { getAnimation } from '../assets/animation'
+import { calculateTransformationMatrix, getPart } from '../assets/model'
 import type { World as WorldType } from './world'
 
 export namespace Plants {

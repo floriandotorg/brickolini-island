@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import type { Action } from '../../actions/types'
+import type { PositionalAudioAction } from '../action-types'
+import type { Animation3DNode } from '../assets/animation'
 import { getPositionalAudio } from '../assets/audio'
 import { engine, RESOLUTION_RATIO } from '../engine'
 
@@ -129,7 +130,7 @@ export abstract class World {
     this._camera.remove(engine.audioListener)
   }
 
-  public async playPositionalAudio(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number; presenter: 'Lego3DWavePresenter' }, parent: THREE.Object3D): Promise<void> {
+  public async playPositionalAudio(action: PositionalAudioAction, parent: THREE.Object3D): Promise<void> {
     const audio = await getPositionalAudio(engine.audioListener, action)
     parent.add(audio)
     audio.onEnded = () => {

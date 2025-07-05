@@ -1,6 +1,7 @@
 import * as THREE from 'three'
-import type { Action } from '../actions/types'
-import { getActionFileUrl, getAudio } from './assets'
+import type { AudioAction, CompositeMediaAction } from './action-types'
+import { getAudio } from './assets/audio'
+import { getActionFileUrl } from './assets/load'
 import { getSettings } from './settings'
 import postFrag from './shader/post-frag.glsl'
 import postVert from './shader/post-vert.glsl'
@@ -30,7 +31,7 @@ class Engine {
   private _transitionStart: number = 0
   private _transitionPromiseResolve: (() => void) | null = null
 
-  public async switchBackgroundMusic(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number; presenter: null }): Promise<void> {
+  public async switchBackgroundMusic(action: AudioAction): Promise<void> {
     const audio = await getAudio(this._audioListener, action)
     audio.loop = true
     audio.setVolume(audio.getVolume() * getSettings().musicVolume)
@@ -215,12 +216,12 @@ class Engine {
     })
   }
 
-  public async playAudio(action: { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number; presenter: null }): Promise<void> {
+  public async playAudio(action: AudioAction): Promise<void> {
     const audio = await getAudio(this._audioListener, action)
     audio.play()
   }
 
-  public async playCutscene(action: { presenter: 'MxCompositeMediaPresenter'; children: readonly [{ id: number; siFile: string; fileType: Action.FileType.SMK; presenter: null }, { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number; presenter: null }] }): Promise<void> {
+  public async playCutscene(action: CompositeMediaAction): Promise<void> {
     this._state = 'cutscene'
     this._cutsceneAudio = await getAudio(this._audioListener, action.children[1])
     this._cutsceneVideo.src = getActionFileUrl(action.children[0])
