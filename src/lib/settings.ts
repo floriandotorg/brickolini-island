@@ -16,7 +16,6 @@ export interface Settings {
 }
 
 export const setSettings = (settings: Partial<Settings>) => {
-  console.log('setting settings', settings)
   if (settings.graphics != null) {
     localStorage.setItem('settings.graphics.preset', settings.graphics.preset)
     localStorage.setItem('settings.graphics.realisticWater', settings.graphics.realisticWater ? 'true' : 'false')
@@ -72,7 +71,7 @@ export const getSettings = (): Settings => {
       toneMapping: localStorage.getItem('settings.graphics.toneMapping') as 'none' | 'filmic',
       postProcessing: localStorage.getItem('settings.graphics.postProcessing') === 'true',
     },
-    musicVolume: musicVolume != null ? parseInt(musicVolume) : 1,
+    musicVolume: musicVolume != null ? Number.parseFloat(musicVolume) : 1,
     freeRoam: localStorage.getItem('settings.freeRoam') === 'true',
   }
 }

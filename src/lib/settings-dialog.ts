@@ -61,6 +61,11 @@ if (freeRoamCheckbox == null || !(freeRoamCheckbox instanceof HTMLInputElement))
   throw new Error('Free roam checkbox not found')
 }
 
+const musicVolumeSlider = document.getElementById('music-volume-slider')
+if (musicVolumeSlider == null || !(musicVolumeSlider instanceof HTMLInputElement)) {
+  throw new Error('Music volume slider not found')
+}
+
 const updateControlsFromSettings = () => {
   const settings = getSettings()
   presetSelect.value = settings.graphics.preset
@@ -72,6 +77,7 @@ const updateControlsFromSettings = () => {
   postProcessingCheckbox.checked = settings.graphics.postProcessing
   toneMappingCheckbox.checked = settings.graphics.toneMapping === 'filmic'
   freeRoamCheckbox.checked = settings.freeRoam
+  musicVolumeSlider.value = settings.musicVolume.toString()
 }
 
 const updateSettingsFromCheckboxes = () => {
@@ -86,6 +92,7 @@ const updateSettingsFromCheckboxes = () => {
       postProcessing: postProcessingCheckbox.checked,
       toneMapping: toneMappingCheckbox.checked ? 'filmic' : 'none',
     },
+    musicVolume: Number.parseFloat(musicVolumeSlider.value),
     freeRoam: freeRoamCheckbox.checked,
   })
 }
