@@ -1,7 +1,9 @@
 import * as THREE from 'three'
-import { Background_Bitmap, ConfigAnimation } from '../actions/infomain'
-import { getAction, getWorld } from '../lib/assets'
-import { parse3DAnimation } from '../lib/assets/animation'
+import { wgs023nu_RunAnim } from '../actions/garage'
+import { hho006cl_RunAnim } from '../actions/hospital'
+import { Background_Bitmap, iic027in_RunAnim } from '../actions/infomain'
+import { playAnimation } from '../lib/animation'
+import { getWorld } from '../lib/assets/model'
 import { createTexture } from '../lib/assets/texture'
 import { Plants } from '../lib/world/plants'
 import { World } from '../lib/world/world'
@@ -12,33 +14,8 @@ export class InfoCenter extends World {
   private _backgroundMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
 
   public override async init(): Promise<void> {
-    const world = await getWorld('IMAIN')
+    const world = await getWorld('HOSP')
     this._scene.add(world)
-
-    const configAnimation = parse3DAnimation(await getAction(ConfigAnimation))
-
-    const cameraConfig = configAnimation.children.find(c => c.name.startsWith('cam'))
-    if (cameraConfig == null) {
-      throw new Error('Camera config not found')
-    }
-
-    const match = cameraConfig.name.match(/^cam(\d{2})$/)
-    if (match?.[1] == null) {
-      throw new Error('Camera fov not found')
-    }
-    this.setVerticalFOV(Number.parseInt(match[1]))
-
-    const cameraPosition = cameraConfig.translationKeys[0]?.vertex
-    if (cameraPosition == null) {
-      throw new Error('Camera position not found')
-    }
-    this._camera.position.copy(cameraPosition)
-
-    const lookAtPosition = configAnimation.children.find(c => c.name === 'target')?.translationKeys[0]?.vertex
-    if (lookAtPosition == null) {
-      throw new Error('Look at position not found')
-    }
-    this._camera.lookAt(lookAtPosition)
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.2)
     this._scene.add(ambientLight)
@@ -55,10 +32,17 @@ export class InfoCenter extends World {
     centerPointLight.position.set(1.5, -4, 1)
     this._scene.add(centerPointLight)
 
+    const frontPointLight = new THREE.PointLight(0xffffff, 100)
+    frontPointLight.position.set(1.5, 0.75, -12)
+    this._scene.add(frontPointLight)
+
     this._scene.add(await Plants.place(this, Plants.World.IMAIN))
 
     this._backgroundMesh.material = new THREE.MeshBasicMaterial({ map: createTexture(Background_Bitmap) })
     this._backgroundScene.add(this._backgroundMesh)
+
+    await playAnimation(this, hho006cl_RunAnim)
+    // await playAnimation(this, hho006cl_RunAnim)
   }
 
   public override render(renderer: THREE.WebGLRenderer): void {

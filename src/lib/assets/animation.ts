@@ -42,9 +42,19 @@ export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<stri
 export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTrack[] => {
   const getDurationMs = (animation: Animation3DNode): number => Math.max(animation.translationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.rotationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.scaleKeys.at(-1)?.timeAndFlags.time ?? 0, ...animation.children.map(getDurationMs))
 
-  const getValues = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name = '', parent: THREE.Matrix4 = new THREE.Matrix4().identity(), shouldPassTransform = false): void => {
+  const getValues = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name = '', parent: THREE.Matrix4 = new THREE.Matrix4().identity(), actorName: string | null = null): void => {
+    if (animation.name === 'target' || animation.name.startsWith('cam')) {
+      if (animation.translationKeys.length > 1 || animation.rotationKeys.length > 1 || animation.scaleKeys.length > 1 || animation.morphKeys.length > 1) {
+        throw new Error('Camera movement is not implemented. If you see this, please implement it.')
+      }
+
+      return
+    }
+
+    const prefix = actorName != null ? `${actorName.toLowerCase()}-` : ''
     const push = (key: string, values: number[]) => {
-      valueMap.set([name, key].join('.'), [...(valueMap.get([name, key].join('.')) ?? []), ...values])
+      const path = prefix + [name, key].join('.')
+      valueMap.set(path, [...(valueMap.get(path) ?? []), ...values])
     }
 
     const t = (before: { timeAndFlags: { time: number } }, after: { timeAndFlags: { time: number } }) => (time - before.timeAndFlags.time) / (after.timeAndFlags.time - before.timeAndFlags.time)
@@ -131,7 +141,7 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
 
     const isActor = Object.keys(ACTORS).includes(animation.name)
     for (const child of animation.children) {
-      getValues(child, time, valueMap, isActor ? `${animation.name.toLowerCase()}/${child.name.toLowerCase()}` : child.name.toLowerCase(), shouldPassTransform ? mat : new THREE.Matrix4().identity(), shouldPassTransform || isActor)
+      getValues(child, time, valueMap, child.name, actorName != null ? mat : new THREE.Matrix4().identity(), actorName ?? (isActor ? animation.name : null))
     }
   }
 
