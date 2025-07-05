@@ -154,7 +154,7 @@ const roiToMesh = async (roi: WDB.Roi, animation: WDB.Animation.Node | undefined
   return result
 }
 
-export const getWorld = async (name: string): Promise<THREE.Group> => {
+export const getWorld = async (name: 'BLDD' | 'BLDH' | 'BLDJ' | 'BLDR' | 'HOSP' | 'POLICE' | 'GMAIN' | 'ICUBE' | 'IELEV' | 'IISLE' | 'IMAIN' | 'IREG' | 'RACC' | 'RACJ' | 'ACT1' | 'ACT2' | 'ACT3' | 'TEST' | 'TestWorld' | 'Isle'): Promise<THREE.Group> => {
   const wdb = await getWdb()
   const world = wdb.worlds.find(w => w.name.toLowerCase() === name.toLowerCase())
   if (world == null) {
