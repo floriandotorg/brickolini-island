@@ -10,7 +10,7 @@ export type RotationKey = { timeAndFlags: TimeAndFlags; quaternion: THREE.Quater
 export type MorphKey = { timeAndFlags: TimeAndFlags; bool: boolean }
 export type Animation3DNode = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Animation3DNode[] }
 
-export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<string, string>): Animation3DNode => {
+export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<string, string> = {}): Animation3DNode => {
   const reader = new BinaryReader(buffer)
   const magic = reader.readInt32()
   if (magic !== 17) {
@@ -157,6 +157,5 @@ export type AnimationAction = { type: Action.Type.ObjectAction; presenter: 'Lego
 
 export const getAnimation = async (action: AnimationAction, substitutions: Record<string, string> = {}): Promise<THREE.AnimationClip> => {
   const animation = parse3DAnimation(await getAction(action), substitutions)
-  console.log(animation)
   return new THREE.AnimationClip(action.name, -1, animationToTracks(animation))
 }

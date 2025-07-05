@@ -47,6 +47,11 @@ export abstract class World {
     return this._scene
   }
 
+  protected setVerticalFOV(fov: number): void {
+    this._camera.fov = 2 * Math.atan(Math.tan((fov * Math.PI) / 180 / 2) / this._camera.aspect) * (180 / Math.PI)
+    this._camera.updateProjectionMatrix()
+  }
+
   public playAnimation(mesh: THREE.Object3D, animation: THREE.AnimationClip): Promise<void> {
     const mixer = new THREE.AnimationMixer(mesh)
     const action = mixer.clipAction(animation)
