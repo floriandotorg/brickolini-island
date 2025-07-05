@@ -37,6 +37,32 @@ export namespace WDB {
       return this.meshesBeforeOffset.concat(this.meshesAfterOffset)
     }
   }
+  export enum ActorType {
+    Unknown = 1,
+    ManagedActor = 2,
+    ManagedInvisibleRoiTrimmed = 3,
+    ManagedInvisibleRoi = 4,
+    SceneRoi1 = 5,
+    SceneRoi2 = 6,
+  }
+  const numberToActorType = (value: number): ActorType => {
+    switch (value) {
+      case 1:
+        return ActorType.Unknown
+      case 2:
+        return ActorType.ManagedActor
+      case 3:
+        return ActorType.ManagedInvisibleRoiTrimmed
+      case 4:
+        return ActorType.ManagedInvisibleRoi
+      case 5:
+        return ActorType.SceneRoi1
+      case 6:
+        return ActorType.SceneRoi2
+      default:
+        throw new Error(`Unknown actor type: ${value}`)
+    }
+  }
   export type Part = { name: string; lods: Lod[] }
   export namespace Animation {
     export type TimeAndFlags = { time: number; flags: number }
@@ -44,7 +70,7 @@ export namespace WDB {
     export type RotationKey = { timeAndFlags: TimeAndFlags; quaternion: [number, number, number, number] }
     export type MorphKey = { timeAndFlags: TimeAndFlags; bool: boolean }
     export type Node = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Node[] }
-    export type Animation = { actors: string[]; tree: Node; duration: number }
+    export type Animation = { actors: { name: string; type: ActorType | null }[]; tree: Node; duration: number }
 
     const readTimeAndFlags = (reader: BinaryReader): Animation.TimeAndFlags => {
       const tf = reader.readUint32()
@@ -96,13 +122,12 @@ export namespace WDB {
 
     export const readAnimation = (reader: BinaryReader): Animation => {
       const numActors = reader.readUint32()
-      const actors: string[] = []
+      const actors: { name: string; type: number }[] = []
       for (let n = 0; n < numActors; ++n) {
         const actor = reader.readString()
         if (actor.length > 0) {
-          reader.readUint32()
+          actors.push({ name: actor.toLowerCase(), type: numberToActorType(reader.readUint32()) })
         }
-        actors.push(actor)
       }
       const duration = reader.readInt32()
       const tree = readAnimationTree(reader)
@@ -235,7 +260,6 @@ export namespace WDB {
       })()
       const tex = textures.find(t => t.title.toLowerCase() === name.toLowerCase())
       if (!tex) {
-        console.log(textures)
         throw new Error(`texture '${name}' in ${source} not found`)
       }
       return tex

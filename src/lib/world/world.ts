@@ -6,7 +6,7 @@ import { engine, RESOLUTION_RATIO } from '../engine'
 
 export abstract class World {
   protected _scene = new THREE.Scene()
-  protected _camera = new THREE.PerspectiveCamera(75, RESOLUTION_RATIO, 0.1, 1000)
+  protected _camera = new THREE.PerspectiveCamera(75, RESOLUTION_RATIO)
 
   private _debugGroup: THREE.Group = new THREE.Group()
   private _debugBox: HTMLElement
@@ -53,10 +53,36 @@ export abstract class World {
     this._camera.updateProjectionMatrix()
   }
 
+  public setupCameraForAnimation(animationNode: Animation3DNode): void {
+    const cameraConfig = animationNode.children.find(c => c.name.startsWith('cam'))
+    if (cameraConfig == null) {
+      throw new Error('Camera config not found')
+    }
+
+    const match = cameraConfig.name.match(/^cam(\d{2})$/)
+    if (match?.[1] == null) {
+      throw new Error('Camera fov not found')
+    }
+    this.setVerticalFOV(Number.parseInt(match[1]))
+
+    const cameraPosition = cameraConfig.translationKeys[0]?.vertex
+    if (cameraPosition == null) {
+      throw new Error('Camera position not found')
+    }
+    this._camera.position.copy(cameraPosition)
+
+    const lookAtPosition = animationNode.children.find(c => c.name === 'target')?.translationKeys[0]?.vertex
+    if (lookAtPosition == null) {
+      throw new Error('Look at position not found')
+    }
+    this._camera.lookAt(lookAtPosition)
+  }
+
   public playAnimation(mesh: THREE.Object3D, animation: THREE.AnimationClip): Promise<void> {
     const mixer = new THREE.AnimationMixer(mesh)
     const action = mixer.clipAction(animation)
     action.loop = THREE.LoopOnce
+    action.clampWhenFinished = true
     action.play()
     return new Promise(resolve => {
       this._runningAnimations.push({ mixer, resolve })
