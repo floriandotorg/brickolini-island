@@ -122,14 +122,14 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
       const material = new THREE.MeshPhysicalMaterial({ flatShading: modelMesh.shading === WDB.Shading.Flat, metalness: 0, roughness: 1 })
 
       if (['grass', 'rock', 'sand', 'ocean', 'cave', 'beach', 'mites', 'pebble'].every(m => !modelMesh.materialName.toLowerCase().includes(m))) {
-        material.roughness = 0.1
-        material.metalness = 0
+        material.roughness = modelMesh.materialName.toLowerCase().includes('windo blue') ? 0 : 0.1
+        material.metalness = modelMesh.materialName.toLowerCase().includes('windo blue') ? 0.4 : 0
         material.clearcoat = 0.7
-        material.clearcoatRoughness = 0.1
+        material.clearcoatRoughness = modelMesh.materialName.toLowerCase().includes('windo blue') ? 0 : 0.1
         material.specularIntensity = 0.4
         material.iridescence = 1
         // @ts-expect-error: https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/73206
-        material.reflectivity = 1
+        material.reflectivity = modelMesh.materialName.toLowerCase().includes('windo blue') ? 1 : 0.5
       }
 
       const loadTexture = (name: string) => {
