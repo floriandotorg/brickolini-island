@@ -1,9 +1,11 @@
 import * as THREE from 'three'
 import { Sky } from 'three/addons/objects/Sky.js'
 import type { Water } from 'three/addons/objects/Water.js'
+import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator.js'
 import { AmbulanceDashboard, BikeDashboard, IslePath, MotoBikeDashboard, SkateDashboard, TowTrackDashboard } from '../actions/isle'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../actions/jukebox'
 import { getBoundaries } from '../lib/assets/boundary'
+import { manager } from '../lib/assets/load'
 import { getWorld } from '../lib/assets/model'
 import { engine } from '../lib/engine'
 import { getSettings } from '../lib/settings'
@@ -48,6 +50,23 @@ export class Isle extends World {
   override async init(): Promise<void> {
     await super.init()
 
+    if (getSettings().graphics.pbrMaterials && import.meta.env.VITE_HD_ASSETS_AVAILABLE === 'true') {
+      const pmremGenerator = new THREE.PMREMGenerator(engine.renderer)
+      pmremGenerator.compileEquirectangularShader()
+
+      new THREE.CubeTextureLoader(manager).load(
+        [...Array(6).keys()].map(f => `hd/isle-cubemap/face_${f}.png`),
+        async cubeTexture => {
+          this._scene.environment = pmremGenerator.fromEquirectangular(cubeTexture).texture
+          this._scene.environmentIntensity = 0.15
+
+          const lightProbe = LightProbeGenerator.fromCubeTexture(cubeTexture)
+          lightProbe.intensity = 0.1
+          this._scene.add(lightProbe)
+        },
+      )
+    }
+
     const world = await getWorld('ACT1')
     this._scene.add(world)
 
@@ -69,6 +88,53 @@ export class Isle extends World {
       })
     }
 
+    if (new URLSearchParams(window.location.search).get('generate-cubemap') === 'true') {
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      const ambientLight = new THREE.AmbientLight(new THREE.Color(1, 1, 1), 2)
+      this._scene.add(ambientLight)
+      this._scene.background = new THREE.Color(1, 1, 1)
+
+      const size = 512
+      const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(size)
+      const cubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRenderTarget)
+      cubeCamera.position.set(0, 10, 0)
+      this._scene.add(cubeCamera)
+
+      cubeCamera.update(engine.renderer, this._scene)
+
+      const save = (canvas: HTMLCanvasElement, name: string): void => {
+        canvas.toBlob((blob: Blob | null) => {
+          if (blob) {
+            const a: HTMLAnchorElement = document.createElement('a')
+            a.href = URL.createObjectURL(blob)
+            a.download = name
+            a.click()
+          }
+        }, 'image/png')
+      }
+
+      ;[...Array(6).keys()].forEach((face: number) => {
+        const buffer: Uint8Array = new Uint8Array(4 * size * size)
+        engine.renderer.readRenderTargetPixels(cubeRenderTarget, 0, 0, size, size, buffer, face)
+
+        const canvas: HTMLCanvasElement = document.createElement('canvas')
+        canvas.width = size
+        canvas.height = size
+
+        const context: CanvasRenderingContext2D | null = canvas.getContext('2d')
+        if (context) {
+          const img = context.createImageData(size, size)
+          img.data.set(buffer)
+          context.putImageData(img, 0, 0)
+        }
+
+        save(canvas, `face_${face}.png`)
+      })
+
+      return
+    }
+
     const settings = getSettings()
     if (settings.graphics.sun) {
       this._sky = new Sky()
@@ -79,8 +145,10 @@ export class Isle extends World {
       this._sky.material.uniforms.mieCoefficient.value = 0.005
       this._sky.material.uniforms.mieDirectionalG.value = 0.8
 
-      this._ambientLight = new THREE.AmbientLight()
-      this._scene.add(this._ambientLight)
+      if (import.meta.env.VITE_HD_ASSETS_AVAILABLE !== 'true' || !settings.graphics.pbrMaterials) {
+        this._ambientLight = new THREE.AmbientLight()
+        this._scene.add(this._ambientLight)
+      }
 
       this._sunLight = new THREE.DirectionalLight()
       if (settings.graphics.shadows) {
@@ -260,7 +328,7 @@ export class Isle extends World {
   }
 
   private _updateSun(): void {
-    if (this._sky == null || this._ambientLight == null || this._sunLight == null) {
+    if (this._sky == null || this._sunLight == null) {
       return
     }
 
@@ -277,8 +345,10 @@ export class Isle extends World {
     const cold = new THREE.Color(0xfffefa) // ≈ 6500 K
     const color = warm.clone().lerp(cold, Math.sin(Math.PI * this._dayTime)) // warm → cold → warm
 
-    this._ambientLight.intensity = 0.4
-    this._ambientLight.color.copy(color)
+    if (this._ambientLight != null) {
+      this._ambientLight.intensity = 0.4
+      this._ambientLight.color.copy(color)
+    }
 
     this._sunLight.position.copy(sunDir).multiplyScalar(100)
     this._sunLight.intensity = intensity

@@ -121,13 +121,15 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
     if (getSettings().graphics.pbrMaterials && modelMesh.shading !== WDB.Shading.WireFrame) {
       const material = new THREE.MeshPhysicalMaterial({ flatShading: modelMesh.shading === WDB.Shading.Flat, metalness: 0, roughness: 1 })
 
-      if (!modelMesh.materialName.toLowerCase().includes('grass') && !modelMesh.materialName.toLowerCase().includes('rock') && !modelMesh.materialName.toLowerCase().includes('sand')) {
-        material.roughness = 0.5
+      if (!modelMesh.materialName.toLowerCase().includes('grass') && !modelMesh.materialName.toLowerCase().includes('rock') && !modelMesh.materialName.toLowerCase().includes('sand') && !modelMesh.materialName.toLowerCase().includes('ocean')) {
+        material.roughness = 0.1
         material.metalness = 0
-        material.clearcoat = 0.5
-        material.clearcoatRoughness = 0.5
+        material.clearcoat = 0.7
+        material.clearcoatRoughness = 0.1
+        material.specularIntensity = 0.4
+        material.iridescence = 1
         // @ts-expect-error: https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/73206
-        material.reflectivity = 0.3
+        material.reflectivity = 1
       }
 
       return material
