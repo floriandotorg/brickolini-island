@@ -40,9 +40,13 @@ export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<stri
 }
 
 export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTrack[] => {
+  const position = new THREE.Vector3()
+  const quaternion = new THREE.Quaternion()
+  const scale = new THREE.Vector3()
+
   const getDurationMs = (animation: Animation3DNode): number => Math.max(animation.translationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.rotationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.scaleKeys.at(-1)?.timeAndFlags.time ?? 0, ...animation.children.map(getDurationMs))
 
-  const getValues = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name = '', parent: THREE.Matrix4 = new THREE.Matrix4().identity(), actorName: string | null = null): void => {
+  const getValues = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name = '', parent: THREE.Matrix4 = new THREE.Matrix4(), actorName: string | null = null): void => {
     if (animation.name === 'target' || animation.name.startsWith('cam')) {
       if (animation.translationKeys.length > 1 || animation.rotationKeys.length > 1 || animation.scaleKeys.length > 1 || animation.morphKeys.length > 1) {
         throw new Error('Camera movement is not implemented. If you see this, please implement it.')
@@ -60,7 +64,12 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
       const isBodyPart = ['body', 'arm-rt', 'arm-lft', 'leg-rt', 'leg-lft', 'head', 'infohat', 'infogron', 'claw-rt', 'claw-lft'].includes(name)
       const prefix = actorName != null && isBodyPart ? `${actorName}_` : ''
       const path = prefix + [name, key].join('.')
-      valueMap.set(path, [...(valueMap.get(path) ?? []), ...values])
+      const existing = valueMap.get(path)
+      if (existing == null) {
+        valueMap.set(path, values)
+      } else {
+        existing.push(...values)
+      }
     }
 
     const t = (before: { timeAndFlags: { time: number } }, after: { timeAndFlags: { time: number } }) => (time - before.timeAndFlags.time) / (after.timeAndFlags.time - before.timeAndFlags.time)
@@ -98,10 +107,10 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
         return new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().slerpQuaternions(before.quaternion, afterQuat, t(before, after)))
       }
 
-      return new THREE.Matrix4().identity()
+      return new THREE.Matrix4()
     }
 
-    let mat = new THREE.Matrix4().identity()
+    let mat = new THREE.Matrix4()
 
     if (animation.scaleKeys.length > 0) {
       const { before, after } = getBeforeAndAfter(animation.scaleKeys)
@@ -137,9 +146,6 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
 
     mat = parent.clone().multiply(mat)
 
-    const position = new THREE.Vector3()
-    const quaternion = new THREE.Quaternion()
-    const scale = new THREE.Vector3()
     mat.decompose(position, quaternion, scale)
     push('position', position.toArray())
     push('quaternion', quaternion.toArray())
@@ -150,9 +156,23 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
     }
   }
 
+  const duration = getDurationMs(animation)
+  const getNextTime = (animation: Animation3DNode, start: number): number => {
+    let next = Number.POSITIVE_INFINITY
+    for (const key of [animation.translationKeys, animation.rotationKeys, animation.scaleKeys, animation.morphKeys]) {
+      const nextKey = key.find(k => k.timeAndFlags.time > start)
+      if (nextKey != null) {
+        next = Math.min(next, nextKey.timeAndFlags.time)
+      }
+    }
+    return Math.min(next, ...animation.children.map(c => getNextTime(c, start)))
+  }
+  const times = []
+  for (let start = 0; start < duration; start = getNextTime(animation, start)) {
+    times.push(start)
+  }
+  console.log(times)
   const valueMap = new Map<string, number[]>()
-  const resolution = 100
-  const times = Array.from({ length: Math.floor(getDurationMs(animation) / resolution) }, (_, i) => i * resolution)
   for (const time of times) {
     getValues(animation, time, valueMap)
   }
