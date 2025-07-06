@@ -121,7 +121,7 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
     if (getSettings().graphics.pbrMaterials && modelMesh.shading !== WDB.Shading.WireFrame) {
       const material = new THREE.MeshPhysicalMaterial({ flatShading: modelMesh.shading === WDB.Shading.Flat, metalness: 0, roughness: 1 })
 
-      if (!modelMesh.materialName.toLowerCase().includes('grass') && !modelMesh.materialName.toLowerCase().includes('rock') && !modelMesh.materialName.toLowerCase().includes('sand') && !modelMesh.materialName.toLowerCase().includes('ocean')) {
+      if (['grass', 'rock', 'sand', 'ocean', 'cave', 'beach', 'mites', 'pebble'].every(m => !modelMesh.materialName.toLowerCase().includes(m))) {
         material.roughness = 0.1
         material.metalness = 0
         material.clearcoat = 0.7
@@ -130,6 +130,60 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
         material.iridescence = 1
         // @ts-expect-error: https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/73206
         material.reflectivity = 1
+      }
+
+      const loadTexture = (name: string) => {
+        return textureLoader.load(`hd/textures/${name}.png`, texture => {
+          if (name.includes('normal')) {
+            texture.colorSpace = THREE.LinearSRGBColorSpace
+          } else {
+            texture.colorSpace = THREE.SRGBColorSpace
+          }
+          texture.wrapS = THREE.RepeatWrapping
+          texture.wrapT = THREE.RepeatWrapping
+          texture.repeat.set(1, 1)
+        })
+      }
+
+      if (new URLSearchParams(window.location.search).get('hd') === 'true' && import.meta.env.VITE_HD_ASSETS_AVAILABLE === 'true') {
+        if (modelMesh.materialName.toLowerCase().includes('grass')) {
+          const material = new THREE.MeshPhysicalMaterial({
+            flatShading: modelMesh.shading === WDB.Shading.Flat,
+            metalness: 0,
+            map: loadTexture('leafy-grass2-albedo'),
+            roughnessMap: loadTexture('leafy-grass2-roughness'),
+            aoMap: loadTexture('leafy-grass2-ao'),
+            normalMap: loadTexture('leafy-grass2-normal-ogl'),
+          })
+          material.normalScale.set(10, 10)
+          return material
+        }
+
+        if (modelMesh.materialName.toLowerCase().includes('pebble')) {
+          const material = new THREE.MeshPhysicalMaterial({
+            flatShading: modelMesh.shading === WDB.Shading.Flat,
+            metalness: 0,
+            map: loadTexture('rocky-dunes1_albedo'),
+            roughnessMap: loadTexture('ocean-rock_roughness'),
+            aoMap: loadTexture('rocky-dunes1_ao'),
+            normalMap: loadTexture('rocky-dunes1_normal-ogl'),
+          })
+          material.normalScale.set(5, 5)
+          return material
+        }
+
+        if (modelMesh.materialName.toLowerCase().includes('rock')) {
+          const material = new THREE.MeshPhysicalMaterial({
+            flatShading: modelMesh.shading === WDB.Shading.Flat,
+            metalness: 0,
+            map: loadTexture('black-streaked-rock1-albedo'),
+            roughnessMap: loadTexture('black-streaked-rock1-Roughness'),
+            aoMap: loadTexture('black-streaked-rock1-ao'),
+            normalMap: loadTexture('black-streaked-rock1-Normal-ogl'),
+          })
+          material.normalScale.set(1, 1)
+          return material
+        }
       }
 
       return material
@@ -150,13 +204,17 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
   geometry.setIndex(indices)
   geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
   geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(modelMesh.normals.flat()), 3))
+
   if (modelMesh.textureName) {
-    if (texture instanceof THREE.Texture) {
-      material.map = texture
-    } else {
-      material.map = createTexture(texture ?? modelMesh.textureName, texture ? 'image' : type)
+    if (material.map == null) {
+      if (texture instanceof THREE.Texture) {
+        material.map = texture
+      } else {
+        material.map = createTexture(texture ?? modelMesh.textureName, texture ? 'image' : type)
+      }
     }
     geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
+    geometry.setAttribute('uv2', new THREE.BufferAttribute(new Float32Array(uvs), 2))
   } else {
     const color = customColor ?? colorFromName(modelMesh.materialName) ?? modelMesh.color ?? modelMesh.color
     material.color = new THREE.Color(color.red / 255, color.green / 255, color.blue / 255)
