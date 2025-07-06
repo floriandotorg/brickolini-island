@@ -51,8 +51,14 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
       return
     }
 
-    const prefix = actorName != null ? `${actorName.toLowerCase()}-` : ''
+    const isActor = Object.keys(ACTORS).includes(animation.name)
+
     const push = (key: string, values: number[]) => {
+      if (name.length < 1 || isActor) {
+        return
+      }
+      const isBodyPart = ['body', 'arm-rt', 'arm-lft', 'leg-rt', 'leg-lft', 'head', 'infohat', 'infogron', 'claw-rt', 'claw-lft'].includes(name)
+      const prefix = actorName != null && isBodyPart ? `${actorName}_` : ''
       const path = prefix + [name, key].join('.')
       valueMap.set(path, [...(valueMap.get(path) ?? []), ...values])
     }
@@ -139,9 +145,8 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
     push('quaternion', quaternion.toArray())
     push('scale', scale.toArray())
 
-    const isActor = Object.keys(ACTORS).includes(animation.name)
     for (const child of animation.children) {
-      getValues(child, time, valueMap, child.name, actorName != null ? mat : new THREE.Matrix4().identity(), actorName ?? (isActor ? animation.name : null))
+      getValues(child, time, valueMap, child.name, mat, isActor ? animation.name : actorName)
     }
   }
 

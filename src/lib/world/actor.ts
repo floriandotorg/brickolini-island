@@ -1387,7 +1387,7 @@ export class Actor {
       })()
 
       const parentMesh = new THREE.Group()
-      parentMesh.name = `${name.toLowerCase()}-${bodyPartName.toLowerCase()}`
+      parentMesh.name = `${name.toLowerCase()}_${bodyPartName.toLowerCase()}`
       parentMesh.add(mesh)
       mesh.name = `${mesh.name}-part`
       actor.mesh.add(parentMesh)

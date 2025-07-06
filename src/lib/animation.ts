@@ -56,6 +56,6 @@ export const playAnimation = async (world: World, action: ParallelAction<Animati
 
   world.scene.add(actors)
 
-  const clip = new THREE.AnimationClip(animation.tree.name, -1, animationToTracks(animation.tree.children[0]))
+  const clip = new THREE.AnimationClip(animation.tree.name, -1, animationToTracks(animation.tree))
   world.playAnimation(actors, clip)
 }
