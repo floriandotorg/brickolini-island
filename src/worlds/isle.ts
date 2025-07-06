@@ -7,7 +7,6 @@ import { getBoundaries } from '../lib/assets/boundary'
 import { getWorld } from '../lib/assets/model'
 import { engine } from '../lib/engine'
 import { getSettings } from '../lib/settings'
-import { Actor } from '../lib/world/actor'
 import { BoundaryManager } from '../lib/world/boundary-manager'
 import { Dashboard } from '../lib/world/dashboard'
 import { Plants } from '../lib/world/plants'
@@ -50,11 +49,6 @@ export class Isle extends World {
 
     const world = await getWorld('ACT1')
     this._scene.add(world)
-
-    const actor = await Actor.create('ml')
-    actor.mesh.position.set(22, 1, 30)
-    actor.mesh.rotateY(Math.PI / 2)
-    this._scene.add(actor.mesh)
 
     this._plantGroup = await Plants.place(this, Plants.World.ACT1)
     this._scene.add(this._plantGroup)
