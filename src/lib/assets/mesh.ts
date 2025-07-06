@@ -118,8 +118,8 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
   const indices: number[] = modelMesh.indices
   const uvs: number[] = modelMesh.uvs.flat()
   const material = (() => {
-    if (getSettings().graphics.pbrMaterials) {
-      const material = new THREE.MeshPhysicalMaterial({ flatShading: true, metalness: 0, roughness: 1 })
+    if (getSettings().graphics.pbrMaterials && modelMesh.shading !== WDB.Shading.WireFrame) {
+      const material = new THREE.MeshPhysicalMaterial({ flatShading: modelMesh.shading === WDB.Shading.Flat, metalness: 0, roughness: 1 })
 
       if (!modelMesh.materialName.toLowerCase().includes('grass') && !modelMesh.materialName.toLowerCase().includes('rock')) {
         material.roughness = 0.5
