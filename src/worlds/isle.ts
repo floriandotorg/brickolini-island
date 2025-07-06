@@ -39,7 +39,6 @@ export class Isle extends World {
   private _ambientLight: THREE.AmbientLight | null = null
   private _sunLight: THREE.DirectionalLight | null = null
   private _dayTime = 0
-  private _lastSunUpdate = engine.clock.elapsedTime
   private _water: Water | null = null
   private _isleMesh: THREE.Mesh | null = null
 
@@ -345,14 +344,33 @@ export class Isle extends World {
     const cold = new THREE.Color(0xfffefa) // ≈ 6500 K
     const color = warm.clone().lerp(cold, Math.sin(Math.PI * this._dayTime)) // warm → cold → warm
 
+    this._scene.environmentIntensity = 0.15 * intensity
+
     if (this._ambientLight != null) {
       this._ambientLight.intensity = 0.4
       this._ambientLight.color.copy(color)
     }
 
-    this._sunLight.position.copy(sunDir).multiplyScalar(100)
+    const lightElevationDeg = Math.max(elevationDeg, 20)
+    const lightPhi = THREE.MathUtils.degToRad(90 - lightElevationDeg)
+    const lightDir = new THREE.Vector3().setFromSphericalCoords(1, lightPhi, theta)
+
+    this._sunLight.position.copy(lightDir).multiplyScalar(100)
     this._sunLight.intensity = intensity
     this._sunLight.color.copy(color)
+
+    if (getSettings().graphics.shadows && this._sunLight.shadow) {
+      const frustumScale = 1 + (1 - elevationDeg / 90) * 3
+      const baseFrustum = 200
+      const scaledFrustum = baseFrustum * frustumScale
+
+      this._sunLight.shadow.camera.left = -scaledFrustum
+      this._sunLight.shadow.camera.right = scaledFrustum
+      this._sunLight.shadow.camera.top = scaledFrustum
+      this._sunLight.shadow.camera.bottom = -scaledFrustum
+
+      this._sunLight.shadow.camera.far = 500 + (1 - elevationDeg / 90) * 500
+    }
 
     if (this._water != null) {
       this._water.material.uniforms.sunColor.value.copy(color)
@@ -512,12 +530,8 @@ export class Isle extends World {
   public override update(delta: number): void {
     super.update(delta)
 
-    this._dayTime = (this._dayTime + delta * 0.0001) % 1
-
-    if (engine.clock.elapsedTime - this._lastSunUpdate > 10) {
-      this._updateSun()
-      this._lastSunUpdate = engine.clock.elapsedTime
-    }
+    this._dayTime = (this._dayTime + delta * (1 / (24 * 60))) % 1
+    this._updateSun()
 
     if (this._water != null) {
       this._water.material.uniforms.time.value += delta * 0.1
