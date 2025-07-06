@@ -126,6 +126,7 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
         material.metalness = 0
         material.clearcoat = 0.5
         material.clearcoatRoughness = 0.5
+        // @ts-expect-error: https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/73206
         material.reflectivity = 0.3
       }
 
