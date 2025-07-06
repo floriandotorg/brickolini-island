@@ -184,6 +184,19 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
           material.normalScale.set(1, 1)
           return material
         }
+
+        if (modelMesh.materialName.toLowerCase().includes('sand')) {
+          const material = new THREE.MeshPhysicalMaterial({
+            flatShading: modelMesh.shading === WDB.Shading.Flat,
+            metalness: 0,
+            roughness: 1,
+            map: loadTexture('wavy-sand_albedo'),
+            aoMap: loadTexture('wavy-sand_ao'),
+            normalMap: loadTexture('wavy-sand_normal-ogl'),
+          })
+          material.normalScale.set(10, 10)
+          return material
+        }
       }
 
       return material
