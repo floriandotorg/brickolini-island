@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import type { PositionalAudioAction } from '../action-types'
-import type { Animation3DNode } from '../assets/animation'
+import { type Animation3DNode, findRecursively } from '../assets/animation'
 import { getPositionalAudio } from '../assets/audio'
 import { engine, RESOLUTION_RATIO } from '../engine'
 
@@ -54,7 +54,7 @@ export abstract class World {
   }
 
   public setupCameraForAnimation(animationNode: Animation3DNode): void {
-    const cameraConfig = animationNode.children.find(c => c.name.startsWith('cam'))
+    const cameraConfig = findRecursively(animationNode, c => c.name.startsWith('cam'))
     if (cameraConfig == null) {
       throw new Error('Camera config not found')
     }
@@ -71,7 +71,7 @@ export abstract class World {
     }
     this._camera.position.copy(cameraPosition)
 
-    const lookAtPosition = animationNode.children.find(c => c.name === 'target')?.translationKeys[0]?.vertex
+    const lookAtPosition = findRecursively(animationNode, c => c.name === 'target')?.translationKeys[0]?.vertex
     if (lookAtPosition == null) {
       throw new Error('Look at position not found')
     }

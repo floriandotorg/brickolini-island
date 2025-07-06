@@ -11,6 +11,19 @@ export type RotationKey = { timeAndFlags: TimeAndFlags; quaternion: THREE.Quater
 export type MorphKey = { timeAndFlags: TimeAndFlags; visible: boolean }
 export type Animation3DNode = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Animation3DNode[] }
 
+export const findRecursively = (node: Animation3DNode, predicate: (node: Animation3DNode) => boolean): Animation3DNode | undefined => {
+  if (predicate(node)) {
+    return node
+  }
+  for (const child of node.children) {
+    const foundNode = findRecursively(child, predicate)
+    if (foundNode != null) {
+      return foundNode
+    }
+  }
+  return undefined
+}
+
 export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<string, string> = {}) => {
   const reader = new BinaryReader(buffer)
   const magic = reader.readInt32()
