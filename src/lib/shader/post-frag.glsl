@@ -6,6 +6,8 @@ uniform float uSaturation;
 uniform float uContrast;
 uniform float uBrightness;
 uniform float uDistortion;
+uniform float uVignetteInner;
+uniform float uVignetteOuter;
 
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -66,6 +68,14 @@ void main() {
   float b = texture2D(tDiffuse, blueUV).b;
 
   vec3 color = vec3(r, g, b);
+
   color = enhanceColor(color);
+
+  vec2 center = vec2(0.5);
+  float dist = distance(uv, center);
+
+  float vignette = smoothstep(uVignetteInner, uVignetteOuter, dist);
+  color.rgb *= vignette;
+
   gl_FragColor = linearToOutputTexel(vec4(color, 1.0));
 }

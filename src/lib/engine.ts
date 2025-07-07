@@ -121,6 +121,8 @@ class Engine {
         uContrast: { value: settings.graphics.postProcessing ? 1.0 : 1.0 },
         uBrightness: { value: settings.graphics.postProcessing ? 1.05 : 1.0 },
         uDistortion: { value: settings.graphics.postProcessing ? 0.005 : 0.0 },
+        uVignetteInner: { value: settings.graphics.postProcessing ? 0.99 : 0.0 },
+        uVignetteOuter: { value: settings.graphics.postProcessing ? 0.5 : 0.0 },
       },
       vertexShader: postVert,
       fragmentShader: postFrag,
