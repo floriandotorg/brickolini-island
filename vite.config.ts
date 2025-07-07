@@ -5,4 +5,5 @@ import glsl from 'vite-plugin-glsl'
 export default defineConfig({
   plugins: [tailwindcss(), glsl()],
   server: { port: 5174 },
+  appType: 'mpa',
 })
