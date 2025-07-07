@@ -1455,7 +1455,7 @@ export class Actor {
 
     world.addClickListener(actor.mesh, async () => {
       if (world.currentActor === 'pepper') {
-        const hatParentMesh = actor.mesh.getObjectByName('infohat')
+        const hatParentMesh = actor.mesh.getObjectByName('infohat-part')
         if (hatParentMesh == null) {
           return
         }
@@ -1468,6 +1468,7 @@ export class Actor {
 
         hatParentMesh.clear()
         const mesh = await getPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null)
+        mesh.name = `${mesh.name}-part`
         hatParentMesh.add(mesh)
       }
     })
