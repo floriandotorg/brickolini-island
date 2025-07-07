@@ -56,7 +56,7 @@ export abstract class World {
   public setupCameraForAnimation(animationNode: Animation3DNode): void {
     const cameraConfig = findRecursively(animationNode, c => c.name.startsWith('cam'))
     if (cameraConfig == null) {
-      throw new Error('Camera config not found')
+      return
     }
 
     const match = cameraConfig.name.match(/^cam(\d{2})$/)
