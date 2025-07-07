@@ -54,9 +54,25 @@ export abstract class World {
   }
 
   public setupCameraForAnimation(animationNode: Animation3DNode): void {
-    const cameraConfig = findRecursively(animationNode, c => c.name.startsWith('cam'))
-    if (cameraConfig == null) {
+    const cameraConfigPath = findRecursively(animationNode, c => c.name.startsWith('cam'))
+    if (cameraConfigPath == null) {
       return
+    }
+
+    const pathToPosition = (path: Animation3DNode[]) =>
+      path.reduce((acc, node) => {
+        if (node.translationKeys.length === 0) {
+          return acc
+        }
+        if (node.translationKeys.length !== 1 || node.translationKeys[0].timeAndFlags.time > 0 || node.translationKeys[0].timeAndFlags.flags > 1 || node.rotationKeys.length > 0 || node.scaleKeys.length > 0) {
+          throw new Error('Expected one translation key')
+        }
+        return acc.add(node.translationKeys[0].vertex)
+      }, new THREE.Vector3())
+
+    const cameraConfig = cameraConfigPath.at(-1)
+    if (cameraConfig == null) {
+      throw new Error('Camera config not found')
     }
 
     const match = cameraConfig.name.match(/^cam(\d{2})$/)
@@ -65,17 +81,14 @@ export abstract class World {
     }
     this.setVerticalFOV(Number.parseInt(match[1]))
 
-    const cameraPosition = cameraConfig.translationKeys[0]?.vertex
-    if (cameraPosition == null) {
-      throw new Error('Camera position not found')
-    }
-    this._camera.position.copy(cameraPosition)
+    this._camera.position.copy(pathToPosition(cameraConfigPath))
 
-    const lookAtPosition = findRecursively(animationNode, c => c.name === 'target')?.translationKeys[0]?.vertex
-    if (lookAtPosition == null) {
+    const lookAtPositionPath = findRecursively(animationNode, c => c.name === 'target')
+    if (lookAtPositionPath == null) {
       throw new Error('Look at position not found')
     }
-    this._camera.lookAt(lookAtPosition)
+
+    this._camera.lookAt(pathToPosition(lookAtPositionPath))
   }
 
   public playAnimation(mesh: THREE.Object3D, animation: THREE.AnimationClip): Promise<void> {
