@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import type { AnimationAction, ParallelAction, PhonemeAction, PositionalAudioAction } from './action-types'
 import { animationToTracks, parse3DAnimation } from './assets/animation'
 import { getAction } from './assets/load'
+import { getPart } from './assets/model'
 import { WDB } from './assets/wdb'
 import { Actor } from './world/actor'
 import type { World } from './world/world'
@@ -19,11 +20,6 @@ export const playAnimation = async (world: World, action: ParallelAction<Animati
 
   for (const actor of animation.actors) {
     switch (actor.type) {
-      case WDB.ActorType.ManagedActor: {
-        const minifig = await Actor.create(world, actor.name)
-        actors.add(minifig.mesh)
-        break
-      }
       case WDB.ActorType.Unknown: {
         const node = world.scene.getObjectByName(actor.name)
         if (node == null) {
@@ -32,9 +28,35 @@ export const playAnimation = async (world: World, action: ParallelAction<Animati
         actors.add(node)
         break
       }
+      case WDB.ActorType.ManagedActor: {
+        const minifig = await Actor.create(world, actor.name.replace(/^\*/, ''))
+        if (actor.name.startsWith('*')) {
+          minifig.mesh.visible = false
+        }
+        actors.add(minifig.mesh)
+        break
+      }
+      case WDB.ActorType.ManagedInvisibleRoi: {
+        const node = world.scene.getObjectByName(actor.name)
+        if (node == null) {
+          throw new Error(`Actor not found: ${actor.name}`)
+        }
+        node.visible = false
+        actors.add(node)
+        break
+      }
+      case WDB.ActorType.ManagedInvisibleRoiTrimmed: {
+        const node = world.scene.getObjectByName(actor.name.replace(/[0-9_]*$/, ''))
+        if (node == null) {
+          throw new Error(`Actor not found: ${actor.name}`)
+        }
+        node.visible = false
+        actors.add(node)
+        break
+      }
       case WDB.ActorType.SceneRoi1:
       case WDB.ActorType.SceneRoi2: {
-        const node = world.scene.getObjectByName(actor.name)
+        const node = world.scene.getObjectByName(actor.name) ?? (await getPart(actor.name, null, null))
         if (node == null) {
           throw new Error(`Actor not found: ${actor.name}`)
         }
