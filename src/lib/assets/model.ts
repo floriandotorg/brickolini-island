@@ -161,6 +161,7 @@ export const getWorld = async (name: 'BLDD' | 'BLDH' | 'BLDJ' | 'BLDR' | 'HOSP' 
     throw new Error(`World ${name} not found`)
   }
   const group = new THREE.Group()
+  group.name = name.toLowerCase()
   for (const model of world.models) {
     if (model.roi.name.toLowerCase() === 'isle' || model.roi.name.toLowerCase() === 'isle_lo') {
       continue
