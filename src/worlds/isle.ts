@@ -50,20 +50,22 @@ export class Isle extends World {
     await super.init()
 
     if (getSettings().graphics.pbrMaterials && import.meta.env.VITE_HD_ASSETS_AVAILABLE === 'true') {
-      const pmremGenerator = new THREE.PMREMGenerator(engine.renderer)
-      pmremGenerator.compileEquirectangularShader()
-
       new THREE.CubeTextureLoader(manager).load(
         [...Array(6).keys()].map(f => `hd/isle-cubemap/face_${f}.png`),
         async cubeTexture => {
-          this._scene.environment = pmremGenerator.fromEquirectangular(cubeTexture).texture
-          this._scene.environmentIntensity = 0.15
-
           const lightProbe = LightProbeGenerator.fromCubeTexture(cubeTexture)
           lightProbe.intensity = 0.1
           this._scene.add(lightProbe)
         },
       )
+
+      manager.onLoad = () => {
+        this._scene.environment = new THREE.PMREMGenerator(engine.renderer).fromScene(this._scene, 0, 0.1, 1000, {
+          size: 1024,
+          position: new THREE.Vector3(-15, 10, -1),
+        }).texture
+        this._scene.environmentIntensity = 0.3
+      }
     }
 
     const world = await getWorld('ACT1')
@@ -94,7 +96,7 @@ export class Isle extends World {
       this._scene.add(ambientLight)
       this._scene.background = new THREE.Color(1, 1, 1)
 
-      const size = 512
+      const size = 1024
       const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(size)
       const cubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRenderTarget)
       cubeCamera.position.set(0, 10, 0)
