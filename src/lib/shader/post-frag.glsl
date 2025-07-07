@@ -5,6 +5,7 @@ uniform float uVibrance;
 uniform float uSaturation;
 uniform float uContrast;
 uniform float uBrightness;
+uniform float uDistortion;
 
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -53,7 +54,18 @@ void main() {
   }
 
   vec2 uv = gl_FragCoord.xy / texSize;
-  vec3 color = texture2D(tDiffuse, uv).rgb;
+  vec2 direction = uv - 0.5;
+  float distortion = length(direction) * uDistortion;
+
+  vec2 redUV = uv + direction * distortion;
+  vec2 greenUV = uv;
+  vec2 blueUV = uv - direction * distortion;
+
+  float r = texture2D(tDiffuse, redUV).r;
+  float g = texture2D(tDiffuse, greenUV).g;
+  float b = texture2D(tDiffuse, blueUV).b;
+
+  vec3 color = vec3(r, g, b);
   color = enhanceColor(color);
   gl_FragColor = linearToOutputTexel(vec4(color, 1.0));
 }
