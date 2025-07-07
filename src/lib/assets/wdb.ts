@@ -103,6 +103,8 @@ export namespace WDB {
       for (let n = 0; n < numScaleKeys; ++n) {
         const timeAndFlags = readTimeAndFlags(reader)
         const vertex = reader.readVector3()
+        // readVector3 is mirroring the x axis
+        vertex[0] = -vertex[0]
         scales.push({ timeAndFlags, vertex })
       }
       const morphs: Animation.MorphKey[] = []
