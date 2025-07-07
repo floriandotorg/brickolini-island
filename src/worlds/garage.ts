@@ -1,4 +1,4 @@
-import { Background_Bitmap, wgs023nu_RunAnim } from '../actions/garage'
+import { Background_Bitmap, ConfigAnimation, wgs023nu_RunAnim } from '../actions/garage'
 import { playAnimation } from '../lib/animation'
 import { Building } from '../lib/world/building'
 
@@ -6,8 +6,14 @@ export class Garage extends Building {
   public override async init(): Promise<void> {
     await super.init()
 
-    await this.loadWorld('GMAIN', Background_Bitmap)
+    void playAnimation(this, wgs023nu_RunAnim)
+  }
 
-    await playAnimation(this, wgs023nu_RunAnim)
+  protected getBuildingConfig() {
+    return {
+      world: 'GMAIN' as const,
+      configAnimation: ConfigAnimation,
+      background: Background_Bitmap,
+    }
   }
 }

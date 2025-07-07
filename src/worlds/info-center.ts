@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { Background_Bitmap, iic027in_RunAnim } from '../actions/infomain'
+import { Background_Bitmap, ConfigAnimation, iic027in_RunAnim } from '../actions/infomain'
 import { playAnimation } from '../lib/animation'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
@@ -7,8 +7,6 @@ import { Plants } from '../lib/world/plants'
 export class InfoCenter extends Building {
   public override async init(): Promise<void> {
     await super.init()
-
-    await this.loadWorld('IMAIN', Background_Bitmap)
 
     const leftPointLight = new THREE.PointLight(0xffffff, 140)
     leftPointLight.position.set(7, 4, 4.5)
@@ -28,6 +26,14 @@ export class InfoCenter extends Building {
 
     this._scene.add(await Plants.place(this, Plants.World.IMAIN))
 
-    await playAnimation(this, iic027in_RunAnim)
+    void playAnimation(this, iic027in_RunAnim)
+  }
+
+  protected getBuildingConfig() {
+    return {
+      world: 'IMAIN' as const,
+      configAnimation: ConfigAnimation,
+      background: Background_Bitmap,
+    }
   }
 }
