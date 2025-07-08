@@ -1,10 +1,8 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
-import type { AudioAction } from '../action-types'
+import { type AudioAction, type ControlAction, type ImageAction, isAudioAction, isControlAction, isImageAction, type ParallelAction } from '../action-types'
 import { getImage } from '../assets/image'
 import { engine } from '../engine'
-
-type Child = { id: number; type: Action.Type; siFile: string; fileType?: Action.FileType; children: readonly Child[]; name: string; presenter: string | null; location: readonly [number, number, number]; volume?: number }
 
 class Mask {
   private _context: CanvasRenderingContext2D
@@ -142,38 +140,38 @@ export class Dashboard {
     this._texture.needsUpdate = true
   }
 
-  public async show(action: { type: Action.Type.ParallelAction; children: readonly Child[] }): Promise<void> {
+  public async show(action: ParallelAction<ImageAction | AudioAction | ControlAction>): Promise<void> {
     this.clear()
 
-    // enforce type narrowing, for some reason ts fails to infer fileType as non-null
-    const isImageAction = (child?: Child): child is { id: number; type: Action.Type; siFile: string; fileType: Action.FileType.STL; children: readonly Child[]; name: string; presenter: string | null; location: readonly [number, number, number] } => child?.fileType === Action.FileType.STL
-    const isAudioAction = (child?: Child): child is { id: number; type: Action.Type; siFile: string; fileType: Action.FileType.WAV; children: readonly Child[]; name: string; presenter: null; location: readonly [number, number, number]; volume: number } =>
-      child?.fileType === Action.FileType.WAV && 'volume' in child && child.presenter === null
-
-    const dashboardAction = action.children.find(child => child.type === Action.Type.Still && child.name.endsWith('Dashboard_Bitmap'))
-    if (!isImageAction(dashboardAction)) {
+    const dashboardAction = action.children.find(child => child.name.endsWith('Dashboard_Bitmap'))
+    if (dashboardAction == null || !isImageAction(dashboardAction)) {
       throw new Error('Dashboard image not found')
     }
 
     this._dashboardImage = await getImage(dashboardAction)
     this._drawDashboard()
 
-    const armsAction = action.children.find(child => child.presenter === 'MxControlPresenter' && child.name.endsWith('Arms_Ctl'))?.children.find(child => child.type === Action.Type.Still && child.name.endsWith('Arms_Mask_Bitmap'))
-    if (!isImageAction(armsAction)) {
+    const armsAction = action.children.find(child => child.name.endsWith('Arms_Ctl'))
+    if (armsAction == null || !isControlAction(armsAction)) {
+      throw new Error('Arms control not found')
+    }
+
+    const armsMaskAction = armsAction.children.find(child => child.name.endsWith('Arms_Mask_Bitmap'))
+    if (!isImageAction(armsMaskAction)) {
       throw new Error('Arms mask image not found')
     }
 
-    this._armsMask = new Mask(await getImage(armsAction), armsAction.location[0], armsAction.location[1])
+    this._armsMask = new Mask(await getImage(armsMaskAction), armsAction.location[0], armsAction.location[1])
 
-    const hornAction = action.children.find(child => child.presenter === 'MxControlPresenter' && child.name.endsWith('Horn_Ctl'))
-    if (hornAction != null) {
-      const sound = action.children.find(child => child.fileType === Action.FileType.WAV && child.name.endsWith('Horn_Sound'))
+    const hornAction = action.children.find(child => child.name.endsWith('Horn_Ctl'))
+    if (hornAction != null && isControlAction(hornAction)) {
+      const sound = action.children.find(child => isAudioAction(child) && child.name.endsWith('Horn_Sound'))
       if (!isAudioAction(sound)) {
         throw new Error('Horn sound not found')
       }
       this._hornSound = sound
 
-      const hornUpAction = hornAction.children.find(child => child.type === Action.Type.Still && child.name.endsWith('Up_Bitmap'))
+      const hornUpAction = hornAction.children.find(child => child.name.endsWith('Up_Bitmap'))
       if (!isImageAction(hornUpAction)) {
         throw new Error('Horn up image not found')
       }
@@ -183,7 +181,12 @@ export class Dashboard {
       this._hornMask = new Mask(this._hornUpImage, hornUpAction.location[0], hornUpAction.location[1])
       this._hornUpPosition.set(hornUpAction.location[0], hornUpAction.location[1])
 
-      const hornDownAction = hornAction.children.find(child => child.type === Action.Type.ParallelAction && child.name.endsWith('HornDown'))?.children.find(child => child.type === Action.Type.Still && child.name.endsWith('Down_Bitmap'))
+      const hornDownParallelAction = hornAction.children.find(child => child.name.endsWith('HornDown'))
+      if (hornDownParallelAction == null || hornDownParallelAction.type !== Action.Type.ParallelAction) {
+        throw new Error('Horn down parallel action not found')
+      }
+
+      const hornDownAction = hornDownParallelAction.children.find(child => child.name.endsWith('Down_Bitmap'))
       if (!isImageAction(hornDownAction)) {
         throw new Error('Horn down image not found')
       }
@@ -192,12 +195,12 @@ export class Dashboard {
       this._hornDownPosition.set(hornDownAction.location[0], hornDownAction.location[1])
     }
 
-    const infoAction = action.children.find(child => child.presenter === 'MxControlPresenter' && child.name.endsWith('Info_Ctl'))
-    if (infoAction == null) {
+    const infoAction = action.children.find(child => child.name.endsWith('Info_Ctl'))
+    if (infoAction == null || !isControlAction(infoAction)) {
       throw new Error('Info button not found')
     }
 
-    const infoUpAction = infoAction.children.find(child => child.type === Action.Type.Still && child.name.endsWith('InfoUp_Bitmap'))
+    const infoUpAction = infoAction.children.find(child => child.name.endsWith('InfoUp_Bitmap'))
     if (!isImageAction(infoUpAction)) {
       throw new Error('Info up image not found')
     }
@@ -207,7 +210,7 @@ export class Dashboard {
     this._infoMask = new Mask(this._infoUpImage, infoUpAction.location[0], infoUpAction.location[1])
     this._infoPosition.set(infoUpAction.location[0], infoUpAction.location[1])
 
-    const infoDownAction = infoAction.children.find(child => child.type === Action.Type.Still && child.name.endsWith('InfoDown_Bitmap'))
+    const infoDownAction = infoAction.children.find(child => child.name.endsWith('InfoDown_Bitmap'))
     if (!isImageAction(infoDownAction)) {
       throw new Error('Info down image not found')
     }

@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { Background_Bitmap, ConfigAnimation, iic027in_RunAnim } from '../actions/infomain'
+import { _InfoMain, iic027in_RunAnim } from '../actions/infomain'
 import { playAnimation } from '../lib/animation'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
@@ -31,9 +31,7 @@ export class InfoCenter extends Building {
 
   protected getBuildingConfig() {
     return {
-      world: 'IMAIN' as const,
-      configAnimation: ConfigAnimation,
-      background: Background_Bitmap,
+      startUpAction: _InfoMain,
     }
   }
 }

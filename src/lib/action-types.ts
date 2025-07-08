@@ -1,19 +1,43 @@
-import type { Action } from '../actions/types'
+import { Action } from '../actions/types'
 
-export type AudioActionBase = { id: number; siFile: string; fileType: Action.FileType.WAV; volume: number }
+type Override<T, U> = Omit<T, keyof U> & U
 
-export type AudioAction = AudioActionBase & { presenter: null }
+export type ActionBase = { id: number; siFile: string; type: Action.Type; fileType: Action.FileType; presenter: string | null; extra: string | null; name: string; location: readonly [number, number, number] }
 
-export type PositionalAudioAction = AudioActionBase & { presenter: 'Lego3DWavePresenter'; extra: string; startTime: number }
+export type AudioActionBase = Override<ActionBase, { fileType: Action.FileType.WAV; volume: number }>
 
-export type ParallelAction<T> = { id: number; siFile: string; type: Action.Type.ParallelAction; presenter: null; children: readonly T[] }
+export type AudioAction = Override<AudioActionBase, { presenter: null }>
 
-export type AnimationAction = { type: Action.Type.ObjectAction; presenter: 'LegoAnimPresenter'; name: string; siFile: string; id: number; fileType: Action.FileType }
+export type PositionalAudioAction = Override<AudioActionBase, { presenter: 'Lego3DWavePresenter'; extra: string; startTime: number }>
 
-export type BoundaryAction = { id: number; siFile: string; presenter: 'LegoPathPresenter'; fileType: Action.FileType; location: readonly [number, number, number] }
+export type ParallelAction<T, P extends string | null = string | null> = Override<ActionBase, { type: Action.Type.ParallelAction; fileType?: Action.FileType; children: readonly T[]; presenter: P }>
 
-export type ImageAction = { id: number; siFile: string; fileType: Action.FileType.STL; presenter: string | null }
+export type ParallelActionTuple<T, P extends string | null = string | null> = Override<ParallelAction<undefined, P>, { children: T }>
 
-export type PhonemeAction = { type: Action.Type.Anim; presenter: 'LegoPhonemePresenter'; name: string; siFile: string; id: number; fileType: Action.FileType }
+export type SerialAction<T, P extends string | null = string | null> = Override<ActionBase, { type: Action.Type.SerialAction; fileType?: Action.FileType; children: readonly T[]; presenter: P }>
 
-export type CompositeMediaAction = { presenter: 'MxCompositeMediaPresenter'; children: readonly [{ id: number; siFile: string; fileType: Action.FileType.SMK; presenter: null }, AudioAction] }
+export type AnimationAction = Override<ActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoAnimPresenter' }>
+
+export type BoundaryAction = Override<ActionBase, { presenter: 'LegoPathPresenter'; fileType: Action.FileType; location: readonly [number, number, number] }>
+
+export type ImageAction = Override<ActionBase, { type: Action.Type.Still; fileType: Action.FileType.STL; presenter: string | null }>
+
+export type PhonemeAction = Override<ActionBase, { type: Action.Type.Anim; presenter: 'LegoPhonemePresenter' }>
+
+export type CompositeMediaAction = ParallelActionTuple<readonly [Override<ActionBase, { fileType: Action.FileType.SMK; presenter: null }>, AudioAction], 'MxCompositeMediaPresenter'>
+
+export type ActorAction = ParallelActionTuple<readonly [Override<ActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoModelPresenter' }>], 'LegoActorPresenter'>
+
+export type EntityAction = ParallelActionTuple<readonly [Override<ActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoModelPresenter' }>], 'LegoEntityPresenter'>
+
+export type ControlAction = ParallelAction<ImageAction | ParallelActionTuple<readonly [ImageAction]>, 'MxControlPresenter'>
+
+export const isAction = (action: unknown): action is ActionBase => action != null && typeof action === 'object' && 'id' in action && 'siFile' in action && 'type' in action && 'fileType' in action && 'presenter' in action && 'extra' in action && 'name' in action
+
+export const isImageAction = (action: unknown): action is ImageAction => isAction(action) && action.fileType === Action.FileType.STL
+
+export const isAudioAction = (action: unknown): action is AudioAction => isAction(action) && action.fileType === Action.FileType.WAV && action.presenter === null
+
+export const isAnimationAction = (action: unknown): action is AnimationAction => isAction(action) && action.presenter === 'LegoAnimPresenter'
+
+export const isControlAction = (action: unknown): action is ControlAction => isAction(action) && action.presenter === 'MxControlPresenter'

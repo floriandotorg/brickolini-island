@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { AnimationAction, ImageAction } from '../action-types'
+import { type ActorAction, type AnimationAction, type ControlAction, type EntityAction, type ImageAction, isAnimationAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
 import { getAction } from '../assets/load'
 import { getWorld } from '../assets/model'
@@ -13,17 +13,29 @@ export abstract class Building extends World {
 
   public override async init(): Promise<void> {
     await super.init()
-    const { world, configAnimation, background } = this.getBuildingConfig()
 
-    this._scene.add(await getWorld(world))
+    const { startUpAction } = this.getBuildingConfig()
+
+    const match = startUpAction.extra?.match(/World:([^,]*)/)
+    if (match?.[1] == null) {
+      throw new Error('World not found in startUpAction')
+    }
+
+    this._scene.add(await getWorld(match[1].trim() as Parameters<typeof getWorld>[0]))
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.2)
     this._scene.add(ambientLight)
 
-    this._backgroundMesh.material = new THREE.MeshBasicMaterial({ map: createTexture(background) })
-    this._backgroundScene.add(this._backgroundMesh)
+    for (const child of startUpAction.children) {
+      if (isImageAction(child) && child.name === 'Background_Bitmap') {
+        this._backgroundMesh.material = new THREE.MeshBasicMaterial({ map: createTexture(child) })
+        this._backgroundScene.add(this._backgroundMesh)
+      }
 
-    const animation = parse3DAnimation(await getAction(configAnimation))
-    this.setupCameraForAnimation(animation.tree)
+      if (isAnimationAction(child) && child.name === 'ConfigAnimation') {
+        const animation = parse3DAnimation(await getAction(child))
+        this.setupCameraForAnimation(animation.tree)
+      }
+    }
   }
 
   public override render(renderer: THREE.WebGLRenderer): void {
@@ -33,8 +45,6 @@ export abstract class Building extends World {
   }
 
   protected abstract getBuildingConfig(): {
-    world: Parameters<typeof getWorld>[0]
-    configAnimation: AnimationAction
-    background: ImageAction
+    startUpAction: ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'> | SerialAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'>
   }
 }

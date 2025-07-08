@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { Background_Bitmap, ConfigAnimation, hho003cl_RunAnim } from '../actions/hospital'
+import { _StartUp, hho003cl_RunAnim } from '../actions/hospital'
 import { playAnimation } from '../lib/animation'
 import { Building } from '../lib/world/building'
 
@@ -20,9 +20,7 @@ export class Hospital extends Building {
 
   protected getBuildingConfig() {
     return {
-      world: 'HOSP' as const,
-      configAnimation: ConfigAnimation,
-      background: Background_Bitmap,
+      startUpAction: _StartUp,
     }
   }
 }
