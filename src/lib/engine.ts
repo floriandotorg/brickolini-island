@@ -55,6 +55,10 @@ class Engine {
     return this._audioListener
   }
 
+  public get hasWorld(): boolean {
+    return this._world != null
+  }
+
   public get currentWorld(): World {
     if (this._world == null) {
       throw new Error('No world set')
@@ -203,9 +207,6 @@ class Engine {
     this._world?.deactivate()
     this._world = world
     this._world.resize(this._canvas.width, this._canvas.height)
-    if (!this._world.initialized) {
-      await this._world.init()
-    }
     this._world.activate()
   }
 

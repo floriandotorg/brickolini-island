@@ -1,11 +1,8 @@
 import { Intro_Movie, Lego_Movie, Mindscape_Movie } from './actions/intro'
 import { engine } from './lib/engine'
 import './lib/settings-dialog'
-import { Isle } from './worlds/isle'
 import './style.css'
-import { Garage } from './worlds/garage'
-import { Hospital } from './worlds/hospital'
-import { InfoCenter } from './worlds/info-center'
+import { switchWorld } from './lib/switch-world'
 
 const playButton = document.getElementById('play-button')
 if (playButton == null || !(playButton instanceof HTMLButtonElement)) {
@@ -15,20 +12,7 @@ if (playButton == null || !(playButton instanceof HTMLButtonElement)) {
 const start = async () => {
   playButton.disabled = true
 
-  await engine.setWorld(
-    (() => {
-      switch (new URLSearchParams(window.location.search).get('world')) {
-        case 'info':
-          return new InfoCenter()
-        case 'hospital':
-          return new Hospital()
-        case 'garage':
-          return new Garage()
-        default:
-          return new Isle()
-      }
-    })(),
-  )
+  await switchWorld('isle')
 
   engine.start()
 

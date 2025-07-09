@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import type { Boundary } from '../assets/boundary'
 import { engine } from '../engine'
+import type { World } from './world'
 
 export class BoundaryManager {
   private _boundaries: Boundary[]
@@ -11,20 +12,20 @@ export class BoundaryManager {
 
   public onTrigger: (name: string, data: number, direction: 'inbound' | 'outbound') => void = () => {}
 
-  constructor(boundaries: Boundary[]) {
+  constructor(boundaries: Boundary[], world: World) {
     this._boundaries = boundaries
 
     for (const boundary of this._boundaries) {
       const mesh = boundary.createMesh()
       const debugMesh = mesh.clone()
       debugMesh.position.y += 0.01
-      engine.currentWorld.debugDrawDebugMesh(debugMesh)
+      world.debugDrawDebugMesh(debugMesh)
       this._boundaryGroup.add(mesh)
       this._meshToBoundary.set(mesh, { boundary, debugMesh })
 
       for (let n = 0; n < boundary.edges.length; ++n) {
         const edge = boundary.edges[n]
-        engine.currentWorld.debugDrawArrow(edge.pointA, edge.pointB, edge.flags & 0x02 ? 'red' : 'blue')
+        world.debugDrawArrow(edge.pointA, edge.pointB, edge.flags & 0x02 ? 'red' : 'blue')
 
         if (!(edge.flags & 0x03)) {
           const p0 = edge.pointA.clone().sub(new THREE.Vector3(0, 1, 0))

@@ -32,7 +32,7 @@ export class Isle extends World {
   private _pitchVel = 0
   private _groundGroup: THREE.Mesh[] = []
   private _plantGroup: THREE.Group = new THREE.Group()
-  private _boundaryManager = new BoundaryManager([])
+  private _boundaryManager = new BoundaryManager([], this)
   private _dashboard = new Dashboard()
   private _vehicleMesh: THREE.Mesh | null = null
   private _sky: Sky | null = null
@@ -211,7 +211,7 @@ export class Isle extends World {
 
     engine.switchBackgroundMusic(CentralNorthRoad_Music)
 
-    this._boundaryManager = new BoundaryManager(await getBoundaries(IslePath))
+    this._boundaryManager = new BoundaryManager(await getBoundaries(IslePath), this)
 
     this._boundaryManager.onTrigger = (name, data, direction) => {
       const music = [ResidentalArea_Music, BeachBlvd_Music, Cave_Music, CentralRoads_Music, Jail_Music, Hospital_Music, InformationCenter_Music, PoliceStation_Music, Park_Music, CentralNorthRoad_Music, GarageArea_Music, RaceTrackRoad_Music, Beach_Music, Quiet_Audio]
