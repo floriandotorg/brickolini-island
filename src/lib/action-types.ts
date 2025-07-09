@@ -2,9 +2,11 @@ import { Action } from '../actions/types'
 
 type Override<T, U> = Omit<T, keyof U> & U
 
-export type ActionBase = { id: number; siFile: string; type: Action.Type; fileType: Action.FileType; presenter: string | null; extra: string | null; name: string; location: readonly [number, number, number] }
+export type ActionBase = { id: number; siFile: string; type: Action.Type; presenter: string | null; extra: string | null; name: string; location: readonly [number, number, number] }
 
-export type AudioActionBase = Override<ActionBase, { fileType: Action.FileType.WAV; volume: number }>
+export type FileActionBase = Override<ActionBase, { fileType: Action.FileType }>
+
+export type AudioActionBase = Override<FileActionBase, { fileType: Action.FileType.WAV; volume: number }>
 
 export type AudioAction = Override<AudioActionBase, { presenter: null }>
 
@@ -16,11 +18,11 @@ export type ParallelActionTuple<T, P extends string | null = string | null> = Ov
 
 export type SerialAction<T, P extends string | null = string | null> = Override<ActionBase, { type: Action.Type.SerialAction; fileType?: Action.FileType; children: readonly T[]; presenter: P }>
 
-export type AnimationAction = Override<ActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoAnimPresenter' }>
+export type AnimationAction = Override<FileActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoAnimPresenter' }>
 
 export type BoundaryAction = Override<ActionBase, { presenter: 'LegoPathPresenter'; fileType: Action.FileType; location: readonly [number, number, number] }>
 
-export type ImageAction = Override<ActionBase, { type: Action.Type.Still; fileType: Action.FileType.STL; presenter: string | null }>
+export type ImageAction = Override<FileActionBase, { type: Action.Type.Still; fileType: Action.FileType.STL; presenter: string | null }>
 
 export type PhonemeAction = Override<ActionBase, { type: Action.Type.Anim; presenter: 'LegoPhonemePresenter' }>
 
@@ -32,11 +34,13 @@ export type EntityAction = ParallelActionTuple<readonly [Override<ActionBase, { 
 
 export type ControlAction = ParallelAction<ImageAction | ParallelActionTuple<readonly [ImageAction]>, 'MxControlPresenter'>
 
-export const isAction = (action: unknown): action is ActionBase => action != null && typeof action === 'object' && 'id' in action && 'siFile' in action && 'type' in action && 'fileType' in action && 'presenter' in action && 'extra' in action && 'name' in action
+export const isAction = (action: unknown): action is ActionBase => action != null && typeof action === 'object' && 'id' in action && 'siFile' in action && 'type' in action && 'presenter' in action && 'extra' in action && 'name' in action
 
-export const isImageAction = (action: unknown): action is ImageAction => isAction(action) && action.fileType === Action.FileType.STL
+export const isFileAction = (action: unknown): action is FileActionBase => isAction(action) && 'fileType' in action
 
-export const isAudioAction = (action: unknown): action is AudioAction => isAction(action) && action.fileType === Action.FileType.WAV && action.presenter === null
+export const isImageAction = (action: unknown): action is ImageAction => isFileAction(action) && action.fileType === Action.FileType.STL
+
+export const isAudioAction = (action: unknown): action is AudioAction => isFileAction(action) && action.fileType === Action.FileType.WAV && action.presenter === null
 
 export const isAnimationAction = (action: unknown): action is AnimationAction => isAction(action) && action.presenter === 'LegoAnimPresenter'
 
