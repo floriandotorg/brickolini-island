@@ -13,7 +13,6 @@ class Mask {
     if (context == null) {
       throw new Error('Unable to create canvas context')
     }
-    this._context = context
     canvas.width = 640
     canvas.height = 480
     context.drawImage(image, x, y)
@@ -161,7 +160,7 @@ export class Dashboard {
       throw new Error('Arms mask image not found')
     }
 
-    this._armsMask = new Mask(await getImage(armsMaskAction), armsAction.location[0], armsAction.location[1])
+    this._armsMask = new Mask(await getImage(armsMaskAction), armsMaskAction.location[0], armsMaskAction.location[1])
 
     const hornAction = action.children.find(child => child.name.endsWith('Horn_Ctl'))
     if (hornAction != null && isControlAction(hornAction)) {
