@@ -34,9 +34,10 @@ class Engine {
   public async switchBackgroundMusic(action: AudioAction): Promise<void> {
     const audio = await getAudio(this._audioListener, action)
     audio.loop = true
-    audio.setVolume(audio.getVolume() * getSettings().musicVolume)
+    const targetVolume = audio.getVolume() * getSettings().musicVolume
 
     if (this._backgroundAudio == null) {
+      audio.setVolume(targetVolume)
       this._backgroundAudio = audio
       this._backgroundAudio.play()
       return
@@ -47,7 +48,7 @@ class Engine {
 
     this._backgroundAudio = audio
     this._backgroundAudio.gain.gain.value = 0
-    this._backgroundAudio.gain.gain.setTargetAtTime(audio.getVolume(), audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
+    this._backgroundAudio.gain.gain.setTargetAtTime(targetVolume, audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
     this._backgroundAudio.play()
   }
 
