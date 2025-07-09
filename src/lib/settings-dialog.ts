@@ -1,3 +1,4 @@
+import { engine } from './engine'
 import type { Preset } from './settings'
 import { getSettings, setPreset, setSettings } from './settings'
 
@@ -95,6 +96,7 @@ const updateSettingsFromCheckboxes = () => {
     musicVolume: Number.parseFloat(musicVolumeSlider.value),
     freeRoam: freeRoamCheckbox.checked,
   })
+  engine.updateBackgroundVolume()
 }
 
 settingsButton.addEventListener('click', () => {

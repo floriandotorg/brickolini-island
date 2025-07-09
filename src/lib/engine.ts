@@ -9,6 +9,7 @@ import type { World } from './world/world'
 
 export const RESOLUTION_RATIO = 4 / 3
 const BACKGROUND_MUSIC_FADE_TIME = 2
+const BACKGROUND_MUSIC_FADE_TIME_SETTINGS = 0.5
 
 class Engine {
   private _canvas: HTMLCanvasElement
@@ -27,29 +28,37 @@ class Engine {
   private _cutsceneMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
   private _world: World | null = null
   private _keyStates: Set<string> = new Set()
-  private _backgroundAudio: THREE.Audio | null = null
+  private _backgroundAudio: { audio: THREE.Audio; sourceVolume: number } | null = null
   private _transitionStart: number = 0
   private _transitionPromiseResolve: (() => void) | null = null
 
   public async switchBackgroundMusic(action: AudioAction): Promise<void> {
     const audio = await getAudio(this._audioListener, action)
     audio.loop = true
-    const targetVolume = audio.getVolume() * getSettings().musicVolume
+    const sourceVolume = audio.getVolume()
+    const targetVolume = sourceVolume * getSettings().musicVolume
 
     if (this._backgroundAudio == null) {
       audio.setVolume(targetVolume)
-      this._backgroundAudio = audio
-      this._backgroundAudio.play()
+      this._backgroundAudio = { audio, sourceVolume }
+      this._backgroundAudio.audio.play()
       return
     }
 
-    this._backgroundAudio.gain.gain.setTargetAtTime(0, audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
-    this._backgroundAudio.stop(audio.context.currentTime + BACKGROUND_MUSIC_FADE_TIME)
+    this._backgroundAudio.audio.gain.gain.setTargetAtTime(0, audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
+    this._backgroundAudio.audio.stop(audio.context.currentTime + BACKGROUND_MUSIC_FADE_TIME)
 
-    this._backgroundAudio = audio
-    this._backgroundAudio.gain.gain.value = 0
-    this._backgroundAudio.gain.gain.setTargetAtTime(targetVolume, audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
-    this._backgroundAudio.play()
+    this._backgroundAudio = { audio, sourceVolume }
+    this._backgroundAudio.audio.gain.gain.value = 0
+    this._backgroundAudio.audio.gain.gain.setTargetAtTime(targetVolume, audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
+    this._backgroundAudio.audio.play()
+  }
+
+  public updateBackgroundVolume() {
+    if (this._backgroundAudio != null) {
+      const targetVolume = this._backgroundAudio.sourceVolume * getSettings().musicVolume
+      this._backgroundAudio.audio.gain.gain.setTargetAtTime(targetVolume, this._backgroundAudio.audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME_SETTINGS / 3)
+    }
   }
 
   public get audioListener(): THREE.AudioListener {
