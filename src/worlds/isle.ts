@@ -279,6 +279,8 @@ export class Isle extends World {
             return 'garage'
           case 'infocenterentity':
             return 'info-center'
+          case 'policeentity':
+            return 'police'
           default:
             return undefined
         }

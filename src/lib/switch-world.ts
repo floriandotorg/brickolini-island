@@ -1,7 +1,7 @@
 import { engine } from './engine'
 import type { World } from './world/world'
 
-type WorldName = 'isle' | 'hospital' | 'garage' | 'info-center'
+type WorldName = 'isle' | 'hospital' | 'garage' | 'info-center' | 'police'
 
 const worlds = new Map<WorldName, World>()
 
@@ -22,6 +22,9 @@ export const switchWorld = async (worldName: WorldName) => {
         break
       case 'info-center':
         world = await import('../worlds/info-center').then(m => new m.InfoCenter())
+        break
+      case 'police':
+        world = await import('../worlds/police').then(m => new m.Police())
         break
     }
   }
