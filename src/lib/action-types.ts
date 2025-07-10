@@ -45,3 +45,8 @@ export const isAudioAction = (action: unknown): action is AudioAction => isFileA
 export const isAnimationAction = (action: unknown): action is AnimationAction => isAction(action) && action.presenter === 'LegoAnimPresenter'
 
 export const isControlAction = (action: unknown): action is ControlAction => isAction(action) && action.presenter === 'MxControlPresenter'
+
+export const getExtraValue = (action: { extra: string | null }, key: string): string | undefined => {
+  const re = new RegExp(String.raw`${key}:([^, \t\r\n:]+)`, 'i')
+  return action?.extra?.match(re)?.[1]
+}

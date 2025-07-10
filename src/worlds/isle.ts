@@ -2,13 +2,15 @@ import * as THREE from 'three'
 import { Sky } from 'three/addons/objects/Sky.js'
 import type { Water } from 'three/addons/objects/Water.js'
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator.js'
-import { AmbulanceDashboard, BikeDashboard, IslePath, MotoBikeDashboard, SkateDashboard, TowTrackDashboard } from '../actions/isle'
+import { _Isle, AmbulanceDashboard, BikeDashboard, IslePath, MotoBikeDashboard, SkateDashboard, TowTrackDashboard } from '../actions/isle'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../actions/jukebox'
+import { getExtraValue } from '../lib/action-types'
 import { getBoundaries } from '../lib/assets/boundary'
 import { manager } from '../lib/assets/load'
 import { getWorld } from '../lib/assets/model'
 import { engine } from '../lib/engine'
 import { getSettings } from '../lib/settings'
+import { switchWorld } from '../lib/switch-world'
 import { Actor } from '../lib/world/actor'
 import { BoundaryManager } from '../lib/world/boundary-manager'
 import { Dashboard } from '../lib/world/dashboard'
@@ -265,6 +267,37 @@ export class Isle extends World {
     // spell-checker: ignore brdg jailbrdg racebrdg
     for (const name of ['isle_hi', 'inf-brdg', 'jailbrdg', 'racebrdg']) {
       this._groundGroup.push(findMesh(name))
+    }
+
+    for (const child of _Isle.children) {
+      const entity = getExtraValue(child, 'Object')?.toLowerCase()
+      const worldName = (() => {
+        switch (entity) {
+          case 'hospitalentity':
+            return 'hospital'
+          case 'gasstationentity':
+            return 'garage'
+          case 'infocenterentity':
+            return 'info-center'
+          default:
+            return undefined
+        }
+      })()
+      if (worldName == null) {
+        continue
+      }
+      if (child.children[0] == null) {
+        throw new Error(`Action for world ${worldName} has no children`)
+      }
+      const meshName = getExtraValue(child.children[0], 'DB_CREATE')?.toLowerCase()
+      if (meshName == null) {
+        throw new Error(`Found no valid mesh name for world ${worldName}`)
+      }
+      const buildingMesh = findMesh(meshName)
+      this.addClickListener(buildingMesh, async () => {
+        console.log(`switched to ${meshName}, ${worldName}`)
+        switchWorld(worldName)
+      })
     }
 
     const bikeMesh = findMesh('bike')

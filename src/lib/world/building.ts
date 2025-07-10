@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { type ActorAction, type AnimationAction, type ControlAction, type EntityAction, type ImageAction, isAnimationAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
+import { type ActorAction, type AnimationAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
 import { getAction } from '../assets/load'
 import { getWorld } from '../assets/model'
@@ -16,12 +16,12 @@ export abstract class Building extends World {
 
     const { startUpAction } = this.getBuildingConfig()
 
-    const match = startUpAction.extra?.match(/World:([^,]*)/)
-    if (match?.[1] == null) {
+    const worldName = getExtraValue(startUpAction, 'World')?.trim()
+    if (worldName == null) {
       throw new Error('World not found in startUpAction')
     }
 
-    this._scene.add(await getWorld(match[1].trim() as Parameters<typeof getWorld>[0]))
+    this._scene.add(await getWorld(worldName as Parameters<typeof getWorld>[0]))
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.2)
     this._scene.add(ambientLight)
 
