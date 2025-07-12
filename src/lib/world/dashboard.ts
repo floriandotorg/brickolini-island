@@ -1,7 +1,6 @@
 import * as THREE from 'three'
-import { Action } from '../../actions/types'
 import { type AudioAction, type ControlAction, type ImageAction, isAudioAction, isControlAction, isImageAction, type ParallelAction } from '../action-types'
-import { Mask } from '../assets/control'
+import { Control } from '../assets/control'
 import { getImage } from '../assets/image'
 import { engine } from '../engine'
 
@@ -15,17 +14,10 @@ export class Dashboard {
   private _mesh: THREE.Mesh
   private _velocity: number = 0
   private _dashboardImage: HTMLImageElement | null = null
-  private _armsMask: Mask | null = null
-  private _hornMask: Mask | null = null
-  private _hornUpPosition = new THREE.Vector2()
-  private _hornUpImage: HTMLImageElement | null = null
-  private _hornDownPosition = new THREE.Vector2()
-  private _hornDownImage: HTMLImageElement | null = null
+  private _armsMask: Control | null = null
+  private _hornControl: Control | null = null
   private _hornSound: AudioAction | null = null
-  private _infoMask: Mask | null = null
-  private _infoUpImage: HTMLImageElement | null = null
-  private _infoDownImage: HTMLImageElement | null = null
-  private _infoPosition = new THREE.Vector2()
+  private _infoControl: Control | null = null
 
   public onExit: () => void = () => {}
   public onInfoButtonClicked: () => void = () => {}
@@ -55,43 +47,42 @@ export class Dashboard {
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): void {
-    if (this._armsMask?.test(normalizedX, normalizedY)) {
+    if (this._armsMask?.pointerDown(normalizedX, normalizedY)) {
       this.onExit()
     }
 
-    if (this._hornMask?.test(normalizedX, normalizedY)) {
-      if (this._hornDownImage != null && this._infoUpImage != null) {
-        this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
-        this._drawDashboard()
-        this._drawImage(this._hornDownImage, this._hornDownPosition.x, this._hornDownPosition.y)
-        this._drawImage(this._infoUpImage, this._infoPosition.x, this._infoPosition.y)
-        this._texture.needsUpdate = true
-      }
+    if (this._hornControl?.pointerDown(normalizedX, normalizedY)) {
+      this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
+      this._drawDashboard()
+      this._hornControl.draw(this._context)
+      this._infoControl?.draw(this._context)
+      this._texture.needsUpdate = true
 
       if (this._hornSound != null) {
         engine.playAudio(this._hornSound)
       }
     }
 
-    if (this._infoMask?.test(normalizedX, normalizedY)) {
+    if (this._infoControl?.pointerDown(normalizedX, normalizedY)) {
       this.onInfoButtonClicked()
-
-      if (this._infoDownImage != null) {
-        this._drawImage(this._infoDownImage, this._infoPosition.x, this._infoPosition.y)
-      }
+      this._infoControl.draw(this._context)
+      this._texture.needsUpdate = true
     }
   }
 
   public pointerUp(): void {
-    if (this._hornUpImage != null) {
-      this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
-      this._drawDashboard()
-      this._drawImage(this._hornUpImage, this._hornUpPosition.x, this._hornUpPosition.y)
+    this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
+    this._drawDashboard()
+    if (this._hornControl != null) {
+      this._hornControl.pointerUp()
+      this._hornControl.draw(this._context)
       this._texture.needsUpdate = true
     }
 
-    if (this._infoUpImage != null) {
-      this._drawImage(this._infoUpImage, this._infoPosition.x, this._infoPosition.y)
+    if (this._infoControl != null) {
+      this._infoControl.pointerUp()
+      this._infoControl.draw(this._context)
+      this._texture.needsUpdate = true
     }
   }
 
@@ -138,38 +129,17 @@ export class Dashboard {
       throw new Error('Arms mask image not found')
     }
 
-    this._armsMask = new Mask(await getImage(armsMaskAction), armsMaskAction.location[0], armsMaskAction.location[1])
+    this._armsMask = await Control.create(armsAction)
 
     const hornAction = action.children.find(child => child.name.endsWith('Horn_Ctl'))
     if (hornAction != null && isControlAction(hornAction)) {
+      this._hornControl = await Control.create(hornAction)
+      this._hornControl.draw(this._context)
       const sound = action.children.find(child => isAudioAction(child) && child.name.endsWith('Horn_Sound'))
       if (!isAudioAction(sound)) {
         throw new Error('Horn sound not found')
       }
       this._hornSound = sound
-
-      const hornUpAction = hornAction.children.find(child => child.name.endsWith('Up_Bitmap'))
-      if (!isImageAction(hornUpAction)) {
-        throw new Error('Horn up image not found')
-      }
-
-      this._hornUpImage = await getImage(hornUpAction)
-      this._drawImage(this._hornUpImage, hornUpAction.location[0], hornUpAction.location[1])
-      this._hornMask = new Mask(this._hornUpImage, hornUpAction.location[0], hornUpAction.location[1])
-      this._hornUpPosition.set(hornUpAction.location[0], hornUpAction.location[1])
-
-      const hornDownParallelAction = hornAction.children.find(child => child.name.endsWith('HornDown'))
-      if (hornDownParallelAction == null || hornDownParallelAction.type !== Action.Type.ParallelAction) {
-        throw new Error('Horn down parallel action not found')
-      }
-
-      const hornDownAction = hornDownParallelAction.children.find(child => child.name.endsWith('Down_Bitmap'))
-      if (!isImageAction(hornDownAction)) {
-        throw new Error('Horn down image not found')
-      }
-
-      this._hornDownImage = await getImage(hornDownAction)
-      this._hornDownPosition.set(hornDownAction.location[0], hornDownAction.location[1])
     }
 
     const infoAction = action.children.find(child => child.name.endsWith('Info_Ctl'))
@@ -177,33 +147,15 @@ export class Dashboard {
       throw new Error('Info button not found')
     }
 
-    const infoUpAction = infoAction.children.find(child => child.name.endsWith('InfoUp_Bitmap'))
-    if (!isImageAction(infoUpAction)) {
-      throw new Error('Info up image not found')
-    }
-
-    this._infoUpImage = await getImage(infoUpAction)
-    this._drawImage(this._infoUpImage, infoUpAction.location[0], infoUpAction.location[1])
-    this._infoMask = new Mask(this._infoUpImage, infoUpAction.location[0], infoUpAction.location[1])
-    this._infoPosition.set(infoUpAction.location[0], infoUpAction.location[1])
-
-    const infoDownAction = infoAction.children.find(child => child.name.endsWith('InfoDown_Bitmap'))
-    if (!isImageAction(infoDownAction)) {
-      throw new Error('Info down image not found')
-    }
-
-    this._infoDownImage = await getImage(infoDownAction)
+    this._infoControl = await Control.create(infoAction)
+    this._infoControl.draw(this._context)
+    this._texture.needsUpdate = true
   }
 
   public clear(): void {
     this._hornSound = null
-    this._hornUpImage = null
-    this._hornDownImage = null
-    this._hornMask = null
-
-    this._infoUpImage = null
-    this._infoDownImage = null
-    this._infoMask = null
+    this._hornControl = null
+    this._infoControl = null
 
     this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
     this._texture.needsUpdate = true

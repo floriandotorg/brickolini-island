@@ -45,7 +45,7 @@ const createPlacedImage = async (action: ImageAction): Promise<PlacedImage> => {
 export class Control {
   private readonly _action: ControlAction
   private readonly _mask: Mask
-  private readonly _stateImages: { up: PlacedImage; down: PlacedImage } | null
+  private readonly _stateImages: { readonly images: PlacedImage[]; readonly toggle: boolean; state: number } | null
 
   public static async create(action: ControlAction): Promise<Control> {
     const styleValue = getExtraValue(action, 'Style')
@@ -74,38 +74,50 @@ export class Control {
         const downAction = getImageAction(action.children[1])
         const up = await createPlacedImage(upAction)
         const down = await createPlacedImage(downAction)
-        return new Control(action, new Mask(up.image, up.x, up.y), { up, down })
+        return new Control(action, new Mask(up.image, up.x, up.y), { images: [up, down], toggle: style.toLowerCase() === 'toggle', state: 0 })
       }
       default:
         throw new Error(`Style ${style} not supported yet`)
     }
   }
 
-  private constructor(action: ControlAction, mask: Mask, stateImages: { up: PlacedImage; down: PlacedImage } | null) {
+  private constructor(action: ControlAction, mask: Mask, stateImages: { readonly images: PlacedImage[]; readonly toggle: boolean; state: number } | null) {
     this._action = action
     this._mask = mask
     this._stateImages = stateImages
   }
 
-  public pointerDown(normalizedX: number, normalizedY: number) {
+  public pointerDown(normalizedX: number, normalizedY: number): boolean {
     if (this._mask.test(normalizedX, normalizedY)) {
-      console.log(`hit: ${this._action.name}`)
+      const stateImages = this._stateImages
+      if (stateImages != null) {
+        if (stateImages.toggle) {
+          stateImages.state = 1 - stateImages.state
+        } else {
+          stateImages.state = 1
+        }
+      }
+      return true
+    }
+    return false
+  }
+
+  public pointerUp() {
+    const stateImages = this._stateImages
+    if (stateImages != null && !stateImages.toggle) {
+      stateImages.state = 0
     }
   }
 
-  public draw(context: CanvasRenderingContext2D, state: 'up' | 'down'): void {
+  public draw(context: CanvasRenderingContext2D): void {
     const stateImages = this._stateImages
     if (stateImages == null) {
       return
     }
-    const image = (() => {
-      switch (state) {
-        case 'up':
-          return stateImages.up
-        case 'down':
-          return stateImages.down
-      }
-    })()
+    const image = stateImages.images[stateImages.state]
+    if (image == null) {
+      throw new Error(`Invalid state ${stateImages.state}`)
+    }
     const posX = (image.x / 640) * context.canvas.width
     const posY = (image.y / 480) * context.canvas.height
     const width = (image.image.width / 640) * context.canvas.width

@@ -12,6 +12,7 @@ export abstract class Building extends World {
   private _backgroundCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
   private _backgroundMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
   private _controls: Control[] = []
+  private _pressedControl: Control | null = null
 
   public override async init(): Promise<void> {
     await super.init()
@@ -51,8 +52,21 @@ export abstract class Building extends World {
   }
 
   public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
+    if (this._pressedControl != null) {
+      return
+    }
     for (const control of this._controls) {
-      control.pointerDown(normalizedX, normalizedY)
+      if (control.pointerDown(normalizedX, normalizedY)) {
+        this._pressedControl = control
+        return
+      }
+    }
+  }
+
+  public override pointerUp(_event: MouseEvent): void {
+    if (this._pressedControl != null) {
+      this._pressedControl.pointerUp()
+      this._pressedControl = null
     }
   }
 
