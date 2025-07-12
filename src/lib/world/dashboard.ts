@@ -1,31 +1,9 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
 import { type AudioAction, type ControlAction, type ImageAction, isAudioAction, isControlAction, isImageAction, type ParallelAction } from '../action-types'
+import { Mask } from '../assets/control'
 import { getImage } from '../assets/image'
 import { engine } from '../engine'
-
-class Mask {
-  private _context: CanvasRenderingContext2D
-
-  constructor(image: CanvasImageSource, x: number, y: number) {
-    const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d', { willReadFrequently: true })
-    if (context == null) {
-      throw new Error('Unable to create canvas context')
-    }
-    canvas.width = 640
-    canvas.height = 480
-    context.drawImage(image, x, y)
-    this._context = context
-  }
-
-  public test(normalizedX: number, normalizedY: number): boolean {
-    const x = ((normalizedX + 1) / 2) * 640
-    const y = (1 - (normalizedY + 1) / 2) * 480
-    const pixel = this._context.getImageData(x, y, 1, 1).data
-    return pixel[3] > 0
-  }
-}
 
 export class Dashboard {
   private _scene: THREE.Scene

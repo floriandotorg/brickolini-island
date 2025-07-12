@@ -50,3 +50,7 @@ export const getExtraValue = (action: { extra: string | null }, key: string): st
   const re = new RegExp(String.raw`${key}:([^, \t\r\n:]+)`, 'i')
   return action?.extra?.match(re)?.[1]
 }
+
+export const splitExtraValue = (value: string): string[] => {
+  return value.split(/[:;]/)
+}

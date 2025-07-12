@@ -1,6 +1,7 @@
 import * as THREE from 'three'
-import { type ActorAction, type AnimationAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
+import { type ActorAction, type AnimationAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
+import { Control } from '../assets/control'
 import { getAction } from '../assets/load'
 import { getWorld } from '../assets/model'
 import { createTexture } from '../assets/texture'
@@ -10,6 +11,7 @@ export abstract class Building extends World {
   private _backgroundScene = new THREE.Scene()
   private _backgroundCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
   private _backgroundMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
+  private _controls: Control[] = []
 
   public override async init(): Promise<void> {
     await super.init()
@@ -35,6 +37,10 @@ export abstract class Building extends World {
         const animation = parse3DAnimation(await getAction(child))
         this.setupCameraForAnimation(animation.tree)
       }
+
+      if (isControlAction(child)) {
+        this._controls.push(await Control.create(child))
+      }
     }
   }
 
@@ -42,6 +48,12 @@ export abstract class Building extends World {
     renderer.render(this._backgroundScene, this._backgroundCamera)
     renderer.clearDepth()
     super.render(renderer)
+  }
+
+  public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
+    for (const control of this._controls) {
+      control.pointerDown(normalizedX, normalizedY)
+    }
   }
 
   protected abstract getBuildingConfig(): {
