@@ -128,7 +128,6 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
         material.clearcoatRoughness = modelMesh.materialName.toLowerCase().includes('windo blue') ? 0 : 0.1
         material.specularIntensity = 0.4
         material.iridescence = 1
-        // @ts-expect-error: https://github.com/DefinitelyTyped/DefinitelyTyped/pull/73207
         material.reflectivity = modelMesh.materialName.toLowerCase().includes('windo blue') ? 1 : 0.5
       }
 
