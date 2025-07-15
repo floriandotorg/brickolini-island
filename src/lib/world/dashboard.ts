@@ -1,8 +1,115 @@
 import * as THREE from 'three'
-import { type AudioAction, type ControlAction, type ImageAction, isAudioAction, isControlAction, isImageAction, type ParallelAction } from '../action-types'
+import { type AudioAction, type ControlAction, getExtraValue, type ImageAction, isAudioAction, isControlAction, isImageAction, type ParallelAction } from '../action-types'
 import { Control } from '../assets/control'
 import { getImage } from '../assets/image'
 import { engine } from '../engine'
+
+const leftToRight = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => {
+  return {
+    x: 0,
+    y: 0,
+    width: width * fill,
+    height: height,
+  }
+}
+
+const rightToLeft = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => {
+  return {
+    x: width * (1 - fill),
+    y: 0,
+    width: width * fill,
+    height: height,
+  }
+}
+
+const bottomToTop = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => {
+  return {
+    x: 0,
+    y: height * (1 - fill),
+    width: width,
+    height: height * fill,
+  }
+}
+
+const topToBottom = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => {
+  return {
+    x: 0,
+    y: 0,
+    width: width,
+    height: height * fill,
+  }
+}
+
+const parseDirection = (value: string): ((width: number, height: number, fill: number) => { x: number; y: number; width: number; height: number }) => {
+  switch (value) {
+    case 'left_to_right':
+      return leftToRight
+    case 'right_to_left':
+      return rightToLeft
+    case 'bottom_to_top':
+      return bottomToTop
+    case 'top_to_bottom':
+      return topToBottom
+    default:
+      throw new Error(`unknown direction value ${value}`)
+  }
+}
+
+class Meter {
+  private readonly _image: HTMLImageElement
+  private readonly _canvas: HTMLCanvasElement
+  private readonly _context: CanvasRenderingContext2D
+  private readonly _texture: THREE.CanvasTexture
+  private readonly _mesh: THREE.Mesh
+  private readonly _direction: (width: number, height: number, fill: number) => { x: number; y: number; width: number; height: number }
+  private fill: number = 0
+
+  private constructor(action: ImageAction, image: HTMLImageElement, canvasWidth: number, canvasHeight: number) {
+    const normalizedX = (action.location[0] / canvasWidth) * 2 - 1
+    const normalizedY = -((action.location[1] / canvasHeight) * 2 - 1)
+    const normalizedWidth = (image.width / canvasWidth) * 2
+    const normalizedHeight = (image.height / canvasHeight) * 2
+
+    this._image = image
+
+    this._canvas = document.createElement('canvas')
+    this._canvas.width = image.width
+    this._canvas.height = image.height
+    const context = this._canvas.getContext('2d')
+    if (context == null) {
+      throw new Error('HUD canvas context not found')
+    }
+    this._context = context
+    this._texture = new THREE.CanvasTexture(this._canvas)
+    this._texture.colorSpace = THREE.SRGBColorSpace
+    const material = new THREE.MeshBasicMaterial({ map: this._texture, transparent: true })
+    this._mesh = new THREE.Mesh(new THREE.PlaneGeometry(normalizedWidth, normalizedHeight), material)
+    this._mesh.position.set(normalizedX + normalizedWidth / 2, normalizedY - normalizedHeight / 2, 0)
+
+    const directionType = getExtraValue(action, 'type')
+    this._direction = directionType != null ? parseDirection(directionType) : leftToRight
+  }
+
+  public static async create(action: ImageAction): Promise<Meter> {
+    const image = await getImage(action)
+    return new Meter(action, image, 640, 480)
+  }
+
+  public get mesh(): THREE.Mesh {
+    return this._mesh
+  }
+
+  public draw(fill: number): void {
+    if (this.fill !== fill) {
+      this.fill = fill
+      const { x, y, width, height } = this._direction(this._image.width, this._image.height, fill)
+      console.log({ x, y, width, height })
+      this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height)
+      this._context.drawImage(this._image, x, y, width, height, x, y, width, height)
+      this._texture.needsUpdate = true
+    }
+  }
+}
 
 export class Dashboard {
   private _scene: THREE.Scene
@@ -18,6 +125,8 @@ export class Dashboard {
   private _hornControl: Control | null = null
   private _hornSound: AudioAction | null = null
   private _infoControl: Control | null = null
+  private _speedMeter: Meter | null = null
+  private _fuelMeter: Meter | null = null
 
   public onExit: () => void = () => {}
   public onInfoButtonClicked: () => void = () => {}
@@ -111,6 +220,23 @@ export class Dashboard {
   public async show(action: ParallelAction<ImageAction | AudioAction | ControlAction>): Promise<void> {
     this.clear()
 
+    for (const child of action.children) {
+      if (isImageAction(child) && child.presenter === 'LegoMeterPresenter') {
+        const variable = getExtraValue(child, 'variable')?.toLowerCase()
+        if (variable == null) {
+          throw new Error('Meter without variable is not supported')
+        } else if (variable.endsWith('speed')) {
+          this._speedMeter = await Meter.create(child)
+          this._scene.add(this._speedMeter.mesh)
+        } else if (variable.endsWith('fuel')) {
+          this._fuelMeter = await Meter.create(child)
+          // For now to at least show something
+          this._fuelMeter.draw(0.5)
+          this._scene.add(this._fuelMeter.mesh)
+        }
+      }
+    }
+
     const dashboardAction = action.children.find(child => child.name.endsWith('Dashboard_Bitmap'))
     if (dashboardAction == null || !isImageAction(dashboardAction)) {
       throw new Error('Dashboard image not found')
@@ -153,9 +279,14 @@ export class Dashboard {
   }
 
   public clear(): void {
+    this._speedMeter?.mesh.removeFromParent()
+    this._fuelMeter?.mesh.removeFromParent()
+
     this._hornSound = null
     this._hornControl = null
     this._infoControl = null
+    this._speedMeter = null
+    this._fuelMeter = null
 
     this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
     this._texture.needsUpdate = true
@@ -163,6 +294,7 @@ export class Dashboard {
 
   public update(velocity: number): void {
     this._velocity = velocity
+    this._speedMeter?.draw(velocity)
   }
 
   public async render(renderer: THREE.WebGLRenderer): Promise<void> {
