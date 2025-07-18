@@ -1451,7 +1451,6 @@ export class Actor {
 
       const matrix = calculateTransformationMatrix(part.pos, part.dir, part.up)
       matrix.decompose(parentMesh.position, parentMesh.quaternion, parentMesh.scale)
-      parentMesh.scale.set(parentMesh.scale.x * -1, parentMesh.scale.y, parentMesh.scale.z)
     }
 
     world.addClickListener(actor.mesh, async () => {
