@@ -350,6 +350,10 @@ export const Background_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Elevator\\backgrnd.bmp',
   fileType: 1280594720,
   extra: 'World:current',
+  dimensions: {
+    width: 640,
+    height: 480,
+  },
   children: [],
 } as const
 export const LeftArrow_Up_Bitmap = {
@@ -368,6 +372,10 @@ export const LeftArrow_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Elevator\\arrowL.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 62,
+    height: 59,
+  },
   children: [],
 } as const
 export const LeftArrow_Down_Bitmap = {
@@ -386,6 +394,10 @@ export const LeftArrow_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Elevator\\arrowLon.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 62,
+    height: 59,
+  },
   children: [],
 } as const
 export const RightArrow_Up_Bitmap = {
@@ -404,6 +416,10 @@ export const RightArrow_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Elevator\\arrowR.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 61,
+    height: 59,
+  },
   children: [],
 } as const
 export const RightArrow_Down_Bitmap = {
@@ -422,6 +438,10 @@ export const RightArrow_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Elevator\\arrowRon.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 61,
+    height: 59,
+  },
   children: [],
 } as const
 export const Elevator_Mask_Bitmap = {
@@ -440,6 +460,10 @@ export const Elevator_Mask_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Elevator\\ElevMask.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 67,
+    height: 204,
+  },
   children: [],
 } as const
 export const ConfigAnimation = {

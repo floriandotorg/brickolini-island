@@ -1659,6 +1659,10 @@ export const RegBook_Bmp = {
   filename: 'q:\\lego\\scripts\\infocntr\\floor1\\register\\regbook.bmp',
   fileType: 1280594720,
   extra: 'World:current',
+  dimensions: {
+    width: 104,
+    height: 213,
+  },
   children: [],
 } as const
 export const RegBook_Flc = {
@@ -2171,6 +2175,10 @@ export const RegBookRed_Bmp = {
   filename: 'q:\\lego\\scripts\\infocntr\\floor1\\register\\redbook.bmp',
   fileType: 1280594720,
   extra: 'World:current',
+  dimensions: {
+    width: 108,
+    height: 172,
+  },
   children: [],
 } as const
 export const RegBookRed_Flc = {
@@ -2472,6 +2480,10 @@ export const Info_A_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\infocA.BMP',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 26,
+    height: 28,
+  },
   children: [],
 } as const
 export const Boat_A_Bitmap = {
@@ -2490,6 +2502,10 @@ export const Boat_A_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\BoatA.BMP',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 26,
+    height: 28,
+  },
   children: [],
 } as const
 export const Race_A_Bitmap = {
@@ -2508,6 +2524,10 @@ export const Race_A_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\RaceA.BMP',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 24,
+    height: 29,
+  },
   children: [],
 } as const
 export const Pizza_A_Bitmap = {
@@ -2526,6 +2546,10 @@ export const Pizza_A_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\PizzaA.BMP',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 26,
+    height: 28,
+  },
   children: [],
 } as const
 export const MamaHot_Bitmap = {
@@ -2544,6 +2568,10 @@ export const MamaHot_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Mamahot.BMP',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 40,
+    height: 46,
+  },
   children: [],
 } as const
 export const PapaHot_Bitmap = {
@@ -2562,6 +2590,10 @@ export const PapaHot_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Papahot.BMP',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 39,
+    height: 46,
+  },
   children: [],
 } as const
 export const PepperHot_Bitmap = {
@@ -2580,6 +2612,10 @@ export const PepperHot_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Peperhot.BMP',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 39,
+    height: 46,
+  },
   children: [],
 } as const
 export const NickHot_Bitmap = {
@@ -2598,6 +2634,10 @@ export const NickHot_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Nickhot.BMP',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 39,
+    height: 46,
+  },
   children: [],
 } as const
 export const LauraHot_Bitmap = {
@@ -2616,6 +2656,10 @@ export const LauraHot_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Laurahot.BMP',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 40,
+    height: 46,
+  },
   children: [],
 } as const
 export const Gas_A_Bitmap = {
@@ -2634,6 +2678,10 @@ export const Gas_A_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\GasA.BMP',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 26,
+    height: 28,
+  },
   children: [],
 } as const
 export const Med_A_Bitmap = {
@@ -2652,6 +2700,10 @@ export const Med_A_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\MedA.BMP',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 26,
+    height: 28,
+  },
   children: [],
 } as const
 export const Cop_A_Bitmap = {
@@ -2670,6 +2722,10 @@ export const Cop_A_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\CopA.BMP',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const FrameHot_Bitmap = {
@@ -2688,6 +2744,10 @@ export const FrameHot_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\FrameHot.BMP',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 39,
+    height: 46,
+  },
   children: [],
 } as const
 export const Background_Bitmap = {
@@ -2706,6 +2766,10 @@ export const Background_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\backgrnd.bmp',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, WORLD:current',
+  dimensions: {
+    width: 640,
+    height: 480,
+  },
   children: [],
 } as const
 export const Mama_All_Movie = {
@@ -3619,6 +3683,10 @@ export const BackgroundRed_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\redgrnd.bmp',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, WORLD:current',
+  dimensions: {
+    width: 640,
+    height: 480,
+  },
   children: [],
 } as const
 export const Infoman_Model = {
@@ -3691,6 +3759,10 @@ export const LeftArrow_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\arrowL.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 22,
+    height: 20,
+  },
   children: [],
 } as const
 export const LeftArrow_Down_Bitmap = {
@@ -3709,6 +3781,10 @@ export const LeftArrow_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\arrowLon.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 22,
+    height: 20,
+  },
   children: [],
 } as const
 export const RightArrow_Up_Bitmap = {
@@ -3727,6 +3803,10 @@ export const RightArrow_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\arrowR.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 21,
+    height: 20,
+  },
   children: [],
 } as const
 export const RightArrow_Down_Bitmap = {
@@ -3745,6 +3825,10 @@ export const RightArrow_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\arrowRon.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 21,
+    height: 20,
+  },
   children: [],
 } as const
 export const BigInfo_Up_Bitmap = {
@@ -3763,6 +3847,10 @@ export const BigInfo_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\biginfo.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 45,
+    height: 43,
+  },
   children: [],
 } as const
 export const BigInfo_Down = {
@@ -3816,6 +3904,10 @@ export const BigInfo_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\biginfoo.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 45,
+    height: 43,
+  },
   children: [],
 } as const
 export const RadioOff_Bitmap = {
@@ -3834,6 +3926,10 @@ export const RadioOff_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Radio.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 54,
+    height: 63,
+  },
   children: [],
 } as const
 export const RadioOn_Bitmap = {
@@ -3852,6 +3948,10 @@ export const RadioOn_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\RadioOn.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 54,
+    height: 63,
+  },
   children: [],
 } as const
 export const Book_Mask_Bitmap = {
@@ -3870,6 +3970,10 @@ export const Book_Mask_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Book.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 38,
+    height: 38,
+  },
   children: [],
 } as const
 export const Door_Mask_Bitmap = {
@@ -3888,6 +3992,10 @@ export const Door_Mask_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Door.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 71,
+    height: 133,
+  },
   children: [],
 } as const
 export const Info_Up_Bitmap = {
@@ -3906,6 +4014,10 @@ export const Info_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\infoc.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 26,
+    height: 25,
+  },
   children: [],
 } as const
 export const Info_Down_Bitmap = {
@@ -3924,6 +4036,10 @@ export const Info_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\infocdwn.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 30,
+    height: 37,
+  },
   children: [],
 } as const
 export const Boat_Up_Bitmap = {
@@ -3942,6 +4058,10 @@ export const Boat_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Boat.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 25,
+    height: 26,
+  },
   children: [],
 } as const
 export const Boat_Down_Bitmap = {
@@ -3960,6 +4080,10 @@ export const Boat_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Boatdown.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 27,
+    height: 39,
+  },
   children: [],
 } as const
 export const Race_Up_Bitmap = {
@@ -3978,6 +4102,10 @@ export const Race_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Race.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 22,
+    height: 26,
+  },
   children: [],
 } as const
 export const Race_Down_Bitmap = {
@@ -3996,6 +4124,10 @@ export const Race_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Racedown.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 24,
+    height: 36,
+  },
   children: [],
 } as const
 export const Pizza_Up_Bitmap = {
@@ -4014,6 +4146,10 @@ export const Pizza_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Pizza.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 23,
+    height: 26,
+  },
   children: [],
 } as const
 export const Pizza_Down_Bitmap = {
@@ -4032,6 +4168,10 @@ export const Pizza_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Pizzadwn.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 25,
+    height: 34,
+  },
   children: [],
 } as const
 export const Gas_Up_Bitmap = {
@@ -4050,6 +4190,10 @@ export const Gas_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Gas.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 24,
+    height: 26,
+  },
   children: [],
 } as const
 export const Gas_Down_Bitmap = {
@@ -4068,6 +4212,10 @@ export const Gas_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Gasdown.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 27,
+    height: 36,
+  },
   children: [],
 } as const
 export const GoTo_RegBook = {
@@ -4101,6 +4249,10 @@ export const GoTo_RegBook = {
       filename: 'q:\\lego\\scripts\\infocntr\\floor1\\register\\regbook.bmp',
       fileType: 1280594720,
       extra: 'World:current',
+      dimensions: {
+        width: 104,
+        height: 213,
+      },
       children: [],
     },
     {
@@ -4154,6 +4306,10 @@ export const GoTo_RegBook_Red = {
       filename: 'q:\\lego\\scripts\\infocntr\\floor1\\register\\redbook.bmp',
       fileType: 1280594720,
       extra: 'World:current',
+      dimensions: {
+        width: 108,
+        height: 172,
+      },
       children: [],
     },
     {
@@ -4192,6 +4348,10 @@ export const Med_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Med.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 25,
+    height: 26,
+  },
   children: [],
 } as const
 export const Med_Down_Bitmap = {
@@ -4210,6 +4370,10 @@ export const Med_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Meddown.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 32,
+    height: 41,
+  },
   children: [],
 } as const
 export const Cop_Up_Bitmap = {
@@ -4228,6 +4392,10 @@ export const Cop_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Cop.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 31,
+    height: 26,
+  },
   children: [],
 } as const
 export const Cop_Down_Bitmap = {
@@ -4246,6 +4414,10 @@ export const Cop_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Copdown.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 35,
+    height: 39,
+  },
   children: [],
 } as const
 export const Mama_Up_Bitmap = {
@@ -4264,6 +4436,10 @@ export const Mama_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Mamabut.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 40,
+    height: 46,
+  },
   children: [],
 } as const
 export const Mama_Down_Bitmap = {
@@ -4282,6 +4458,10 @@ export const Mama_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Mamahot.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 40,
+    height: 46,
+  },
   children: [],
 } as const
 export const Papa_Up_Bitmap = {
@@ -4300,6 +4480,10 @@ export const Papa_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Papabut.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 39,
+    height: 46,
+  },
   children: [],
 } as const
 export const Papa_Down_Bitmap = {
@@ -4318,6 +4502,10 @@ export const Papa_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Papahot.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 39,
+    height: 46,
+  },
   children: [],
 } as const
 export const Pepper_Up_Bitmap = {
@@ -4336,6 +4524,10 @@ export const Pepper_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Peperbut.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 39,
+    height: 46,
+  },
   children: [],
 } as const
 export const Pepper_Down_Bitmap = {
@@ -4354,6 +4546,10 @@ export const Pepper_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Peperhot.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 39,
+    height: 46,
+  },
   children: [],
 } as const
 export const Nick_Up_Bitmap = {
@@ -4372,6 +4568,10 @@ export const Nick_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Nickbut.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 39,
+    height: 46,
+  },
   children: [],
 } as const
 export const Nick_Down_Bitmap = {
@@ -4390,6 +4590,10 @@ export const Nick_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Nickhot.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 39,
+    height: 46,
+  },
   children: [],
 } as const
 export const Laura_Up_Bitmap = {
@@ -4408,6 +4612,10 @@ export const Laura_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Laurabut.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 40,
+    height: 46,
+  },
   children: [],
 } as const
 export const Laura_Down_Bitmap = {
@@ -4426,6 +4634,10 @@ export const Laura_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Laurahot.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 40,
+    height: 46,
+  },
   children: [],
 } as const
 export const ConfigAnimation = {

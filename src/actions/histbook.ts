@@ -536,6 +536,10 @@ export const ScoreBox = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\ScoreBox.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 26,
+    height: 26,
+  },
   children: [],
 } as const
 export const Background_Bitmap = {
@@ -554,6 +558,10 @@ export const Background_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\Bookgrnd.bmp',
   fileType: 1280594720,
   extra: 'World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 640,
+    height: 480,
+  },
   children: [],
 } as const
 export const A_Bitmap = {
@@ -572,6 +580,10 @@ export const A_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\A.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const B_Bitmap = {
@@ -590,6 +602,10 @@ export const B_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\B.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const C_Bitmap = {
@@ -608,6 +624,10 @@ export const C_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\C.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const D_Bitmap = {
@@ -626,6 +646,10 @@ export const D_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\D.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const E_Bitmap = {
@@ -644,6 +668,10 @@ export const E_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\E.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const F_Bitmap = {
@@ -662,6 +690,10 @@ export const F_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\F.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const G_Bitmap = {
@@ -680,6 +712,10 @@ export const G_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\G.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const H_Bitmap = {
@@ -698,6 +734,10 @@ export const H_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\H.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const I_Bitmap = {
@@ -716,6 +756,10 @@ export const I_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\I.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const J_Bitmap = {
@@ -734,6 +778,10 @@ export const J_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\J.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const K_Bitmap = {
@@ -752,6 +800,10 @@ export const K_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\K.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const L_Bitmap = {
@@ -770,6 +822,10 @@ export const L_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\L.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const M_Bitmap = {
@@ -788,6 +844,10 @@ export const M_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\M.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const N_Bitmap = {
@@ -806,6 +866,10 @@ export const N_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\N.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const O_Bitmap = {
@@ -824,6 +888,10 @@ export const O_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\O.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const P_Bitmap = {
@@ -842,6 +910,10 @@ export const P_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\P.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const Q_Bitmap = {
@@ -860,6 +932,10 @@ export const Q_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\Q.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const R_Bitmap = {
@@ -878,6 +954,10 @@ export const R_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\R.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const S_Bitmap = {
@@ -896,6 +976,10 @@ export const S_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\S.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const T_Bitmap = {
@@ -914,6 +998,10 @@ export const T_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\T.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const U_Bitmap = {
@@ -932,6 +1020,10 @@ export const U_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\U.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const V_Bitmap = {
@@ -950,6 +1042,10 @@ export const V_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\V.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const W_Bitmap = {
@@ -968,6 +1064,10 @@ export const W_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\W.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const X_Bitmap = {
@@ -986,6 +1086,10 @@ export const X_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\X.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const Y_Bitmap = {
@@ -1004,6 +1108,10 @@ export const Y_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\Y.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const
 export const Z_Bitmap = {
@@ -1022,5 +1130,9 @@ export const Z_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\Z.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+  dimensions: {
+    width: 24,
+    height: 27,
+  },
   children: [],
 } as const

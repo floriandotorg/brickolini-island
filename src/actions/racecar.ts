@@ -1875,6 +1875,10 @@ export const Background = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Raceguif.bmp',
   fileType: 1280594720,
   extra: 'World:current',
+  dimensions: {
+    width: 640,
+    height: 480,
+  },
   children: [],
 } as const
 export const ColorBook_Bitmap = {
@@ -1893,6 +1897,10 @@ export const ColorBook_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\YelowBar.bmp',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 64,
+    height: 58,
+  },
   children: [],
 } as const
 export const ShelfUp_Up_Bitmap = {
@@ -1911,6 +1919,10 @@ export const ShelfUp_Up_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\FlagU.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 82,
+    height: 93,
+  },
   children: [],
 } as const
 export const ShelfUp_Down_Bitmap = {
@@ -1929,6 +1941,10 @@ export const ShelfUp_Down_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\FlagL.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 81,
+    height: 95,
+  },
   children: [],
 } as const
 export const PlatformUp_Bitmap = {
@@ -1947,6 +1963,10 @@ export const PlatformUp_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LiteOn.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 67,
+    height: 86,
+  },
   children: [],
 } as const
 export const PlatformLeft = {
@@ -2038,6 +2058,10 @@ export const PlatformLeft_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LiteL.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 55,
+    height: 86,
+  },
   children: [],
 } as const
 export const Yellow_Ctl = {
@@ -2109,6 +2133,10 @@ export const Yellow_Down_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\YelowOff.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 22,
+    height: 20,
+  },
   children: [],
 } as const
 export const Yellow_Up_Bitmap = {
@@ -2127,6 +2155,10 @@ export const Yellow_Up_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\YellowOn.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 22,
+    height: 20,
+  },
   children: [],
 } as const
 export const Red_Ctl = {
@@ -2198,6 +2230,10 @@ export const Red_Down_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RedOff.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 21,
+    height: 21,
+  },
   children: [],
 } as const
 export const Red_Up_Bitmap = {
@@ -2216,6 +2252,10 @@ export const Red_Up_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RedOn.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 21,
+    height: 21,
+  },
   children: [],
 } as const
 export const Blue_Ctl = {
@@ -2287,6 +2327,10 @@ export const Blue_Down_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\BlueOff.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 20,
+    height: 20,
+  },
   children: [],
 } as const
 export const Blue_Up_Bitmap = {
@@ -2305,6 +2349,10 @@ export const Blue_Up_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\BlueOn.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 20,
+    height: 20,
+  },
   children: [],
 } as const
 export const Green_Ctl = {
@@ -2376,6 +2424,10 @@ export const Green_Down_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\GreenOff.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 21,
+    height: 20,
+  },
   children: [],
 } as const
 export const Green_Up_Bitmap = {
@@ -2394,6 +2446,10 @@ export const Green_Up_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Greenon.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 21,
+    height: 20,
+  },
   children: [],
 } as const
 export const Gray_Ctl = {
@@ -2465,6 +2521,10 @@ export const Gray_Down_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\GrayOff.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 20,
+    height: 20,
+  },
   children: [],
 } as const
 export const Gray_Up_Bitmap = {
@@ -2483,6 +2543,10 @@ export const Gray_Up_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\GrayOn.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 20,
+    height: 20,
+  },
   children: [],
 } as const
 export const Black_Ctl = {
@@ -2554,6 +2618,10 @@ export const Black_Down_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\BlackOff.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 20,
+    height: 19,
+  },
   children: [],
 } as const
 export const Black_Up_Bitmap = {
@@ -2572,6 +2640,10 @@ export const Black_Up_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\BlackOn.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 20,
+    height: 19,
+  },
   children: [],
 } as const
 export const Decals_Ctl = {
@@ -2889,6 +2961,10 @@ export const RCFRNT_State_0_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Normal.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 122,
+    height: 79,
+  },
   children: [],
 } as const
 export const RCFRNT_State_1 = {
@@ -2960,6 +3036,10 @@ export const RCFRNT_State_1_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LTop.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 122,
+    height: 79,
+  },
   children: [],
 } as const
 export const RCFRNT_Texture_1 = {
@@ -3049,6 +3129,10 @@ export const RCFRNT_State_2_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RTop.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 122,
+    height: 79,
+  },
   children: [],
 } as const
 export const RCFRNT_Texture_2 = {
@@ -3138,6 +3222,10 @@ export const RCFRNT_State_3_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LBottom.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 122,
+    height: 79,
+  },
   children: [],
 } as const
 export const RCFRNT_Texture_3 = {
@@ -3227,6 +3315,10 @@ export const RCFRNT_State_4_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RBottom.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 122,
+    height: 79,
+  },
   children: [],
 } as const
 export const RCFRNT_Texture_4 = {
@@ -3562,6 +3654,10 @@ export const RCBACK_State_0_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Normal.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 122,
+    height: 79,
+  },
   children: [],
 } as const
 export const RCBACK_State_1 = {
@@ -3633,6 +3729,10 @@ export const RCBACK_State_1_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LTop.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 122,
+    height: 79,
+  },
   children: [],
 } as const
 export const RCBACK_Texture_1 = {
@@ -3722,6 +3822,10 @@ export const RCBACK_State_2_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RTop.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 122,
+    height: 79,
+  },
   children: [],
 } as const
 export const RCBACK_Texture_2 = {
@@ -3811,6 +3915,10 @@ export const RCBACK_State_3_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LBottom.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 122,
+    height: 79,
+  },
   children: [],
 } as const
 export const RCBACK_Texture_3 = {
@@ -3900,6 +4008,10 @@ export const RCBACK_State_4_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RBottom.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 122,
+    height: 79,
+  },
   children: [],
 } as const
 export const RCBACK_Texture_4 = {
@@ -4235,6 +4347,10 @@ export const RCTAIL_State_0_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\4_up.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 114,
+    height: 81,
+  },
   children: [],
 } as const
 export const RCTAIL_State_1 = {
@@ -4306,6 +4422,10 @@ export const RCTAIL_State_1_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\L1_dn.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 114,
+    height: 81,
+  },
   children: [],
 } as const
 export const RCTAIL_Texture_1 = {
@@ -4395,6 +4515,10 @@ export const RCTAIL_State_2_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\R1_dn.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 114,
+    height: 81,
+  },
   children: [],
 } as const
 export const RCTAIL_Texture_2 = {
@@ -4484,6 +4608,10 @@ export const RCTAIL_State_3_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\L2_dn.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 114,
+    height: 81,
+  },
   children: [],
 } as const
 export const RCTAIL_Texture_3 = {
@@ -4573,6 +4701,10 @@ export const RCTAIL_State_4_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\R2_dn.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 114,
+    height: 81,
+  },
   children: [],
 } as const
 export const RCTAIL_Texture_4 = {
@@ -4609,6 +4741,10 @@ export const Info_Up_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\redEYE.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 48,
+    height: 47,
+  },
   children: [],
 } as const
 export const Info_Down_Bitmap = {
@@ -4627,6 +4763,10 @@ export const Info_Down_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\greenEYE.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 48,
+    height: 47,
+  },
   children: [],
 } as const
 export const Exit_Up_Bitmap = {
@@ -4645,6 +4785,10 @@ export const Exit_Up_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\redTRI.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 36,
+    height: 39,
+  },
   children: [],
 } as const
 export const Exit_Down_Bitmap = {
@@ -4663,6 +4807,10 @@ export const Exit_Down_Bitmap = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\greenTRI.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 36,
+    height: 39,
+  },
   children: [],
 } as const
 export const Shelf_Sound = {

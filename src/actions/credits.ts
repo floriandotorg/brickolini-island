@@ -52,6 +52,10 @@ export const Credit01_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\01credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit02_Bitmap = {
@@ -70,6 +74,10 @@ export const Credit02_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\02credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit03_Bitmap = {
@@ -88,6 +96,10 @@ export const Credit03_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\03creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit04_Bitmap = {
@@ -106,6 +118,10 @@ export const Credit04_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\04credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit05_Bitmap = {
@@ -124,6 +140,10 @@ export const Credit05_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\05credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit06_Bitmap = {
@@ -142,6 +162,10 @@ export const Credit06_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\06credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit07_Bitmap = {
@@ -160,6 +184,10 @@ export const Credit07_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\07credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit08_Bitmap = {
@@ -178,6 +206,10 @@ export const Credit08_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\08credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit09_Bitmap = {
@@ -196,6 +228,10 @@ export const Credit09_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\09credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit11_Bitmap = {
@@ -214,6 +250,10 @@ export const Credit11_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\11creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit12_Bitmap = {
@@ -232,6 +272,10 @@ export const Credit12_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\12creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit13_Bitmap = {
@@ -250,6 +294,10 @@ export const Credit13_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\13creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit14_Bitmap = {
@@ -268,6 +316,10 @@ export const Credit14_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\14creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit15_Bitmap = {
@@ -286,6 +338,10 @@ export const Credit15_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\15credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit16_Bitmap = {
@@ -304,6 +360,10 @@ export const Credit16_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\16creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit17_Bitmap = {
@@ -322,6 +382,10 @@ export const Credit17_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\17creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit21_Bitmap = {
@@ -340,6 +404,10 @@ export const Credit21_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\21creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit19_Bitmap = {
@@ -358,6 +426,10 @@ export const Credit19_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\19credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit22_Bitmap = {
@@ -376,6 +448,10 @@ export const Credit22_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\22credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit22b_Bitmap = {
@@ -394,6 +470,10 @@ export const Credit22b_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\22credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit25_Bitmap = {
@@ -412,6 +492,10 @@ export const Credit25_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\25creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit20_Bitmap = {
@@ -430,6 +514,10 @@ export const Credit20_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\20credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit12b_Bitmap = {
@@ -448,6 +536,10 @@ export const Credit12b_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\12creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit23_Bitmap = {
@@ -466,6 +558,10 @@ export const Credit23_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\23credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit24_Bitmap = {
@@ -484,6 +580,10 @@ export const Credit24_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\24credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit14b_Bitmap = {
@@ -502,6 +602,10 @@ export const Credit14b_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\14creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit14c_Bitmap = {
@@ -520,6 +624,10 @@ export const Credit14c_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\14creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit26_Bitmap = {
@@ -538,6 +646,10 @@ export const Credit26_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\26credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit27_Bitmap = {
@@ -556,6 +668,10 @@ export const Credit27_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\27credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit28_Bitmap = {
@@ -574,6 +690,10 @@ export const Credit28_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\28credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit29_Bitmap = {
@@ -592,6 +712,10 @@ export const Credit29_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\29credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit10_Bitmap = {
@@ -610,6 +734,10 @@ export const Credit10_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\10credith.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 279,
+    height: 170,
+  },
   children: [],
 } as const
 export const Credit17b_Bitmap = {
@@ -628,6 +756,10 @@ export const Credit17b_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\17creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const Credit17c_Bitmap = {
@@ -646,6 +778,10 @@ export const Credit17c_Bitmap = {
   filename: 'Q:\\Lego\\media\\credits\\17creditv.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 166,
+    height: 276,
+  },
   children: [],
 } as const
 export const LegoCredits = {
@@ -716,6 +852,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\01credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -734,6 +874,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\02credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -752,6 +896,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\03creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -770,6 +918,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\04credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -788,6 +940,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\05credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -806,6 +962,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\06credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -824,6 +984,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\07credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -842,6 +1006,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\08credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -860,6 +1028,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\09credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -878,6 +1050,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\11creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -896,6 +1072,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\12creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -914,6 +1094,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\13creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -932,6 +1116,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\14creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -950,6 +1138,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\15credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -968,6 +1160,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\16creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -986,6 +1182,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\17creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -1004,6 +1204,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\21creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -1022,6 +1226,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\19credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -1040,6 +1248,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\22credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -1058,6 +1270,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\22credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -1076,6 +1292,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\25creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -1094,6 +1314,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\20credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -1112,6 +1336,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\12creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -1130,6 +1358,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\23credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -1148,6 +1380,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\24credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -1166,6 +1402,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\14creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -1184,6 +1424,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\14creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -1202,6 +1446,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\26credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -1220,6 +1468,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\27credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -1238,6 +1490,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\28credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -1256,6 +1512,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\29credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -1274,6 +1534,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\10credith.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 279,
+        height: 170,
+      },
       children: [],
     },
     {
@@ -1292,6 +1556,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\17creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
     {
@@ -1310,6 +1578,10 @@ export const LegoCredits = {
       filename: 'Q:\\Lego\\media\\credits\\17creditv.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 166,
+        height: 276,
+      },
       children: [],
     },
   ],

@@ -368,6 +368,10 @@ export const Background_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Hospital\\Main\\backgrnd.bmp',
   fileType: 1280594720,
   extra: 'World:\\lego\\scripts\\hospital\\hospital;0',
+  dimensions: {
+    width: 640,
+    height: 480,
+  },
   children: [],
 } as const
 export const PizzaLed_Bitmap = {
@@ -386,6 +390,10 @@ export const PizzaLed_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Hospital\\Main\\pizzaled.bmp',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:\\lego\\scripts\\hospital\\hospital;0',
+  dimensions: {
+    width: 14,
+    height: 15,
+  },
   children: [],
 } as const
 export const CopLed_Bitmap = {
@@ -404,6 +412,10 @@ export const CopLed_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Hospital\\Main\\copled.bmp',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:\\lego\\scripts\\hospital\\hospital;0',
+  dimensions: {
+    width: 12,
+    height: 16,
+  },
   children: [],
 } as const
 export const Info_Up_Bitmap = {
@@ -422,6 +434,10 @@ export const Info_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Hospital\\Main\\Info.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 32,
+    height: 24,
+  },
   children: [],
 } as const
 export const Info_Down_Bitmap = {
@@ -440,6 +456,10 @@ export const Info_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Hospital\\Main\\Infos.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 32,
+    height: 24,
+  },
   children: [],
 } as const
 export const Door_Mask_Bitmap = {
@@ -458,6 +478,10 @@ export const Door_Mask_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Hospital\\Main\\Door.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 98,
+    height: 208,
+  },
   children: [],
 } as const
 export const ConfigAnimation = {

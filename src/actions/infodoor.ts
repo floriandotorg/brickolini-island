@@ -456,6 +456,10 @@ export const Background_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\backgrnd.bmp',
   fileType: 1280594720,
   extra: 'World:current',
+  dimensions: {
+    width: 640,
+    height: 480,
+  },
   children: [],
 } as const
 export const LeftArrow_Up_Bitmap = {
@@ -474,6 +478,10 @@ export const LeftArrow_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\arrowL.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 53,
+    height: 50,
+  },
   children: [],
 } as const
 export const LeftArrow_Down_Bitmap = {
@@ -492,6 +500,10 @@ export const LeftArrow_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\arrowLon.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 53,
+    height: 50,
+  },
   children: [],
 } as const
 export const RightArrow_Up_Bitmap = {
@@ -510,6 +522,10 @@ export const RightArrow_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\arrowR.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 53,
+    height: 50,
+  },
   children: [],
 } as const
 export const RightArrow_Down_Bitmap = {
@@ -528,6 +544,10 @@ export const RightArrow_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\arrowRon.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 53,
+    height: 50,
+  },
   children: [],
 } as const
 export const Info_Up_Bitmap = {
@@ -546,6 +566,10 @@ export const Info_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\Info.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 29,
+    height: 29,
+  },
   children: [],
 } as const
 export const Info_Down_Bitmap = {
@@ -564,6 +588,10 @@ export const Info_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\Infos.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 29,
+    height: 29,
+  },
   children: [],
 } as const
 export const Door_Up_Bitmap = {
@@ -582,6 +610,10 @@ export const Door_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\Door.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 194,
+    height: 172,
+  },
   children: [],
 } as const
 export const ConfigAnimation = {

@@ -651,6 +651,10 @@ export const Background_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\backgrnd.bmp',
   fileType: 1280594720,
   extra: 'World:current',
+  dimensions: {
+    width: 640,
+    height: 480,
+  },
   children: [],
 } as const
 export const TrackLed_Bitmap = {
@@ -669,6 +673,10 @@ export const TrackLed_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\redled.bmp',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 14,
+    height: 14,
+  },
   children: [],
 } as const
 export const LeftArrow_Up_Bitmap = {
@@ -687,6 +695,10 @@ export const LeftArrow_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\ArrowL.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 33,
+    height: 30,
+  },
   children: [],
 } as const
 export const LeftArrow_Down_Bitmap = {
@@ -705,6 +717,10 @@ export const LeftArrow_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\ArrowLon.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 33,
+    height: 30,
+  },
   children: [],
 } as const
 export const RightArrow_Up_Bitmap = {
@@ -723,6 +739,10 @@ export const RightArrow_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\arrowR.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 30,
+    height: 29,
+  },
   children: [],
 } as const
 export const RightArrow_Down_Bitmap = {
@@ -741,6 +761,10 @@ export const RightArrow_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\ArrowRon.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 30,
+    height: 29,
+  },
   children: [],
 } as const
 export const Info_Up_Bitmap = {
@@ -759,6 +783,10 @@ export const Info_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\Info.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 34,
+    height: 33,
+  },
   children: [],
 } as const
 export const Info_Down_Bitmap = {
@@ -777,6 +805,10 @@ export const Info_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\Infos.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 34,
+    height: 33,
+  },
   children: [],
 } as const
 export const Buggy_Up_Bitmap = {
@@ -795,6 +827,10 @@ export const Buggy_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\door.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 124,
+    height: 262,
+  },
   children: [],
 } as const
 export const Buggy_Down_Bitmap = {
@@ -813,6 +849,10 @@ export const Buggy_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\BuggyOn.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 60,
+    height: 62,
+  },
   children: [],
 } as const
 export const RadioOff_Bitmap = {
@@ -831,6 +871,10 @@ export const RadioOff_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\Radio.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 114,
+    height: 67,
+  },
   children: [],
 } as const
 export const Radio_Ctl = {
@@ -864,6 +908,10 @@ export const Radio_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\Radio.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 114,
+        height: 67,
+      },
       children: [],
     },
     {
@@ -902,6 +950,10 @@ export const RadioOn_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\RadioOn.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 114,
+    height: 67,
+  },
   children: [],
 } as const
 export const ConfigAnimation = {

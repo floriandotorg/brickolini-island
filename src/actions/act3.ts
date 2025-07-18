@@ -1346,6 +1346,10 @@ export const HelicopterDashboard_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\dash.BMP',
   fileType: 1280594720,
   extra: 'World:current',
+  dimensions: {
+    width: 464,
+    height: 159,
+  },
   children: [],
 } as const
 export const Helicopter_Pizza_Ctl = {
@@ -2417,6 +2421,10 @@ export const Helicopter_Pizza_Up_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\pizzaA.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 70,
+    height: 59,
+  },
   children: [],
 } as const
 export const Helicopter_Pizza_Down_Bitmap = {
@@ -2435,6 +2443,10 @@ export const Helicopter_Pizza_Down_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\pizzas.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 70,
+    height: 59,
+  },
   children: [],
 } as const
 export const Helicopter_Donut_Up_Bitmap = {
@@ -2453,6 +2465,10 @@ export const Helicopter_Donut_Up_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DonutA.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 62,
+    height: 50,
+  },
   children: [],
 } as const
 export const Helicopter_Donut_Down_Bitmap = {
@@ -2471,6 +2487,10 @@ export const Helicopter_Donut_Down_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\Donuts.BMP',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 62,
+    height: 50,
+  },
   children: [],
 } as const
 export const Helicopter_Info_Up_Bitmap = {
@@ -2489,6 +2509,10 @@ export const Helicopter_Info_Up_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\InfoA.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 57,
+    height: 44,
+  },
   children: [],
 } as const
 export const Helicopter_Info_Down_Bitmap = {
@@ -2507,6 +2531,10 @@ export const Helicopter_Info_Down_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\Infos.BMP',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 62,
+    height: 44,
+  },
   children: [],
 } as const
 export const HelicopterDotOn1_Bitmap = {
@@ -2525,6 +2553,10 @@ export const HelicopterDotOn1_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn2_Bitmap = {
@@ -2543,6 +2575,10 @@ export const HelicopterDotOn2_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn3_Bitmap = {
@@ -2561,6 +2597,10 @@ export const HelicopterDotOn3_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn4_Bitmap = {
@@ -2579,6 +2619,10 @@ export const HelicopterDotOn4_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn5_Bitmap = {
@@ -2597,6 +2641,10 @@ export const HelicopterDotOn5_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn6_Bitmap = {
@@ -2615,6 +2663,10 @@ export const HelicopterDotOn6_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn7_Bitmap = {
@@ -2633,6 +2685,10 @@ export const HelicopterDotOn7_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn8_Bitmap = {
@@ -2651,6 +2707,10 @@ export const HelicopterDotOn8_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn9_Bitmap = {
@@ -2669,6 +2729,10 @@ export const HelicopterDotOn9_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn10_Bitmap = {
@@ -2687,6 +2751,10 @@ export const HelicopterDotOn10_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn11_Bitmap = {
@@ -2705,6 +2773,10 @@ export const HelicopterDotOn11_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn12_Bitmap = {
@@ -2723,6 +2795,10 @@ export const HelicopterDotOn12_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn13_Bitmap = {
@@ -2741,6 +2817,10 @@ export const HelicopterDotOn13_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn14_Bitmap = {
@@ -2759,6 +2839,10 @@ export const HelicopterDotOn14_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const HelicopterDotOn15_Bitmap = {
@@ -2777,6 +2861,10 @@ export const HelicopterDotOn15_Bitmap = {
   filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
   fileType: 1280594720,
   extra: 'World:current, Visibility:FALSE',
+  dimensions: {
+    width: 8,
+    height: 8,
+  },
   children: [],
 } as const
 export const TLP067PA_Wav_500 = {

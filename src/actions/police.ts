@@ -615,6 +615,10 @@ export const Background_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Police\\Main\\backgrnd.bmp',
   fileType: 1280594720,
   extra: 'World:\\lego\\scripts\\police\\police;0',
+  dimensions: {
+    width: 640,
+    height: 480,
+  },
   children: [],
 } as const
 export const LeftArrow_Up_Bitmap = {
@@ -633,6 +637,10 @@ export const LeftArrow_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Police\\Main\\ArrowL.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 42,
+    height: 40,
+  },
   children: [],
 } as const
 export const LeftArrow_Down_Bitmap = {
@@ -651,6 +659,10 @@ export const LeftArrow_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Police\\Main\\ArrowLon.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 42,
+    height: 40,
+  },
   children: [],
 } as const
 export const RightArrow_Up_Bitmap = {
@@ -669,6 +681,10 @@ export const RightArrow_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Police\\Main\\arrowR.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 41,
+    height: 40,
+  },
   children: [],
 } as const
 export const RightArrow_Down_Bitmap = {
@@ -687,6 +703,10 @@ export const RightArrow_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Police\\Main\\ArrowRon.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 41,
+    height: 40,
+  },
   children: [],
 } as const
 export const Info_Up_Bitmap = {
@@ -705,6 +725,10 @@ export const Info_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Info.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 45,
+    height: 50,
+  },
   children: [],
 } as const
 export const Info_Down_Bitmap = {
@@ -723,6 +747,10 @@ export const Info_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Infos.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 45,
+    height: 50,
+  },
   children: [],
 } as const
 export const Door_Mask_Bitmap = {
@@ -741,6 +769,10 @@ export const Door_Mask_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Door.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 80,
+    height: 270,
+  },
   children: [],
 } as const
 export const Donut_Up_Bitmap = {
@@ -759,6 +791,10 @@ export const Donut_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Donut.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 104,
+    height: 75,
+  },
   children: [],
 } as const
 export const Donut_Down_Bitmap = {
@@ -777,6 +813,10 @@ export const Donut_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Police\\Main\\DonutOn.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 104,
+    height: 75,
+  },
   children: [],
 } as const
 export const RadioOff_Bitmap = {
@@ -795,6 +835,10 @@ export const RadioOff_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Radio.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 92,
+    height: 63,
+  },
   children: [],
 } as const
 export const RadioOn_Bitmap = {
@@ -813,6 +857,10 @@ export const RadioOn_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Police\\Main\\RadioOn.bmp',
   fileType: 1280594720,
   extra: null,
+  dimensions: {
+    width: 92,
+    height: 63,
+  },
   children: [],
 } as const
 export const Radio_Ctl = {
@@ -846,6 +894,10 @@ export const Radio_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Radio.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 92,
+        height: 63,
+      },
       children: [],
     },
     {
@@ -864,6 +916,10 @@ export const Radio_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Police\\Main\\RadioOn.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 92,
+        height: 63,
+      },
       children: [],
     },
   ],

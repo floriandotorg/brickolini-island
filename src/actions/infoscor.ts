@@ -420,6 +420,10 @@ export const HistBook_Bmp = {
   filename: 'q:\\lego\\scripts\\infocntr\\floor1\\score\\histbook.bmp',
   fileType: 1280594720,
   extra: 'World:current',
+  dimensions: {
+    width: 111,
+    height: 289,
+  },
   children: [],
 } as const
 export const HistBook_Flc = {
@@ -525,6 +529,10 @@ export const GoTo_HistBook = {
       filename: 'q:\\lego\\scripts\\infocntr\\floor1\\score\\histbook.bmp',
       fileType: 1280594720,
       extra: 'World:current',
+      dimensions: {
+        width: 111,
+        height: 289,
+      },
       children: [],
     },
     {
@@ -563,6 +571,10 @@ export const Background_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\backgrnd.bmp',
   fileType: 1280594720,
   extra: 'World:current',
+  dimensions: {
+    width: 640,
+    height: 480,
+  },
   children: [],
 } as const
 export const LeftArrow_Up_Bitmap = {
@@ -581,6 +593,10 @@ export const LeftArrow_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\arrowL.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 39,
+    height: 36,
+  },
   children: [],
 } as const
 export const LeftArrow_Down_Bitmap = {
@@ -599,6 +615,10 @@ export const LeftArrow_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\arrowLon.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 39,
+    height: 36,
+  },
   children: [],
 } as const
 export const RightArrow_Up_Bitmap = {
@@ -617,6 +637,10 @@ export const RightArrow_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\arrowR.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 36,
+    height: 34,
+  },
   children: [],
 } as const
 export const RightArrow_Down_Bitmap = {
@@ -635,6 +659,10 @@ export const RightArrow_Down_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\arrowRon.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 36,
+    height: 34,
+  },
   children: [],
 } as const
 export const Book_Up_Bitmap = {
@@ -653,6 +681,10 @@ export const Book_Up_Bitmap = {
   filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\Book.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 32,
+    height: 66,
+  },
   children: [],
 } as const
 export const LegoBox_Mask_Bitmap = {
@@ -671,6 +703,10 @@ export const LegoBox_Mask_Bitmap = {
   filename: 'q:\\lego\\scripts\\infocntr\\floor1\\score\\boxmask.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 161,
+    height: 103,
+  },
   children: [],
 } as const
 export const ConfigAnimation = {

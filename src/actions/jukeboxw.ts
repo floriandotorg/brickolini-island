@@ -670,6 +670,10 @@ export const Background_Bitmap = {
   filename: 'Q:\\Lego\\Media\\JukeBox\\backgrnd.bmp',
   fileType: 1280594720,
   extra: 'World:current',
+  dimensions: {
+    width: 640,
+    height: 480,
+  },
   children: [],
 } as const
 export const Right_Bitmap = {
@@ -688,6 +692,10 @@ export const Right_Bitmap = {
   filename: 'q:\\Lego\\Media\\JukeBox\\Right.bmp',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 353,
+    height: 332,
+  },
   children: [],
 } as const
 export const Decal_Bitmap = {
@@ -706,6 +714,10 @@ export const Decal_Bitmap = {
   filename: 'q:\\Lego\\Media\\JukeBox\\Decal.bmp',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 353,
+    height: 332,
+  },
   children: [],
 } as const
 export const Wallis_Bitmap = {
@@ -724,6 +736,10 @@ export const Wallis_Bitmap = {
   filename: 'q:\\Lego\\Media\\JukeBox\\Wallis.bmp',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 353,
+    height: 332,
+  },
   children: [],
 } as const
 export const Nelson_Bitmap = {
@@ -742,6 +758,10 @@ export const Nelson_Bitmap = {
   filename: 'q:\\Lego\\Media\\JukeBox\\Nelson.bmp',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 353,
+    height: 332,
+  },
   children: [],
 } as const
 export const Torpedos_Bitmap = {
@@ -760,6 +780,10 @@ export const Torpedos_Bitmap = {
   filename: 'q:\\Lego\\Media\\JukeBox\\Torpedos.bmp',
   fileType: 1280594720,
   extra: 'Visibility:FALSE, World:current',
+  dimensions: {
+    width: 353,
+    height: 332,
+  },
   children: [],
 } as const
 export const Voldown_Up_Bitmap = {
@@ -778,6 +802,10 @@ export const Voldown_Up_Bitmap = {
   filename: 'Q:\\Lego\\media\\jukebox\\voldown.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 44,
+    height: 54,
+  },
   children: [],
 } as const
 export const Voldown_Down_Bitmap = {
@@ -796,6 +824,10 @@ export const Voldown_Down_Bitmap = {
   filename: 'Q:\\Lego\\media\\jukebox\\voldownS.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 44,
+    height: 54,
+  },
   children: [],
 } as const
 export const Volup_Up_Bitmap = {
@@ -814,6 +846,10 @@ export const Volup_Up_Bitmap = {
   filename: 'Q:\\Lego\\media\\jukebox\\volup.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 44,
+    height: 54,
+  },
   children: [],
 } as const
 export const Volup_Down_Bitmap = {
@@ -832,6 +868,10 @@ export const Volup_Down_Bitmap = {
   filename: 'Q:\\Lego\\media\\jukebox\\volupS.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 44,
+    height: 54,
+  },
   children: [],
 } as const
 export const Dback_Up_Bitmap = {
@@ -850,6 +890,10 @@ export const Dback_Up_Bitmap = {
   filename: 'Q:\\Lego\\media\\jukebox\\dback.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 78,
+    height: 41,
+  },
   children: [],
 } as const
 export const Dback_Down_Bitmap = {
@@ -868,6 +912,10 @@ export const Dback_Down_Bitmap = {
   filename: 'Q:\\Lego\\media\\jukebox\\dbackS.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 78,
+    height: 41,
+  },
   children: [],
 } as const
 export const Dfwd_Up_Bitmap = {
@@ -886,6 +934,10 @@ export const Dfwd_Up_Bitmap = {
   filename: 'Q:\\Lego\\media\\jukebox\\dfwd.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 78,
+    height: 41,
+  },
   children: [],
 } as const
 export const Dfwd_Down_Bitmap = {
@@ -904,6 +956,10 @@ export const Dfwd_Down_Bitmap = {
   filename: 'Q:\\Lego\\media\\jukebox\\dfwdS.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 78,
+    height: 41,
+  },
   children: [],
 } as const
 export const Note_Up_Bitmap = {
@@ -922,6 +978,10 @@ export const Note_Up_Bitmap = {
   filename: 'Q:\\Lego\\media\\jukebox\\note.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 86,
+    height: 46,
+  },
   children: [],
 } as const
 export const Note_Down_Bitmap = {
@@ -940,5 +1000,9 @@ export const Note_Down_Bitmap = {
   filename: 'Q:\\Lego\\media\\jukebox\\noteS.bmp',
   fileType: 1280594720,
   extra: 'BMP_ISMAP',
+  dimensions: {
+    width: 86,
+    height: 46,
+  },
   children: [],
 } as const
