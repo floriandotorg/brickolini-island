@@ -30,6 +30,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\infocA.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 26,
+        height: 28,
+      },
       children: [],
     },
     {
@@ -48,6 +52,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\BoatA.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 26,
+        height: 28,
+      },
       children: [],
     },
     {
@@ -66,6 +74,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\RaceA.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 24,
+        height: 29,
+      },
       children: [],
     },
     {
@@ -84,6 +96,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\PizzaA.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 26,
+        height: 28,
+      },
       children: [],
     },
     {
@@ -102,6 +118,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\GasA.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 26,
+        height: 28,
+      },
       children: [],
     },
     {
@@ -120,6 +140,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\MedA.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 26,
+        height: 28,
+      },
       children: [],
     },
     {
@@ -138,6 +162,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\CopA.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -156,6 +184,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\FrameHot.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 39,
+        height: 46,
+      },
       children: [],
     },
     {
@@ -174,6 +206,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\backgrnd.bmp',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, WORLD:current',
+      dimensions: {
+        width: 640,
+        height: 480,
+      },
       children: [],
     },
     {
@@ -192,6 +228,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\redgrnd.bmp',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, WORLD:current',
+      dimensions: {
+        width: 640,
+        height: 480,
+      },
       children: [],
     },
     {
@@ -210,6 +250,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Mamahot.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 40,
+        height: 46,
+      },
       children: [],
     },
     {
@@ -228,6 +272,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Papahot.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 39,
+        height: 46,
+      },
       children: [],
     },
     {
@@ -246,6 +294,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Peperhot.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 39,
+        height: 46,
+      },
       children: [],
     },
     {
@@ -264,6 +316,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Nickhot.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 39,
+        height: 46,
+      },
       children: [],
     },
     {
@@ -282,6 +338,10 @@ export const _InfoMain = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Laurahot.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 40,
+        height: 46,
+      },
       children: [],
     },
     {
@@ -420,6 +480,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\arrowL.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 22,
+            height: 20,
+          },
           children: [],
         },
         {
@@ -438,6 +502,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\arrowLon.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 22,
+            height: 20,
+          },
           children: [],
         },
       ],
@@ -473,6 +541,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\arrowR.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 21,
+            height: 20,
+          },
           children: [],
         },
         {
@@ -491,6 +563,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\arrowRon.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 21,
+            height: 20,
+          },
           children: [],
         },
       ],
@@ -526,6 +602,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\biginfo.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 45,
+            height: 43,
+          },
           children: [],
         },
         {
@@ -559,6 +639,10 @@ export const _InfoMain = {
               filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\biginfoo.bmp',
               fileType: 1280594720,
               extra: 'BMP_ISMAP',
+              dimensions: {
+                width: 45,
+                height: 43,
+              },
               children: [],
             },
           ],
@@ -596,6 +680,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Radio.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 54,
+            height: 63,
+          },
           children: [],
         },
         {
@@ -614,6 +702,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\RadioOn.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 54,
+            height: 63,
+          },
           children: [],
         },
       ],
@@ -649,6 +741,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Book.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 38,
+            height: 38,
+          },
           children: [],
         },
       ],
@@ -684,6 +780,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Door.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 71,
+            height: 133,
+          },
           children: [],
         },
       ],
@@ -719,6 +819,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\infoc.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 26,
+            height: 25,
+          },
           children: [],
         },
         {
@@ -737,6 +841,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\infocdwn.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 30,
+            height: 37,
+          },
           children: [],
         },
       ],
@@ -772,6 +880,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Boat.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 25,
+            height: 26,
+          },
           children: [],
         },
         {
@@ -790,6 +902,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Boatdown.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 27,
+            height: 39,
+          },
           children: [],
         },
       ],
@@ -825,6 +941,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Race.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 22,
+            height: 26,
+          },
           children: [],
         },
         {
@@ -843,6 +963,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Racedown.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 24,
+            height: 36,
+          },
           children: [],
         },
       ],
@@ -878,6 +1002,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Pizza.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 23,
+            height: 26,
+          },
           children: [],
         },
         {
@@ -896,6 +1024,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Pizzadwn.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 25,
+            height: 34,
+          },
           children: [],
         },
       ],
@@ -931,6 +1063,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Gas.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 24,
+            height: 26,
+          },
           children: [],
         },
         {
@@ -949,6 +1085,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Gasdown.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 27,
+            height: 36,
+          },
           children: [],
         },
       ],
@@ -984,6 +1124,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Med.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 25,
+            height: 26,
+          },
           children: [],
         },
         {
@@ -1002,6 +1146,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Meddown.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 32,
+            height: 41,
+          },
           children: [],
         },
       ],
@@ -1037,6 +1185,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Cop.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 31,
+            height: 26,
+          },
           children: [],
         },
         {
@@ -1055,6 +1207,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Copdown.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 35,
+            height: 39,
+          },
           children: [],
         },
       ],
@@ -1090,6 +1246,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Mamabut.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 40,
+            height: 46,
+          },
           children: [],
         },
         {
@@ -1108,6 +1268,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Mamahot.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 40,
+            height: 46,
+          },
           children: [],
         },
       ],
@@ -1143,6 +1307,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Papabut.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 39,
+            height: 46,
+          },
           children: [],
         },
         {
@@ -1161,6 +1329,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Papahot.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 39,
+            height: 46,
+          },
           children: [],
         },
       ],
@@ -1196,6 +1368,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Peperbut.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 39,
+            height: 46,
+          },
           children: [],
         },
         {
@@ -1214,6 +1390,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Peperhot.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 39,
+            height: 46,
+          },
           children: [],
         },
       ],
@@ -1249,6 +1429,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Nickbut.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 39,
+            height: 46,
+          },
           children: [],
         },
         {
@@ -1267,6 +1451,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Nickhot.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 39,
+            height: 46,
+          },
           children: [],
         },
       ],
@@ -1302,6 +1490,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Laurabut.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 40,
+            height: 46,
+          },
           children: [],
         },
         {
@@ -1320,6 +1512,10 @@ export const _InfoMain = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Laurahot.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 40,
+            height: 46,
+          },
           children: [],
         },
       ],
@@ -1375,6 +1571,10 @@ export const LeftArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\arrowL.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 22,
+        height: 20,
+      },
       children: [],
     },
     {
@@ -1393,6 +1593,10 @@ export const LeftArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\arrowLon.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 22,
+        height: 20,
+      },
       children: [],
     },
   ],
@@ -1428,6 +1632,10 @@ export const RightArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\arrowR.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 21,
+        height: 20,
+      },
       children: [],
     },
     {
@@ -1446,6 +1654,10 @@ export const RightArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\arrowRon.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 21,
+        height: 20,
+      },
       children: [],
     },
   ],
@@ -1481,6 +1693,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\infoc.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 26,
+        height: 25,
+      },
       children: [],
     },
     {
@@ -1499,6 +1715,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\infocdwn.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 30,
+        height: 37,
+      },
       children: [],
     },
   ],
@@ -1534,6 +1754,10 @@ export const Door_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Door.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 71,
+        height: 133,
+      },
       children: [],
     },
   ],
@@ -1714,6 +1938,10 @@ export const Boat_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Boat.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 25,
+        height: 26,
+      },
       children: [],
     },
     {
@@ -1732,6 +1960,10 @@ export const Boat_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Boatdown.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 27,
+        height: 39,
+      },
       children: [],
     },
   ],
@@ -1767,6 +1999,10 @@ export const Race_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Race.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 22,
+        height: 26,
+      },
       children: [],
     },
     {
@@ -1785,6 +2021,10 @@ export const Race_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Racedown.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 24,
+        height: 36,
+      },
       children: [],
     },
   ],
@@ -1820,6 +2060,10 @@ export const Pizza_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Pizza.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 23,
+        height: 26,
+      },
       children: [],
     },
     {
@@ -1838,6 +2082,10 @@ export const Pizza_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Pizzadwn.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 25,
+        height: 34,
+      },
       children: [],
     },
   ],
@@ -1873,6 +2121,10 @@ export const Gas_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Gas.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 24,
+        height: 26,
+      },
       children: [],
     },
     {
@@ -1891,6 +2143,10 @@ export const Gas_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Gasdown.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 27,
+        height: 36,
+      },
       children: [],
     },
   ],
@@ -1926,6 +2182,10 @@ export const Med_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Med.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 25,
+        height: 26,
+      },
       children: [],
     },
     {
@@ -1944,6 +2204,10 @@ export const Med_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Meddown.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 32,
+        height: 41,
+      },
       children: [],
     },
   ],
@@ -1979,6 +2243,10 @@ export const Cop_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Cop.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 31,
+        height: 26,
+      },
       children: [],
     },
     {
@@ -1997,6 +2265,10 @@ export const Cop_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Copdown.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 35,
+        height: 39,
+      },
       children: [],
     },
   ],
@@ -2032,6 +2304,10 @@ export const BigInfo_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\biginfo.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 45,
+        height: 43,
+      },
       children: [],
     },
     {
@@ -2065,6 +2341,10 @@ export const BigInfo_Ctl = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\biginfoo.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 45,
+            height: 43,
+          },
           children: [],
         },
       ],
@@ -2102,6 +2382,10 @@ export const Book_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Book.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 38,
+        height: 38,
+      },
       children: [],
     },
   ],
@@ -2137,6 +2421,10 @@ export const Radio_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Radio.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 54,
+        height: 63,
+      },
       children: [],
     },
     {
@@ -2155,6 +2443,10 @@ export const Radio_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\RadioOn.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 54,
+        height: 63,
+      },
       children: [],
     },
   ],
@@ -2230,6 +2522,10 @@ export const Mama_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Mamabut.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 40,
+        height: 46,
+      },
       children: [],
     },
     {
@@ -2248,6 +2544,10 @@ export const Mama_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Mamahot.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 40,
+        height: 46,
+      },
       children: [],
     },
   ],
@@ -2283,6 +2583,10 @@ export const Papa_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Papabut.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 39,
+        height: 46,
+      },
       children: [],
     },
     {
@@ -2301,6 +2605,10 @@ export const Papa_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Papahot.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 39,
+        height: 46,
+      },
       children: [],
     },
   ],
@@ -2336,6 +2644,10 @@ export const Pepper_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Peperbut.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 39,
+        height: 46,
+      },
       children: [],
     },
     {
@@ -2354,6 +2666,10 @@ export const Pepper_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Peperhot.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 39,
+        height: 46,
+      },
       children: [],
     },
   ],
@@ -2389,6 +2705,10 @@ export const Nick_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Nickbut.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 39,
+        height: 46,
+      },
       children: [],
     },
     {
@@ -2407,6 +2727,10 @@ export const Nick_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Nickhot.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 39,
+        height: 46,
+      },
       children: [],
     },
   ],
@@ -2442,6 +2766,10 @@ export const Laura_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Laurabut.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 40,
+        height: 46,
+      },
       children: [],
     },
     {
@@ -2460,6 +2788,10 @@ export const Laura_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\Laurahot.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 40,
+        height: 46,
+      },
       children: [],
     },
   ],
@@ -3884,6 +4216,10 @@ export const BigInfo_Down = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Main\\biginfoo.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 45,
+        height: 43,
+      },
       children: [],
     },
   ],

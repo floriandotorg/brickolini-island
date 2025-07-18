@@ -30,6 +30,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Raceguif.bmp',
       fileType: 1280594720,
       extra: 'World:current',
+      dimensions: {
+        width: 640,
+        height: 480,
+      },
       children: [],
     },
     {
@@ -48,6 +52,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\YelowBar.bmp',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 64,
+        height: 58,
+      },
       children: [],
     },
     {
@@ -81,6 +89,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\FlagU.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 82,
+            height: 93,
+          },
           children: [],
         },
         {
@@ -99,6 +111,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\FlagL.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 81,
+            height: 95,
+          },
           children: [],
         },
       ],
@@ -134,6 +150,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LiteOn.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 67,
+            height: 86,
+          },
           children: [],
         },
         {
@@ -186,6 +206,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LiteL.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 55,
+                height: 86,
+              },
               children: [],
             },
           ],
@@ -223,6 +247,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\YelowOff.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 22,
+            height: 20,
+          },
           children: [],
         },
         {
@@ -241,6 +269,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\YellowOn.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 22,
+            height: 20,
+          },
           children: [],
         },
       ],
@@ -276,6 +308,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RedOff.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 21,
+            height: 21,
+          },
           children: [],
         },
         {
@@ -294,6 +330,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RedOn.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 21,
+            height: 21,
+          },
           children: [],
         },
       ],
@@ -329,6 +369,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\BlueOff.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 20,
+            height: 20,
+          },
           children: [],
         },
         {
@@ -347,6 +391,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\BlueOn.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 20,
+            height: 20,
+          },
           children: [],
         },
       ],
@@ -382,6 +430,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\GreenOff.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 21,
+            height: 20,
+          },
           children: [],
         },
         {
@@ -400,6 +452,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Greenon.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 21,
+            height: 20,
+          },
           children: [],
         },
       ],
@@ -435,6 +491,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\GrayOff.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 20,
+            height: 20,
+          },
           children: [],
         },
         {
@@ -453,6 +513,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\GrayOn.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 20,
+            height: 20,
+          },
           children: [],
         },
       ],
@@ -488,6 +552,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\BlackOff.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 20,
+            height: 19,
+          },
           children: [],
         },
         {
@@ -506,6 +574,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\BlackOn.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 20,
+            height: 19,
+          },
           children: [],
         },
       ],
@@ -556,6 +628,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Normal.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 122,
+                height: 79,
+              },
               children: [],
             },
           ],
@@ -591,6 +667,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LTop.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 122,
+                height: 79,
+              },
               children: [],
             },
             {
@@ -644,6 +724,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RTop.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 122,
+                height: 79,
+              },
               children: [],
             },
             {
@@ -697,6 +781,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LBottom.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 122,
+                height: 79,
+              },
               children: [],
             },
             {
@@ -750,6 +838,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RBottom.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 122,
+                height: 79,
+              },
               children: [],
             },
             {
@@ -820,6 +912,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Normal.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 122,
+                height: 79,
+              },
               children: [],
             },
           ],
@@ -855,6 +951,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LTop.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 122,
+                height: 79,
+              },
               children: [],
             },
             {
@@ -908,6 +1008,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RTop.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 122,
+                height: 79,
+              },
               children: [],
             },
             {
@@ -961,6 +1065,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LBottom.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 122,
+                height: 79,
+              },
               children: [],
             },
             {
@@ -1014,6 +1122,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RBottom.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 122,
+                height: 79,
+              },
               children: [],
             },
             {
@@ -1084,6 +1196,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\4_up.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 114,
+                height: 81,
+              },
               children: [],
             },
           ],
@@ -1119,6 +1235,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\L1_dn.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 114,
+                height: 81,
+              },
               children: [],
             },
             {
@@ -1172,6 +1292,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\R1_dn.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 114,
+                height: 81,
+              },
               children: [],
             },
             {
@@ -1225,6 +1349,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\L2_dn.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 114,
+                height: 81,
+              },
               children: [],
             },
             {
@@ -1278,6 +1406,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\R2_dn.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 114,
+                height: 81,
+              },
               children: [],
             },
             {
@@ -1333,6 +1465,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\redEYE.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 48,
+            height: 47,
+          },
           children: [],
         },
         {
@@ -1351,6 +1487,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\greenEYE.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 48,
+            height: 47,
+          },
           children: [],
         },
       ],
@@ -1386,6 +1526,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\redTRI.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 36,
+            height: 39,
+          },
           children: [],
         },
         {
@@ -1404,6 +1548,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\greenTRI.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 36,
+            height: 39,
+          },
           children: [],
         },
       ],
@@ -1642,6 +1790,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\redEYE.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 48,
+        height: 47,
+      },
       children: [],
     },
     {
@@ -1660,6 +1812,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\greenEYE.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 48,
+        height: 47,
+      },
       children: [],
     },
   ],
@@ -1695,6 +1851,10 @@ export const Exit_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\redTRI.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 36,
+        height: 39,
+      },
       children: [],
     },
     {
@@ -1713,6 +1873,10 @@ export const Exit_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\greenTRI.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 36,
+        height: 39,
+      },
       children: [],
     },
   ],
@@ -1748,6 +1912,10 @@ export const ShelfUp_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\FlagU.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 82,
+        height: 93,
+      },
       children: [],
     },
     {
@@ -1766,6 +1934,10 @@ export const ShelfUp_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\FlagL.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 81,
+        height: 95,
+      },
       children: [],
     },
   ],
@@ -1801,6 +1973,10 @@ export const Platform_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LiteOn.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 67,
+        height: 86,
+      },
       children: [],
     },
     {
@@ -1853,6 +2029,10 @@ export const Platform_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LiteL.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 55,
+            height: 86,
+          },
           children: [],
         },
       ],
@@ -2019,6 +2199,10 @@ export const PlatformLeft = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LiteL.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 55,
+        height: 86,
+      },
       children: [],
     },
   ],
@@ -2095,6 +2279,10 @@ export const Yellow_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\YelowOff.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 22,
+        height: 20,
+      },
       children: [],
     },
     {
@@ -2113,6 +2301,10 @@ export const Yellow_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\YellowOn.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 22,
+        height: 20,
+      },
       children: [],
     },
   ],
@@ -2192,6 +2384,10 @@ export const Red_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RedOff.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 21,
+        height: 21,
+      },
       children: [],
     },
     {
@@ -2210,6 +2406,10 @@ export const Red_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RedOn.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 21,
+        height: 21,
+      },
       children: [],
     },
   ],
@@ -2289,6 +2489,10 @@ export const Blue_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\BlueOff.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 20,
+        height: 20,
+      },
       children: [],
     },
     {
@@ -2307,6 +2511,10 @@ export const Blue_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\BlueOn.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 20,
+        height: 20,
+      },
       children: [],
     },
   ],
@@ -2386,6 +2594,10 @@ export const Green_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\GreenOff.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 21,
+        height: 20,
+      },
       children: [],
     },
     {
@@ -2404,6 +2616,10 @@ export const Green_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Greenon.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 21,
+        height: 20,
+      },
       children: [],
     },
   ],
@@ -2483,6 +2699,10 @@ export const Gray_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\GrayOff.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 20,
+        height: 20,
+      },
       children: [],
     },
     {
@@ -2501,6 +2721,10 @@ export const Gray_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\GrayOn.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 20,
+        height: 20,
+      },
       children: [],
     },
   ],
@@ -2580,6 +2804,10 @@ export const Black_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\BlackOff.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 20,
+        height: 19,
+      },
       children: [],
     },
     {
@@ -2598,6 +2826,10 @@ export const Black_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\BlackOn.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 20,
+        height: 19,
+      },
       children: [],
     },
   ],
@@ -2692,6 +2924,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Normal.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 122,
+            height: 79,
+          },
           children: [],
         },
       ],
@@ -2727,6 +2963,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LTop.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 122,
+            height: 79,
+          },
           children: [],
         },
         {
@@ -2780,6 +3020,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RTop.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 122,
+            height: 79,
+          },
           children: [],
         },
         {
@@ -2833,6 +3077,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LBottom.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 122,
+            height: 79,
+          },
           children: [],
         },
         {
@@ -2886,6 +3134,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RBottom.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 122,
+            height: 79,
+          },
           children: [],
         },
         {
@@ -2941,6 +3193,10 @@ export const RCFRNT_State_0 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Normal.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 122,
+        height: 79,
+      },
       children: [],
     },
   ],
@@ -2998,6 +3254,10 @@ export const RCFRNT_State_1 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LTop.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 122,
+        height: 79,
+      },
       children: [],
     },
     {
@@ -3091,6 +3351,10 @@ export const RCFRNT_State_2 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RTop.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 122,
+        height: 79,
+      },
       children: [],
     },
     {
@@ -3184,6 +3448,10 @@ export const RCFRNT_State_3 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LBottom.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 122,
+        height: 79,
+      },
       children: [],
     },
     {
@@ -3277,6 +3545,10 @@ export const RCFRNT_State_4 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RBottom.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 122,
+        height: 79,
+      },
       children: [],
     },
     {
@@ -3385,6 +3657,10 @@ export const Decals_Ctl1 = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Normal.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 122,
+            height: 79,
+          },
           children: [],
         },
       ],
@@ -3420,6 +3696,10 @@ export const Decals_Ctl1 = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LTop.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 122,
+            height: 79,
+          },
           children: [],
         },
         {
@@ -3473,6 +3753,10 @@ export const Decals_Ctl1 = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RTop.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 122,
+            height: 79,
+          },
           children: [],
         },
         {
@@ -3526,6 +3810,10 @@ export const Decals_Ctl1 = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LBottom.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 122,
+            height: 79,
+          },
           children: [],
         },
         {
@@ -3579,6 +3867,10 @@ export const Decals_Ctl1 = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RBottom.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 122,
+            height: 79,
+          },
           children: [],
         },
         {
@@ -3634,6 +3926,10 @@ export const RCBACK_State_0 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Normal.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 122,
+        height: 79,
+      },
       children: [],
     },
   ],
@@ -3691,6 +3987,10 @@ export const RCBACK_State_1 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LTop.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 122,
+        height: 79,
+      },
       children: [],
     },
     {
@@ -3784,6 +4084,10 @@ export const RCBACK_State_2 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RTop.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 122,
+        height: 79,
+      },
       children: [],
     },
     {
@@ -3877,6 +4181,10 @@ export const RCBACK_State_3 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\LBottom.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 122,
+        height: 79,
+      },
       children: [],
     },
     {
@@ -3970,6 +4278,10 @@ export const RCBACK_State_4 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\RBottom.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 122,
+        height: 79,
+      },
       children: [],
     },
     {
@@ -4078,6 +4390,10 @@ export const Decals_Ctl2 = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\4_up.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 114,
+            height: 81,
+          },
           children: [],
         },
       ],
@@ -4113,6 +4429,10 @@ export const Decals_Ctl2 = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\L1_dn.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 114,
+            height: 81,
+          },
           children: [],
         },
         {
@@ -4166,6 +4486,10 @@ export const Decals_Ctl2 = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\R1_dn.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 114,
+            height: 81,
+          },
           children: [],
         },
         {
@@ -4219,6 +4543,10 @@ export const Decals_Ctl2 = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\L2_dn.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 114,
+            height: 81,
+          },
           children: [],
         },
         {
@@ -4272,6 +4600,10 @@ export const Decals_Ctl2 = {
           filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\R2_dn.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 114,
+            height: 81,
+          },
           children: [],
         },
         {
@@ -4327,6 +4659,10 @@ export const RCTAIL_State_0 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\4_up.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 114,
+        height: 81,
+      },
       children: [],
     },
   ],
@@ -4384,6 +4720,10 @@ export const RCTAIL_State_1 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\L1_dn.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 114,
+        height: 81,
+      },
       children: [],
     },
     {
@@ -4477,6 +4817,10 @@ export const RCTAIL_State_2 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\R1_dn.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 114,
+        height: 81,
+      },
       children: [],
     },
     {
@@ -4570,6 +4914,10 @@ export const RCTAIL_State_3 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\L2_dn.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 114,
+        height: 81,
+      },
       children: [],
     },
     {
@@ -4663,6 +5011,10 @@ export const RCTAIL_State_4 = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\R2_dn.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 114,
+        height: 81,
+      },
       children: [],
     },
     {

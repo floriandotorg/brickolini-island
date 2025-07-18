@@ -30,6 +30,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gargback.bmp',
       fileType: 1280594720,
       extra: 'World:\\lego\\scripts\\build\\dunecar;0',
+      dimensions: {
+        width: 640,
+        height: 480,
+      },
       children: [],
     },
     {
@@ -48,6 +52,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paintact.bmp',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 125,
+        height: 124,
+      },
       children: [],
     },
     {
@@ -81,6 +89,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Pump_on.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 130,
+            height: 195,
+          },
           children: [],
         },
         {
@@ -99,6 +111,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Pump_lft.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 132,
+            height: 196,
+          },
           children: [],
         },
       ],
@@ -134,6 +150,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Wren_on.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 62,
+            height: 136,
+          },
           children: [],
         },
         {
@@ -186,6 +206,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Wren_lft.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 62,
+                height: 136,
+              },
               children: [],
             },
           ],
@@ -223,6 +247,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Painyel0.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 21,
+            height: 34,
+          },
           children: [],
         },
         {
@@ -241,6 +269,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paintyel.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 20,
+            height: 34,
+          },
           children: [],
         },
       ],
@@ -276,6 +308,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Painred0.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 22,
+            height: 34,
+          },
           children: [],
         },
         {
@@ -294,6 +330,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paintred.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 21,
+            height: 34,
+          },
           children: [],
         },
       ],
@@ -329,6 +369,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Painblu0.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 22,
+            height: 34,
+          },
           children: [],
         },
         {
@@ -347,6 +391,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paintblu.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 21,
+            height: 34,
+          },
           children: [],
         },
       ],
@@ -382,6 +430,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paingrn0.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 21,
+            height: 34,
+          },
           children: [],
         },
         {
@@ -400,6 +452,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paintgrn.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 20,
+            height: 34,
+          },
           children: [],
         },
       ],
@@ -435,6 +491,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paingra0.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 22,
+            height: 34,
+          },
           children: [],
         },
         {
@@ -453,6 +513,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paintgra.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 20,
+            height: 35,
+          },
           children: [],
         },
       ],
@@ -488,6 +552,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Painblk0.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 22,
+            height: 35,
+          },
           children: [],
         },
         {
@@ -506,6 +574,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paintblk.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 21,
+            height: 35,
+          },
           children: [],
         },
       ],
@@ -556,6 +628,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gargbook.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 115,
+                height: 60,
+              },
               children: [],
             },
           ],
@@ -591,6 +667,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gardec01.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 115,
+                height: 60,
+              },
               children: [],
             },
             {
@@ -644,6 +724,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gardec02.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 115,
+                height: 60,
+              },
               children: [],
             },
             {
@@ -697,6 +781,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gardec03.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 115,
+                height: 60,
+              },
               children: [],
             },
             {
@@ -750,6 +838,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gardec04.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 115,
+                height: 60,
+              },
               children: [],
             },
             {
@@ -805,6 +897,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\GARinfo1.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 53,
+            height: 52,
+          },
           children: [],
         },
         {
@@ -823,6 +919,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Garginfo.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 53,
+            height: 53,
+          },
           children: [],
         },
       ],
@@ -858,6 +958,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\GARexit1.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 53,
+            height: 46,
+          },
           children: [],
         },
         {
@@ -876,6 +980,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\GargExit.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 54,
+            height: 48,
+          },
           children: [],
         },
       ],
@@ -1114,6 +1222,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\GARinfo1.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 53,
+        height: 52,
+      },
       children: [],
     },
     {
@@ -1132,6 +1244,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Garginfo.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 53,
+        height: 53,
+      },
       children: [],
     },
   ],
@@ -1167,6 +1283,10 @@ export const Exit_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\GARexit1.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 53,
+        height: 46,
+      },
       children: [],
     },
     {
@@ -1185,6 +1305,10 @@ export const Exit_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\GargExit.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 54,
+        height: 48,
+      },
       children: [],
     },
   ],
@@ -1220,6 +1344,10 @@ export const ShelfUp_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Pump_on.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 130,
+        height: 195,
+      },
       children: [],
     },
     {
@@ -1238,6 +1366,10 @@ export const ShelfUp_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Pump_lft.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 132,
+        height: 196,
+      },
       children: [],
     },
   ],
@@ -1273,6 +1405,10 @@ export const Platform_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Wren_on.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 62,
+        height: 136,
+      },
       children: [],
     },
     {
@@ -1325,6 +1461,10 @@ export const Platform_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Wren_lft.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 62,
+            height: 136,
+          },
           children: [],
         },
       ],
@@ -1509,6 +1649,10 @@ export const PlatformLeft = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Wren_lft.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 62,
+        height: 136,
+      },
       children: [],
     },
   ],
@@ -1585,6 +1729,10 @@ export const Yellow_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Painyel0.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 21,
+        height: 34,
+      },
       children: [],
     },
     {
@@ -1603,6 +1751,10 @@ export const Yellow_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paintyel.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 20,
+        height: 34,
+      },
       children: [],
     },
   ],
@@ -1682,6 +1834,10 @@ export const Red_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Painred0.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 22,
+        height: 34,
+      },
       children: [],
     },
     {
@@ -1700,6 +1856,10 @@ export const Red_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paintred.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 21,
+        height: 34,
+      },
       children: [],
     },
   ],
@@ -1779,6 +1939,10 @@ export const Blue_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Painblu0.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 22,
+        height: 34,
+      },
       children: [],
     },
     {
@@ -1797,6 +1961,10 @@ export const Blue_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paintblu.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 21,
+        height: 34,
+      },
       children: [],
     },
   ],
@@ -1876,6 +2044,10 @@ export const Green_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paingrn0.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 21,
+        height: 34,
+      },
       children: [],
     },
     {
@@ -1894,6 +2066,10 @@ export const Green_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paintgrn.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 20,
+        height: 34,
+      },
       children: [],
     },
   ],
@@ -1973,6 +2149,10 @@ export const Gray_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paingra0.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 22,
+        height: 34,
+      },
       children: [],
     },
     {
@@ -1991,6 +2171,10 @@ export const Gray_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paintgra.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 20,
+        height: 35,
+      },
       children: [],
     },
   ],
@@ -2070,6 +2254,10 @@ export const Black_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Painblk0.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 22,
+        height: 35,
+      },
       children: [],
     },
     {
@@ -2088,6 +2276,10 @@ export const Black_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Paintblk.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 21,
+        height: 35,
+      },
       children: [],
     },
   ],
@@ -2182,6 +2374,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gargbook.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 115,
+            height: 60,
+          },
           children: [],
         },
       ],
@@ -2217,6 +2413,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gardec01.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 115,
+            height: 60,
+          },
           children: [],
         },
         {
@@ -2270,6 +2470,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gardec02.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 115,
+            height: 60,
+          },
           children: [],
         },
         {
@@ -2323,6 +2527,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gardec03.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 115,
+            height: 60,
+          },
           children: [],
         },
         {
@@ -2376,6 +2584,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gardec04.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 115,
+            height: 60,
+          },
           children: [],
         },
         {
@@ -2431,6 +2643,10 @@ export const Decal_State_0 = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gargbook.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 115,
+        height: 60,
+      },
       children: [],
     },
   ],
@@ -2488,6 +2704,10 @@ export const Decal_State_1 = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gardec01.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 115,
+        height: 60,
+      },
       children: [],
     },
     {
@@ -2581,6 +2801,10 @@ export const Decal_State_2 = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gardec02.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 115,
+        height: 60,
+      },
       children: [],
     },
     {
@@ -2674,6 +2898,10 @@ export const Decal_State_3 = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gardec03.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 115,
+        height: 60,
+      },
       children: [],
     },
     {
@@ -2767,6 +2995,10 @@ export const Decal_State_4 = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\Gardec04.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 115,
+        height: 60,
+      },
       children: [],
     },
     {

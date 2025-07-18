@@ -30,6 +30,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Heliback.bmp',
       fileType: 1280594720,
       extra: 'Sound:FALSE, World:current',
+      dimensions: {
+        width: 640,
+        height: 480,
+      },
       children: [],
     },
     {
@@ -48,6 +52,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paintact.bmp',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 82,
+        height: 56,
+      },
       children: [],
     },
     {
@@ -96,6 +104,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\Scaleact.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 117,
+                height: 118,
+              },
               children: [],
             },
           ],
@@ -131,6 +143,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\Scal0008.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 116,
+                height: 93,
+              },
               children: [],
             },
           ],
@@ -168,6 +184,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Stickact.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 45,
+            height: 103,
+          },
           children: [],
         },
         {
@@ -201,6 +221,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\Stic0015.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 50,
+                height: 98,
+              },
               children: [],
             },
             {
@@ -257,6 +281,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Painyel0.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 24,
+            height: 21,
+          },
           children: [],
         },
         {
@@ -275,6 +303,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paintyel.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 26,
+            height: 23,
+          },
           children: [],
         },
       ],
@@ -310,6 +342,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Painred0.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 23,
+            height: 21,
+          },
           children: [],
         },
         {
@@ -328,6 +364,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paintred.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 27,
+            height: 24,
+          },
           children: [],
         },
       ],
@@ -363,6 +403,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Painblu0.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 23,
+            height: 20,
+          },
           children: [],
         },
         {
@@ -381,6 +425,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paintblu.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 26,
+            height: 23,
+          },
           children: [],
         },
       ],
@@ -416,6 +464,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paingrn0.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 24,
+            height: 21,
+          },
           children: [],
         },
         {
@@ -434,6 +486,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paintgrn.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 26,
+            height: 25,
+          },
           children: [],
         },
       ],
@@ -469,6 +525,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paingra0.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 23,
+            height: 21,
+          },
           children: [],
         },
         {
@@ -487,6 +547,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paintgra.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 26,
+            height: 23,
+          },
           children: [],
         },
       ],
@@ -522,6 +586,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Painblk0.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 23,
+            height: 21,
+          },
           children: [],
         },
         {
@@ -540,6 +608,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paintblk.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 24,
+            height: 23,
+          },
           children: [],
         },
       ],
@@ -590,6 +662,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
           ],
@@ -625,6 +701,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2d1.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
             {
@@ -678,6 +758,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2d3.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
             {
@@ -731,6 +815,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2d2.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
             {
@@ -784,6 +872,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2d4.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
             {
@@ -854,6 +946,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
           ],
@@ -889,6 +985,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d1.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
             {
@@ -942,6 +1042,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d3.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
             {
@@ -995,6 +1099,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d2.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
             {
@@ -1048,6 +1156,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d4.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
             {
@@ -1118,6 +1230,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
           ],
@@ -1153,6 +1269,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d1.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
             {
@@ -1206,6 +1326,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d3.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
             {
@@ -1259,6 +1383,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d2.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
             {
@@ -1312,6 +1440,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d4.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 98,
+                height: 54,
+              },
               children: [],
             },
             {
@@ -1367,6 +1499,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\HELinfo1.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 45,
+            height: 44,
+          },
           children: [],
         },
         {
@@ -1385,6 +1521,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Heliinfo.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 47,
+            height: 46,
+          },
           children: [],
         },
       ],
@@ -1420,6 +1560,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\HELexit1.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 49,
+            height: 42,
+          },
           children: [],
         },
         {
@@ -1438,6 +1582,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\HeliExit.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 51,
+            height: 46,
+          },
           children: [],
         },
       ],
@@ -1676,6 +1824,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\HELinfo1.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 45,
+        height: 44,
+      },
       children: [],
     },
     {
@@ -1694,6 +1846,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Heliinfo.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 47,
+        height: 46,
+      },
       children: [],
     },
   ],
@@ -1729,6 +1885,10 @@ export const Exit_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\HELexit1.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 49,
+        height: 42,
+      },
       children: [],
     },
     {
@@ -1747,6 +1907,10 @@ export const Exit_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\HeliExit.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 51,
+        height: 46,
+      },
       children: [],
     },
   ],
@@ -1797,6 +1961,10 @@ export const ShelfUp_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Scaleact.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 117,
+            height: 118,
+          },
           children: [],
         },
       ],
@@ -1832,6 +2000,10 @@ export const ShelfUp_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Scal0008.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 116,
+            height: 93,
+          },
           children: [],
         },
       ],
@@ -1869,6 +2041,10 @@ export const Platform_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Stickact.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 45,
+        height: 103,
+      },
       children: [],
     },
     {
@@ -1902,6 +2078,10 @@ export const Platform_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\Stic0015.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 50,
+            height: 98,
+          },
           children: [],
         },
         {
@@ -2002,6 +2182,10 @@ export const ShelfUp_Up = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Scaleact.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 117,
+        height: 118,
+      },
       children: [],
     },
   ],
@@ -2059,6 +2243,10 @@ export const ShelfUp_Down = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Scal0008.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 116,
+        height: 93,
+      },
       children: [],
     },
   ],
@@ -2138,6 +2326,10 @@ export const PlatformLeft = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Stic0015.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 50,
+        height: 98,
+      },
       children: [],
     },
     {
@@ -2233,6 +2425,10 @@ export const Yellow_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Painyel0.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 24,
+        height: 21,
+      },
       children: [],
     },
     {
@@ -2251,6 +2447,10 @@ export const Yellow_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paintyel.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 26,
+        height: 23,
+      },
       children: [],
     },
   ],
@@ -2330,6 +2530,10 @@ export const Red_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Painred0.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 23,
+        height: 21,
+      },
       children: [],
     },
     {
@@ -2348,6 +2552,10 @@ export const Red_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paintred.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 27,
+        height: 24,
+      },
       children: [],
     },
   ],
@@ -2427,6 +2635,10 @@ export const Blue_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Painblu0.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 23,
+        height: 20,
+      },
       children: [],
     },
     {
@@ -2445,6 +2657,10 @@ export const Blue_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paintblu.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 26,
+        height: 23,
+      },
       children: [],
     },
   ],
@@ -2524,6 +2740,10 @@ export const Green_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paingrn0.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 24,
+        height: 21,
+      },
       children: [],
     },
     {
@@ -2542,6 +2762,10 @@ export const Green_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paintgrn.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 26,
+        height: 25,
+      },
       children: [],
     },
   ],
@@ -2621,6 +2845,10 @@ export const Gray_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paingra0.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 23,
+        height: 21,
+      },
       children: [],
     },
     {
@@ -2639,6 +2867,10 @@ export const Gray_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paintgra.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 26,
+        height: 23,
+      },
       children: [],
     },
   ],
@@ -2718,6 +2950,10 @@ export const Black_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Painblk0.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 23,
+        height: 21,
+      },
       children: [],
     },
     {
@@ -2736,6 +2972,10 @@ export const Black_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Paintblk.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 24,
+        height: 23,
+      },
       children: [],
     },
   ],
@@ -2830,6 +3070,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
       ],
@@ -2865,6 +3109,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2d1.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -2918,6 +3166,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2d3.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -2971,6 +3223,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2d2.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -3024,6 +3280,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2d4.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -3079,6 +3339,10 @@ export const CHWIND_State_0 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
   ],
@@ -3136,6 +3400,10 @@ export const CHWIND_State_1 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2d1.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
     {
@@ -3229,6 +3497,10 @@ export const CHWIND_State_3 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2d3.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
     {
@@ -3322,6 +3594,10 @@ export const CHWIND_State_2 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2d2.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
     {
@@ -3415,6 +3691,10 @@ export const CHWIND_State_4 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book2d4.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
     {
@@ -3523,6 +3803,10 @@ export const Decals_Ctl1 = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
       ],
@@ -3558,6 +3842,10 @@ export const Decals_Ctl1 = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d1.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -3611,6 +3899,10 @@ export const Decals_Ctl1 = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d3.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -3664,6 +3956,10 @@ export const Decals_Ctl1 = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d2.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -3717,6 +4013,10 @@ export const Decals_Ctl1 = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d4.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -3772,6 +4072,10 @@ export const CHJETL_State_0 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
   ],
@@ -3829,6 +4133,10 @@ export const CHJETL_State_1 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d1.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
     {
@@ -3922,6 +4230,10 @@ export const CHJETL_State_3 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d3.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
     {
@@ -4015,6 +4327,10 @@ export const CHJETL_State_2 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d2.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
     {
@@ -4108,6 +4424,10 @@ export const CHJETL_State_4 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d4.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
     {
@@ -4216,6 +4536,10 @@ export const Decals_Ctl2 = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
       ],
@@ -4251,6 +4575,10 @@ export const Decals_Ctl2 = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d1.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -4304,6 +4632,10 @@ export const Decals_Ctl2 = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d3.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -4357,6 +4689,10 @@ export const Decals_Ctl2 = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d2.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -4410,6 +4746,10 @@ export const Decals_Ctl2 = {
           filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d4.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 98,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -4465,6 +4805,10 @@ export const CHJETR_State_0 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
   ],
@@ -4522,6 +4866,10 @@ export const CHJETR_State_1 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d1.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
     {
@@ -4615,6 +4963,10 @@ export const CHJETR_State_3 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d3.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
     {
@@ -4708,6 +5060,10 @@ export const CHJETR_State_2 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d2.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
     {
@@ -4801,6 +5157,10 @@ export const CHJETR_State_4 = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\book1d4.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 98,
+        height: 54,
+      },
       children: [],
     },
     {

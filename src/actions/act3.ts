@@ -897,6 +897,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\dash.BMP',
       fileType: 1280594720,
       extra: 'World:current',
+      dimensions: {
+        width: 464,
+        height: 159,
+      },
       children: [],
     },
     {
@@ -930,6 +934,10 @@ export const HelicopterDashboard = {
           filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\pizzaA.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 70,
+            height: 59,
+          },
           children: [],
         },
         {
@@ -948,6 +956,10 @@ export const HelicopterDashboard = {
           filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\pizzas.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 70,
+            height: 59,
+          },
           children: [],
         },
       ],
@@ -983,6 +995,10 @@ export const HelicopterDashboard = {
           filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DonutA.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 62,
+            height: 50,
+          },
           children: [],
         },
         {
@@ -1001,6 +1017,10 @@ export const HelicopterDashboard = {
           filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\Donuts.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 62,
+            height: 50,
+          },
           children: [],
         },
       ],
@@ -1036,6 +1056,10 @@ export const HelicopterDashboard = {
           filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\InfoA.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 57,
+            height: 44,
+          },
           children: [],
         },
         {
@@ -1054,6 +1078,10 @@ export const HelicopterDashboard = {
           filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\Infos.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 62,
+            height: 44,
+          },
           children: [],
         },
       ],
@@ -1074,6 +1102,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1092,6 +1124,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1110,6 +1146,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1128,6 +1168,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1146,6 +1190,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1164,6 +1212,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1182,6 +1234,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1200,6 +1256,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1218,6 +1278,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1236,6 +1300,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1254,6 +1322,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1272,6 +1344,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1290,6 +1366,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1308,6 +1388,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
     {
@@ -1326,6 +1410,10 @@ export const HelicopterDashboard = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DotOn.BMP',
       fileType: 1280594720,
       extra: 'World:current, Visibility:FALSE',
+      dimensions: {
+        width: 8,
+        height: 8,
+      },
       children: [],
     },
   ],
@@ -1383,6 +1471,10 @@ export const Helicopter_Pizza_Ctl = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\pizzaA.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 70,
+        height: 59,
+      },
       children: [],
     },
     {
@@ -1401,6 +1493,10 @@ export const Helicopter_Pizza_Ctl = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\pizzas.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 70,
+        height: 59,
+      },
       children: [],
     },
   ],
@@ -1436,6 +1532,10 @@ export const Helicopter_Donut_Ctl = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\DonutA.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 62,
+        height: 50,
+      },
       children: [],
     },
     {
@@ -1454,6 +1554,10 @@ export const Helicopter_Donut_Ctl = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\Donuts.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 62,
+        height: 50,
+      },
       children: [],
     },
   ],
@@ -1489,6 +1593,10 @@ export const Helicopter_Info_Ctl = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\InfoA.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 57,
+        height: 44,
+      },
       children: [],
     },
     {
@@ -1507,6 +1615,10 @@ export const Helicopter_Info_Ctl = {
       filename: 'q:\\Lego\\Scripts\\Dashbrds\\Copter\\Infos.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 62,
+        height: 44,
+      },
       children: [],
     },
   ],

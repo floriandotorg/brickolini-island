@@ -65,6 +65,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\backgrnd.bmp',
       fileType: 1280594720,
       extra: 'World:current',
+      dimensions: {
+        width: 640,
+        height: 480,
+      },
       children: [],
     },
     {
@@ -83,6 +87,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\redled.bmp',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 14,
+        height: 14,
+      },
       children: [],
     },
     {
@@ -116,6 +124,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\ArrowL.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 33,
+            height: 30,
+          },
           children: [],
         },
         {
@@ -134,6 +146,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\ArrowLon.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 33,
+            height: 30,
+          },
           children: [],
         },
       ],
@@ -169,6 +185,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\arrowR.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 30,
+            height: 29,
+          },
           children: [],
         },
         {
@@ -187,6 +207,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\ArrowRon.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 30,
+            height: 29,
+          },
           children: [],
         },
       ],
@@ -222,6 +246,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\Info.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 34,
+            height: 33,
+          },
           children: [],
         },
         {
@@ -240,6 +268,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\Infos.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 34,
+            height: 33,
+          },
           children: [],
         },
       ],
@@ -275,6 +307,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\door.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 124,
+            height: 262,
+          },
           children: [],
         },
         {
@@ -293,6 +329,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\BuggyOn.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 60,
+            height: 62,
+          },
           children: [],
         },
       ],
@@ -328,6 +368,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\Radio.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 114,
+            height: 67,
+          },
           children: [],
         },
         {
@@ -346,6 +390,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\RadioOn.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 114,
+            height: 67,
+          },
           children: [],
         },
       ],
@@ -401,6 +449,10 @@ export const LeftArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\ArrowL.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 33,
+        height: 30,
+      },
       children: [],
     },
     {
@@ -419,6 +471,10 @@ export const LeftArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\ArrowLon.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 33,
+        height: 30,
+      },
       children: [],
     },
   ],
@@ -454,6 +510,10 @@ export const RightArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\arrowR.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 30,
+        height: 29,
+      },
       children: [],
     },
     {
@@ -472,6 +532,10 @@ export const RightArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\ArrowRon.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 30,
+        height: 29,
+      },
       children: [],
     },
   ],
@@ -507,6 +571,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\Info.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 34,
+        height: 33,
+      },
       children: [],
     },
     {
@@ -525,6 +593,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\Infos.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 34,
+        height: 33,
+      },
       children: [],
     },
   ],
@@ -560,6 +632,10 @@ export const Buggy_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\door.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 124,
+        height: 262,
+      },
       children: [],
     },
     {
@@ -578,6 +654,10 @@ export const Buggy_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\BuggyOn.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 60,
+        height: 62,
+      },
       children: [],
     },
   ],
@@ -930,6 +1010,10 @@ export const Radio_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Garage\\Main\\RadioOn.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 114,
+        height: 67,
+      },
       children: [],
     },
   ],

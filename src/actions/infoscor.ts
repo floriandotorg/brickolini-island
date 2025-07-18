@@ -30,6 +30,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\backgrnd.bmp',
       fileType: 1280594720,
       extra: 'World:current',
+      dimensions: {
+        width: 640,
+        height: 480,
+      },
       children: [],
     },
     {
@@ -63,6 +67,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\arrowL.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 39,
+            height: 36,
+          },
           children: [],
         },
         {
@@ -81,6 +89,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\arrowLon.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 39,
+            height: 36,
+          },
           children: [],
         },
       ],
@@ -116,6 +128,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\arrowR.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 36,
+            height: 34,
+          },
           children: [],
         },
         {
@@ -134,6 +150,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\arrowRon.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 36,
+            height: 34,
+          },
           children: [],
         },
       ],
@@ -169,6 +189,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\Book.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 32,
+            height: 66,
+          },
           children: [],
         },
       ],
@@ -204,6 +228,10 @@ export const _StartUp = {
           filename: 'q:\\lego\\scripts\\infocntr\\floor1\\score\\boxmask.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 161,
+            height: 103,
+          },
           children: [],
         },
       ],
@@ -259,6 +287,10 @@ export const LeftArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\arrowL.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 39,
+        height: 36,
+      },
       children: [],
     },
     {
@@ -277,6 +309,10 @@ export const LeftArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\arrowLon.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 39,
+        height: 36,
+      },
       children: [],
     },
   ],
@@ -312,6 +348,10 @@ export const RightArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\arrowR.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 36,
+        height: 34,
+      },
       children: [],
     },
     {
@@ -330,6 +370,10 @@ export const RightArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\arrowRon.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 36,
+        height: 34,
+      },
       children: [],
     },
   ],
@@ -365,6 +409,10 @@ export const Book_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\Book.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 32,
+        height: 66,
+      },
       children: [],
     },
   ],
@@ -400,6 +448,10 @@ export const LegoBox_Ctl = {
       filename: 'q:\\lego\\scripts\\infocntr\\floor1\\score\\boxmask.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 161,
+        height: 103,
+      },
       children: [],
     },
   ],

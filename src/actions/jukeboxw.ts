@@ -30,6 +30,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Media\\JukeBox\\backgrnd.bmp',
       fileType: 1280594720,
       extra: 'World:current',
+      dimensions: {
+        width: 640,
+        height: 480,
+      },
       children: [],
     },
     {
@@ -48,6 +52,10 @@ export const _StartUp = {
       filename: 'q:\\Lego\\Media\\JukeBox\\Right.bmp',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 353,
+        height: 332,
+      },
       children: [],
     },
     {
@@ -66,6 +74,10 @@ export const _StartUp = {
       filename: 'q:\\Lego\\Media\\JukeBox\\Decal.bmp',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 353,
+        height: 332,
+      },
       children: [],
     },
     {
@@ -84,6 +96,10 @@ export const _StartUp = {
       filename: 'q:\\Lego\\Media\\JukeBox\\Wallis.bmp',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 353,
+        height: 332,
+      },
       children: [],
     },
     {
@@ -102,6 +118,10 @@ export const _StartUp = {
       filename: 'q:\\Lego\\Media\\JukeBox\\Nelson.bmp',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 353,
+        height: 332,
+      },
       children: [],
     },
     {
@@ -120,6 +140,10 @@ export const _StartUp = {
       filename: 'q:\\Lego\\Media\\JukeBox\\Torpedos.bmp',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 353,
+        height: 332,
+      },
       children: [],
     },
     {
@@ -153,6 +177,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\media\\jukebox\\voldown.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 44,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -171,6 +199,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\media\\jukebox\\voldownS.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 44,
+            height: 54,
+          },
           children: [],
         },
       ],
@@ -206,6 +238,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\media\\jukebox\\volup.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 44,
+            height: 54,
+          },
           children: [],
         },
         {
@@ -224,6 +260,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\media\\jukebox\\volupS.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 44,
+            height: 54,
+          },
           children: [],
         },
       ],
@@ -259,6 +299,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\media\\jukebox\\dback.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 78,
+            height: 41,
+          },
           children: [],
         },
         {
@@ -277,6 +321,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\media\\jukebox\\dbackS.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 78,
+            height: 41,
+          },
           children: [],
         },
       ],
@@ -312,6 +360,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\media\\jukebox\\dfwd.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 78,
+            height: 41,
+          },
           children: [],
         },
         {
@@ -330,6 +382,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\media\\jukebox\\dfwdS.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 78,
+            height: 41,
+          },
           children: [],
         },
       ],
@@ -365,6 +421,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\media\\jukebox\\note.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 86,
+            height: 46,
+          },
           children: [],
         },
         {
@@ -383,6 +443,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\media\\jukebox\\noteS.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 86,
+            height: 46,
+          },
           children: [],
         },
       ],
@@ -420,6 +484,10 @@ export const Voldown_Ctl = {
       filename: 'Q:\\Lego\\media\\jukebox\\voldown.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 44,
+        height: 54,
+      },
       children: [],
     },
     {
@@ -438,6 +506,10 @@ export const Voldown_Ctl = {
       filename: 'Q:\\Lego\\media\\jukebox\\voldownS.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 44,
+        height: 54,
+      },
       children: [],
     },
   ],
@@ -473,6 +545,10 @@ export const Volup_Ctl = {
       filename: 'Q:\\Lego\\media\\jukebox\\volup.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 44,
+        height: 54,
+      },
       children: [],
     },
     {
@@ -491,6 +567,10 @@ export const Volup_Ctl = {
       filename: 'Q:\\Lego\\media\\jukebox\\volupS.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 44,
+        height: 54,
+      },
       children: [],
     },
   ],
@@ -526,6 +606,10 @@ export const Dback_Ctl = {
       filename: 'Q:\\Lego\\media\\jukebox\\dback.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 78,
+        height: 41,
+      },
       children: [],
     },
     {
@@ -544,6 +628,10 @@ export const Dback_Ctl = {
       filename: 'Q:\\Lego\\media\\jukebox\\dbackS.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 78,
+        height: 41,
+      },
       children: [],
     },
   ],
@@ -579,6 +667,10 @@ export const Dfwd_Ctl = {
       filename: 'Q:\\Lego\\media\\jukebox\\dfwd.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 78,
+        height: 41,
+      },
       children: [],
     },
     {
@@ -597,6 +689,10 @@ export const Dfwd_Ctl = {
       filename: 'Q:\\Lego\\media\\jukebox\\dfwdS.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 78,
+        height: 41,
+      },
       children: [],
     },
   ],
@@ -632,6 +728,10 @@ export const Note_Ctl = {
       filename: 'Q:\\Lego\\media\\jukebox\\note.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 86,
+        height: 46,
+      },
       children: [],
     },
     {
@@ -650,6 +750,10 @@ export const Note_Ctl = {
       filename: 'Q:\\Lego\\media\\jukebox\\noteS.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 86,
+        height: 46,
+      },
       children: [],
     },
   ],

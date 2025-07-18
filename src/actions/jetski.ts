@@ -30,6 +30,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\Finjet.bmp',
       fileType: 1280594720,
       extra: 'World:current',
+      dimensions: {
+        width: 640,
+        height: 480,
+      },
       children: [],
     },
     {
@@ -48,6 +52,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\FrameOn.BMP',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 116,
+        height: 117,
+      },
       children: [],
     },
     {
@@ -81,6 +89,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\WheelUp.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 111,
+            height: 111,
+          },
           children: [],
         },
         {
@@ -99,6 +111,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\WheelLft.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 108,
+            height: 107,
+          },
           children: [],
         },
       ],
@@ -134,6 +150,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\OarU.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 69,
+            height: 134,
+          },
           children: [],
         },
         {
@@ -186,6 +206,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\OarL.BMP',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 63,
+                height: 135,
+              },
               children: [],
             },
           ],
@@ -223,6 +247,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\YelowOff.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 26,
+            height: 17,
+          },
           children: [],
         },
         {
@@ -241,6 +269,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\YellowOn.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 26,
+            height: 17,
+          },
           children: [],
         },
       ],
@@ -276,6 +308,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\RedOff.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 25,
+            height: 16,
+          },
           children: [],
         },
         {
@@ -294,6 +330,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\RedOn.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 25,
+            height: 16,
+          },
           children: [],
         },
       ],
@@ -329,6 +369,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\BlueOff.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 27,
+            height: 18,
+          },
           children: [],
         },
         {
@@ -347,6 +391,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\BlueOn.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 27,
+            height: 18,
+          },
           children: [],
         },
       ],
@@ -382,6 +430,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\GreenOff.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 25,
+            height: 19,
+          },
           children: [],
         },
         {
@@ -400,6 +452,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\GreenOn.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 25,
+            height: 19,
+          },
           children: [],
         },
       ],
@@ -435,6 +491,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\GrayOff.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 24,
+            height: 18,
+          },
           children: [],
         },
         {
@@ -453,6 +513,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\GrayOn.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 24,
+            height: 18,
+          },
           children: [],
         },
       ],
@@ -488,6 +552,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\BlackOff.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 27,
+            height: 18,
+          },
           children: [],
         },
         {
@@ -506,6 +574,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\BlackOn.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 27,
+            height: 18,
+          },
           children: [],
         },
       ],
@@ -541,6 +613,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\RedEYE.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 53,
+            height: 52,
+          },
           children: [],
         },
         {
@@ -559,6 +635,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\GreenEYE.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 53,
+            height: 52,
+          },
           children: [],
         },
       ],
@@ -594,6 +674,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\RedTRI.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 47,
+            height: 41,
+          },
           children: [],
         },
         {
@@ -612,6 +696,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\GreenTRI.BMP',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 47,
+            height: 41,
+          },
           children: [],
         },
       ],
@@ -632,6 +720,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\OpenShell.bmp',
       fileType: 1280594720,
       extra: 'Visibility:FALSE, World:current',
+      dimensions: {
+        width: 144,
+        height: 145,
+      },
       children: [],
     },
     {
@@ -680,6 +772,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\T1_Up.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 52,
+                height: 29,
+              },
               children: [],
             },
           ],
@@ -715,6 +811,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\T1_dn.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 52,
+                height: 28,
+              },
               children: [],
             },
             {
@@ -785,6 +885,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\T2_Up.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 52,
+                height: 28,
+              },
               children: [],
             },
           ],
@@ -820,6 +924,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\T2_dn.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 52,
+                height: 28,
+              },
               children: [],
             },
             {
@@ -890,6 +998,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\B1_Up.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 60,
+                height: 25,
+              },
               children: [],
             },
           ],
@@ -925,6 +1037,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\B1_dn.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 60,
+                height: 25,
+              },
               children: [],
             },
             {
@@ -995,6 +1111,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\B2_Up.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 61,
+                height: 22,
+              },
               children: [],
             },
           ],
@@ -1030,6 +1150,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\B2_dn.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 61,
+                height: 22,
+              },
               children: [],
             },
             {
@@ -1100,6 +1224,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh1u.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 38,
+                height: 32,
+              },
               children: [],
             },
           ],
@@ -1135,6 +1263,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh1d.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 38,
+                height: 32,
+              },
               children: [],
             },
             {
@@ -1205,6 +1337,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh2u.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 37,
+                height: 30,
+              },
               children: [],
             },
           ],
@@ -1240,6 +1376,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh2d.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 37,
+                height: 30,
+              },
               children: [],
             },
             {
@@ -1310,6 +1450,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh3u.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 40,
+                height: 26,
+              },
               children: [],
             },
           ],
@@ -1345,6 +1489,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh3d.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 40,
+                height: 26,
+              },
               children: [],
             },
             {
@@ -1415,6 +1563,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh4u.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 41,
+                height: 26,
+              },
               children: [],
             },
           ],
@@ -1450,6 +1602,10 @@ export const _StartUp = {
               filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh4d.bmp',
               fileType: 1280594720,
               extra: null,
+              dimensions: {
+                width: 41,
+                height: 26,
+              },
               children: [],
             },
             {
@@ -1708,6 +1864,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\RedEYE.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 53,
+        height: 52,
+      },
       children: [],
     },
     {
@@ -1726,6 +1886,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\GreenEYE.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 53,
+        height: 52,
+      },
       children: [],
     },
   ],
@@ -1761,6 +1925,10 @@ export const Exit_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\RedTRI.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 47,
+        height: 41,
+      },
       children: [],
     },
     {
@@ -1779,6 +1947,10 @@ export const Exit_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\GreenTRI.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 47,
+        height: 41,
+      },
       children: [],
     },
   ],
@@ -1814,6 +1986,10 @@ export const ShelfUp_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\WheelUp.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 111,
+        height: 111,
+      },
       children: [],
     },
     {
@@ -1832,6 +2008,10 @@ export const ShelfUp_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\WheelLft.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 108,
+        height: 107,
+      },
       children: [],
     },
   ],
@@ -1867,6 +2047,10 @@ export const Platform_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\OarU.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 69,
+        height: 134,
+      },
       children: [],
     },
     {
@@ -1919,6 +2103,10 @@ export const Platform_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\OarL.BMP',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 63,
+            height: 135,
+          },
           children: [],
         },
       ],
@@ -2085,6 +2273,10 @@ export const PlatformLeft = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\OarL.BMP',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 63,
+        height: 135,
+      },
       children: [],
     },
   ],
@@ -2161,6 +2353,10 @@ export const Yellow_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\YelowOff.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 26,
+        height: 17,
+      },
       children: [],
     },
     {
@@ -2179,6 +2375,10 @@ export const Yellow_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\YellowOn.BMP',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 26,
+        height: 17,
+      },
       children: [],
     },
   ],
@@ -2258,6 +2458,10 @@ export const Red_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\RedOff.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 25,
+        height: 16,
+      },
       children: [],
     },
     {
@@ -2276,6 +2480,10 @@ export const Red_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\RedOn.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 25,
+        height: 16,
+      },
       children: [],
     },
   ],
@@ -2355,6 +2563,10 @@ export const Blue_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\BlueOff.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 27,
+        height: 18,
+      },
       children: [],
     },
     {
@@ -2373,6 +2585,10 @@ export const Blue_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\BlueOn.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 27,
+        height: 18,
+      },
       children: [],
     },
   ],
@@ -2452,6 +2668,10 @@ export const Green_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\GreenOff.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 25,
+        height: 19,
+      },
       children: [],
     },
     {
@@ -2470,6 +2690,10 @@ export const Green_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\GreenOn.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 25,
+        height: 19,
+      },
       children: [],
     },
   ],
@@ -2549,6 +2773,10 @@ export const Gray_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\GrayOff.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 24,
+        height: 18,
+      },
       children: [],
     },
     {
@@ -2567,6 +2795,10 @@ export const Gray_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\GrayOn.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 24,
+        height: 18,
+      },
       children: [],
     },
   ],
@@ -2646,6 +2878,10 @@ export const Black_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\BlackOff.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 27,
+        height: 18,
+      },
       children: [],
     },
     {
@@ -2664,6 +2900,10 @@ export const Black_Ctl = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\BlackOn.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 27,
+        height: 18,
+      },
       children: [],
     },
   ],
@@ -2868,6 +3108,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\T1_Up.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 52,
+            height: 29,
+          },
           children: [],
         },
       ],
@@ -2903,6 +3147,10 @@ export const Decals_Ctl = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\T1_dn.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 52,
+            height: 28,
+          },
           children: [],
         },
         {
@@ -2958,6 +3206,10 @@ export const JSFRNT_T1_Up = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\T1_Up.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 52,
+        height: 29,
+      },
       children: [],
     },
   ],
@@ -3015,6 +3267,10 @@ export const JSFRNT_T1_Dn = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\T1_dn.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 52,
+        height: 28,
+      },
       children: [],
     },
     {
@@ -3123,6 +3379,10 @@ export const Decals_Ctl1 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\T2_Up.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 52,
+            height: 28,
+          },
           children: [],
         },
       ],
@@ -3158,6 +3418,10 @@ export const Decals_Ctl1 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\T2_dn.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 52,
+            height: 28,
+          },
           children: [],
         },
         {
@@ -3213,6 +3477,10 @@ export const JSFRNT_T2_Up = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\T2_Up.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 52,
+        height: 28,
+      },
       children: [],
     },
   ],
@@ -3270,6 +3538,10 @@ export const JSFRNT_T2_Dn = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\T2_dn.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 52,
+        height: 28,
+      },
       children: [],
     },
     {
@@ -3378,6 +3650,10 @@ export const Decals_Ctl2 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\B1_Up.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 60,
+            height: 25,
+          },
           children: [],
         },
       ],
@@ -3413,6 +3689,10 @@ export const Decals_Ctl2 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\B1_dn.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 60,
+            height: 25,
+          },
           children: [],
         },
         {
@@ -3468,6 +3748,10 @@ export const JSFRNT_B1_Up = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\B1_Up.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 60,
+        height: 25,
+      },
       children: [],
     },
   ],
@@ -3525,6 +3809,10 @@ export const JSFRNT_B1_Dn = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\B1_dn.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 60,
+        height: 25,
+      },
       children: [],
     },
     {
@@ -3633,6 +3921,10 @@ export const Decals_Ctl3 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\B2_Up.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 61,
+            height: 22,
+          },
           children: [],
         },
       ],
@@ -3668,6 +3960,10 @@ export const Decals_Ctl3 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\B2_dn.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 61,
+            height: 22,
+          },
           children: [],
         },
         {
@@ -3723,6 +4019,10 @@ export const JSFRNT_B2_Up = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\B2_Up.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 61,
+        height: 22,
+      },
       children: [],
     },
   ],
@@ -3780,6 +4080,10 @@ export const JSFRNT_B2_Dn = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\B2_dn.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 61,
+        height: 22,
+      },
       children: [],
     },
     {
@@ -3888,6 +4192,10 @@ export const Decals_Ctl4 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh1u.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 38,
+            height: 32,
+          },
           children: [],
         },
       ],
@@ -3923,6 +4231,10 @@ export const Decals_Ctl4 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh1d.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 38,
+            height: 32,
+          },
           children: [],
         },
         {
@@ -3978,6 +4290,10 @@ export const JSWNSH_T1_Up = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh1u.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 38,
+        height: 32,
+      },
       children: [],
     },
   ],
@@ -4035,6 +4351,10 @@ export const JSWNSH_T1_Dn = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh1d.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 38,
+        height: 32,
+      },
       children: [],
     },
     {
@@ -4143,6 +4463,10 @@ export const Decals_Ctl5 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh2u.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 37,
+            height: 30,
+          },
           children: [],
         },
       ],
@@ -4178,6 +4502,10 @@ export const Decals_Ctl5 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh2d.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 37,
+            height: 30,
+          },
           children: [],
         },
         {
@@ -4233,6 +4561,10 @@ export const JSWNSH_T2_Up = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh2u.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 37,
+        height: 30,
+      },
       children: [],
     },
   ],
@@ -4290,6 +4622,10 @@ export const JSWNSH_T2_Dn = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh2d.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 37,
+        height: 30,
+      },
       children: [],
     },
     {
@@ -4398,6 +4734,10 @@ export const Decals_Ctl6 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh3u.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 40,
+            height: 26,
+          },
           children: [],
         },
       ],
@@ -4433,6 +4773,10 @@ export const Decals_Ctl6 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh3d.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 40,
+            height: 26,
+          },
           children: [],
         },
         {
@@ -4488,6 +4832,10 @@ export const JSWNSH_B1_Up = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh3u.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 40,
+        height: 26,
+      },
       children: [],
     },
   ],
@@ -4545,6 +4893,10 @@ export const JSWNSH_B1_Dn = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh3d.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 40,
+        height: 26,
+      },
       children: [],
     },
     {
@@ -4653,6 +5005,10 @@ export const Decals_Ctl7 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh4u.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 41,
+            height: 26,
+          },
           children: [],
         },
       ],
@@ -4688,6 +5044,10 @@ export const Decals_Ctl7 = {
           filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh4d.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 41,
+            height: 26,
+          },
           children: [],
         },
         {
@@ -4743,6 +5103,10 @@ export const JSWNSH_B2_Up = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh4u.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 41,
+        height: 26,
+      },
       children: [],
     },
   ],
@@ -4800,6 +5164,10 @@ export const JSWNSH_B2_Dn = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jswnsh4d.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 41,
+        height: 26,
+      },
       children: [],
     },
     {

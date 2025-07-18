@@ -30,6 +30,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Police\\Main\\backgrnd.bmp',
       fileType: 1280594720,
       extra: 'World:\\lego\\scripts\\police\\police;0',
+      dimensions: {
+        width: 640,
+        height: 480,
+      },
       children: [],
     },
     {
@@ -63,6 +67,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Police\\Main\\ArrowL.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 42,
+            height: 40,
+          },
           children: [],
         },
         {
@@ -81,6 +89,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Police\\Main\\ArrowLon.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 42,
+            height: 40,
+          },
           children: [],
         },
       ],
@@ -116,6 +128,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Police\\Main\\arrowR.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 41,
+            height: 40,
+          },
           children: [],
         },
         {
@@ -134,6 +150,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Police\\Main\\ArrowRon.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 41,
+            height: 40,
+          },
           children: [],
         },
       ],
@@ -169,6 +189,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Info.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 45,
+            height: 50,
+          },
           children: [],
         },
         {
@@ -187,6 +211,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Infos.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 45,
+            height: 50,
+          },
           children: [],
         },
       ],
@@ -222,6 +250,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Door.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 80,
+            height: 270,
+          },
           children: [],
         },
       ],
@@ -257,6 +289,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Donut.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 104,
+            height: 75,
+          },
           children: [],
         },
         {
@@ -275,6 +311,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Police\\Main\\DonutOn.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 104,
+            height: 75,
+          },
           children: [],
         },
       ],
@@ -310,6 +350,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Radio.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 92,
+            height: 63,
+          },
           children: [],
         },
         {
@@ -328,6 +372,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Police\\Main\\RadioOn.bmp',
           fileType: 1280594720,
           extra: null,
+          dimensions: {
+            width: 92,
+            height: 63,
+          },
           children: [],
         },
       ],
@@ -383,6 +431,10 @@ export const LeftArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Police\\Main\\ArrowL.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 42,
+        height: 40,
+      },
       children: [],
     },
     {
@@ -401,6 +453,10 @@ export const LeftArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Police\\Main\\ArrowLon.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 42,
+        height: 40,
+      },
       children: [],
     },
   ],
@@ -436,6 +492,10 @@ export const RightArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Police\\Main\\arrowR.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 41,
+        height: 40,
+      },
       children: [],
     },
     {
@@ -454,6 +514,10 @@ export const RightArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Police\\Main\\ArrowRon.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 41,
+        height: 40,
+      },
       children: [],
     },
   ],
@@ -489,6 +553,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Info.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 45,
+        height: 50,
+      },
       children: [],
     },
     {
@@ -507,6 +575,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Infos.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 45,
+        height: 50,
+      },
       children: [],
     },
   ],
@@ -542,6 +614,10 @@ export const Door_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Door.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 80,
+        height: 270,
+      },
       children: [],
     },
   ],
@@ -577,6 +653,10 @@ export const Donut_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Police\\Main\\Donut.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 104,
+        height: 75,
+      },
       children: [],
     },
     {
@@ -595,6 +675,10 @@ export const Donut_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Police\\Main\\DonutOn.bmp',
       fileType: 1280594720,
       extra: null,
+      dimensions: {
+        width: 104,
+        height: 75,
+      },
       children: [],
     },
   ],

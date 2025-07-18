@@ -30,6 +30,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\ScoreBox.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 26,
+        height: 26,
+      },
       children: [],
     },
     {
@@ -48,6 +52,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Score\\Bookgrnd.bmp',
       fileType: 1280594720,
       extra: 'World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 640,
+        height: 480,
+      },
       children: [],
     },
     {
@@ -66,6 +74,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\A.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -84,6 +96,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\B.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -102,6 +118,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\C.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -120,6 +140,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\D.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -138,6 +162,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\E.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -156,6 +184,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\F.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -174,6 +206,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\G.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -192,6 +228,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\H.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -210,6 +250,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\I.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -228,6 +272,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\J.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -246,6 +294,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\K.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -264,6 +316,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\L.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -282,6 +338,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\M.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -300,6 +360,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\N.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -318,6 +382,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\O.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -336,6 +404,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\P.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -354,6 +426,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\Q.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -372,6 +448,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\R.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -390,6 +470,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\S.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -408,6 +492,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\T.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -426,6 +514,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\U.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -444,6 +536,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\V.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -462,6 +558,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\W.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -480,6 +580,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\X.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -498,6 +602,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\Y.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
     {
@@ -516,6 +624,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Register\\Z.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP, Visibility:FALSE, World:\\lego\\scripts\\infocntr\\histbook;0',
+      dimensions: {
+        width: 24,
+        height: 27,
+      },
       children: [],
     },
   ],

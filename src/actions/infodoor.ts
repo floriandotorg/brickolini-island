@@ -30,6 +30,10 @@ export const _StartUp = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\backgrnd.bmp',
       fileType: 1280594720,
       extra: 'World:current',
+      dimensions: {
+        width: 640,
+        height: 480,
+      },
       children: [],
     },
     {
@@ -63,6 +67,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\arrowL.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 53,
+            height: 50,
+          },
           children: [],
         },
         {
@@ -81,6 +89,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\arrowLon.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 53,
+            height: 50,
+          },
           children: [],
         },
       ],
@@ -116,6 +128,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\arrowR.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 53,
+            height: 50,
+          },
           children: [],
         },
         {
@@ -134,6 +150,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\arrowRon.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 53,
+            height: 50,
+          },
           children: [],
         },
       ],
@@ -169,6 +189,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\Info.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 29,
+            height: 29,
+          },
           children: [],
         },
         {
@@ -187,6 +211,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\Infos.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 29,
+            height: 29,
+          },
           children: [],
         },
       ],
@@ -222,6 +250,10 @@ export const _StartUp = {
           filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\Door.bmp',
           fileType: 1280594720,
           extra: 'BMP_ISMAP',
+          dimensions: {
+            width: 194,
+            height: 172,
+          },
           children: [],
         },
       ],
@@ -277,6 +309,10 @@ export const LeftArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\arrowL.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 53,
+        height: 50,
+      },
       children: [],
     },
     {
@@ -295,6 +331,10 @@ export const LeftArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\arrowLon.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 53,
+        height: 50,
+      },
       children: [],
     },
   ],
@@ -330,6 +370,10 @@ export const RightArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\arrowR.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 53,
+        height: 50,
+      },
       children: [],
     },
     {
@@ -348,6 +392,10 @@ export const RightArrow_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\arrowRon.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 53,
+        height: 50,
+      },
       children: [],
     },
   ],
@@ -383,6 +431,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\Info.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 29,
+        height: 29,
+      },
       children: [],
     },
     {
@@ -401,6 +453,10 @@ export const Info_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\Infos.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 29,
+        height: 29,
+      },
       children: [],
     },
   ],
@@ -436,6 +492,10 @@ export const Door_Ctl = {
       filename: 'Q:\\Lego\\Scripts\\Infocntr\\Floor1\\Doors\\Door.bmp',
       fileType: 1280594720,
       extra: 'BMP_ISMAP',
+      dimensions: {
+        width: 194,
+        height: 172,
+      },
       children: [],
     },
   ],
