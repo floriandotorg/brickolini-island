@@ -35,12 +35,16 @@ export abstract class Building extends World {
       }
 
       if (isAnimationAction(child) && child.name === 'ConfigAnimation') {
-        const animation = parse3DAnimation(await getAction(child))
-        this.setupCameraForAnimation(animation.tree)
+        void getAction(child).then(action => {
+          const animation = parse3DAnimation(action)
+          this.setupCameraForAnimation(animation.tree)
+        })
       }
 
       if (isControlAction(child)) {
-        this._controls.push(await Control.create(child))
+        void Control.create(child).then(control => {
+          this._controls.push(control)
+        })
       }
     }
   }
