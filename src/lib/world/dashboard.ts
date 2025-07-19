@@ -153,48 +153,23 @@ export class Dashboard {
       this.onExit()
     }
 
-    if (this._hornControl?.pointerDown(normalizedX, normalizedY)) {
-      this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
-      this._drawDashboard()
-      this._hornControl.draw(this._context)
-      this._infoControl?.draw(this._context)
-      this._texture.needsUpdate = true
-
-      if (this._hornSound != null) {
-        engine.playAudio(this._hornSound)
-      }
+    if (this._hornControl?.pointerDown(normalizedX, normalizedY) && this._hornSound != null) {
+      engine.playAudio(this._hornSound)
     }
 
     if (this._infoControl?.pointerDown(normalizedX, normalizedY)) {
       this.onInfoButtonClicked()
-      this._infoControl.draw(this._context)
-      this._texture.needsUpdate = true
     }
   }
 
   public pointerUp(): void {
-    this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
-    this._drawDashboard()
     if (this._hornControl != null) {
       this._hornControl.pointerUp()
-      this._hornControl.draw(this._context)
-      this._texture.needsUpdate = true
     }
 
     if (this._infoControl != null) {
       this._infoControl.pointerUp()
-      this._infoControl.draw(this._context)
-      this._texture.needsUpdate = true
     }
-  }
-
-  private _drawImage(image: HTMLImageElement, x: number, y: number): void {
-    const posX = (x / 640) * this._canvas.width
-    const posY = (y / 480) * this._canvas.height
-    const width = (image.width / 640) * this._canvas.width
-    const height = (image.height / 480) * this._canvas.height
-    this._context.drawImage(image, posX, posY, width, height)
-    this._texture.needsUpdate = true
   }
 
   private _drawDashboard(): void {
@@ -253,7 +228,8 @@ export class Dashboard {
     const hornAction = action.children.find(child => child.name.endsWith('Horn_Ctl'))
     if (hornAction != null && isControlAction(hornAction)) {
       this._hornControl = await Control.create(hornAction)
-      this._hornControl.draw(this._context)
+      this._scene.add(this._hornControl.sprite)
+      this._hornControl.draw()
       const sound = action.children.find(child => isAudioAction(child) && child.name.endsWith('Horn_Sound'))
       if (!isAudioAction(sound)) {
         throw new Error('Horn sound not found')
@@ -267,11 +243,13 @@ export class Dashboard {
     }
 
     this._infoControl = await Control.create(infoAction)
-    this._infoControl.draw(this._context)
-    this._texture.needsUpdate = true
+    this._scene.add(this._infoControl.sprite)
+    this._infoControl.draw()
   }
 
   public clear(): void {
+    this._hornControl?.sprite.removeFromParent()
+    this._infoControl?.sprite.removeFromParent()
     this._speedMeter?.sprite.removeFromParent()
     this._fuelMeter?.sprite.removeFromParent()
 

@@ -1,4 +1,6 @@
+import type * as THREE from 'three'
 import { type ControlAction, getExtraValue, type ImageAction, isImageAction, type ParallelActionTuple, splitExtraValue } from '../action-types'
+import { CanvasSprite } from './canvas-sprite'
 import { getImage } from './image'
 
 export class Mask {
@@ -44,6 +46,7 @@ const createPlacedImage = async (action: ImageAction): Promise<PlacedImage> => {
 
 export class Control {
   private readonly _action: ControlAction
+  private readonly _sprite: CanvasSprite
   private readonly _mask: Mask
   private readonly _stateImages: { readonly images: PlacedImage[]; readonly toggle: boolean; state: number } | null
 
@@ -85,6 +88,15 @@ export class Control {
     this._action = action
     this._mask = mask
     this._stateImages = stateImages
+    this._sprite = new CanvasSprite(0, 0, 640, 480, 640, 480)
+  }
+
+  public get sprite(): THREE.Sprite {
+    return this._sprite.sprite
+  }
+
+  public get name(): string {
+    return this._action.name
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): boolean {
@@ -96,6 +108,7 @@ export class Control {
         } else {
           stateImages.state = 1
         }
+        this.draw()
       }
       return true
     }
@@ -106,10 +119,11 @@ export class Control {
     const stateImages = this._stateImages
     if (stateImages != null && !stateImages.toggle) {
       stateImages.state = 0
+      this.draw()
     }
   }
 
-  public draw(context: CanvasRenderingContext2D): void {
+  public draw(): void {
     const stateImages = this._stateImages
     if (stateImages == null) {
       return
@@ -118,10 +132,11 @@ export class Control {
     if (image == null) {
       throw new Error(`Invalid state ${stateImages.state}`)
     }
-    const posX = (image.x / 640) * context.canvas.width
-    const posY = (image.y / 480) * context.canvas.height
-    const width = (image.image.width / 640) * context.canvas.width
-    const height = (image.image.height / 480) * context.canvas.height
-    context.drawImage(image.image, posX, posY, width, height)
+    const posX = (image.x / 640) * this._sprite.context.canvas.width
+    const posY = (image.y / 480) * this._sprite.context.canvas.height
+    const width = (image.image.width / 640) * this._sprite.context.canvas.width
+    const height = (image.image.height / 480) * this._sprite.context.canvas.height
+    this._sprite.context.drawImage(image.image, posX, posY, width, height)
+    this._sprite.needsUpdate = true
   }
 }

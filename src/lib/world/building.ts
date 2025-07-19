@@ -44,6 +44,7 @@ export abstract class Building extends World {
       if (isControlAction(child)) {
         void Control.create(child).then(control => {
           this._controls.push(control)
+          this._backgroundScene.add(control.sprite)
         })
       }
     }
