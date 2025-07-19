@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { type AudioAction, type ControlAction, getExtraValue, type ImageAction, isAudioAction, isControlAction, isImageAction, isMeterAction, type MeterAction, type ParallelAction } from '../action-types'
+import { CanvasSprite } from '../assets/canvas-sprite'
 import { Control } from '../assets/control'
 import { getImage } from '../assets/image'
 import { engine } from '../engine'
@@ -58,19 +59,11 @@ const parseDirection = (value: string): ((width: number, height: number, fill: n
 class Meter {
   private readonly _fillColor: string
   private readonly _image: HTMLImageElement
-  private readonly _canvas: HTMLCanvasElement
-  private readonly _context: CanvasRenderingContext2D
-  private readonly _texture: THREE.CanvasTexture
-  private readonly _mesh: THREE.Mesh
+  private readonly _sprite: CanvasSprite
   private readonly _direction: (width: number, height: number, fill: number) => { x: number; y: number; width: number; height: number }
   private _fill: number = 0
 
   private constructor(action: MeterAction, image: HTMLImageElement, canvasWidth: number, canvasHeight: number) {
-    const normalizedX = (action.location[0] / canvasWidth) * 2 - 1
-    const normalizedY = -((action.location[1] / canvasHeight) * 2 - 1)
-    const normalizedWidth = (image.width / canvasWidth) * 2
-    const normalizedHeight = (image.height / canvasHeight) * 2
-
     const fillerIndex = parseInt(getExtraValue(action, 'filler_index') ?? '')
     const fillColor = Number.isInteger(fillerIndex) && fillerIndex > 0 ? action.colorPalette.at(fillerIndex) : null
     if (fillColor == null) {
@@ -79,20 +72,7 @@ class Meter {
     this._fillColor = fillColor
 
     this._image = image
-
-    this._canvas = document.createElement('canvas')
-    this._canvas.width = image.width
-    this._canvas.height = image.height
-    const context = this._canvas.getContext('2d')
-    if (context == null) {
-      throw new Error('HUD canvas context not found')
-    }
-    this._context = context
-    this._texture = new THREE.CanvasTexture(this._canvas)
-    this._texture.colorSpace = THREE.SRGBColorSpace
-    const material = new THREE.MeshBasicMaterial({ map: this._texture, transparent: true })
-    this._mesh = new THREE.Mesh(new THREE.PlaneGeometry(normalizedWidth, normalizedHeight), material)
-    this._mesh.position.set(normalizedX + normalizedWidth / 2, normalizedY - normalizedHeight / 2, 0)
+    this._sprite = new CanvasSprite(action.location[0], action.location[1], image.width, image.height, canvasWidth, canvasHeight)
 
     const directionType = getExtraValue(action, 'type')
     this._direction = directionType != null ? parseDirection(directionType) : leftToRight
@@ -106,20 +86,20 @@ class Meter {
     return new Meter(action, image, 640, 480)
   }
 
-  public get mesh(): THREE.Mesh {
-    return this._mesh
+  public get sprite(): THREE.Sprite {
+    return this._sprite.sprite
   }
 
   public draw(fill: number): void {
     if (this._fill !== fill) {
       this._fill = fill
       const { x, y, width, height } = this._direction(this._image.width, this._image.height, fill)
-      this._context.globalCompositeOperation = 'copy'
-      this._context.drawImage(this._image, 0, 0)
-      this._context.globalCompositeOperation = 'source-atop'
-      this._context.fillStyle = this._fillColor
-      this._context.fillRect(x, y, width, height)
-      this._texture.needsUpdate = true
+      this._sprite.context.globalCompositeOperation = 'copy'
+      this._sprite.context.drawImage(this._image, 0, 0)
+      this._sprite.context.globalCompositeOperation = 'source-atop'
+      this._sprite.context.fillStyle = this._fillColor
+      this._sprite.context.fillRect(x, y, width, height)
+      this._sprite.needsUpdate = true
     }
   }
 }
@@ -240,12 +220,12 @@ export class Dashboard {
           throw new Error('Meter without variable is not supported')
         } else if (variable.endsWith('speed')) {
           this._speedMeter = await Meter.create(child)
-          this._scene.add(this._speedMeter.mesh)
+          this._scene.add(this._speedMeter.sprite)
         } else if (variable.endsWith('fuel')) {
           this._fuelMeter = await Meter.create(child)
           // For now to at least show something
           this._fuelMeter.draw(0.5)
-          this._scene.add(this._fuelMeter.mesh)
+          this._scene.add(this._fuelMeter.sprite)
         }
       }
     }
@@ -292,8 +272,8 @@ export class Dashboard {
   }
 
   public clear(): void {
-    this._speedMeter?.mesh.removeFromParent()
-    this._fuelMeter?.mesh.removeFromParent()
+    this._speedMeter?.sprite.removeFromParent()
+    this._fuelMeter?.sprite.removeFromParent()
 
     this._hornSound = null
     this._hornControl = null
