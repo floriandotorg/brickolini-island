@@ -114,9 +114,7 @@ class Meter {
     if (this._fill !== fill) {
       this._fill = fill
       const { x, y, width, height } = this._direction(this._image.width, this._image.height, fill)
-      console.log({ x, y, width, height })
-      this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height)
-      this._context.globalCompositeOperation = 'source-over'
+      this._context.globalCompositeOperation = 'copy'
       this._context.drawImage(this._image, 0, 0)
       this._context.globalCompositeOperation = 'source-atop'
       this._context.fillStyle = this._fillColor
@@ -301,6 +299,7 @@ export class Dashboard {
     this._hornControl = null
     this._infoControl = null
     this._speedMeter = null
+    this._fuelMeter = null
 
     this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
     this._texture.needsUpdate = true
