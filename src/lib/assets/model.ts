@@ -60,7 +60,7 @@ export const calculateTransformationMatrix = (location: [number, number, number]
   return transformationMatrix
 }
 
-const roiToMesh = async (roi: WDB.Roi, animation: WDB.Animation.Node | undefined, path: string[] = []): Promise<THREE.Mesh> => {
+const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animation.Node | undefined, path: string[] = []): Promise<THREE.Mesh> => {
   const result = new THREE.Mesh()
   result.name = roi.name.toLowerCase()
 
@@ -107,7 +107,21 @@ const roiToMesh = async (roi: WDB.Roi, animation: WDB.Animation.Node | undefined
     }
   }
 
-  const lod = roi.lods.at(-1)
+  const lods = (() => {
+    switch (roi.data.type) {
+      case 'lods':
+        return roi.data.lods
+      case 'reference':
+        for (const part of parts) {
+          if (part.name.toLowerCase() === roi.data.reference.toLowerCase()) {
+            return part.lods
+          }
+        }
+        console.warn(`${roi.name} wanted to reference ${roi.data.reference}`)
+        return null
+    }
+  })()
+  const lod = lods?.at(-1)
   if (lod != null) {
     const customColor: WDB.Color | null = colorFromName(roi.textureName)
     const meshes: THREE.Mesh[] = []
@@ -146,6 +160,7 @@ const roiToMesh = async (roi: WDB.Roi, animation: WDB.Animation.Node | undefined
     result.add(
       await roiToMesh(
         child,
+        parts,
         animation?.children.find(n => n.name.toLowerCase() === child.name.toLowerCase()),
         [...path, child.name],
       ),
@@ -167,7 +182,7 @@ export const getWorld = async (name: 'BLDD' | 'BLDH' | 'BLDJ' | 'BLDR' | 'HOSP' 
       continue
     }
 
-    const mesh = await roiToMesh(model.roi, model.animation.tree)
+    const mesh = await roiToMesh(model.roi, world.parts, model.animation.tree)
     const matrix = calculateTransformationMatrix(model.position, model.rotation, model.up)
     matrix.decompose(mesh.position, mesh.quaternion, mesh.scale)
     mesh.visible = model.visible

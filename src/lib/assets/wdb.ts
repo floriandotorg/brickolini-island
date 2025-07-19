@@ -22,7 +22,15 @@ export namespace WDB {
     shading: Shading
   }
   export type Model = { roi: Roi; animation: Animation.Animation; position: [number, number, number]; rotation: [number, number, number]; up: [number, number, number]; visible: boolean }
-  export type Roi = { name: string; lods: Lod[]; children: Roi[]; textureName: string; position: [number, number, number] }
+  export interface Lods {
+    type: 'lods'
+    lods: Lod[]
+  }
+  export interface Reference {
+    type: 'reference'
+    reference: string
+  }
+  export type Roi = { name: string; data: Lods | Reference; children: Roi[]; textureName: string; position: [number, number, number] }
   export class Lod {
     public constructor(
       public readonly meshesBeforeOffset: Mesh[],
@@ -275,25 +283,29 @@ export namespace WDB {
       const _boxMax = this._reader.readVector3()
       const textureName = this._reader.readString()
       const definedElsewhere = this._reader.readInt8()
-      const lods: Lod[] = []
-      if (definedElsewhere === 0) {
-        const numLods = this._reader.readUint32()
-        if (numLods !== 0) {
-          const endComponentOffset = this._reader.readUint32()
-          for (let n = 0; n < numLods; ++n) {
-            lods.push(this._readLod())
+      const data = (() => {
+        if (definedElsewhere === 0) {
+          const lods: Lods = { lods: [], type: 'lods' }
+          const numLods = this._reader.readUint32()
+          if (numLods !== 0) {
+            const endComponentOffset = this._reader.readUint32()
+            for (let n = 0; n < numLods; ++n) {
+              lods.lods.push(this._readLod())
+            }
+            this._reader.seek(offset + endComponentOffset)
           }
-          this._reader.seek(offset + endComponentOffset)
+          return lods
+        } else {
+          const reference: Reference = { reference: modelName.replace(/[0-9]+$/, ''), type: 'reference' }
+          return reference
         }
-      } else {
-        modelName.replace(/[0-9]+$/, '')
-      }
+      })()
       const children: Roi[] = []
       const numRois = this._reader.readUint32()
       for (let n = 0; n < numRois; ++n) {
         children.push(this._readRoi(offset))
       }
-      return { name: modelName, lods, children, textureName, position: _sphereCenter }
+      return { name: modelName, data, children, textureName, position: _sphereCenter }
     }
 
     private _readGif = (maybeTitle?: string): Gif => {
