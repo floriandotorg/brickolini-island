@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { type AudioAction, type ControlAction, getExtraValue, type ImageAction, isAudioAction, isControlAction, isImageAction, type ParallelAction } from '../action-types'
+import { type AudioAction, type ControlAction, getExtraValue, type ImageAction, isAudioAction, isControlAction, isImageAction, isMeterAction, type MeterAction, type ParallelAction } from '../action-types'
 import { Control } from '../assets/control'
 import { getImage } from '../assets/image'
 import { engine } from '../engine'
@@ -56,19 +56,27 @@ const parseDirection = (value: string): ((width: number, height: number, fill: n
 }
 
 class Meter {
+  private readonly _fillColor: string
   private readonly _image: HTMLImageElement
   private readonly _canvas: HTMLCanvasElement
   private readonly _context: CanvasRenderingContext2D
   private readonly _texture: THREE.CanvasTexture
   private readonly _mesh: THREE.Mesh
   private readonly _direction: (width: number, height: number, fill: number) => { x: number; y: number; width: number; height: number }
-  private fill: number = 0
+  private _fill: number = 0
 
-  private constructor(action: ImageAction, image: HTMLImageElement, canvasWidth: number, canvasHeight: number) {
+  private constructor(action: MeterAction, image: HTMLImageElement, canvasWidth: number, canvasHeight: number) {
     const normalizedX = (action.location[0] / canvasWidth) * 2 - 1
     const normalizedY = -((action.location[1] / canvasHeight) * 2 - 1)
     const normalizedWidth = (image.width / canvasWidth) * 2
     const normalizedHeight = (image.height / canvasHeight) * 2
+
+    const fillerIndex = parseInt(getExtraValue(action, 'filler_index') ?? '')
+    const fillColor = Number.isInteger(fillerIndex) && fillerIndex > 0 ? action.colorPalette.at(fillerIndex) : null
+    if (fillColor == null) {
+      throw new Error('The filler_index is not a valid index')
+    }
+    this._fillColor = fillColor
 
     this._image = image
 
@@ -88,9 +96,12 @@ class Meter {
 
     const directionType = getExtraValue(action, 'type')
     this._direction = directionType != null ? parseDirection(directionType) : leftToRight
+
+    this._fill = 1 // force redraw
+    this.draw(0)
   }
 
-  public static async create(action: ImageAction): Promise<Meter> {
+  public static async create(action: MeterAction): Promise<Meter> {
     const image = await getImage(action)
     return new Meter(action, image, 640, 480)
   }
@@ -100,12 +111,16 @@ class Meter {
   }
 
   public draw(fill: number): void {
-    if (this.fill !== fill) {
-      this.fill = fill
+    if (this._fill !== fill) {
+      this._fill = fill
       const { x, y, width, height } = this._direction(this._image.width, this._image.height, fill)
       console.log({ x, y, width, height })
       this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height)
-      this._context.drawImage(this._image, x, y, width, height, x, y, width, height)
+      this._context.globalCompositeOperation = 'source-over'
+      this._context.drawImage(this._image, 0, 0)
+      this._context.globalCompositeOperation = 'source-atop'
+      this._context.fillStyle = this._fillColor
+      this._context.fillRect(x, y, width, height)
       this._texture.needsUpdate = true
     }
   }
@@ -221,7 +236,7 @@ export class Dashboard {
     this.clear()
 
     for (const child of action.children) {
-      if (isImageAction(child) && child.presenter === 'LegoMeterPresenter') {
+      if (isMeterAction(child)) {
         const variable = getExtraValue(child, 'variable')?.toLowerCase()
         if (variable == null) {
           throw new Error('Meter without variable is not supported')
@@ -286,7 +301,6 @@ export class Dashboard {
     this._hornControl = null
     this._infoControl = null
     this._speedMeter = null
-    this._fuelMeter = null
 
     this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
     this._texture.needsUpdate = true

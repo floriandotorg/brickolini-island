@@ -34,6 +34,8 @@ export type EntityAction = ParallelActionTuple<readonly [Override<ActionBase, { 
 
 export type ControlAction = ParallelAction<ImageAction | ParallelActionTuple<readonly [ImageAction]>, 'MxControlPresenter'>
 
+export type MeterAction = Override<ImageAction, { extra: string; presenter: 'LegoMeterPresenter'; colorPalette: string[] }>
+
 export const isAction = (action: unknown): action is ActionBase => action != null && typeof action === 'object' && 'id' in action && 'siFile' in action && 'type' in action && 'presenter' in action && 'extra' in action && 'name' in action
 
 export const isFileAction = (action: unknown): action is FileActionBase => isAction(action) && 'fileType' in action
@@ -45,6 +47,8 @@ export const isAudioAction = (action: unknown): action is AudioAction => isFileA
 export const isAnimationAction = (action: unknown): action is AnimationAction => isAction(action) && action.presenter === 'LegoAnimPresenter'
 
 export const isControlAction = (action: unknown): action is ControlAction => isAction(action) && action.presenter === 'MxControlPresenter'
+
+export const isMeterAction = (action: unknown): action is MeterAction => isImageAction(action) && action.presenter === 'LegoMeterPresenter'
 
 export const getExtraValue = (action: { extra: string | null }, key: string): string | undefined => {
   const re = new RegExp(String.raw`${key}:([^, \t\r\n:]+)`, 'i')
