@@ -218,11 +218,6 @@ export class Dashboard {
       throw new Error('Arms control not found')
     }
 
-    const armsMaskAction = armsAction.children.find(child => child.name.endsWith('Arms_Mask_Bitmap'))
-    if (!isImageAction(armsMaskAction)) {
-      throw new Error('Arms mask image not found')
-    }
-
     this._armsMask = await Control.create(armsAction)
 
     const hornAction = action.children.find(child => child.name.endsWith('Horn_Ctl'))

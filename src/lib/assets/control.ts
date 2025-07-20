@@ -3,30 +3,7 @@ import { type ControlAction, getExtraValue, type ImageAction, isImageAction, typ
 import { CanvasSprite } from './canvas-sprite'
 import { getImage } from './image'
 
-export class Mask {
-  private _context: CanvasRenderingContext2D
-
-  constructor(image: CanvasImageSource, x: number, y: number) {
-    const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d', { willReadFrequently: true })
-    if (context == null) {
-      throw new Error('Unable to create canvas context')
-    }
-    canvas.width = 640
-    canvas.height = 480
-    context.drawImage(image, x, y)
-    this._context = context
-  }
-
-  public test(normalizedX: number, normalizedY: number): boolean {
-    const x = ((normalizedX + 1) / 2) * 640
-    const y = (1 - (normalizedY + 1) / 2) * 480
-    const pixel = this._context.getImageData(x, y, 1, 1).data
-    return pixel[3] > 0
-  }
-}
-
-type PlacedImage = { image: HTMLImageElement; x: number; y: number }
+type PlacedImage = { context: CanvasRenderingContext2D; normalizedX: number; normalizedY: number; normalizedWidth: number; normalizedHeight: number }
 
 type ControlChild = ImageAction | ParallelActionTuple<readonly [ImageAction]>
 
@@ -41,14 +18,129 @@ const getImageAction = (action: ControlChild | undefined): ImageAction => {
 }
 
 const createPlacedImage = async (action: ImageAction): Promise<PlacedImage> => {
-  return { image: await getImage(action), x: action.location[0], y: action.location[1] }
+  const ORIGINAL_WIDTH = 640
+  const ORIGINAL_HEIGHT = 480
+  const image = await getImage(action)
+  const normalizedX = (action.location[0] / ORIGINAL_WIDTH) * 2 - 1
+  const normalizedY = -(action.location[1] / ORIGINAL_HEIGHT) * 2 + 1
+  const canvas = document.createElement('canvas')
+  const context = canvas.getContext('2d')
+  if (context == null) {
+    throw new Error('Unable to create canvas context')
+  }
+  canvas.width = image.width
+  canvas.height = image.height
+  context.drawImage(image, 0, 0)
+  return { context, normalizedX, normalizedY, normalizedWidth: (image.width / ORIGINAL_WIDTH) * 2, normalizedHeight: (image.height / ORIGINAL_HEIGHT) * 2 }
+}
+
+const denormalize = (normalizedX: number, normalizedY: number, totalSize: [number, number] = [640, 480]): [number, number] => {
+  const x = ((normalizedX + 1) / 2) * totalSize[0]
+  const y = (1 - (normalizedY + 1) / 2) * totalSize[1]
+  return [x, y]
+}
+
+const getPixel = (image: PlacedImage, normalizedX: number, normalizedY: number): [number, number, number, number] | null => {
+  const rectX = normalizedX - image.normalizedX
+  const rectY = normalizedY - image.normalizedY
+  if (rectX < 0 || rectY > 0 || rectX > image.normalizedWidth || rectY < -image.normalizedHeight) {
+    return null
+  }
+  const x = (rectX / image.normalizedWidth) * image.context.canvas.width
+  const y = (-rectY / image.normalizedHeight) * image.context.canvas.height
+  const [r, g, b, a] = image.context.getImageData(x, y, 1, 1).data
+  return [r, g, b, a]
+}
+
+interface Handler {
+  pointerDown(normalizedX: number, normalizedY: number): boolean
+
+  pointerUp(): boolean
+
+  get image(): PlacedImage | null
+}
+
+class MapControl implements Handler {
+  private _state: number
+  private readonly _mask: PlacedImage
+  private readonly _images: PlacedImage[]
+
+  public constructor(mask: PlacedImage, images: PlacedImage[]) {
+    this._state = 0
+    this._mask = mask
+    this._images = images
+  }
+
+  public pointerDown(normalizedX: number, normalizedY: number): boolean {
+    const pixel = getPixel(this._mask, normalizedX, normalizedY)
+    if (pixel == null || pixel[3] === 0) {
+      return false
+    }
+    // TODO: Need to check via the palette which state was actually clicked
+    this._state = 1
+    return true
+  }
+
+  public pointerUp(): boolean {
+    this._state = 0
+    return true
+  }
+
+  public get image(): PlacedImage | null {
+    return this._state === 0 ? null : this._images[this._state - 1]
+  }
+}
+
+class ToggleControl implements Handler {
+  private _pressedState: boolean
+  private readonly _idleImage: PlacedImage
+  private readonly _pressedImage: PlacedImage
+  private readonly _toggle: boolean
+
+  public constructor(idleImage: PlacedImage, pressedImage: PlacedImage, toggle: boolean) {
+    this._pressedState = false
+    this._idleImage = idleImage
+    this._pressedImage = pressedImage
+    this._toggle = toggle
+  }
+
+  private test(normalizedX: number, normalizedY: number): boolean {
+    const pixel = getPixel(this.image, normalizedX, normalizedY)
+    if (pixel == null) {
+      return false
+    }
+    return pixel[3] > 0
+  }
+
+  public pointerDown(normalizedX: number, normalizedY: number): boolean {
+    if (this.test(normalizedX, normalizedY)) {
+      if (!this._toggle) {
+        this._pressedState = true
+      } else {
+        this._pressedState = !this._pressedState
+      }
+      return true
+    }
+    return false
+  }
+
+  public pointerUp(): boolean {
+    if (!this._toggle) {
+      this._pressedState = false
+      return true
+    }
+    return false
+  }
+
+  public get image(): PlacedImage {
+    return this._pressedState ? this._pressedImage : this._idleImage
+  }
 }
 
 export class Control {
   private readonly _action: ControlAction
   private readonly _sprite: CanvasSprite
-  private readonly _mask: Mask
-  private readonly _stateImages: { readonly images: PlacedImage[]; readonly toggle: boolean; state: number } | null
+  private readonly _handler: Handler
 
   public static async create(action: ControlAction): Promise<Control> {
     const styleValue = getExtraValue(action, 'Style')
@@ -66,7 +158,15 @@ export class Control {
         if (maskAction.extra?.toLowerCase() !== 'bmp_ismap') {
           throw new Error('Unknown mask extra string')
         }
-        return new Control(action, new Mask(await getImage(maskAction), maskAction.location[0], maskAction.location[1]), null)
+        const mask = await createPlacedImage(maskAction)
+        const stateImages = []
+        for (const image of action.children.slice(1)) {
+          if (!isImageAction(image)) {
+            throw new Error('Unknown first child action')
+          }
+          stateImages.push(await createPlacedImage(image))
+        }
+        return new Control(action, new MapControl(mask, stateImages))
       }
       case 'toggle': // TODO: Properly handle this state
       case '': {
@@ -77,17 +177,16 @@ export class Control {
         const downAction = getImageAction(action.children[1])
         const up = await createPlacedImage(upAction)
         const down = await createPlacedImage(downAction)
-        return new Control(action, new Mask(up.image, up.x, up.y), { images: [up, down], toggle: style.toLowerCase() === 'toggle', state: 0 })
+        return new Control(action, new ToggleControl(up, down, style.toLowerCase() === 'toggle'))
       }
       default:
         throw new Error(`Style ${style} not supported yet`)
     }
   }
 
-  private constructor(action: ControlAction, mask: Mask, stateImages: { readonly images: PlacedImage[]; readonly toggle: boolean; state: number } | null) {
+  private constructor(action: ControlAction, handler: Handler) {
     this._action = action
-    this._mask = mask
-    this._stateImages = stateImages
+    this._handler = handler
     this._sprite = new CanvasSprite(0, 0, 640, 480, 640, 480)
   }
 
@@ -100,43 +199,29 @@ export class Control {
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): boolean {
-    if (this._mask.test(normalizedX, normalizedY)) {
-      const stateImages = this._stateImages
-      if (stateImages != null) {
-        if (stateImages.toggle) {
-          stateImages.state = 1 - stateImages.state
-        } else {
-          stateImages.state = 1
-        }
-        this.draw()
-      }
+    if (this._handler.pointerDown(normalizedX, normalizedY)) {
+      this.draw()
       return true
     }
     return false
   }
 
   public pointerUp() {
-    const stateImages = this._stateImages
-    if (stateImages != null && !stateImages.toggle) {
-      stateImages.state = 0
+    if (this._handler.pointerUp()) {
       this.draw()
     }
   }
 
   public draw(): void {
-    const stateImages = this._stateImages
-    if (stateImages == null) {
+    const image = this._handler.image
+    if (image == null) {
+      this._sprite.clear()
       return
     }
-    const image = stateImages.images[stateImages.state]
-    if (image == null) {
-      throw new Error(`Invalid state ${stateImages.state}`)
-    }
-    const posX = (image.x / 640) * this._sprite.context.canvas.width
-    const posY = (image.y / 480) * this._sprite.context.canvas.height
-    const width = (image.image.width / 640) * this._sprite.context.canvas.width
-    const height = (image.image.height / 480) * this._sprite.context.canvas.height
-    this._sprite.context.drawImage(image.image, posX, posY, width, height)
+    const [x, y] = denormalize(image.normalizedX, image.normalizedY, [this._sprite.context.canvas.width, this._sprite.context.canvas.height])
+    const width = (image.normalizedWidth * this._sprite.context.canvas.width) / 2
+    const height = (image.normalizedHeight * this._sprite.context.canvas.height) / 2
+    this._sprite.context.drawImage(image.context.canvas, x, y, width, height)
     this._sprite.needsUpdate = true
   }
 }

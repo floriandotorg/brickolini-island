@@ -39,4 +39,9 @@ export class CanvasSprite {
   public set needsUpdate(value: boolean) {
     this._texture.needsUpdate = value
   }
+
+  public clear(): void {
+    this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
+    this.needsUpdate = true
+  }
 }
