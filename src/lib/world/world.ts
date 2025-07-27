@@ -64,8 +64,20 @@ export abstract class World {
         if (node.translationKeys.length === 0) {
           return acc
         }
-        if (node.translationKeys.length !== 1 || node.translationKeys[0].timeAndFlags.time > 0 || node.translationKeys[0].timeAndFlags.flags > 1 || node.rotationKeys.length > 0 || node.scaleKeys.length > 0) {
-          throw new Error('Expected one translation key')
+        if (node.translationKeys.length !== 1) {
+          throw new Error(`Expected one translation key, got ${node.translationKeys.length}`)
+        }
+        if (node.translationKeys[0].timeAndFlags.time > 0) {
+          throw new Error(`Translation key has time > 0`)
+        }
+        if (node.translationKeys[0].timeAndFlags.flags > 1) {
+          throw new Error(`Translation key has flags > 1`)
+        }
+        if (node.rotationKeys.length > 0) {
+          throw new Error(`Rotation keys found`)
+        }
+        if (node.scaleKeys.length > 0) {
+          throw new Error(`Scale keys found`)
         }
         return acc.add(node.translationKeys[0].vertex)
       }, new THREE.Vector3())
