@@ -1340,6 +1340,8 @@ export const ACTORS: {
 export class Actor {
   private _mesh: THREE.Mesh = new THREE.Mesh()
 
+  public onClicked: () => void = () => {}
+
   public get mesh() {
     return this._mesh
   }
@@ -1447,6 +1449,8 @@ export class Actor {
 
           world.playPositionalAudio(Sound10, parentMesh)
         }
+
+        actor.onClicked()
       })
 
       const matrix = calculateTransformationMatrix(part.pos, part.dir, part.up)

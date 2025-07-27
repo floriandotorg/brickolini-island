@@ -188,6 +188,9 @@ export const getWorld = async (name: 'BLDD' | 'BLDH' | 'BLDJ' | 'BLDR' | 'HOSP' 
     mesh.visible = model.visible
     group.add(mesh)
   }
+  for (const part of world.parts) {
+    group.add(await getPart(part.name, null, null))
+  }
   return group
 }
 

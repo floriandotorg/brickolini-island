@@ -110,7 +110,7 @@ export abstract class World {
     this._camera.lookAt(pathToPosition(lookAtPositionPath))
   }
 
-  private async _getActor(name: string): Promise<Actor> {
+  public async getActor(name: string): Promise<Actor> {
     const existing = this._actors.get(name)
     if (existing != null) {
       return existing
@@ -142,7 +142,7 @@ export abstract class World {
           break
         }
         case WDB.ActorType.ManagedActor: {
-          const minifig = await this._getActor(actor.name.replace(/^\*/, ''))
+          const minifig = await this.getActor(actor.name.replace(/^\*/, ''))
           if (actor.name.startsWith('*')) {
             minifig.mesh.visible = false
           }
@@ -150,18 +150,20 @@ export abstract class World {
           break
         }
         case WDB.ActorType.ManagedInvisibleRoi: {
-          const node = this.scene.getObjectByName(actor.name)
+          const name = actor.name.slice(1)
+          const node = this.scene.getObjectByName(name)
           if (node == null) {
-            throw new Error(`Actor not found: ${actor.name}`)
+            throw new Error(`Actor not found: ${name} (ManagedInvisibleRoi)`)
           }
           node.visible = false
           actors.add(node)
           break
         }
         case WDB.ActorType.ManagedInvisibleRoiTrimmed: {
-          const node = this.scene.getObjectByName(actor.name.replace(/[0-9_]*$/, ''))
+          const name = actor.name.slice(1).replace(/[0-9_]*$/, '')
+          const node = this.scene.getObjectByName(name)
           if (node == null) {
-            throw new Error(`Actor not found: ${actor.name}`)
+            throw new Error(`ROI not found: ${name} (ManagedInvisibleRoiTrimmed)`)
           }
           node.visible = false
           actors.add(node)
@@ -171,7 +173,7 @@ export abstract class World {
         case WDB.ActorType.SceneRoi2: {
           const node = this.scene.getObjectByName(actor.name) ?? (await getPart(actor.name, null, null))
           if (node == null) {
-            throw new Error(`Actor not found: ${actor.name}`)
+            throw new Error(`ROI not found: ${actor.name} (SceneRoi)`)
           }
           actors.add(node)
           break
@@ -320,11 +322,15 @@ export abstract class World {
     }
 
     if (key === ' ') {
-      for (const runningAnimation of this._runningAnimations) {
-        runningAnimation.clipAction.time = runningAnimation.clipAction.getClip().duration
-        for (const audio of runningAnimation.audios) {
-          audio.stop()
-        }
+      this.skipCurrentAnimation()
+    }
+  }
+
+  public skipCurrentAnimation(): void {
+    for (const runningAnimation of this._runningAnimations) {
+      runningAnimation.clipAction.time = runningAnimation.clipAction.getClip().duration
+      for (const audio of runningAnimation.audios) {
+        audio.stop()
       }
     }
   }

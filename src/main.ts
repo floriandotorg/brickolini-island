@@ -12,7 +12,7 @@ if (playButton == null || !(playButton instanceof HTMLButtonElement)) {
 const start = async () => {
   playButton.disabled = true
 
-  const world = new URLSearchParams(window.location.search).get('world') ?? ('isle' satisfies WorldName)
+  const world = new URLSearchParams(window.location.search).get('world') ?? ('infomain' satisfies WorldName)
 
   await switchWorld(world as WorldName)
 

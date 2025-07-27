@@ -1,15 +1,36 @@
 import * as THREE from 'three'
-import { _InfoMain, iic001in_RunAnim, iicx17in_RunAnim } from '../actions/infomain'
+import {
+  _InfoMain,
+  iic001in_RunAnim,
+  iic019in_RunAnim,
+  iic020in_RunAnim,
+  iic021in_RunAnim,
+  iic022in_RunAnim,
+  iic023in_RunAnim,
+  iic024in_RunAnim,
+  iic025in_RunAnim,
+  iic026in_RunAnim,
+  iic027in_RunAnim,
+  iic029in_RunAnim,
+  iic032in_RunAnim,
+  iica28in_RunAnim,
+  iicb28in_RunAnim,
+  iicc28in_RunAnim,
+  iicx17in_RunAnim,
+} from '../actions/infomain'
 import { InformationCenter_Music } from '../actions/jukebox'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
 import { World } from '../lib/world/world'
 
+const ANIMATIONS = [iic019in_RunAnim, iic020in_RunAnim, iic021in_RunAnim, iic022in_RunAnim, iic023in_RunAnim, iic024in_RunAnim, iic025in_RunAnim, iic026in_RunAnim, iic027in_RunAnim, iica28in_RunAnim, iicb28in_RunAnim, iicc28in_RunAnim, iic029in_RunAnim, iic032in_RunAnim]
+
 export class InfoMain extends World {
   public _building = new Building()
 
   private _welcomeTimeout: number | null = null
+  private _currentAnimationIndex = 0
 
   public override async init(): Promise<void> {
     await super.init()
@@ -50,10 +71,19 @@ export class InfoMain extends World {
 
     this._scene.add(await Plants.place(this, Plants.World.IMAIN))
 
-    this.playAnimation(iic001in_RunAnim).then(() => {
+    ;(await this.getActor('infoman')).onClicked = () => {
+      if (this._welcomeTimeout != null) {
+        clearTimeout(this._welcomeTimeout)
+      }
+      this.skipCurrentAnimation()
+      void this.playAnimation(ANIMATIONS[this._currentAnimationIndex])
+      this._currentAnimationIndex = (this._currentAnimationIndex + 1) % ANIMATIONS.length
+    }
+
+    this.playAnimation(iic001in_RunAnim).then(async () => {
       this._welcomeTimeout = setTimeout(() => {
         void this.playAnimation(iicx17in_RunAnim)
-      }, 1_000)
+      }, 25_000)
     })
   }
 
