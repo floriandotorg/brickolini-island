@@ -64,11 +64,16 @@ class MapControl implements Handler {
   private _state: number
   private readonly _mask: PlacedImage
   private readonly _images: PlacedImage[]
+  private readonly _states: [number, number, number][]
 
-  public constructor(mask: PlacedImage, images: PlacedImage[]) {
+  public constructor(mask: PlacedImage, images: PlacedImage[], states: [number, number, number][]) {
+    if (images.length !== 0 && states.length !== 0 && images.length !== states.length) {
+      throw new Error('No images and states defined for Map')
+    }
     this._state = 0
     this._mask = mask
     this._images = images
+    this._states = states
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): boolean {
@@ -76,9 +81,19 @@ class MapControl implements Handler {
     if (pixel == null || pixel[3] === 0) {
       return false
     }
-    // TODO: Need to check via the palette which state was actually clicked
-    this._state = 1
-    return true
+    if (this._states.length === 0) {
+      this._state = 1
+      return true
+    }
+    this._state = 0
+    for (const [index, state] of this._states.entries()) {
+      if (state[0] === pixel[0] && state[1] === pixel[1] && state[2] === pixel[2]) {
+        this._state = index + 1
+        console.log(this._state)
+        return true
+      }
+    }
+    return false
   }
 
   public pointerUp(): boolean {
@@ -87,7 +102,7 @@ class MapControl implements Handler {
   }
 
   public get image(): PlacedImage | null {
-    return this._state === 0 ? null : this._images[this._state - 1]
+    return this._state === 0 || this._images.length === 0 ? null : this._images[this._state - 1]
   }
 }
 
@@ -137,6 +152,10 @@ class ToggleControl implements Handler {
   }
 }
 
+type WithColorPalette = { colorPalette: string[] }
+
+const isWithColorPalette = (action: unknown): action is WithColorPalette => action != null && typeof action === 'object' && 'colorPalette' in action && Array.isArray(action.colorPalette)
+
 export class Control {
   private readonly _action: ControlAction
   private readonly _sprite: CanvasSprite
@@ -146,9 +165,6 @@ export class Control {
     const styleValue = getExtraValue(action, 'Style')
     // This is currently a very basic implementation
     const [style, ...styleParams] = styleValue == null ? [''] : splitExtraValue(styleValue)
-    if (styleParams.length > 0) {
-      throw new Error('Style parameters are not supported yet')
-    }
     switch (style.toLowerCase()) {
       case 'map': {
         const maskAction = action.children[0]
@@ -158,18 +174,47 @@ export class Control {
         if (maskAction.extra?.toLowerCase() !== 'bmp_ismap') {
           throw new Error('Unknown mask extra string')
         }
+        const colorState: [number, number, number][] = []
+        if (styleParams.length > 0) {
+          const stateCount = parseInt(styleParams[0])
+          if (!Number.isInteger(stateCount) && stateCount < 1) {
+            throw new Error('State count in map-style is not a positive integer')
+          }
+          if (stateCount !== styleParams.length - 1) {
+            throw new Error('Invalid state count in map')
+          }
+          if (!isWithColorPalette(maskAction)) {
+            throw new Error('Multiple states without color palette')
+          }
+          for (const param of styleParams.slice(1)) {
+            const state = parseInt(param)
+            if (!Number.isInteger(state) && state < 1 && state < maskAction.colorPalette.length) {
+              throw new Error('State in map-style is not a positive integer')
+            }
+            const color = maskAction.colorPalette[state]
+            const colorMatch = color.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/)
+            if (colorMatch == null) {
+              throw new Error(`Unknown color '${color}"`)
+            }
+            const r = parseInt(colorMatch[1], 16)
+            const g = parseInt(colorMatch[2], 16)
+            const b = parseInt(colorMatch[3], 16)
+            colorState.push([r, g, b])
+          }
+        }
         const mask = await createPlacedImage(maskAction, true)
         const stateImages = []
-        for (const image of action.children.slice(1)) {
-          if (!isImageAction(image)) {
-            throw new Error('Unknown first child action')
-          }
+        for (const child of action.children.slice(1)) {
+          const image = getImageAction(child)
           stateImages.push(await createPlacedImage(image))
         }
-        return new Control(action, new MapControl(mask, stateImages))
+        return new Control(action, new MapControl(mask, stateImages, colorState))
       }
       case 'toggle': // TODO: Properly handle this state
       case '': {
+        if (styleParams.length > 0) {
+          throw new Error(`Style parameters in ${style} is not supported`)
+        }
         const upAction = action.children[0]
         if (upAction == null || !isImageAction(upAction)) {
           throw new Error('Unknown up action')
