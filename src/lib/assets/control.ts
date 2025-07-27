@@ -17,14 +17,14 @@ const getImageAction = (action: ControlChild | undefined): ImageAction => {
   return action.children[0]
 }
 
-const createPlacedImage = async (action: ImageAction): Promise<PlacedImage> => {
+const createPlacedImage = async (action: ImageAction, willReadFrequently: boolean = false): Promise<PlacedImage> => {
   const ORIGINAL_WIDTH = 640
   const ORIGINAL_HEIGHT = 480
   const image = await getImage(action)
   const normalizedX = (action.location[0] / ORIGINAL_WIDTH) * 2 - 1
   const normalizedY = -(action.location[1] / ORIGINAL_HEIGHT) * 2 + 1
   const canvas = document.createElement('canvas')
-  const context = canvas.getContext('2d')
+  const context = canvas.getContext('2d', { willReadFrequently })
   if (context == null) {
     throw new Error('Unable to create canvas context')
   }
@@ -158,7 +158,7 @@ export class Control {
         if (maskAction.extra?.toLowerCase() !== 'bmp_ismap') {
           throw new Error('Unknown mask extra string')
         }
-        const mask = await createPlacedImage(maskAction)
+        const mask = await createPlacedImage(maskAction, true)
         const stateImages = []
         for (const image of action.children.slice(1)) {
           if (!isImageAction(image)) {
