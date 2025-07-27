@@ -26,6 +26,19 @@ export const switchWorld = async (worldName: WorldName, param?: unknown) => {
       case 'police':
         world = await import('../worlds/police').then(m => new m.Police())
         break
+      case 'elevbott':
+        world = await import('../worlds/elevbott').then(m => new m.ElevBott())
+        break
+      case 'infodoor':
+        world = await import('../worlds/infodoor').then(m => new m.InfoDoor())
+        break
+      case 'infoscor':
+        world = await import('../worlds/infoscor').then(m => new m.InfoScor())
+        break
+      default: {
+        const _exhaustiveCheck: never = worldName
+        throw new Error(`Unhandled world: ${worldName}`)
+      }
     }
   }
 

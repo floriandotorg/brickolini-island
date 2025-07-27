@@ -69,8 +69,13 @@ export abstract class Building extends World {
         }
 
         if (control.name === 'Door_Ctl') {
+          const { exitSpawnPoint } = this.getBuildingConfig()
+          if (exitSpawnPoint == null) {
+            throw new Error('exitSpawnPoint not found in building config')
+          }
+
           void switchWorld('isle', {
-            position: this.getBuildingConfig().exitSpawnPoint,
+            position: exitSpawnPoint,
           } satisfies IsleParam)
           return
         }
@@ -92,7 +97,7 @@ export abstract class Building extends World {
   protected abstract getBuildingConfig(): {
     startUpAction: ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'> | SerialAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'>
     backgroundMusic: AudioAction
-    exitSpawnPoint: {
+    exitSpawnPoint?: {
       boundaryName: string
       source: number
       sourceScale: number
