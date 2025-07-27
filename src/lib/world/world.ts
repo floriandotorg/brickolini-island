@@ -26,6 +26,7 @@ export abstract class World {
     audios: THREE.PositionalAudio[]
     resolve: () => void
   }[] = []
+  private _actors = new Map<string, Actor>()
 
   public currentActor: 'pepper' | 'papa' | 'mama' | 'nick' | 'laura' = 'pepper'
 
@@ -109,6 +110,16 @@ export abstract class World {
     this._camera.lookAt(pathToPosition(lookAtPositionPath))
   }
 
+  private async _getActor(name: string): Promise<Actor> {
+    const existing = this._actors.get(name)
+    if (existing != null) {
+      return existing
+    }
+    const actor = await Actor.create(this, name)
+    this._actors.set(name, actor)
+    return actor
+  }
+
   public async playAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction>): Promise<void> {
     const animationActions = action.children.filter(c => c.presenter === 'LegoAnimPresenter')
     if (animationActions.length !== 1) {
@@ -131,7 +142,7 @@ export abstract class World {
           break
         }
         case WDB.ActorType.ManagedActor: {
-          const minifig = await Actor.create(this, actor.name.replace(/^\*/, ''))
+          const minifig = await this._getActor(actor.name.replace(/^\*/, ''))
           if (actor.name.startsWith('*')) {
             minifig.mesh.visible = false
           }
