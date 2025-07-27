@@ -1,7 +1,6 @@
 import type * as THREE from 'three'
 import { _StartUp, wgs023nu_RunAnim } from '../actions/garage'
 import { GarageArea_Music } from '../actions/jukebox'
-import { playAnimation } from '../lib/animation'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
@@ -33,7 +32,7 @@ export class Garage extends World {
       return false
     }
 
-    void playAnimation(this, wgs023nu_RunAnim)
+    void this.playAnimation(wgs023nu_RunAnim)
   }
 
   public override render(renderer: THREE.WebGLRenderer): void {

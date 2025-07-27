@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import { _StartUp, hho003cl_RunAnim } from '../actions/hospital'
 import { Hospital_Music } from '../actions/jukebox'
-import { playAnimation } from '../lib/animation'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
 
@@ -27,7 +26,7 @@ export class Hospital extends World {
     leftPointLight.position.set(-0.25, 1, 1)
     this._scene.add(leftPointLight)
 
-    void playAnimation(this, hho003cl_RunAnim)
+    void this.playAnimation(hho003cl_RunAnim)
   }
 
   public override render(renderer: THREE.WebGLRenderer): void {

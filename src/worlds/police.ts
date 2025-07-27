@@ -1,6 +1,5 @@
 import { PoliceStation_Music } from '../actions/jukebox'
 import { _StartUp, nps001ni_RunAnim } from '../actions/police'
-import { playAnimation } from '../lib/animation'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
 
@@ -23,6 +22,6 @@ export class Police extends World {
       },
     })
 
-    void playAnimation(this, nps001ni_RunAnim)
+    void this.playAnimation(nps001ni_RunAnim)
   }
 }

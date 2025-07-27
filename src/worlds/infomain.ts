@@ -1,7 +1,6 @@
 import * as THREE from 'three'
-import { _InfoMain, iic027in_RunAnim } from '../actions/infomain'
+import { _InfoMain, iic001in_RunAnim, iicx17in_RunAnim } from '../actions/infomain'
 import { InformationCenter_Music } from '../actions/jukebox'
-import { playAnimation } from '../lib/animation'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
@@ -9,6 +8,8 @@ import { World } from '../lib/world/world'
 
 export class InfoMain extends World {
   public _building = new Building()
+
+  private _welcomeTimeout: number | null = null
 
   public override async init(): Promise<void> {
     await super.init()
@@ -49,7 +50,11 @@ export class InfoMain extends World {
 
     this._scene.add(await Plants.place(this, Plants.World.IMAIN))
 
-    void playAnimation(this, iic027in_RunAnim)
+    this.playAnimation(iic001in_RunAnim).then(() => {
+      this._welcomeTimeout = setTimeout(() => {
+        void this.playAnimation(iicx17in_RunAnim)
+      }, 1_000)
+    })
   }
 
   public override render(renderer: THREE.WebGLRenderer): void {

@@ -1,8 +1,12 @@
 import * as THREE from 'three'
-import type { PositionalAudioAction } from '../action-types'
-import { type Animation3DNode, findRecursively } from '../assets/animation'
+import type { AnimationAction, ParallelAction, PhonemeAction, PositionalAudioAction } from '../action-types'
+import { type Animation3DNode, animationToTracks, findRecursively, parse3DAnimation } from '../assets/animation'
 import { getPositionalAudio } from '../assets/audio'
+import { getAction } from '../assets/load'
+import { getPart } from '../assets/model'
+import { WDB } from '../assets/wdb'
 import { engine, RESOLUTION_RATIO } from '../engine'
+import { Actor } from './actor'
 
 export abstract class World {
   protected _scene = new THREE.Scene()
@@ -18,6 +22,8 @@ export abstract class World {
   private _clickListeners = new Map<THREE.Object3D, (event: MouseEvent) => void>()
   private _runningAnimations: {
     mixer: THREE.AnimationMixer
+    clipAction: THREE.AnimationAction
+    audios: THREE.PositionalAudio[]
     resolve: () => void
   }[] = []
 
@@ -103,14 +109,93 @@ export abstract class World {
     this._camera.lookAt(pathToPosition(lookAtPositionPath))
   }
 
-  public playAnimation(mesh: THREE.Object3D, animation: THREE.AnimationClip): Promise<void> {
-    const mixer = new THREE.AnimationMixer(mesh)
-    const action = mixer.clipAction(animation)
-    action.loop = THREE.LoopOnce
-    action.clampWhenFinished = true
-    action.play()
+  public async playAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction>): Promise<void> {
+    const animationActions = action.children.filter(c => c.presenter === 'LegoAnimPresenter')
+    if (animationActions.length !== 1) {
+      throw new Error('Expected one animation')
+    }
+
+    const animation = parse3DAnimation(await getAction(animationActions[0]))
+    this.setupCameraForAnimation(animation.tree)
+
+    const actors = new THREE.Group()
+
+    for (const actor of animation.actors) {
+      switch (actor.type) {
+        case WDB.ActorType.Unknown: {
+          const node = this.scene.getObjectByName(actor.name)
+          if (node == null) {
+            throw new Error(`Actor not found: ${actor.name}`)
+          }
+          actors.add(node)
+          break
+        }
+        case WDB.ActorType.ManagedActor: {
+          const minifig = await Actor.create(this, actor.name.replace(/^\*/, ''))
+          if (actor.name.startsWith('*')) {
+            minifig.mesh.visible = false
+          }
+          actors.add(minifig.mesh)
+          break
+        }
+        case WDB.ActorType.ManagedInvisibleRoi: {
+          const node = this.scene.getObjectByName(actor.name)
+          if (node == null) {
+            throw new Error(`Actor not found: ${actor.name}`)
+          }
+          node.visible = false
+          actors.add(node)
+          break
+        }
+        case WDB.ActorType.ManagedInvisibleRoiTrimmed: {
+          const node = this.scene.getObjectByName(actor.name.replace(/[0-9_]*$/, ''))
+          if (node == null) {
+            throw new Error(`Actor not found: ${actor.name}`)
+          }
+          node.visible = false
+          actors.add(node)
+          break
+        }
+        case WDB.ActorType.SceneRoi1:
+        case WDB.ActorType.SceneRoi2: {
+          const node = this.scene.getObjectByName(actor.name) ?? (await getPart(actor.name, null, null))
+          if (node == null) {
+            throw new Error(`Actor not found: ${actor.name}`)
+          }
+          actors.add(node)
+          break
+        }
+        default:
+          throw new Error(`Unsupported actor type ${actor.type} for ${actor.name}`)
+      }
+    }
+
+    const audios: THREE.PositionalAudio[] = await Promise.all(
+      action.children
+        .filter(c => c.presenter === 'Lego3DWavePresenter')
+        .map(async audio => {
+          const actor = actors.getObjectByName(audio.extra)
+          if (actor == null) {
+            throw new Error(`Actor not found: ${audio.extra}`)
+          }
+          return this.playPositionalAudio(audio, actor, audio.startTime / 1_000)
+        }),
+    )
+
+    this.scene.add(actors)
+
+    const clip = new THREE.AnimationClip(animation.tree.name, -1, animationToTracks(animation.tree))
+    return this.playAnimationClip(actors, clip, audios)
+  }
+
+  public async playAnimationClip(root: THREE.Object3D, clip: THREE.AnimationClip, audios: THREE.PositionalAudio[] = []): Promise<void> {
+    const mixer = new THREE.AnimationMixer(root)
+    const clipAction = mixer.clipAction(clip)
+    clipAction.loop = THREE.LoopOnce
+    clipAction.clampWhenFinished = true
+    clipAction.play()
     return new Promise(resolve => {
-      this._runningAnimations.push({ mixer, resolve })
+      this._runningAnimations.push({ mixer, clipAction, audios, resolve })
       mixer.addEventListener('finished', () => {
         this._runningAnimations = this._runningAnimations.filter(a => a.mixer !== mixer)
         resolve()
@@ -181,13 +266,14 @@ export abstract class World {
     this._camera.remove(engine.audioListener)
   }
 
-  public async playPositionalAudio(action: PositionalAudioAction, parent: THREE.Object3D, delay?: number): Promise<void> {
+  public async playPositionalAudio(action: PositionalAudioAction, parent: THREE.Object3D, delay?: number): Promise<THREE.PositionalAudio> {
     const audio = await getPositionalAudio(engine.audioListener, action)
     parent.add(audio)
     audio.onEnded = () => {
       parent.remove(audio)
     }
     audio.play(delay)
+    return audio
   }
 
   public resize(_width: number, _height: number): void {}
@@ -220,6 +306,15 @@ export abstract class World {
           break
       }
       console.log(`Current actor: ${this.currentActor}`)
+    }
+
+    if (key === ' ') {
+      for (const runningAnimation of this._runningAnimations) {
+        runningAnimation.clipAction.time = runningAnimation.clipAction.getClip().duration
+        for (const audio of runningAnimation.audios) {
+          audio.stop()
+        }
+      }
     }
   }
 
