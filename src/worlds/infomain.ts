@@ -5,7 +5,7 @@ import { playAnimation } from '../lib/animation'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
 
-export class InfoCenter extends Building {
+export class InfoMain extends Building {
   public override async init(): Promise<void> {
     await super.init()
 

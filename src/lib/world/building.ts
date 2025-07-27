@@ -64,7 +64,7 @@ export abstract class Building extends World {
     for (const control of this._controls) {
       if (control.pointerDown(normalizedX, normalizedY)) {
         if (control.name === 'Info_Ctl') {
-          void switchWorld('info-center')
+          void switchWorld('infomain')
           return
         }
 
