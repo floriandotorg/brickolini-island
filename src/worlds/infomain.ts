@@ -5,10 +5,31 @@ import { playAnimation } from '../lib/animation'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
+import { World } from '../lib/world/world'
 
-export class InfoMain extends Building {
+export class InfoMain extends World {
+  public _building = new Building()
+
   public override async init(): Promise<void> {
     await super.init()
+
+    await this._building.init({
+      world: this,
+      startUpAction: _InfoMain,
+      backgroundMusic: InformationCenter_Music,
+    })
+
+    this._building.onButtonClicked = buttonName => {
+      switch (buttonName) {
+        case 'LeftArrow_Ctl':
+          void switchWorld('elevbott')
+          return true
+        case 'RightArrow_Ctl':
+          void switchWorld('infoscor')
+          return true
+      }
+      return false
+    }
 
     const leftPointLight = new THREE.PointLight(0xffffff, 140)
     leftPointLight.position.set(7, 4, 4.5)
@@ -31,21 +52,12 @@ export class InfoMain extends Building {
     void playAnimation(this, iic027in_RunAnim)
   }
 
-  protected getBuildingConfig() {
-    return {
-      startUpAction: _InfoMain,
-      backgroundMusic: InformationCenter_Music,
-    }
+  public override render(renderer: THREE.WebGLRenderer): void {
+    this._building.render(renderer)
+    super.render(renderer)
   }
 
-  protected override buttonClicked(buttonName: string): void {
-    switch (buttonName) {
-      case 'LeftArrow_Ctl':
-        void switchWorld('elevbott')
-        break
-      case 'RightArrow_Ctl':
-        void switchWorld('infoscor')
-        break
-    }
+  public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
+    this._building.pointerDown(normalizedX, normalizedY)
   }
 }

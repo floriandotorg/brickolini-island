@@ -7,7 +7,7 @@ import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, Centr
 import { getExtraValue } from '../lib/action-types'
 import { getBoundaries } from '../lib/assets/boundary'
 import { manager } from '../lib/assets/load'
-import { getWorld } from '../lib/assets/model'
+import { calculateTransformationMatrix, getWorld } from '../lib/assets/model'
 import { engine } from '../lib/engine'
 import { getSettings } from '../lib/settings'
 import { switchWorld } from '../lib/switch-world'
@@ -368,9 +368,15 @@ export class Isle extends World {
       this._exitVehicle()
     }
 
-    this._camera.position.set(20, CAM_HEIGHT, 30)
-    this._camera.lookAt(60, 0, 25)
-    this._placeObjectOnGround(this._camera)
+    const mat = calculateTransformationMatrix([-31.694365, 1.25, -2.814015], [0.650445, 0.0, 0.759553], [0.0, 1.0, 0.0])
+    mat.decompose(this._camera.position, this._camera.quaternion, this._camera.scale)
+    this._camera.rotateY(Math.PI)
+    this._camera.fov = 90
+    this._camera.updateProjectionMatrix()
+    findMesh('gas').visible = false
+    // this._camera.position.set(20, CAM_HEIGHT, 30)
+    // this._camera.lookAt(60, 0, 25)
+    // this._placeObjectOnGround(this._camera)
   }
 
   public override activate(param?: IsleParam): void {

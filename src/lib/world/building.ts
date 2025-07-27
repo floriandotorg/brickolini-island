@@ -8,18 +8,41 @@ import { getWorld } from '../assets/model'
 import { createTexture } from '../assets/texture'
 import { engine } from '../engine'
 import { switchWorld } from '../switch-world'
-import { World } from './world'
+import type { World } from './world'
 
-export abstract class Building extends World {
+export class Building {
   private _backgroundScene = new THREE.Scene()
   private _backgroundCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
   private _backgroundMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
   private _controls: Control[] = []
+  private _exitSpawnPoint?: {
+    boundaryName: string
+    source: number
+    sourceScale: number
+    destination: number
+    destinationScale: number
+  }
 
-  public override async init(): Promise<void> {
-    await super.init()
+  public onButtonClicked: (buttonName: string) => boolean = _buttonName => false
 
-    const { startUpAction, backgroundMusic } = this.getBuildingConfig()
+  public async init({
+    world,
+    startUpAction,
+    backgroundMusic,
+    exitSpawnPoint,
+  }: {
+    world: World
+    startUpAction: ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'> | SerialAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'>
+    backgroundMusic: AudioAction
+    exitSpawnPoint?: {
+      boundaryName: string
+      source: number
+      sourceScale: number
+      destination: number
+      destinationScale: number
+    }
+  }): Promise<void> {
+    this._exitSpawnPoint = exitSpawnPoint
 
     engine.switchBackgroundMusic(backgroundMusic)
 
@@ -28,9 +51,9 @@ export abstract class Building extends World {
       throw new Error('World not found in startUpAction')
     }
 
-    this._scene.add(await getWorld(worldName as Parameters<typeof getWorld>[0]))
+    world.scene.add(await getWorld(worldName as Parameters<typeof getWorld>[0]))
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.2)
-    this._scene.add(ambientLight)
+    world.scene.add(ambientLight)
 
     for (const child of startUpAction.children) {
       if (isImageAction(child) && child.name === 'Background_Bitmap') {
@@ -41,7 +64,7 @@ export abstract class Building extends World {
       if (isAnimationAction(child) && child.name === 'ConfigAnimation') {
         void getAction(child).then(action => {
           const animation = parse3DAnimation(action)
-          this.setupCameraForAnimation(animation.tree)
+          world.setupCameraForAnimation(animation.tree)
         })
       }
 
@@ -54,13 +77,12 @@ export abstract class Building extends World {
     }
   }
 
-  public override render(renderer: THREE.WebGLRenderer): void {
+  public render(renderer: THREE.WebGLRenderer): void {
     renderer.render(this._backgroundScene, this._backgroundCamera)
     renderer.clearDepth()
-    super.render(renderer)
   }
 
-  public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
+  public pointerDown(normalizedX: number, normalizedY: number): void {
     for (const control of this._controls) {
       if (control.pointerDown(normalizedX, normalizedY)) {
         if (control.name === 'Info_Ctl') {
@@ -69,42 +91,28 @@ export abstract class Building extends World {
         }
 
         if (control.name === 'Door_Ctl') {
-          const { exitSpawnPoint } = this.getBuildingConfig()
-          if (exitSpawnPoint == null) {
+          if (this._exitSpawnPoint == null) {
             throw new Error('exitSpawnPoint not found in building config')
           }
 
           void switchWorld('isle', {
-            position: exitSpawnPoint,
+            position: this._exitSpawnPoint,
           } satisfies IsleParam)
           return
         }
 
-        console.log(control.name)
-        this.buttonClicked(control.name)
+        if (!this.onButtonClicked(control.name)) {
+          console.log(`Button ${control.name} not handled`)
+        }
 
         return
       }
     }
   }
 
-  public override pointerUp(_event: MouseEvent): void {
+  public pointerUp(): void {
     for (const control of this._controls) {
       control.pointerUp()
     }
   }
-
-  protected abstract getBuildingConfig(): {
-    startUpAction: ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'> | SerialAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'>
-    backgroundMusic: AudioAction
-    exitSpawnPoint?: {
-      boundaryName: string
-      source: number
-      sourceScale: number
-      destination: number
-      destinationScale: number
-    }
-  }
-
-  protected buttonClicked(_buttonName: string): void {}
 }
