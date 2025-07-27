@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { _InfoMain, iic027in_RunAnim } from '../actions/infomain'
+import { InformationCenter_Music } from '../actions/jukebox'
 import { playAnimation } from '../lib/animation'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
@@ -32,6 +33,14 @@ export class InfoCenter extends Building {
   protected getBuildingConfig() {
     return {
       startUpAction: _InfoMain,
+      backgroundMusic: InformationCenter_Music,
+      exitSpawnPoint: {
+        boundaryName: 'INT46',
+        source: 0,
+        sourceScale: 0.5,
+        destination: 2,
+        destinationScale: 0.5,
+      },
     }
   }
 }

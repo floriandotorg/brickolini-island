@@ -213,11 +213,11 @@ class Engine {
     this._render()
   }
 
-  public async setWorld(world: World) {
+  public async setWorld(world: World, param?: unknown) {
     this._world?.deactivate()
     this._world = world
     this._world.resize(this._canvas.width, this._canvas.height)
-    this._world.activate()
+    this._world.activate(param)
   }
 
   public async transition(): Promise<void> {

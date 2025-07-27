@@ -1,10 +1,13 @@
 import * as THREE from 'three'
-import { type ActorAction, type AnimationAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
+import type { IsleParam } from '../../worlds/isle'
+import { type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
 import { Control } from '../assets/control'
 import { getAction } from '../assets/load'
 import { getWorld } from '../assets/model'
 import { createTexture } from '../assets/texture'
+import { engine } from '../engine'
+import { switchWorld } from '../switch-world'
 import { World } from './world'
 
 export abstract class Building extends World {
@@ -12,12 +15,13 @@ export abstract class Building extends World {
   private _backgroundCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
   private _backgroundMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
   private _controls: Control[] = []
-  private _pressedControl: Control | null = null
 
   public override async init(): Promise<void> {
     await super.init()
 
-    const { startUpAction } = this.getBuildingConfig()
+    const { startUpAction, backgroundMusic } = this.getBuildingConfig()
+
+    engine.switchBackgroundMusic(backgroundMusic)
 
     const worldName = getExtraValue(startUpAction, 'World')?.trim()
     if (worldName == null) {
@@ -57,25 +61,45 @@ export abstract class Building extends World {
   }
 
   public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
-    if (this._pressedControl != null) {
-      return
-    }
     for (const control of this._controls) {
       if (control.pointerDown(normalizedX, normalizedY)) {
-        this._pressedControl = control
+        if (control.name === 'Info_Ctl') {
+          void switchWorld('info-center')
+          return
+        }
+
+        if (control.name === 'Door_Ctl') {
+          void switchWorld('isle', {
+            position: this.getBuildingConfig().exitSpawnPoint,
+          } satisfies IsleParam)
+          return
+        }
+
+        console.log(control.name)
+        this.buttonClicked(control.name)
+
         return
       }
     }
   }
 
   public override pointerUp(_event: MouseEvent): void {
-    if (this._pressedControl != null) {
-      this._pressedControl.pointerUp()
-      this._pressedControl = null
+    for (const control of this._controls) {
+      control.pointerUp()
     }
   }
 
   protected abstract getBuildingConfig(): {
     startUpAction: ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'> | SerialAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'>
+    backgroundMusic: AudioAction
+    exitSpawnPoint: {
+      boundaryName: string
+      source: number
+      sourceScale: number
+      destination: number
+      destinationScale: number
+    }
   }
+
+  protected buttonClicked(_buttonName: string): void {}
 }

@@ -2,7 +2,7 @@ import { Intro_Movie, Lego_Movie, Mindscape_Movie } from './actions/intro'
 import { engine } from './lib/engine'
 import './lib/settings-dialog'
 import './style.css'
-import { switchWorld } from './lib/switch-world'
+import { switchWorld, type WorldName } from './lib/switch-world'
 
 const playButton = document.getElementById('play-button')
 if (playButton == null || !(playButton instanceof HTMLButtonElement)) {
@@ -12,7 +12,9 @@ if (playButton == null || !(playButton instanceof HTMLButtonElement)) {
 const start = async () => {
   playButton.disabled = true
 
-  await switchWorld('isle')
+  const world = new URLSearchParams(window.location.search).get('world') ?? ('isle' satisfies WorldName)
+
+  await switchWorld(world as WorldName)
 
   engine.start()
 

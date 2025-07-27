@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { _StartUp, hho003cl_RunAnim } from '../actions/hospital'
+import { Hospital_Music } from '../actions/jukebox'
 import { playAnimation } from '../lib/animation'
 import { Building } from '../lib/world/building'
 
@@ -21,6 +22,14 @@ export class Hospital extends Building {
   protected getBuildingConfig() {
     return {
       startUpAction: _StartUp,
+      backgroundMusic: Hospital_Music,
+      exitSpawnPoint: {
+        boundaryName: 'EDG02_28',
+        source: 3,
+        sourceScale: 0.37,
+        destination: 1,
+        destinationScale: 0.52,
+      },
     }
   }
 }

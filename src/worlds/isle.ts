@@ -26,6 +26,16 @@ const MAX_LINEAR_DECEL = 50
 const MAX_ROT_DECEL = 50
 const EPSILON = 0.0001
 
+export type IsleParam = {
+  position: {
+    boundaryName: string
+    source: number
+    sourceScale: number
+    destination: number
+    destinationScale: number
+  }
+}
+
 export class Isle extends World {
   private _slewMode: boolean = false
   private _linearVel = 0
@@ -361,6 +371,13 @@ export class Isle extends World {
     this._camera.position.set(20, CAM_HEIGHT, 30)
     this._camera.lookAt(60, 0, 25)
     this._placeObjectOnGround(this._camera)
+  }
+
+  public override activate(param?: IsleParam): void {
+    super.activate(param)
+    if (param != null) {
+      this._boundaryManager.placeObject(this._camera, param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
+    }
   }
 
   private _updateSun(): void {

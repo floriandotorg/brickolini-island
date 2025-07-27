@@ -1,11 +1,11 @@
 import { engine } from './engine'
 import type { World } from './world/world'
 
-type WorldName = 'isle' | 'hospital' | 'garage' | 'info-center' | 'police'
+export type WorldName = 'isle' | 'hospital' | 'garage' | 'info-center' | 'police'
 
 const worlds = new Map<WorldName, World>()
 
-export const switchWorld = async (worldName: WorldName) => {
+export const switchWorld = async (worldName: WorldName, param?: unknown) => {
   const transition = engine.hasWorld ? engine.transition() : Promise.resolve()
 
   let world: World | null = worlds.get(worldName) ?? null
@@ -39,5 +39,5 @@ export const switchWorld = async (worldName: WorldName) => {
 
   await transition
 
-  await engine.setWorld(world)
+  await engine.setWorld(world, param)
 }

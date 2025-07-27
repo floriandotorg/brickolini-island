@@ -161,7 +161,7 @@ export abstract class World {
     }
   }
 
-  public activate(): void {
+  public activate(_param?: unknown): void {
     this._camera.add(engine.audioListener)
   }
 
