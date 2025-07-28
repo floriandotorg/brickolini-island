@@ -31,6 +31,7 @@ export class InfoMain extends World {
 
   private _welcomeTimeout: number | null = null
   private _currentAnimationIndex = 0
+  private _infomanHasBeenClicked = false
 
   public override async init(): Promise<void> {
     await super.init()
@@ -72,17 +73,20 @@ export class InfoMain extends World {
     this._scene.add(await Plants.place(this, Plants.World.IMAIN))
 
     ;(await this.getActor('infoman')).onClicked = () => {
+      this._infomanHasBeenClicked = true
+      this.skipCurrentAnimation()
       if (this._welcomeTimeout != null) {
         clearTimeout(this._welcomeTimeout)
       }
-      this.skipCurrentAnimation()
       void this.playAnimation(ANIMATIONS[this._currentAnimationIndex])
       this._currentAnimationIndex = (this._currentAnimationIndex + 1) % ANIMATIONS.length
     }
 
     this.playAnimation(iic001in_RunAnim).then(async () => {
       this._welcomeTimeout = setTimeout(() => {
-        void this.playAnimation(iicx17in_RunAnim)
+        if (!this._infomanHasBeenClicked) {
+          void this.playAnimation(iicx17in_RunAnim)
+        }
       }, 25_000)
     })
   }
