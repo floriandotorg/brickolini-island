@@ -130,6 +130,7 @@ export abstract class World {
     this.setupCameraForAnimation(animation.tree)
 
     const actors = new THREE.Group()
+    const actorNameToObjectName = new Map<string, string>()
 
     for (const actor of animation.actors) {
       switch (actor.type) {
@@ -155,6 +156,7 @@ export abstract class World {
           if (node == null) {
             throw new Error(`Actor not found: ${name} (ManagedInvisibleRoi)`)
           }
+          actorNameToObjectName.set(actor.name, name)
           node.visible = false
           actors.add(node)
           break
@@ -165,6 +167,7 @@ export abstract class World {
           if (node == null) {
             throw new Error(`ROI not found: ${name} (ManagedInvisibleRoiTrimmed)`)
           }
+          actorNameToObjectName.set(actor.name, name)
           node.visible = false
           actors.add(node)
           break
@@ -197,7 +200,7 @@ export abstract class World {
 
     this.scene.add(actors)
 
-    const clip = new THREE.AnimationClip(animation.tree.name, -1, animationToTracks(animation.tree))
+    const clip = new THREE.AnimationClip(animation.tree.name, -1, animationToTracks(animation.tree, actorNameToObjectName))
     return this.playAnimationClip(actors, clip, audios)
   }
 
