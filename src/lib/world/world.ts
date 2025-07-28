@@ -120,6 +120,19 @@ export abstract class World {
     return actor
   }
 
+  public getObjectByNameRecursive(name: string, root: THREE.Object3D = this.scene): THREE.Object3D | null {
+    for (const child of root.children) {
+      if (child.name.toLowerCase() === name.toLowerCase()) {
+        return child
+      }
+      const result = this.getObjectByNameRecursive(name, child)
+      if (result != null) {
+        return result
+      }
+    }
+    return null
+  }
+
   public async playAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction>): Promise<void> {
     const animationActions = action.children.filter(c => c.presenter === 'LegoAnimPresenter')
     if (animationActions.length !== 1) {
@@ -130,15 +143,15 @@ export abstract class World {
     this.setupCameraForAnimation(animation.tree)
 
     const actors = new THREE.Group()
-    const actorNameToObjectName = new Map<string, string>()
 
     for (const actor of animation.actors) {
       switch (actor.type) {
         case WDB.ActorType.Unknown: {
-          const node = this.scene.getObjectByName(actor.name)
+          const node = this.getObjectByNameRecursive(actor.name)?.clone()
           if (node == null) {
             throw new Error(`Actor not found: ${actor.name}`)
           }
+          node.name = actor.name.toLowerCase()
           actors.add(node)
           break
         }
@@ -152,32 +165,33 @@ export abstract class World {
         }
         case WDB.ActorType.ManagedInvisibleRoi: {
           const name = actor.name.slice(1)
-          const node = this.scene.getObjectByName(name)
+          const node = this.getObjectByNameRecursive(name)?.clone()
           if (node == null) {
             throw new Error(`Actor not found: ${name} (ManagedInvisibleRoi)`)
           }
-          actorNameToObjectName.set(actor.name, name)
+          node.name = actor.name.toLowerCase()
           node.visible = false
           actors.add(node)
           break
         }
         case WDB.ActorType.ManagedInvisibleRoiTrimmed: {
           const name = actor.name.slice(1).replace(/[0-9_]*$/, '')
-          const node = this.scene.getObjectByName(name)
+          const node = this.getObjectByNameRecursive(name)?.clone()
           if (node == null) {
             throw new Error(`ROI not found: ${name} (ManagedInvisibleRoiTrimmed)`)
           }
-          actorNameToObjectName.set(actor.name, name)
+          node.name = actor.name.toLowerCase()
           node.visible = false
           actors.add(node)
           break
         }
         case WDB.ActorType.SceneRoi1:
         case WDB.ActorType.SceneRoi2: {
-          const node = this.scene.getObjectByName(actor.name) ?? (await getGlobalPart(actor.name, null, null))
+          const node = (this.getObjectByNameRecursive(actor.name) ?? (await getGlobalPart(actor.name, null, null)))?.clone()
           if (node == null) {
             throw new Error(`ROI not found: ${actor.name} (SceneRoi)`)
           }
+          node.name = actor.name.toLowerCase()
           actors.add(node)
           break
         }
@@ -190,7 +204,7 @@ export abstract class World {
       action.children
         .filter(c => c.presenter === 'Lego3DWavePresenter')
         .map(async audio => {
-          const actor = actors.getObjectByName(audio.extra)
+          const actor = this.getObjectByNameRecursive(audio.extra, actors)
           if (actor == null) {
             throw new Error(`Actor not found: ${audio.extra}`)
           }
@@ -200,7 +214,7 @@ export abstract class World {
 
     this.scene.add(actors)
 
-    const clip = new THREE.AnimationClip(animation.tree.name, -1, animationToTracks(animation.tree, actorNameToObjectName))
+    const clip = new THREE.AnimationClip(animation.tree.name, -1, animationToTracks(animation.tree))
     return this.playAnimationClip(actors, clip, audios)
   }
 

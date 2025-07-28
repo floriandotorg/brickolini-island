@@ -52,7 +52,7 @@ export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<stri
   }
 }
 
-export const animationToTracks = (animation: Animation3DNode, actorNameToObjectName = new Map<string, string>()): THREE.KeyframeTrack[] => {
+export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTrack[] => {
   const position = new THREE.Vector3()
   const quaternion = new THREE.Quaternion()
   const scale = new THREE.Vector3()
@@ -76,7 +76,7 @@ export const animationToTracks = (animation: Animation3DNode, actorNameToObjectN
       }
       const isBodyPart = ['body', 'arm-rt', 'arm-lft', 'leg-rt', 'leg-lft', 'head', 'infohat', 'infogron', 'claw-rt', 'claw-lft'].includes(name)
       const prefix = actorName != null && isBodyPart ? `${actorName}_` : ''
-      const path = prefix + [actorNameToObjectName.get(name) ?? name, key].join('.')
+      const path = prefix + [name, key].join('.')
       const existing = valueMap.get(path)
       if (existing == null) {
         valueMap.set(path, values)
