@@ -189,16 +189,12 @@ export const getWorld = async (name: 'BLDD' | 'BLDH' | 'BLDJ' | 'BLDR' | 'HOSP' 
     group.add(mesh)
   }
   for (const part of world.parts) {
-    group.add(await getPart(part.name, null, null))
+    group.add(await getWorldPart(world, part.name, null, null))
   }
   return group
 }
 
-export const getPart = async (name: string, color: WDB.Color | null, texture: string | THREE.Texture | null): Promise<THREE.Group> => {
-  const part = (await getWdb()).globalParts.find(p => p.name.toLowerCase() === name.toLowerCase())
-  if (!part) {
-    throw new Error(`Part ${name} not found`)
-  }
+const getPart = async (name: string, part: WDB.Part, color: WDB.Color | null, texture: string | THREE.Texture | null): Promise<THREE.Group> => {
   const lod = part.lods.at(-1)
   if (!lod) {
     throw new Error(`Couldn't find lod and children for part ${name}`)
@@ -219,4 +215,20 @@ export const getPart = async (name: string, color: WDB.Color | null, texture: st
   }
   createdMeshes.push({ meshes, lod, texture, customColor: color })
   return result
+}
+
+export const getGlobalPart = async (name: string, color: WDB.Color | null, texture: string | THREE.Texture | null): Promise<THREE.Group> => {
+  const part = (await getWdb()).globalParts.find(p => p.name.toLowerCase() === name.toLowerCase())
+  if (!part) {
+    throw new Error(`Part ${name} not found`)
+  }
+  return await getPart(name, part, color, texture)
+}
+
+export const getWorldPart = async (world: WDB.World, name: string, color: WDB.Color | null, texture: string | THREE.Texture | null): Promise<THREE.Group> => {
+  const part = world.parts.find(p => p.name.toLowerCase() === name.toLowerCase())
+  if (!part) {
+    throw new Error(`Part ${name} not found`)
+  }
+  return await getPart(name, part, color, texture)
 }

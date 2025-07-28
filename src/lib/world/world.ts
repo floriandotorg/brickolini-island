@@ -3,7 +3,7 @@ import type { AnimationAction, ParallelAction, PhonemeAction, PositionalAudioAct
 import { type Animation3DNode, animationToTracks, findRecursively, parse3DAnimation } from '../assets/animation'
 import { getPositionalAudio } from '../assets/audio'
 import { getAction } from '../assets/load'
-import { getPart } from '../assets/model'
+import { getGlobalPart } from '../assets/model'
 import { WDB } from '../assets/wdb'
 import { engine, RESOLUTION_RATIO } from '../engine'
 import { Actor } from './actor'
@@ -174,7 +174,7 @@ export abstract class World {
         }
         case WDB.ActorType.SceneRoi1:
         case WDB.ActorType.SceneRoi2: {
-          const node = this.scene.getObjectByName(actor.name) ?? (await getPart(actor.name, null, null))
+          const node = this.scene.getObjectByName(actor.name) ?? (await getGlobalPart(actor.name, null, null))
           if (node == null) {
             throw new Error(`ROI not found: ${actor.name} (SceneRoi)`)
           }

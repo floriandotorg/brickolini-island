@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Sound10 } from '../../actions/sndanim'
 import { colorAliases } from '../assets/mesh'
-import { calculateTransformationMatrix, getPart } from '../assets/model'
+import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
 import type { World } from './world'
 
 enum Flags {
@@ -1364,26 +1364,26 @@ export class Actor {
       const mesh = await (async () => {
         switch (bodyPartName) {
           case 'infohat':
-            return getPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null)
+            return getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null)
           case 'body': {
-            return getPart(actor._info.bodyPart, 'color' in actor._info.body ? colorAliases[actor._info.body.color] : null, 'color' in actor._info.body ? null : actor._info.body.texture)
+            return getGlobalPart(actor._info.bodyPart, 'color' in actor._info.body ? colorAliases[actor._info.body.color] : null, 'color' in actor._info.body ? null : actor._info.body.texture)
           }
           case 'infogron':
-            return getPart('infogron', colorAliases[actor._info.groinColor], null)
+            return getGlobalPart('infogron', colorAliases[actor._info.groinColor], null)
           case 'head':
-            return getPart('head', null, actor._info.faceTexture)
+            return getGlobalPart('head', null, actor._info.faceTexture)
           case 'arm-lft':
-            return getPart('arm-lft', colorAliases[actor._info.leftArmColor], null)
+            return getGlobalPart('arm-lft', colorAliases[actor._info.leftArmColor], null)
           case 'arm-rt':
-            return getPart('arm-rt', colorAliases[actor._info.rightArmColor], null)
+            return getGlobalPart('arm-rt', colorAliases[actor._info.rightArmColor], null)
           case 'claw-lft':
-            return getPart('claw-lft', colorAliases[actor._info.leftClawColor], null)
+            return getGlobalPart('claw-lft', colorAliases[actor._info.leftClawColor], null)
           case 'claw-rt':
-            return getPart('claw-lft', colorAliases[actor._info.rightClawColor], null)
+            return getGlobalPart('claw-lft', colorAliases[actor._info.rightClawColor], null)
           case 'leg-lft':
-            return getPart('leg', colorAliases[actor._info.leftLegColor], null)
+            return getGlobalPart('leg', colorAliases[actor._info.leftLegColor], null)
           case 'leg-rt':
-            return getPart('leg', colorAliases[actor._info.rightLegColor], null)
+            return getGlobalPart('leg', colorAliases[actor._info.rightLegColor], null)
         }
         throw new Error(`Unknown part: ${bodyPartName}`)
       })()
@@ -1403,7 +1403,7 @@ export class Actor {
               actor._mesh
                 .getObjectByName('infohat')
                 ?.clear()
-                .add(await getPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null))
+                .add(await getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null))
               break
             case 'body':
             case 'infogron':
@@ -1411,7 +1411,7 @@ export class Actor {
               actor._mesh
                 .getObjectByName('infogron')
                 ?.clear()
-                .add(await getPart('infogron', colorAliases[actor._info.groinColor], null))
+                .add(await getGlobalPart('infogron', colorAliases[actor._info.groinColor], null))
               break
             case 'claw-lft':
             case 'arm-lft':
@@ -1419,7 +1419,7 @@ export class Actor {
               actor._mesh
                 .getObjectByName('arm-lft')
                 ?.clear()
-                .add(await getPart('arm-lft', colorAliases[actor._info.leftArmColor], null))
+                .add(await getGlobalPart('arm-lft', colorAliases[actor._info.leftArmColor], null))
               break
             case 'claw-rt':
             case 'arm-rt':
@@ -1427,21 +1427,21 @@ export class Actor {
               actor._mesh
                 .getObjectByName('arm-rt')
                 ?.clear()
-                .add(await getPart('arm-rt', colorAliases[actor._info.rightArmColor], null))
+                .add(await getGlobalPart('arm-rt', colorAliases[actor._info.rightArmColor], null))
               break
             case 'leg-lft':
               actor._info.leftLegColor = nextColor(actor._info.leftLegColor)
               actor._mesh
                 .getObjectByName('leg-lft')
                 ?.clear()
-                .add(await getPart('leg', colorAliases[actor._info.leftLegColor], null))
+                .add(await getGlobalPart('leg', colorAliases[actor._info.leftLegColor], null))
               break
             case 'leg-rt':
               actor._info.rightLegColor = nextColor(actor._info.rightLegColor)
               actor._mesh
                 .getObjectByName('leg-rt')
                 ?.clear()
-                .add(await getPart('leg', colorAliases[actor._info.rightLegColor], null))
+                .add(await getGlobalPart('leg', colorAliases[actor._info.rightLegColor], null))
               break
             default:
               throw new Error(`Unknown part: ${bodyPartName}`)
@@ -1471,7 +1471,7 @@ export class Actor {
         }
 
         hatParentMesh.clear()
-        const mesh = await getPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null)
+        const mesh = await getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null)
         mesh.name = `${mesh.name}-part`
         hatParentMesh.add(mesh)
       }

@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { AnimB1, AnimB2, AnimB3, AnimF1, AnimF2, AnimF3, AnimP1, AnimP2, AnimP3, AnimT1, AnimT2, AnimT3, Sound8, Sound9, Sound10, Sound11, Sound12, Sound13, Sound14, Sound15, Sound16, Sound17 } from '../../actions/sndanim'
 import type { AnimationAction, PositionalAudioAction } from '../action-types'
 import { getAnimation } from '../assets/animation'
-import { calculateTransformationMatrix, getPart } from '../assets/model'
+import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
 import type { World as WorldType } from './world'
 
 export namespace Plants {
@@ -247,7 +247,7 @@ export namespace Plants {
       const animationRoot = new THREE.Group()
       animationRoot.name = 'animation'
       mesh.add(animationRoot)
-      animationRoot.add(await getPart(plantName, null, null))
+      animationRoot.add(await getGlobalPart(plantName, null, null))
       group.add(mesh)
       world.addClickListener(mesh, async () => {
         switch (world.currentActor) {
@@ -269,7 +269,7 @@ export namespace Plants {
         const animationRoot = new THREE.Group()
         animationRoot.name = 'animation'
         mesh.add(animationRoot)
-        animationRoot.add(await getPart(partName(plantState.variant, plantState.color), null, null))
+        animationRoot.add(await getGlobalPart(partName(plantState.variant, plantState.color), null, null))
         const animation = await getAnimation(animations[plantState.variant][plantState.animationIndex], {
           '-flower': 'animation',
           '-360': 'animation',
