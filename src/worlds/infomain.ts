@@ -19,6 +19,7 @@ import {
   iicx17in_RunAnim,
 } from '../actions/infomain'
 import { InformationCenter_Music } from '../actions/jukebox'
+import { engine } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
@@ -39,7 +40,6 @@ export class InfoMain extends World {
     await this._building.init({
       world: this,
       startUpAction: _InfoMain,
-      backgroundMusic: InformationCenter_Music,
     })
 
     this._building.onButtonClicked = buttonName => {
@@ -83,6 +83,7 @@ export class InfoMain extends World {
     }
 
     this.playAnimation(iic001in_RunAnim).then(async () => {
+      engine.switchBackgroundMusic(InformationCenter_Music)
       this._welcomeTimeout = setTimeout(() => {
         if (!this._infomanHasBeenClicked) {
           void this.playAnimation(iicx17in_RunAnim)

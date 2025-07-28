@@ -28,19 +28,23 @@ class Engine {
   private _cutsceneMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
   private _world: World | null = null
   private _keyStates: Set<string> = new Set()
-  private _backgroundAudio: { audio: THREE.Audio; sourceVolume: number } | null = null
+  private _backgroundAudio: { actionId: number; audio: THREE.Audio; sourceVolume: number } | null = null
   private _transitionStart: number = 0
   private _transitionPromiseResolve: (() => void) | null = null
 
   public async switchBackgroundMusic(action: AudioAction): Promise<void> {
+    if (this._backgroundAudio?.actionId === action.id) {
+      return
+    }
+
     const audio = await getAudio(this._audioListener, action)
     audio.loop = true
-    const sourceVolume = audio.getVolume()
+    const sourceVolume = action.volume / 100
     const targetVolume = sourceVolume * getSettings().musicVolume
 
     if (this._backgroundAudio == null) {
-      audio.setVolume(targetVolume)
-      this._backgroundAudio = { audio, sourceVolume }
+      this._backgroundAudio = { actionId: action.id, audio, sourceVolume }
+      this._backgroundAudio.audio.gain.gain.value = targetVolume
       this._backgroundAudio.audio.play()
       return
     }
@@ -48,7 +52,7 @@ class Engine {
     this._backgroundAudio.audio.gain.gain.setTargetAtTime(0, audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
     this._backgroundAudio.audio.stop(audio.context.currentTime + BACKGROUND_MUSIC_FADE_TIME)
 
-    this._backgroundAudio = { audio, sourceVolume }
+    this._backgroundAudio = { actionId: action.id, audio, sourceVolume }
     this._backgroundAudio.audio.gain.gain.value = 0
     this._backgroundAudio.audio.gain.gain.setTargetAtTime(targetVolume, audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
     this._backgroundAudio.audio.play()

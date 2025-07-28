@@ -33,7 +33,7 @@ export class Building {
   }: {
     world: World
     startUpAction: ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'> | SerialAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'>
-    backgroundMusic: AudioAction
+    backgroundMusic?: AudioAction
     exitSpawnPoint?: {
       boundaryName: string
       source: number
@@ -44,7 +44,9 @@ export class Building {
   }): Promise<void> {
     this._exitSpawnPoint = exitSpawnPoint
 
-    engine.switchBackgroundMusic(backgroundMusic)
+    if (backgroundMusic != null) {
+      engine.switchBackgroundMusic(backgroundMusic)
+    }
 
     const worldName = getExtraValue(startUpAction, 'World')?.trim()
     if (worldName == null) {
