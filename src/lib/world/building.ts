@@ -32,7 +32,10 @@ export class Building {
     exitSpawnPoint,
   }: {
     world: World
-    startUpAction: ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'> | SerialAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'>
+    startUpAction:
+      | ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'>
+      | SerialAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'>
+      | ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, null>
     backgroundMusic?: AudioAction
     exitSpawnPoint?: {
       boundaryName: string
@@ -49,17 +52,15 @@ export class Building {
     }
 
     const worldName = getExtraValue(startUpAction, 'World')?.trim()
-    if (worldName == null) {
-      throw new Error('World not found in startUpAction')
+    if (worldName != null) {
+      world.scene.add(await getWorld(worldName as Parameters<typeof getWorld>[0]))
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.2)
+      world.scene.add(ambientLight)
     }
 
-    world.scene.add(await getWorld(worldName as Parameters<typeof getWorld>[0]))
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2)
-    world.scene.add(ambientLight)
-
     for (const child of startUpAction.children) {
-      if (isImageAction(child) && child.name === 'Background_Bitmap') {
-        this._backgroundMesh.material = new THREE.MeshBasicMaterial({ map: createTexture(child) })
+      if (isImageAction(child) && child.name.endsWith('Background_Bitmap')) {
+        this._backgroundMesh.material = new THREE.MeshBasicMaterial({ map: createTexture(child), transparent: true })
         this._backgroundScene.add(this._backgroundMesh)
       }
 
@@ -92,7 +93,7 @@ export class Building {
           return
         }
 
-        if (control.name === 'Door_Ctl') {
+        if (control.name.endsWith('Door_Ctl')) {
           if (this._exitSpawnPoint == null) {
             throw new Error('exitSpawnPoint not found in building config')
           }

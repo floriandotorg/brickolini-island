@@ -1,7 +1,7 @@
 import { engine } from './engine'
 import type { World } from './world/world'
 
-export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'infodoor' | 'infoscor' | 'elevbott' | 'police'
+export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor'
 
 const worlds = new Map<WorldName, World>()
 
@@ -38,6 +38,12 @@ export const switchWorld = async (worldName: WorldName, param?: unknown) => {
         break
       case 'infoscor':
         world = await import('../worlds/infoscor').then(m => new m.InfoScor())
+        break
+      case 'polidoor':
+        world = await import('../worlds/polidoor').then(m => new m.PoliDoor())
+        break
+      case 'garadoor':
+        world = await import('../worlds/garadoor').then(m => new m.GarDoor())
         break
       default: {
         const _exhaustiveCheck: never = worldName

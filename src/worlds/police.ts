@@ -1,9 +1,10 @@
 import type * as THREE from 'three'
 import { PoliceStation_Music } from '../actions/jukebox'
-import { _StartUp, nps002la_RunAnim, nps001ni_RunAnim } from '../actions/police'
+import { _StartUp, nps001ni_RunAnim, nps002la_RunAnim } from '../actions/police'
+import { engine } from '../lib/engine'
+import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
-import { engine } from '../lib/engine'
 
 export class Police extends World {
   private _building = new Building()
@@ -17,6 +18,16 @@ export class Police extends World {
       startUpAction: _StartUp,
       backgroundMusic: PoliceStation_Music,
     })
+
+    this._building.onButtonClicked = buttonName => {
+      switch (buttonName) {
+        case 'LeftArrow_Ctl':
+        case 'RightArrow_Ctl':
+          void switchWorld('polidoor')
+          return true
+      }
+      return false
+    }
   }
 
   public override activate(): void {

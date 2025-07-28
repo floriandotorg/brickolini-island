@@ -14,19 +14,15 @@ export class Garage extends World {
       world: this,
       startUpAction: _StartUp,
       backgroundMusic: GarageArea_Music,
-      exitSpawnPoint: {
-        boundaryName: 'INT24',
-        source: 2,
-        sourceScale: 0.73,
-        destination: 4,
-        destinationScale: 0.71,
-      },
     })
 
     this._building.onButtonClicked = buttonName => {
       switch (buttonName) {
         case 'LeftArrow_Ctl':
-          void switchWorld('infodoor')
+          void switchWorld('garadoor')
+          return true
+        case 'RightArrow_Ctl':
+          void switchWorld('garadoor')
           return true
       }
       return false
