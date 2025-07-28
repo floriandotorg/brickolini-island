@@ -181,7 +181,7 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
     return Math.min(next, ...animation.children.map(c => getNextTime(c, start)))
   }
   const times = []
-  for (let start = 0; start < duration; start = getNextTime(animation, start)) {
+  for (let start = 0; start <= duration; start = getNextTime(animation, start)) {
     times.push(start)
   }
   const valueMap = new Map<string, number[]>()
