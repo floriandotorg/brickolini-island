@@ -4,6 +4,7 @@ import type { AnimationAction, PositionalAudioAction } from '../action-types'
 import { getAnimation } from '../assets/animation'
 import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
 import type { World as WorldType } from './world'
+import { engine } from '../engine'
 
 export namespace Plants {
   export enum World {
@@ -250,7 +251,7 @@ export namespace Plants {
       animationRoot.add(await getGlobalPart(plantName, null, null))
       group.add(mesh)
       world.addClickListener(mesh, async () => {
-        switch (world.currentActor) {
+        switch (engine.currentPlayerCharacter) {
           case 'pepper':
             plantState.variant = nextVariant(plantState.variant)
             break
@@ -280,7 +281,7 @@ export namespace Plants {
           bush: animationRoot.children[0].name,
           palm: animationRoot.children[0].name,
         })
-        if (world.currentActor === 'laura') {
+        if (engine.currentPlayerCharacter === 'laura') {
           void world.playPositionalAudio(Sound17, mesh)
         }
         void world.playPositionalAudio(sounds[plantState.soundIndex], mesh)

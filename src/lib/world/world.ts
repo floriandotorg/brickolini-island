@@ -28,8 +28,6 @@ export abstract class World {
   }[] = []
   private _actors = new Map<string, Actor>()
 
-  public currentActor: 'pepper' | 'papa' | 'mama' | 'nick' | 'laura' = 'pepper'
-
   constructor() {
     this._camera.rotation.order = 'YXZ'
 
@@ -318,24 +316,24 @@ export abstract class World {
     }
 
     if (key === 'c') {
-      switch (this.currentActor) {
+      switch (engine.currentPlayerCharacter) {
         case 'pepper':
-          this.currentActor = 'papa'
+          engine.currentPlayerCharacter = 'papa'
           break
         case 'papa':
-          this.currentActor = 'mama'
+          engine.currentPlayerCharacter = 'mama'
           break
         case 'mama':
-          this.currentActor = 'nick'
+          engine.currentPlayerCharacter = 'nick'
           break
         case 'nick':
-          this.currentActor = 'laura'
+          engine.currentPlayerCharacter = 'laura'
           break
         case 'laura':
-          this.currentActor = 'pepper'
+          engine.currentPlayerCharacter = 'pepper'
           break
       }
-      console.log(`Current actor: ${this.currentActor}`)
+      console.log(`Current actor: ${engine.currentPlayerCharacter}`)
     }
 
     if (key === ' ') {

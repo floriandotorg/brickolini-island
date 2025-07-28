@@ -3,6 +3,7 @@ import { Sound10 } from '../../actions/sndanim'
 import { colorAliases } from '../assets/mesh'
 import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
 import type { World } from './world'
+import { engine } from '../engine'
 
 enum Flags {
   UseColor = 1,
@@ -1395,7 +1396,7 @@ export class Actor {
       actor.mesh.add(parentMesh)
 
       world.addClickListener(parentMesh, async () => {
-        if (world.currentActor === 'nick') {
+        if (engine.currentPlayerCharacter === 'nick') {
           switch (bodyPartName) {
             case 'head':
             case 'infohat':
@@ -1458,7 +1459,7 @@ export class Actor {
     }
 
     world.addClickListener(actor.mesh, async () => {
-      if (world.currentActor === 'pepper') {
+      if (engine.currentPlayerCharacter === 'pepper') {
         const hatParentMesh = actor.mesh.getObjectByName('infohat-part')
         if (hatParentMesh == null) {
           return

@@ -32,6 +32,8 @@ class Engine {
   private _transitionStart: number = 0
   private _transitionPromiseResolve: (() => void) | null = null
 
+  public currentPlayerCharacter: 'pepper' | 'papa' | 'mama' | 'nick' | 'laura' = 'pepper'
+
   public async switchBackgroundMusic(action: AudioAction): Promise<void> {
     if (this._backgroundAudio?.actionId === action.id) {
       return
