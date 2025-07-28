@@ -6,6 +6,10 @@ export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'infodoor'
 const worlds = new Map<WorldName, World>()
 
 export const switchWorld = async (worldName: WorldName, param?: unknown) => {
+  if (engine.hasWorld) {
+    engine.currentWorld.skipAllCurrentAnimation()
+  }
+
   const transition = engine.hasWorld ? engine.transition() : Promise.resolve()
 
   let world: World | null = worlds.get(worldName) ?? null

@@ -337,11 +337,11 @@ export abstract class World {
     }
 
     if (key === ' ') {
-      this.skipCurrentAnimation()
+      this.skipAllCurrentAnimation()
     }
   }
 
-  public skipCurrentAnimation(): void {
+  public skipAllCurrentAnimation(): void {
     for (const runningAnimation of this._runningAnimations) {
       runningAnimation.clipAction.time = runningAnimation.clipAction.getClip().duration
       for (const audio of runningAnimation.audios) {

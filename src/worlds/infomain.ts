@@ -74,7 +74,7 @@ export class InfoMain extends World {
 
     ;(await this.getActor('infoman')).onClicked = () => {
       this._infomanHasBeenClicked = true
-      this.skipCurrentAnimation()
+      this.skipAllCurrentAnimation()
       if (this._welcomeTimeout != null) {
         clearTimeout(this._welcomeTimeout)
       }
