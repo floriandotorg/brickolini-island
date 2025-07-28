@@ -1,4 +1,4 @@
-import type * as THREE from 'three'
+import * as THREE from 'three'
 import { PoliDoor as PoliDoor_StartUp } from '../actions/isle'
 import { PoliceStation_Music } from '../actions/jukebox'
 import { calculateTransformationMatrix } from '../lib/assets/model'
@@ -35,7 +35,13 @@ export class PoliDoor extends IsleBase {
       return false
     }
 
-    const mat = calculateTransformationMatrix([-31.694365, 1.25, -2.814015], [0.650445, 0.0, 0.759553], [0.0, 1.0, 0.0])
+    const policeStation = this._scene.getObjectByName('policsta')
+    if (policeStation == null || !(policeStation instanceof THREE.Mesh)) {
+      throw new Error('Police station mesh not found')
+    }
+    policeStation.visible = false
+
+    const mat = calculateTransformationMatrix([-73.70144, 2.25, -88.91317], [0.911398, 0.0, 0.411526], [0.0, 1.0, 0.0])
     mat.decompose(this._camera.position, this._camera.quaternion, this._camera.scale)
     this._camera.rotateY(Math.PI)
     this._camera.fov = 90
