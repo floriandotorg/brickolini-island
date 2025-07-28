@@ -3,8 +3,8 @@ import { AnimB1, AnimB2, AnimB3, AnimF1, AnimF2, AnimF3, AnimP1, AnimP2, AnimP3,
 import type { AnimationAction, PositionalAudioAction } from '../action-types'
 import { getAnimation } from '../assets/animation'
 import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
-import type { World as WorldType } from './world'
 import { engine } from '../engine'
+import type { World as WorldType } from './world'
 
 export namespace Plants {
   export enum World {

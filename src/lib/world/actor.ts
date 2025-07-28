@@ -2,8 +2,8 @@ import * as THREE from 'three'
 import { Sound10 } from '../../actions/sndanim'
 import { colorAliases } from '../assets/mesh'
 import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
-import type { World } from './world'
 import { engine } from '../engine'
+import type { World } from './world'
 
 enum Flags {
   UseColor = 1,

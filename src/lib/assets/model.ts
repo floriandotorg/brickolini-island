@@ -71,39 +71,39 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
   if (animation) {
     if (animation.translationKeys.length === 1) {
       if (animation.translationKeys[0].timeAndFlags.time !== 0) {
-        console.log(`Translation key for model ${roi.name} has non-zero time of ${animation.translationKeys[0].timeAndFlags.time}`)
+        console.warn(`Translation key for model ${roi.name} has non-zero time of ${animation.translationKeys[0].timeAndFlags.time}`)
       }
       if (animation.translationKeys[0].timeAndFlags.flags !== 1) {
-        console.log(`Translation key for model ${roi.name} has non-standard flags of ${animation.translationKeys[0].timeAndFlags.flags}`)
+        console.warn(`Translation key for model ${roi.name} has non-standard flags of ${animation.translationKeys[0].timeAndFlags.flags}`)
       }
       result.position.set(...animation.translationKeys[0].vertex)
     } else if (animation.translationKeys.length > 1) {
-      console.log(`Model ${roi.name} has ${animation.translationKeys.length} translation keys`)
+      console.warn(`Model ${roi.name} has ${animation.translationKeys.length} translation keys`)
     }
     if (animation.rotationKeys.length === 1) {
       if (animation.rotationKeys[0].timeAndFlags.time !== 0) {
-        console.log(`Rotation key for model ${roi.name} has non-zero time of ${animation.rotationKeys[0].timeAndFlags.time}`)
+        console.warn(`Rotation key for model ${roi.name} has non-zero time of ${animation.rotationKeys[0].timeAndFlags.time}`)
       }
       if (animation.rotationKeys[0].timeAndFlags.flags !== 1) {
-        console.log(`Rotation key for model ${roi.name} has non-standard flags of ${animation.rotationKeys[0].timeAndFlags.flags}`)
+        console.warn(`Rotation key for model ${roi.name} has non-standard flags of ${animation.rotationKeys[0].timeAndFlags.flags}`)
       }
       result.quaternion.set(...animation.rotationKeys[0].quaternion)
     } else if (animation.rotationKeys.length > 1) {
-      console.log(`Model ${roi.name} has ${animation.rotationKeys.length} rotation keys`)
+      console.warn(`Model ${roi.name} has ${animation.rotationKeys.length} rotation keys`)
     }
     if (animation.scaleKeys.length === 1) {
       if (animation.scaleKeys[0].timeAndFlags.time !== 0) {
-        console.log(`Scale key for model ${roi.name} has non-zero time of ${animation.scaleKeys[0].timeAndFlags.time}`)
+        console.warn(`Scale key for model ${roi.name} has non-zero time of ${animation.scaleKeys[0].timeAndFlags.time}`)
       }
       if (animation.scaleKeys[0].timeAndFlags.flags !== 1) {
-        console.log(`Scale key for model ${roi.name} has non-standard flags of ${animation.scaleKeys[0].timeAndFlags.flags}`)
+        console.warn(`Scale key for model ${roi.name} has non-standard flags of ${animation.scaleKeys[0].timeAndFlags.flags}`)
       }
       result.scale.set(...animation.scaleKeys[0].vertex)
     } else if (animation.scaleKeys.length > 1) {
-      console.log(`Model ${roi.name} has ${animation.scaleKeys.length} scale keys`)
+      console.warn(`Model ${roi.name} has ${animation.scaleKeys.length} scale keys`)
     }
     if (animation.morphKeys.length > 0) {
-      console.log(`Model ${roi.name} has ${animation.morphKeys.length} morph keys`)
+      console.warn(`Model ${roi.name} has ${animation.morphKeys.length} morph keys`)
     }
   }
 
