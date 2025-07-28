@@ -6,7 +6,7 @@ import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
 
 export class InfoDoor extends World {
-  public _building = new Building()
+  private _building = new Building()
 
   public override async init(): Promise<void> {
     await super.init()

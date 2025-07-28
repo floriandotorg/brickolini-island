@@ -6,7 +6,7 @@ import { World } from '../lib/world/world'
 import { engine } from '../lib/engine'
 
 export class Police extends World {
-  public _building = new Building()
+  private _building = new Building()
   private _numVisits = 0
 
   public override async init(): Promise<void> {

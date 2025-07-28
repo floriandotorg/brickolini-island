@@ -28,7 +28,7 @@ import { World } from '../lib/world/world'
 const ANIMATIONS = [iic019in_RunAnim, iic020in_RunAnim, iic021in_RunAnim, iic022in_RunAnim, iic023in_RunAnim, iic024in_RunAnim, iic025in_RunAnim, iic026in_RunAnim, iic027in_RunAnim, iica28in_RunAnim, iicb28in_RunAnim, iicc28in_RunAnim, iic029in_RunAnim, iic032in_RunAnim]
 
 export class InfoMain extends World {
-  public _building = new Building()
+  private _building = new Building()
 
   private _welcomeTimeout: number | null = null
   private _currentAnimationIndex = 0
