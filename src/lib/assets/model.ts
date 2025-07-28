@@ -189,7 +189,10 @@ export const getWorld = async (name: 'BLDD' | 'BLDH' | 'BLDJ' | 'BLDR' | 'HOSP' 
     group.add(mesh)
   }
   for (const part of world.parts) {
-    group.add(await getWorldPart(world, part.name, null, null))
+    const mesh = await getWorldPart(world, part.name, null, null)
+    mesh.name = part.name.toLowerCase()
+    mesh.visible = false
+    group.add(mesh)
   }
   return group
 }
