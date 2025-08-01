@@ -14,6 +14,10 @@ export class MosaicEffect extends Effect {
     this.material.uniforms.uMosaicProgress.value = value
   }
 
+  public get progress(): number {
+    return this.material.uniforms.uMosaicProgress.value
+  }
+
   public override get uniforms() {
     return {
       uMosaicProgress: { value: 0.0 },

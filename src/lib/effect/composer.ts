@@ -182,9 +182,7 @@ export class Composer {
   }
 
   public resetPipeline(): void {
-    for (const render of this._pipeline) {
-      this._scene.remove(render.scene)
-    }
+    this._scene.clear()
     this._pipeline = []
   }
 
