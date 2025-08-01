@@ -105,7 +105,7 @@ class Engine {
 
     this._renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: true,
+      antialias: false,
       alpha: true,
       stencil: false,
       powerPreference: 'high-performance',

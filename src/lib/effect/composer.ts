@@ -119,7 +119,6 @@ export class Composer {
   private _effects: Effect[] = []
 
   private _renderTarget = new THREE.WebGLRenderTarget(1, 1, {
-    samples: 4,
     type: THREE.FloatType,
     stencilBuffer: false,
   })
