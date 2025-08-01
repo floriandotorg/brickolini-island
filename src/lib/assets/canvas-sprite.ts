@@ -25,7 +25,7 @@ export class CanvasSprite {
     const material = new THREE.SpriteMaterial({ map: this._texture, transparent: true })
     this._sprite = new THREE.Sprite(material)
     this._sprite.scale.set(normalizedWidth, normalizedHeight, 1)
-    this._sprite.position.set(normalizedX + normalizedWidth / 2, normalizedY - normalizedHeight / 2, 0)
+    this._sprite.position.set(normalizedX + normalizedWidth / 2, normalizedY - normalizedHeight / 2, -0.5)
   }
 
   public get context(): CanvasRenderingContext2D {

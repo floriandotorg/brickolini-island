@@ -173,6 +173,7 @@ export class Isle extends IsleBase {
 
   public override activate(composer: Composer, param?: IsleParam): void {
     super.activate(composer, param)
+    this._dashboard.activate(composer)
     if (param != null) {
       this._boundaryManager.placeObject(this.camera, param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
     }

@@ -3,6 +3,7 @@ import { type AudioAction, type ControlAction, getExtraValue, type ImageAction, 
 import { CanvasSprite } from '../assets/canvas-sprite'
 import { Control } from '../assets/control'
 import { getImage } from '../assets/image'
+import { type Composer, Render2D } from '../effect/composer'
 import { engine } from '../engine'
 
 const leftToRight = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => {
@@ -105,14 +106,12 @@ class Meter {
 }
 
 export class Dashboard {
-  private _scene: THREE.Scene
-  private _camera: THREE.OrthographicCamera
+  private _render = new Render2D()
   private _canvas: HTMLCanvasElement
   private _context: CanvasRenderingContext2D
   private _texture: THREE.CanvasTexture
   private _material: THREE.MeshBasicMaterial
   private _mesh: THREE.Mesh
-  private _velocity: number = 0
   private _dashboardImage: HTMLImageElement | null = null
   private _armsMask: Control | null = null
   private _hornControl: Control | null = null
@@ -132,20 +131,18 @@ export class Dashboard {
     }
     this._context = context
 
-    this._scene = new THREE.Scene()
     this._texture = new THREE.CanvasTexture(this._canvas)
     this._texture.colorSpace = THREE.SRGBColorSpace
     this._material = new THREE.MeshBasicMaterial({ map: this._texture, transparent: true })
     this._mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this._material)
     this._mesh.position.z = -1
-    this._camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10)
-    this._scene.add(this._mesh)
+    this._render.scene.add(this._mesh)
   }
 
   public resize(width: number, height: number): void {
     this._canvas.width = width
     this._canvas.height = height
-    this._camera.updateProjectionMatrix()
+    this._render.resize(width, height)
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): void {
@@ -195,12 +192,12 @@ export class Dashboard {
           throw new Error('Meter without variable is not supported')
         } else if (variable.endsWith('speed')) {
           this._speedMeter = await Meter.create(child)
-          this._scene.add(this._speedMeter.sprite)
+          this._render.scene.add(this._speedMeter.sprite)
         } else if (variable.endsWith('fuel')) {
           this._fuelMeter = await Meter.create(child)
           // For now to at least show something
           this._fuelMeter.draw(0.5)
-          this._scene.add(this._fuelMeter.sprite)
+          this._render.scene.add(this._fuelMeter.sprite)
         }
       }
     }
@@ -223,7 +220,7 @@ export class Dashboard {
     const hornAction = action.children.find(child => child.name.endsWith('Horn_Ctl'))
     if (hornAction != null && isControlAction(hornAction)) {
       this._hornControl = await Control.create(hornAction)
-      this._scene.add(this._hornControl.sprite)
+      this._render.scene.add(this._hornControl.sprite)
       this._hornControl.draw()
       const sound = action.children.find(child => isAudioAction(child) && child.name.endsWith('Horn_Sound'))
       if (!isAudioAction(sound)) {
@@ -238,7 +235,7 @@ export class Dashboard {
     }
 
     this._infoControl = await Control.create(infoAction)
-    this._scene.add(this._infoControl.sprite)
+    this._render.scene.add(this._infoControl.sprite)
     this._infoControl.draw()
   }
 
@@ -259,11 +256,10 @@ export class Dashboard {
   }
 
   public update(velocity: number): void {
-    this._velocity = velocity
     this._speedMeter?.draw(velocity)
   }
 
-  public async render(renderer: THREE.WebGLRenderer): Promise<void> {
-    renderer.render(this._scene, this._camera)
+  public activate(composer: Composer): void {
+    composer.add(this._render)
   }
 }
