@@ -50,8 +50,8 @@ export class GarDoor extends IsleBase {
   }
 
   public override activate(composer: Composer): void {
-    this._building.activate(composer)
     super.activate(composer)
+    this._building.activate(composer)
   }
 
   public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
