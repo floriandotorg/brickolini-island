@@ -100,9 +100,7 @@ const createTexture = (name: string, source: 'model' | 'part' | 'image'): THREE.
     image: 'images',
   }
   return textureLoader.load(getFileUrl(`world/${sourceToPath[source]}/${name.toLowerCase()}.png`), texture => {
-    if (getSettings().graphics.toneMapping === 'none') {
-      texture.colorSpace = THREE.SRGBColorSpace
-    }
+    texture.colorSpace = THREE.SRGBColorSpace
     texture.wrapS = THREE.RepeatWrapping
     texture.wrapT = THREE.RepeatWrapping
     texture.magFilter = THREE.NearestFilter
@@ -134,7 +132,7 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
       const loadTexture = (name: string) => {
         return textureLoader.load(`hd/textures/${name}.png`, texture => {
           if (name.includes('normal')) {
-            texture.colorSpace = THREE.LinearSRGBColorSpace
+            texture.colorSpace = THREE.NoColorSpace
           } else {
             texture.colorSpace = THREE.SRGBColorSpace
           }
@@ -229,7 +227,7 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
     geometry.setAttribute('uv2', new THREE.BufferAttribute(new Float32Array(uvs), 2))
   } else {
     const color = customColor ?? colorFromName(modelMesh.materialName) ?? modelMesh.color ?? modelMesh.color
-    material.color = new THREE.Color(color.red / 255, color.green / 255, color.blue / 255)
+    material.color = new THREE.Color(color.red / 255, color.green / 255, color.blue / 255).convertSRGBToLinear()
     if (color.alpha < 0.99) {
       material.transparent = true
       material.opacity = color.alpha

@@ -1,4 +1,5 @@
 uniform sampler2D tDiffuse;
+uniform vec2 uResolution;
 
 out vec4 fragColor;
 
@@ -11,12 +12,12 @@ vec2 uv;
 void main() {
   texSize = vec2(textureSize(tDiffuse, 0));
   texelSize = 1.0 / texSize;
-  uv = gl_FragCoord.xy * texelSize;
+  uv = gl_FragCoord.xy / texSize;
 
   vec4 inputColor = texture(tDiffuse, uv);
   vec4 outputColor = inputColor;
 
   /// PIPELINE
 
-  fragColor = linearToOutputTexel(outputColor);
+  fragColor = outputColor;
 }

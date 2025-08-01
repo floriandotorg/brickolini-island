@@ -22,7 +22,8 @@ export abstract class Effect {
   }
 }
 
-const compileFragmentShader = (effects: Effect[]) => effectFrag.replace('/// EFFECTS', effects.map((effect, n) => effect.fragmentShader.replace('void mainImage', `void main${n + 1}`)).join('\n')).replace('/// PIPELINE', effects.map((_, n) => `main${n + 1}(inputColor, outputColor);`).join('\n'))
+const compileFragmentShader = (effects: Effect[]) =>
+  effectFrag.replace('/// EFFECTS', effects.map((effect, n) => effect.fragmentShader.replace('void mainImage', `void main${n + 1}`)).join('\n')).replace('/// PIPELINE', effects.map((_, n) => `main${n + 1}(inputColor, outputColor);\ninputColor = outputColor;`).join('\n'))
 
 export abstract class Render {
   private _effects: Effect[] = []
@@ -193,6 +194,6 @@ export class Composer {
       ...this._postMaterial.uniforms,
       ...effect.uniforms,
     }
-    this._postMaterial.fragmentShader = compileFragmentShader(this._effects)
+    this._postMaterial.fragmentShader = compileFragmentShader(this._effects).replace('fragColor = outputColor;', 'fragColor = linearToOutputTexel(outputColor);')
   }
 }
