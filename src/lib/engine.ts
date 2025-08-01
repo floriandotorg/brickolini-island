@@ -110,6 +110,12 @@ class Engine {
       stencil: false,
       powerPreference: 'high-performance',
     })
+    this._renderer.setPixelRatio(window.devicePixelRatio)
+
+    if (getSettings().graphics.shadows) {
+      this._renderer.shadowMap.enabled = true
+      this._renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    }
 
     this._composer = new Composer(this._canvas, this._renderer)
     this._composer.addEffect(this._mosaicEffect)
