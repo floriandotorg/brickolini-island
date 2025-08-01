@@ -6,8 +6,6 @@ THREE.Cache.enabled = !import.meta.env.DEV
 
 const hdFiles = new Set<string>([
   // spellchecker: disable
-  'hospital/5.jpeg',
-  'infomain/39.jpeg',
   'jukebox/0.m4a',
   'jukebox/1.m4a',
   'jukebox/11.m4a',
