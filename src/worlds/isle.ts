@@ -106,6 +106,12 @@ export class Isle extends IsleBase {
       })
     }
 
+    const isle = this.scene.getObjectByName('isle_hi')
+    if (isle == null || !(isle instanceof THREE.Mesh)) {
+      throw new Error('Isle mesh not found')
+    }
+    this._isleMesh = isle
+
     const bikeMesh = this.scene.getObjectByName('bike')
     const motobkMesh = this.scene.getObjectByName('motobk')
     const skateMesh = this.scene.getObjectByName('skate')
