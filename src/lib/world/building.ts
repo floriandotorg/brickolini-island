@@ -6,14 +6,13 @@ import { Control } from '../assets/control'
 import { getAction } from '../assets/load'
 import { getWorld } from '../assets/model'
 import { createTexture } from '../assets/texture'
+import { type Composer, Render2D } from '../effect/composer'
 import { engine } from '../engine'
 import { switchWorld } from '../switch-world'
 import type { World } from './world'
 
 export class Building {
-  private _backgroundScene = new THREE.Scene()
-  private _backgroundCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
-  private _backgroundMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
+  private _render = new Render2D()
   private _controls: Control[] = []
   private _exitSpawnPoint?: {
     boundaryName: string
@@ -60,8 +59,9 @@ export class Building {
 
     for (const child of startUpAction.children) {
       if (isImageAction(child) && child.name.endsWith('Background_Bitmap')) {
-        this._backgroundMesh.material = new THREE.MeshBasicMaterial({ map: createTexture(child), transparent: true })
-        this._backgroundScene.add(this._backgroundMesh)
+        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: createTexture(child), transparent: true }))
+        mesh.position.z = -1
+        this._render.scene.add(mesh)
       }
 
       if (isAnimationAction(child) && child.name === 'ConfigAnimation') {
@@ -74,15 +74,14 @@ export class Building {
       if (isControlAction(child)) {
         void Control.create(child).then(control => {
           this._controls.push(control)
-          this._backgroundScene.add(control.sprite)
+          this._render.scene.add(control.sprite)
         })
       }
     }
   }
 
-  public render(renderer: THREE.WebGLRenderer): void {
-    renderer.render(this._backgroundScene, this._backgroundCamera)
-    renderer.clearDepth()
+  public activate(composer: Composer): void {
+    composer.add(this._render)
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): void {

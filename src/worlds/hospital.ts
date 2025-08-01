@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { _StartUp, hho003cl_RunAnim } from '../actions/hospital'
 import { Hospital_Music } from '../actions/jukebox'
+import type { Composer } from '../lib/effect/composer'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
 
@@ -24,14 +25,14 @@ export class Hospital extends World {
 
     const leftPointLight = new THREE.PointLight(0xfefefe, 20)
     leftPointLight.position.set(-0.25, 1, 1)
-    this._scene.add(leftPointLight)
+    this.scene.add(leftPointLight)
 
     void this.playAnimation(hho003cl_RunAnim)
   }
 
-  public override render(renderer: THREE.WebGLRenderer): void {
-    this._building.render(renderer)
-    super.render(renderer)
+  public override activate(composer: Composer): void {
+    this._building.activate(composer)
+    super.activate(composer)
   }
 
   public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {

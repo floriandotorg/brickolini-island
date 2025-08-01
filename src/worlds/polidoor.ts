@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { PoliDoor as PoliDoor_StartUp } from '../actions/isle'
 import { PoliceStation_Music } from '../actions/jukebox'
 import { calculateTransformationMatrix } from '../lib/assets/model'
+import type { Composer } from '../lib/effect/composer'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { IsleBase } from './isle-base'
@@ -35,22 +36,22 @@ export class PoliDoor extends IsleBase {
       return false
     }
 
-    const policeStation = this._scene.getObjectByName('policsta')
+    const policeStation = this.scene.getObjectByName('policsta')
     if (policeStation == null || !(policeStation instanceof THREE.Mesh)) {
       throw new Error('Police station mesh not found')
     }
     policeStation.visible = false
 
     const mat = calculateTransformationMatrix([-73.70144, 2.25, -88.91317], [0.911398, 0.0, 0.411526], [0.0, 1.0, 0.0])
-    mat.decompose(this._camera.position, this._camera.quaternion, this._camera.scale)
-    this._camera.rotateY(Math.PI)
-    this._camera.fov = 90
-    this._camera.updateProjectionMatrix()
+    mat.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
+    this.camera.rotateY(Math.PI)
+    this.camera.fov = 90
+    this.camera.updateProjectionMatrix()
   }
 
-  public override render(renderer: THREE.WebGLRenderer): void {
-    super.render(renderer)
-    this._building.render(renderer)
+  public override activate(composer: Composer, _param?: unknown): void {
+    this._building.activate(composer)
+    super.activate(composer)
   }
 
   public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {

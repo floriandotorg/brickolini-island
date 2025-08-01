@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { _Isle, AmbulanceDashboard, BikeDashboard, MotoBikeDashboard, SkateDashboard, TowTrackDashboard } from '../actions/isle'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../actions/jukebox'
 import { getExtraValue } from '../lib/action-types'
+import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
 import { getSettings } from '../lib/settings'
 import { switchWorld } from '../lib/switch-world'
@@ -95,7 +96,7 @@ export class Isle extends IsleBase {
       if (meshName == null) {
         throw new Error(`Found no valid mesh name for world ${worldName}`)
       }
-      const buildingMesh = this._scene.getObjectByName(meshName)
+      const buildingMesh = this.scene.getObjectByName(meshName)
       if (buildingMesh == null || !(buildingMesh instanceof THREE.Mesh)) {
         throw new Error(`Mesh ${meshName} not found`)
       }
@@ -105,11 +106,11 @@ export class Isle extends IsleBase {
       })
     }
 
-    const bikeMesh = this._scene.getObjectByName('bike')
-    const motobkMesh = this._scene.getObjectByName('motobk')
-    const skateMesh = this._scene.getObjectByName('skate')
-    const ambulanceMesh = this._scene.getObjectByName('ambul')
-    const towtruckMesh = this._scene.getObjectByName('towtk')
+    const bikeMesh = this.scene.getObjectByName('bike')
+    const motobkMesh = this.scene.getObjectByName('motobk')
+    const skateMesh = this.scene.getObjectByName('skate')
+    const ambulanceMesh = this.scene.getObjectByName('ambul')
+    const towtruckMesh = this.scene.getObjectByName('towtk')
 
     if (bikeMesh == null || !(bikeMesh instanceof THREE.Mesh) || motobkMesh == null || !(motobkMesh instanceof THREE.Mesh) || skateMesh == null || !(skateMesh instanceof THREE.Mesh) || ambulanceMesh == null || !(ambulanceMesh instanceof THREE.Mesh) || towtruckMesh == null || !(towtruckMesh instanceof THREE.Mesh)) {
       throw new Error('Vehicle meshes not found')
@@ -124,9 +125,9 @@ export class Isle extends IsleBase {
 
       this._vehicleMesh = vehicle
       this._vehicleMesh.visible = false
-      this._camera.position.set(vehicle.position.x, vehicle.position.y, vehicle.position.z)
-      this._camera.quaternion.copy(vehicle.quaternion)
-      this._placeObjectOnGround(this._camera)
+      this.camera.position.set(vehicle.position.x, vehicle.position.y, vehicle.position.z)
+      this.camera.quaternion.copy(vehicle.quaternion)
+      this._placeObjectOnGround(this.camera)
 
       this._showDashboard()
     }
@@ -165,15 +166,15 @@ export class Isle extends IsleBase {
       this._exitVehicle()
     }
 
-    this._camera.position.set(20, CAM_HEIGHT, 30)
-    this._camera.lookAt(60, 0, 25)
-    this._placeObjectOnGround(this._camera)
+    this.camera.position.set(20, CAM_HEIGHT, 30)
+    this.camera.lookAt(60, 0, 25)
+    this._placeObjectOnGround(this.camera)
   }
 
-  public override activate(param?: IsleParam): void {
-    super.activate(param)
+  public override activate(composer: Composer, param?: IsleParam): void {
+    super.activate(composer, param)
     if (param != null) {
-      this._boundaryManager.placeObject(this._camera, param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
+      this._boundaryManager.placeObject(this.camera, param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
     }
   }
 
@@ -208,13 +209,13 @@ export class Isle extends IsleBase {
       return
     }
 
-    this._vehicleMesh.position.copy(this._camera.position)
-    this._vehicleMesh.quaternion.copy(this._camera.quaternion)
+    this._vehicleMesh.position.copy(this.camera.position)
+    this._vehicleMesh.quaternion.copy(this.camera.quaternion)
     this._placeObjectOnGround(this._vehicleMesh, new THREE.Vector3(0, 0, 0))
     this._vehicleMesh.visible = true
 
-    this._camera.position.add(new THREE.Vector3(0, 0, -2).applyQuaternion(this._camera.quaternion))
-    this._placeObjectOnGround(this._camera)
+    this.camera.position.add(new THREE.Vector3(0, 0, -2).applyQuaternion(this.camera.quaternion))
+    this._placeObjectOnGround(this.camera)
 
     this._dashboard.clear()
   }
@@ -243,14 +244,14 @@ export class Isle extends IsleBase {
   }
 
   private _calculateSlopeTilt(): number {
-    const downRay = new THREE.Raycaster(this._camera.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0), 0, 10)
+    const downRay = new THREE.Raycaster(this.camera.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0), 0, 10)
     const hit = downRay.intersectObjects(this._groundGroup)[0]
 
     if (hit?.face != null) {
       const worldNormal = hit.face.normal.clone()
       worldNormal.transformDirection(hit.object.matrixWorld)
 
-      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this._camera.quaternion)
+      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion)
       forward.y = 0
       forward.normalize()
 
@@ -273,8 +274,8 @@ export class Isle extends IsleBase {
         this._rotVel = 0
         this._verticalVel = 0
         this._pitchVel = 0
-        this._camera.position.y = 100
-        this._placeObjectOnGround(this._camera)
+        this.camera.position.y = 100
+        this._placeObjectOnGround(this.camera)
       }
     }
 
@@ -367,54 +368,49 @@ export class Isle extends IsleBase {
     const maxVelCurrent = MAX_LINEAR_VEL * (this._slewMode ? 4 : 1)
     this._dashboard.update(vel / maxVelCurrent)
 
-    this._camera.rotation.y += THREE.MathUtils.degToRad(this._rotVel * delta)
+    this.camera.rotation.y += THREE.MathUtils.degToRad(this._rotVel * delta)
     if (this._slewMode) {
-      this._camera.rotation.x += THREE.MathUtils.degToRad(this._pitchVel * delta)
-      if (this._camera.rotation.x > Math.PI / 2) {
-        this._camera.rotation.x = Math.PI / 2
+      this.camera.rotation.x += THREE.MathUtils.degToRad(this._pitchVel * delta)
+      if (this.camera.rotation.x > Math.PI / 2) {
+        this.camera.rotation.x = Math.PI / 2
       }
-      if (this._camera.rotation.x < -Math.PI / 2) {
-        this._camera.rotation.x = -Math.PI / 2
+      if (this.camera.rotation.x < -Math.PI / 2) {
+        this.camera.rotation.x = -Math.PI / 2
       }
     } else {
-      this._camera.rotation.x = this._calculateSlopeTilt()
+      this.camera.rotation.x = this._calculateSlopeTilt()
     }
-    this._camera.rotation.z = 0
+    this.camera.rotation.z = 0
 
     const forward = new THREE.Vector3()
-    this._camera.getWorldDirection(forward)
+    this.camera.getWorldDirection(forward)
     if (this._slewMode) {
       forward.y = 0
       forward.normalize()
     }
 
-    const fromPos = this._camera.position.clone()
+    const fromPos = this.camera.position.clone()
     let toPos = fromPos.clone()
     const moveVec = forward.clone().multiplyScalar(this._linearVel * delta)
     moveVec.y += this._verticalVel * delta
     if (moveVec.length() > 0) {
       if (this._slewMode) {
-        this._camera.position.add(moveVec)
+        this.camera.position.add(moveVec)
       } else {
-        const slideMove = this._collideAndSlide(this._camera.position, moveVec)
+        const slideMove = this._collideAndSlide(this.camera.position, moveVec)
         if (slideMove.length() > EPSILON) {
-          this._camera.position.add(slideMove)
-          toPos = this._camera.position.clone()
+          this.camera.position.add(slideMove)
+          toPos = this.camera.position.clone()
         }
       }
     }
 
     this._boundaryManager.update(fromPos, toPos)
 
-    this.setDebugData(this._camera.position, new THREE.Vector3(0, 0, 1).applyEuler(this._camera.rotation), this._slewMode)
+    this.setDebugData(this.camera.position, new THREE.Vector3(0, 0, 1).applyEuler(this.camera.rotation), this._slewMode)
 
     if (!this._slewMode) {
-      this._placeObjectOnGround(this._camera)
+      this._placeObjectOnGround(this.camera)
     }
-  }
-
-  public override render(renderer: THREE.WebGLRenderer): void {
-    super.render(renderer)
-    this._dashboard.render(renderer)
   }
 }

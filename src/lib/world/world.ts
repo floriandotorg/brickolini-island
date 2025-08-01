@@ -5,12 +5,12 @@ import { getPositionalAudio } from '../assets/audio'
 import { getAction } from '../assets/load'
 import { getGlobalPart } from '../assets/model'
 import { WDB } from '../assets/wdb'
-import { engine, RESOLUTION_RATIO } from '../engine'
+import { type Composer, Render3D } from '../effect/composer'
+import { engine } from '../engine'
 import { Actor } from './actor'
 
 export abstract class World {
-  protected _scene = new THREE.Scene()
-  protected _camera = new THREE.PerspectiveCamera(75, RESOLUTION_RATIO)
+  protected _render = new Render3D()
 
   private _debugGroup: THREE.Group = new THREE.Group()
   private _debugBox: HTMLElement
@@ -29,8 +29,6 @@ export abstract class World {
   private _actors = new Map<string, Actor>()
 
   constructor() {
-    this._camera.rotation.order = 'YXZ'
-
     const getElement = (id: string): HTMLElement => {
       const element = document.getElementById(id)
       if (element == null) {
@@ -46,16 +44,20 @@ export abstract class World {
 
     this.debugMode = false
 
-    this._scene.add(this._debugGroup)
+    this._render.scene.add(this._debugGroup)
   }
 
   public get scene(): THREE.Scene {
-    return this._scene
+    return this._render.scene
+  }
+
+  protected get camera(): THREE.PerspectiveCamera {
+    return this._render.camera
   }
 
   protected setVerticalFOV(fov: number): void {
-    this._camera.fov = 2 * Math.atan(Math.tan((fov * Math.PI) / 180 / 2) / this._camera.aspect) * (180 / Math.PI)
-    this._camera.updateProjectionMatrix()
+    this._render.camera.fov = 2 * Math.atan(Math.tan((fov * Math.PI) / 180 / 2) / this._render.camera.aspect) * (180 / Math.PI)
+    this._render.camera.updateProjectionMatrix()
   }
 
   public setupCameraForAnimation(animationNode: Animation3DNode): void {
@@ -98,14 +100,14 @@ export abstract class World {
     }
     this.setVerticalFOV(Number.parseInt(match[1]))
 
-    this._camera.position.copy(pathToPosition(cameraConfigPath))
+    this.camera.position.copy(pathToPosition(cameraConfigPath))
 
     const lookAtPositionPath = findRecursively(animationNode, c => c.name === 'target')
     if (lookAtPositionPath == null) {
       throw new Error('Look at position not found')
     }
 
-    this._camera.lookAt(pathToPosition(lookAtPositionPath))
+    this.camera.lookAt(pathToPosition(lookAtPositionPath))
   }
 
   public async getActor(name: string): Promise<Actor> {
@@ -236,7 +238,7 @@ export abstract class World {
   }
 
   public click(event: MouseEvent, normalizedX: number, normalizedY: number): void {
-    this._raycaster.setFromCamera(new THREE.Vector2(normalizedX, normalizedY), this._camera)
+    this._raycaster.setFromCamera(new THREE.Vector2(normalizedX, normalizedY), this._render.camera)
     let hit: THREE.Object3D | null = this._raycaster.intersectObjects(Array.from(this._clickListeners.keys()))[0]?.object
     while (hit != null) {
       const onClick = this._clickListeners.get(hit)
@@ -286,13 +288,11 @@ export abstract class World {
     }
   }
 
-  public activate(_param?: unknown): void {
-    this._camera.add(engine.audioListener)
+  public activate(composer: Composer, _param?: unknown): void {
+    composer.add(this._render)
   }
 
-  public deactivate(): void {
-    this._camera.remove(engine.audioListener)
-  }
+  public deactivate(): void {}
 
   public async playPositionalAudio(action: PositionalAudioAction, parent: THREE.Object3D, delay?: number): Promise<THREE.PositionalAudio> {
     const audio = await getPositionalAudio(engine.audioListener, action)
@@ -305,10 +305,6 @@ export abstract class World {
   }
 
   public resize(_width: number, _height: number): void {}
-
-  public render(renderer: THREE.WebGLRenderer): void {
-    renderer.render(this._scene, this._camera)
-  }
 
   public keyPressed(key: string): void {
     if (key === 'd' && import.meta.env.DEV) {

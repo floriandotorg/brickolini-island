@@ -19,6 +19,7 @@ import {
   iicx17in_RunAnim,
 } from '../actions/infomain'
 import { InformationCenter_Music } from '../actions/jukebox'
+import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
@@ -56,21 +57,21 @@ export class InfoMain extends World {
 
     const leftPointLight = new THREE.PointLight(0xffffff, 140)
     leftPointLight.position.set(7, 4, 4.5)
-    this._scene.add(leftPointLight)
+    this.scene.add(leftPointLight)
 
     const rightPointLight = new THREE.PointLight(0xffffff, 140)
     rightPointLight.position.set(-4, 4, 4.5)
-    this._scene.add(rightPointLight)
+    this.scene.add(rightPointLight)
 
     const centerPointLight = new THREE.PointLight(0xffffff, 80, 0, 5)
     centerPointLight.position.set(1.5, -4, 1)
-    this._scene.add(centerPointLight)
+    this.scene.add(centerPointLight)
 
     const frontPointLight = new THREE.PointLight(0xffffff, 100)
     frontPointLight.position.set(1.5, 0.75, -12)
-    this._scene.add(frontPointLight)
+    this.scene.add(frontPointLight)
 
-    this._scene.add(await Plants.place(this, Plants.World.IMAIN))
+    this.scene.add(await Plants.place(this, Plants.World.IMAIN))
 
     ;(await this.getActor('infoman')).onClicked = () => {
       this._infomanHasBeenClicked = true
@@ -92,9 +93,9 @@ export class InfoMain extends World {
     })
   }
 
-  public override render(renderer: THREE.WebGLRenderer): void {
-    this._building.render(renderer)
-    super.render(renderer)
+  public override activate(composer: Composer): void {
+    this._building.activate(composer)
+    super.activate(composer)
   }
 
   public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {

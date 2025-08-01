@@ -2,9 +2,9 @@ import * as THREE from 'three'
 import type { AudioAction, CompositeMediaAction } from './action-types'
 import { getAudio } from './assets/audio'
 import { getActionFileUrl } from './assets/load'
+import { Composer, Render2D } from './effect/composer'
+import { MosaicEffect } from './effect/mosaic'
 import { getSettings } from './settings'
-import postFrag from './shader/post-frag.glsl'
-import postVert from './shader/post-vert.glsl'
 import type { World } from './world/world'
 
 export const RESOLUTION_RATIO = 4 / 3
@@ -12,19 +12,17 @@ const BACKGROUND_MUSIC_FADE_TIME = 2
 const BACKGROUND_MUSIC_FADE_TIME_SETTINGS = 0.5
 
 class Engine {
-  private _canvas: HTMLCanvasElement
   private _state: 'cutscene' | 'transition' | 'game' = 'game'
   private _clock: THREE.Clock = new THREE.Clock()
   private _cutsceneVideo: HTMLVideoElement
   private _cutsceneAudio: THREE.Audio | null = null
-  private _renderer: THREE.WebGLRenderer
-  private _renderTarget: THREE.WebGLRenderTarget
-  private _postScene = new THREE.Scene()
+  private _canvas: HTMLCanvasElement
   private _audioListener = new THREE.AudioListener()
-  private _postCamera: THREE.OrthographicCamera
-  private _postMaterial: THREE.ShaderMaterial
-  private _cutsceneScene = new THREE.Scene()
-  private _cutsceneCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10)
+  private _renderer: THREE.WebGLRenderer
+  private _composer: Composer
+  private _mosaicEffect = new MosaicEffect()
+  private _cutsceneComposer: Composer
+  private _cutsceneRender = new Render2D()
   private _cutsceneMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
   private _world: World | null = null
   private _keyStates: Set<string> = new Set()
@@ -83,7 +81,7 @@ class Engine {
   }
 
   public get renderer(): THREE.WebGLRenderer {
-    return this._renderer
+    return this._composer.renderer
   }
 
   public get width(): number {
@@ -99,55 +97,28 @@ class Engine {
   }
 
   constructor() {
-    this._cutsceneVideo = document.createElement('video')
-
     const canvas = document.getElementById('game')
     if (canvas == null) {
       throw new Error('Canvas not found')
     }
     this._canvas = canvas as HTMLCanvasElement
 
-    this._renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
-    this._renderer.autoClear = false
-    this._renderer.setPixelRatio(window.devicePixelRatio)
-
-    const settings = getSettings()
-    if (settings.graphics.toneMapping === 'none') {
-      this._renderer.toneMapping = THREE.NoToneMapping
-    } else {
-      this._renderer.toneMapping = THREE.ACESFilmicToneMapping
-      this._renderer.toneMappingExposure = 0.5
-    }
-
-    if (settings.graphics.shadows) {
-      this._renderer.shadowMap.enabled = true
-      this._renderer.shadowMap.type = THREE.PCFSoftShadowMap
-    }
-
-    this._cutsceneScene.add(this._cutsceneMesh)
-
-    this._renderTarget = new THREE.WebGLRenderTarget(1, 1, {
-      samples: 4,
-      type: THREE.FloatType,
+    this._renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      stencil: false,
+      powerPreference: 'high-performance',
     })
-    this._postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
-    this._postMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        tDiffuse: { value: this._renderTarget.texture },
-        uMosaicProgress: { value: 0.0 },
-        uTileSize: { value: 1.0 },
-        uVibrance: { value: settings.graphics.postProcessing ? 0.15 : 0.0 },
-        uSaturation: { value: settings.graphics.postProcessing ? 1.05 : 1.0 },
-        uContrast: { value: settings.graphics.postProcessing ? 1.0 : 1.0 },
-        uBrightness: { value: settings.graphics.postProcessing ? 1.05 : 1.0 },
-        uDistortion: { value: settings.graphics.postProcessing ? 0.005 : 0.0 },
-        uVignetteInner: { value: settings.graphics.postProcessing ? 0.99 : 0.0 },
-        uVignetteOuter: { value: settings.graphics.postProcessing ? 0.5 : 0.0 },
-      },
-      vertexShader: postVert,
-      fragmentShader: postFrag,
-    })
-    this._postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this._postMaterial))
+
+    this._composer = new Composer(this._canvas, this._renderer)
+    this._composer.addEffect(this._mosaicEffect)
+
+    this._cutsceneComposer = new Composer(this._canvas, this._renderer)
+    this._cutsceneComposer.add(this._cutsceneRender)
+
+    this._cutsceneVideo = document.createElement('video')
+    this._cutsceneRender.scene.add(this._cutsceneMesh)
 
     canvas.addEventListener('click', event => {
       event.preventDefault()
@@ -221,16 +192,17 @@ class Engine {
 
   public async setWorld(world: World, param?: unknown) {
     this._world?.deactivate()
+    this._composer.resetPipeline()
     this._world = world
     this._world.resize(this._canvas.width, this._canvas.height)
-    this._world.activate(param)
+    this._world.activate(this._composer, param)
   }
 
   public async transition(): Promise<void> {
     this._state = 'transition'
     this._transitionStart = this._clock.elapsedTime
-    this._postMaterial.uniforms.uTileSize.value = Math.ceil(Math.max(this._canvas.width / 640, this._canvas.height / 480) * 10)
-    this._postMaterial.uniforms.uMosaicProgress.value = 0.0
+    this._mosaicEffect.tileSize = Math.ceil(Math.max(this._canvas.width / 640, this._canvas.height / 480) * 10)
+    this._mosaicEffect.progress = 0.0
     return new Promise(resolve => {
       this._transitionPromiseResolve = resolve
     })
@@ -272,8 +244,7 @@ class Engine {
       width = window.innerWidth
       height = Math.floor(window.innerWidth / RESOLUTION_RATIO)
     }
-    this._renderTarget.setSize(width, height)
-    this._renderer.setSize(width, height)
+    this._composer.resize(width, height)
     this._world?.resize(width, height)
   }
 
@@ -289,27 +260,20 @@ class Engine {
     if (this._state === 'transition') {
       const progressPerTick = 1 / 16
       const ticks = Math.floor(((this._clock.elapsedTime - this._transitionStart) * 1000) / 50)
-      this._postMaterial.uniforms.uMosaicProgress.value = progressPerTick * ticks
-      if (this._postMaterial.uniforms.uMosaicProgress.value >= 1.0) {
-        this._postMaterial.uniforms.uMosaicProgress.value = 0.0
+      this._mosaicEffect.progress = progressPerTick * ticks
+      if (this._mosaicEffect.progress >= 1.0) {
+        this._mosaicEffect.progress = 0.0
         this._state = 'game'
         this._transitionPromiseResolve?.()
         this._transitionPromiseResolve = null
       }
     }
 
-    this._renderer.setRenderTarget(this._renderTarget)
-    this._renderer.clear()
-
     if (this._state === 'cutscene') {
-      this._renderer.render(this._cutsceneScene, this._cutsceneCamera)
+      this._cutsceneComposer.render()
     } else {
-      this._world?.render(this._renderer)
+      this._composer.render()
     }
-
-    this._renderer.setRenderTarget(null)
-    this._renderer.clear()
-    this._renderer.render(this._postScene, this._postCamera)
   }
 }
 

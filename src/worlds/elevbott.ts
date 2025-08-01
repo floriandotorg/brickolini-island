@@ -1,6 +1,6 @@
-import type * as THREE from 'three'
 import { _StartUp } from '../actions/elevbott'
 import { InformationCenter_Music } from '../actions/jukebox'
+import type { Composer } from '../lib/effect/composer'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
@@ -29,9 +29,9 @@ export class ElevBott extends World {
     }
   }
 
-  public override render(renderer: THREE.WebGLRenderer): void {
-    this._building.render(renderer)
-    super.render(renderer)
+  public override activate(composer: Composer): void {
+    this._building.activate(composer)
+    super.activate(composer)
   }
 
   public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {

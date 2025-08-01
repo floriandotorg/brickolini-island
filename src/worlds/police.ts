@@ -1,6 +1,6 @@
-import type * as THREE from 'three'
 import { PoliceStation_Music } from '../actions/jukebox'
 import { _StartUp, nps001ni_RunAnim, nps002la_RunAnim } from '../actions/police'
+import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
@@ -30,7 +30,10 @@ export class Police extends World {
     }
   }
 
-  public override activate(): void {
+  public override activate(composer: Composer): void {
+    this._building.activate(composer)
+    super.activate(composer)
+
     if (engine.currentPlayerCharacter === 'nick') {
       void this.playAnimation(nps002la_RunAnim)
     } else if (engine.currentPlayerCharacter === 'laura') {
@@ -44,11 +47,6 @@ export class Police extends World {
     }
 
     ++this._numVisits
-  }
-
-  public override render(renderer: THREE.WebGLRenderer): void {
-    this._building.render(renderer)
-    super.render(renderer)
   }
 
   public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
