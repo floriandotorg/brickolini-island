@@ -401,4 +401,14 @@ export abstract class World {
     this._debugGroup.add(sprite)
     return sprite
   }
+
+  public debugPrintSceneGraph(): void {
+    const print = (node: THREE.Object3D, indent = 0) => {
+      console.log(' '.repeat(indent) + node.name)
+      for (const child of node.children) {
+        print(child, indent + 2)
+      }
+    }
+    print(this.scene)
+  }
 }
