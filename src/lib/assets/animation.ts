@@ -161,10 +161,12 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
 
     mat = parent.clone().multiply(mat)
 
-    mat.decompose(position, quaternion, scale)
-    push('position', position.toArray())
-    push('quaternion', quaternion.toArray())
-    push('scale', scale.toArray())
+    if (!name.startsWith('-')) {
+      mat.decompose(position, quaternion, scale)
+      push('position', position.toArray())
+      push('quaternion', quaternion.toArray())
+      push('scale', scale.toArray())
+    }
 
     for (const child of animation.children) {
       getValues(child, time, valueMap, child.name, mat, isActor ? animation.name : actorName)
