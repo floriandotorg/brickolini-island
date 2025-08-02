@@ -152,7 +152,12 @@ export abstract class World {
             throw new Error(`Actor not found: ${actor.name}`)
           }
           node.name = actor.name.toLowerCase()
+          node.visible = true
           actors.add(node)
+          for (const child of Array.from(node.children)) {
+            node.remove(child)
+            actors.add(child)
+          }
           break
         }
         case WDB.ActorType.ManagedActor: {
