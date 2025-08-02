@@ -62,6 +62,7 @@ export class Building {
       world.scene.add(ambientLight)
     }
 
+    const configAnimationPromises: Promise<void>[] = []
     for (const child of startUpAction.children) {
       if (isImageAction(child) && child.name.endsWith('Background_Bitmap')) {
         const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: createTexture(child), transparent: true }))
@@ -70,10 +71,12 @@ export class Building {
       }
 
       if (isAnimationAction(child) && child.name === 'ConfigAnimation') {
-        void getAction(child).then(action => {
-          const animation = parse3DAnimation(action)
-          world.setupCameraForAnimation(animation.tree)
-        })
+        configAnimationPromises.push(
+          getAction(child).then(action => {
+            const animation = parse3DAnimation(action)
+            world.setupCameraForAnimation(animation.tree)
+          }),
+        )
       }
 
       if (isControlAction(child)) {
@@ -83,6 +86,8 @@ export class Building {
         })
       }
     }
+
+    await Promise.all(configAnimationPromises)
   }
 
   public activate(composer: Composer): void {
