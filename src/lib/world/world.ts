@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { Action } from '../../actions/types'
 import type { AnimationAction, AudioAction, ParallelAction, PhonemeAction, PositionalAudioAction } from '../action-types'
 import { type Animation3DNode, animationToTracks, findRecursively, parse3DAnimation } from '../assets/animation'
 import { getPositionalAudio } from '../assets/audio'
@@ -140,7 +141,6 @@ export abstract class World {
     }
 
     const animation = parse3DAnimation(await getAction(animationActions[0]))
-    console.log(animation.tree)
     this.setupCameraForAnimation(animation.tree)
 
     const actors = new THREE.Group()
@@ -220,6 +220,10 @@ export abstract class World {
         }),
     )
 
+    for (const audio of action.children.filter(c => c.fileType === Action.FileType.WAV && c.presenter === null)) {
+      engine.playAudio(audio)
+    }
+
     for (const phoneme of action.children.filter(c => c.presenter === 'LegoPhonemePresenter')) {
       if (phoneme.extra == null) {
         throw new Error('Phoneme extra is null')
@@ -238,7 +242,6 @@ export abstract class World {
 
     this.scene.add(actors)
 
-    console.log(animationToTracks(animation.tree))
     const clip = new THREE.AnimationClip(animation.tree.name, -1, animationToTracks(animation.tree))
     return this.playAnimationClip(actors, clip, audios)
   }

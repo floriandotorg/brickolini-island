@@ -6,11 +6,11 @@ export type ActionBase = { id: number; siFile: string; type: Action.Type; presen
 
 export type FileActionBase = Override<ActionBase, { fileType: Action.FileType }>
 
-export type AudioActionBase = Override<FileActionBase, { fileType: Action.FileType.WAV; volume: number }>
+export type AudioActionBase = Override<FileActionBase, { fileType: Action.FileType.WAV; volume: number; startTime: number }>
 
 export type AudioAction = Override<AudioActionBase, { presenter: null }>
 
-export type PositionalAudioAction = Override<AudioActionBase, { presenter: 'Lego3DWavePresenter'; extra: string; startTime: number }>
+export type PositionalAudioAction = Override<AudioActionBase, { presenter: 'Lego3DWavePresenter'; extra: string }>
 
 export type ParallelAction<T, P extends string | null = string | null> = Override<ActionBase, { type: Action.Type.ParallelAction; fileType?: Action.FileType; children: readonly T[]; presenter: P }>
 

@@ -216,7 +216,7 @@ class Engine {
 
   public async playAudio(action: AudioAction): Promise<void> {
     const audio = await getAudio(this._audioListener, action)
-    audio.play()
+    audio.play(action.startTime / 1_000)
   }
 
   public async playCutscene(action: CompositeMediaAction): Promise<void> {
