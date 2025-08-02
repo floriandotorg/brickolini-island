@@ -201,7 +201,12 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
       return new THREE.VectorKeyframeTrack(name, timesSec, values)
     }
     if (name.includes('visible')) {
-      return new THREE.BooleanKeyframeTrack(name, timesSec, values)
+      return new THREE.BooleanKeyframeTrack(
+        name,
+        timesSec,
+        // @ts-expect-error https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/73394
+        values.map(x => x === 1),
+      )
     }
     throw new Error(`Unknown track: ${name}`)
   })
