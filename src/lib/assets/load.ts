@@ -187,6 +187,8 @@ const getExtension = (fileType: Action.FileType, presenter: string | null) => {
       return 'gph'
     case Action.FileType.STL:
       return 'png'
+    case Action.FileType.FLC:
+      return 'mp4'
   }
 
   throw new Error(`Unknown file type: ${fileType}`)

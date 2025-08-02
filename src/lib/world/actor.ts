@@ -1340,11 +1340,19 @@ export const ACTORS: {
 
 export class Actor {
   private _mesh: THREE.Mesh = new THREE.Mesh()
+  private _headMaterial: THREE.MeshBasicMaterial | null = null
 
   public onClicked: () => boolean = () => false
 
   public get mesh() {
     return this._mesh
+  }
+
+  public get headMaterial() {
+    if (this._headMaterial == null) {
+      throw new Error('Head material not found')
+    }
+    return this._headMaterial
   }
 
   private constructor(private _info: (typeof ACTORS)[keyof typeof ACTORS]) {}
@@ -1371,8 +1379,15 @@ export class Actor {
           }
           case 'infogron':
             return getGlobalPart('infogron', colorAliases[actor._info.groinColor], null)
-          case 'head':
-            return getGlobalPart('head', null, actor._info.faceTexture)
+          case 'head': {
+            const part = await getGlobalPart('head', null, actor._info.faceTexture)
+            const faceMesh = part.children.find(child => child instanceof THREE.Mesh && child.material.map != null)
+            if (faceMesh == null || !(faceMesh instanceof THREE.Mesh)) {
+              throw new Error('Head material not found')
+            }
+            actor._headMaterial = faceMesh.material
+            return part
+          }
           case 'arm-lft':
             return getGlobalPart('arm-lft', colorAliases[actor._info.leftArmColor], null)
           case 'arm-rt':

@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import type { AnimationAction, AudioAction, ParallelAction, PhonemeAction, PositionalAudioAction } from '../action-types'
 import { type Animation3DNode, animationToTracks, findRecursively, parse3DAnimation } from '../assets/animation'
 import { getPositionalAudio } from '../assets/audio'
-import { getAction } from '../assets/load'
+import { getAction, getActionFileUrl } from '../assets/load'
 import { getGlobalPart } from '../assets/model'
 import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
@@ -144,6 +144,7 @@ export abstract class World {
     this.setupCameraForAnimation(animation.tree)
 
     const actors = new THREE.Group()
+    const actorMap = new Map<string, Actor>()
 
     for (const actor of animation.actors) {
       switch (actor.type) {
@@ -167,6 +168,7 @@ export abstract class World {
             minifig.mesh.visible = false
           }
           actors.add(minifig.mesh)
+          actorMap.set(actor.name, minifig)
           break
         }
         case WDB.ActorType.ManagedInvisibleRoi: {
@@ -217,6 +219,22 @@ export abstract class World {
           return this.playPositionalAudio(audio, actor, audio.startTime / 1_000)
         }),
     )
+
+    for (const phoneme of action.children.filter(c => c.presenter === 'LegoPhonemePresenter')) {
+      if (phoneme.extra == null) {
+        throw new Error('Phoneme extra is null')
+      }
+      const actor = actorMap.get(phoneme.extra)
+      if (actor == null) {
+        throw new Error(`Actor not found: ${phoneme.extra}`)
+      }
+      const video = document.createElement('video')
+      video.src = getActionFileUrl(phoneme)
+      video.play()
+      const texture = new THREE.VideoTexture(video)
+      texture.colorSpace = THREE.SRGBColorSpace
+      actor.headMaterial.map = texture
+    }
 
     this.scene.add(actors)
 

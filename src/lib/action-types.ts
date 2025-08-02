@@ -24,7 +24,7 @@ export type BoundaryAction = Override<ActionBase, { presenter: 'LegoPathPresente
 
 export type ImageAction = Override<FileActionBase, { type: Action.Type.Still; fileType: Action.FileType.STL; presenter: string | null }>
 
-export type PhonemeAction = Override<ActionBase, { type: Action.Type.Anim; presenter: 'LegoPhonemePresenter' }>
+export type PhonemeAction = Override<ActionBase, { type: Action.Type.Anim; fileType: Action.FileType.FLC; presenter: 'LegoPhonemePresenter' }>
 
 export type CompositeMediaAction = ParallelActionTuple<readonly [Override<ActionBase, { fileType: Action.FileType.SMK; presenter: null }>, AudioAction], 'MxCompositeMediaPresenter'>
 
