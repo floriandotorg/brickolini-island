@@ -185,7 +185,7 @@ export abstract class IsleBase extends World {
       this.scene.add(directionalLight)
 
       const setSkyColor = (hsl: { h: number; s: number; l: number }) => {
-        const color = new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l)
+        const color = new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l).convertSRGBToLinear()
         this.scene.background = color
         const lightColor = new THREE.Color(Math.min(color.r * (1 / 0.23), 1), Math.min(color.g * (1 / 0.63), 1), Math.min(color.b * (1 / 0.85), 1))
         directionalLight.color = lightColor
