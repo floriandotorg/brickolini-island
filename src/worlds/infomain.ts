@@ -81,6 +81,7 @@ export class InfoMain extends World {
       }
       void this.playAnimation(ANIMATIONS[this._currentAnimationIndex])
       this._currentAnimationIndex = (this._currentAnimationIndex + 1) % ANIMATIONS.length
+      return true
     }
 
     this.playAnimation(iic001in_RunAnim).then(async () => {

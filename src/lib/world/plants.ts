@@ -286,6 +286,7 @@ export namespace Plants {
         }
         void world.playPositionalAudio(sounds[plantState.soundIndex], mesh)
         void world.playAnimationClip(animationRoot, animation)
+        return true
       })
     }
     return group

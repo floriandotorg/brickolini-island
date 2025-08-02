@@ -1341,7 +1341,7 @@ export const ACTORS: {
 export class Actor {
   private _mesh: THREE.Mesh = new THREE.Mesh()
 
-  public onClicked: () => void = () => {}
+  public onClicked: () => boolean = () => false
 
   public get mesh() {
     return this._mesh
@@ -1401,46 +1401,46 @@ export class Actor {
             case 'head':
             case 'infohat':
               actor._info.hatColor = nextColor(actor._info.hatColor)
-              actor._mesh
-                .getObjectByName('infohat')
+              actor._mesh.children
+                .find(child => child.name.endsWith('infohat'))
                 ?.clear()
                 .add(await getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null))
               break
             case 'body':
             case 'infogron':
               actor._info.groinColor = nextColor(actor._info.groinColor)
-              actor._mesh
-                .getObjectByName('infogron')
+              actor._mesh.children
+                .find(child => child.name.endsWith('infogron'))
                 ?.clear()
                 .add(await getGlobalPart('infogron', colorAliases[actor._info.groinColor], null))
               break
             case 'claw-lft':
             case 'arm-lft':
               actor._info.leftArmColor = nextColor(actor._info.leftArmColor)
-              actor._mesh
-                .getObjectByName('arm-lft')
+              actor._mesh.children
+                .find(child => child.name.endsWith('arm-lft'))
                 ?.clear()
                 .add(await getGlobalPart('arm-lft', colorAliases[actor._info.leftArmColor], null))
               break
             case 'claw-rt':
             case 'arm-rt':
               actor._info.rightArmColor = nextColor(actor._info.rightArmColor)
-              actor._mesh
-                .getObjectByName('arm-rt')
+              actor._mesh.children
+                .find(child => child.name.endsWith('arm-rt'))
                 ?.clear()
                 .add(await getGlobalPart('arm-rt', colorAliases[actor._info.rightArmColor], null))
               break
             case 'leg-lft':
               actor._info.leftLegColor = nextColor(actor._info.leftLegColor)
-              actor._mesh
-                .getObjectByName('leg-lft')
+              actor._mesh.children
+                .find(child => child.name.endsWith('leg-lft'))
                 ?.clear()
                 .add(await getGlobalPart('leg', colorAliases[actor._info.leftLegColor], null))
               break
             case 'leg-rt':
               actor._info.rightLegColor = nextColor(actor._info.rightLegColor)
-              actor._mesh
-                .getObjectByName('leg-rt')
+              actor._mesh.children
+                .find(child => child.name.endsWith('leg-rt'))
                 ?.clear()
                 .add(await getGlobalPart('leg', colorAliases[actor._info.rightLegColor], null))
               break
@@ -1449,33 +1449,39 @@ export class Actor {
           }
 
           world.playPositionalAudio(Sound10, parentMesh)
+
+          return true
         }
 
-        actor.onClicked()
+        return actor.onClicked()
       })
 
       const matrix = calculateTransformationMatrix(part.pos, part.dir, part.up)
       matrix.decompose(parentMesh.position, parentMesh.quaternion, parentMesh.scale)
     }
 
-    world.addClickListener(actor.mesh, async () => {
+    world.addClickListener(actor.mesh, async (): Promise<boolean> => {
       if (engine.currentPlayerCharacter === 'pepper') {
-        const hatParentMesh = actor.mesh.getObjectByName('infohat-part')
+        const hatParentMesh = actor.mesh.children.find(child => child.name.endsWith('infohat'))
         if (hatParentMesh == null) {
-          return
+          return false
         }
 
         actor._info.hatPart = (actor._info.hatPart + 1) % actor._info.hatParts.length
 
         if (actor._info.hatParts[actor._info.hatPart] === 'bald') {
-          return
+          return true
         }
 
         hatParentMesh.clear()
         const mesh = await getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null)
         mesh.name = `${mesh.name}-part`
         hatParentMesh.add(mesh)
+
+        return true
       }
+
+      return false
     })
 
     return actor

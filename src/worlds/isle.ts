@@ -103,6 +103,7 @@ export class Isle extends IsleBase {
       this.addClickListener(buildingMesh, async () => {
         console.log(`switched to ${meshName}, ${worldName}`)
         switchWorld(worldName)
+        return true
       })
     }
 
@@ -154,18 +155,23 @@ export class Isle extends IsleBase {
 
     this.addClickListener(bikeMesh, async () => {
       await enterVehicle(bikeMesh)
+      return true
     })
     this.addClickListener(motobkMesh, async () => {
       await enterVehicle(motobkMesh)
+      return true
     })
     this.addClickListener(skateMesh, async () => {
       await enterVehicle(skateMesh)
+      return true
     })
     this.addClickListener(ambulanceMesh, async () => {
       await enterVehicle(ambulanceMesh)
+      return true
     })
     this.addClickListener(towtruckMesh, async () => {
       await enterVehicle(towtruckMesh)
+      return true
     })
 
     this._dashboard.onExit = () => {

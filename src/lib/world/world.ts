@@ -19,7 +19,7 @@ export abstract class World {
   private _debugSlewMode: HTMLElement
 
   private _raycaster = new THREE.Raycaster()
-  private _clickListeners = new Map<THREE.Object3D, (event: MouseEvent) => void>()
+  private _clickListeners = new Map<THREE.Object3D, (event: MouseEvent) => Promise<boolean>>()
   private _runningAnimations: {
     mixer: THREE.AnimationMixer
     clipAction: THREE.AnimationAction
@@ -140,6 +140,7 @@ export abstract class World {
     }
 
     const animation = parse3DAnimation(await getAction(animationActions[0]))
+    console.log(animation.tree)
     this.setupCameraForAnimation(animation.tree)
 
     const actors = new THREE.Group()
@@ -219,6 +220,7 @@ export abstract class World {
 
     this.scene.add(actors)
 
+    console.log(animationToTracks(animation.tree))
     const clip = new THREE.AnimationClip(animation.tree.name, -1, animationToTracks(animation.tree))
     return this.playAnimationClip(actors, clip, audios)
   }
@@ -238,17 +240,16 @@ export abstract class World {
     })
   }
 
-  public addClickListener(objects: THREE.Object3D, onClick: (event: MouseEvent) => void): void {
+  public addClickListener(objects: THREE.Object3D, onClick: (event: MouseEvent) => Promise<boolean>): void {
     this._clickListeners.set(objects, onClick)
   }
 
-  public click(event: MouseEvent, normalizedX: number, normalizedY: number): void {
+  public async click(event: MouseEvent, normalizedX: number, normalizedY: number): Promise<void> {
     this._raycaster.setFromCamera(new THREE.Vector2(normalizedX, normalizedY), this._render.camera)
     let hit: THREE.Object3D | null = this._raycaster.intersectObjects(Array.from(this._clickListeners.keys()))[0]?.object
     while (hit != null) {
       const onClick = this._clickListeners.get(hit)
-      if (hit.visible && onClick != null) {
-        onClick(event)
+      if (hit.visible && onClick != null && (await onClick(event))) {
         break
       }
       hit = hit.parent
