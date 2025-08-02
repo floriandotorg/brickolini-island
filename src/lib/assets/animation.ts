@@ -30,8 +30,8 @@ export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<stri
   if (magic !== 17) {
     throw new Error('Invalid magic number')
   }
-  const _unknownFloat = reader.readFloat32()
-  const _unknownVector = reader.readVector3()
+  const radius = reader.readFloat32()
+  const center = reader.readVector3()
   const parseScene = reader.readInt32()
   if (parseScene !== 0) {
     throw new Error('Parse scene not supported')
@@ -49,6 +49,8 @@ export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<stri
   return {
     ...animation,
     tree: convertNode(animation.tree),
+    radius,
+    center,
   }
 }
 

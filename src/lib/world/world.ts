@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { AnimationAction, ParallelAction, PhonemeAction, PositionalAudioAction } from '../action-types'
+import type { AnimationAction, AudioAction, ParallelAction, PhonemeAction, PositionalAudioAction } from '../action-types'
 import { type Animation3DNode, animationToTracks, findRecursively, parse3DAnimation } from '../assets/animation'
 import { getPositionalAudio } from '../assets/audio'
 import { getAction } from '../assets/load'
@@ -133,7 +133,7 @@ export abstract class World {
     return null
   }
 
-  public async playAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction>): Promise<void> {
+  public async playAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction>): Promise<void> {
     const animationActions = action.children.filter(c => c.presenter === 'LegoAnimPresenter')
     if (animationActions.length !== 1) {
       throw new Error('Expected one animation')
