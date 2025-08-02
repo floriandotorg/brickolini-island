@@ -356,7 +356,7 @@ export abstract class World {
 
   public debugDrawSphere(position: THREE.Vector3, color: string, radius = 1): THREE.Mesh {
     const sphere = new THREE.SphereGeometry(radius)
-    const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5 })
+    const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5, side: THREE.DoubleSide })
     const mesh = new THREE.Mesh(sphere, material)
     mesh.position.copy(position)
     this._debugGroup.add(mesh)
@@ -365,7 +365,7 @@ export abstract class World {
 
   public debugDrawPlane(anchor: THREE.Vector3, normal: THREE.Vector3, color: string): THREE.Mesh {
     const planeGeometry = new THREE.PlaneGeometry(1, 1)
-    const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5 })
+    const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5, side: THREE.DoubleSide })
     const mesh = new THREE.Mesh(planeGeometry, material)
     mesh.position.copy(anchor)
     mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal)
