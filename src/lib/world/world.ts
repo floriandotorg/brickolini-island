@@ -157,6 +157,10 @@ export abstract class World {
           node.visible = true
           actors.add(node)
           for (const child of Array.from(node.children)) {
+            // we only want to flatten objects that have sub-meshes, otherwise we put the sub-meshes into the scene
+            if (child.children.length < 1) {
+              continue
+            }
             node.remove(child)
             actors.add(child)
           }
