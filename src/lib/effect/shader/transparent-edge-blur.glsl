@@ -1,4 +1,4 @@
-const int radius = 4;
+const float radius = 0.004;
 
 void mainImage(const in vec4 inputColor, out vec4 outputColor) {
   float maxA = 0.0;
@@ -6,9 +6,9 @@ void mainImage(const in vec4 inputColor, out vec4 outputColor) {
   float sum = 0.0;
   float totalWeight = 0.0;
 
-  for (int dx = -radius; dx <= radius; dx++) {
-    for (int dy = -radius; dy <= radius; dy++) {
-      float sampleA = texture(tDiffuse, uv + vec2(dx, dy) * texelSize).a;
+  for (float dx = -radius; dx <= radius; dx += 0.001) {
+    for (float dy = -radius; dy <= radius; dy += 0.001) {
+      float sampleA = texture(tDiffuse, uv + vec2(dx, dy)).a;
       maxA = max(maxA, sampleA);
       minA = min(minA, sampleA);
       float weight = 1.0;
