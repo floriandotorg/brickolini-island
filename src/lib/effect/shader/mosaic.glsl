@@ -13,7 +13,7 @@ void mainImage(const in vec4 inputColor, out vec4 outputColor) {
 
     if (hash(mosaicCoord) < uMosaicProgress) {
       vec2 uv = mosaicCoord / texSize;
-      vec3 color = texture2D(tDiffuse, uv).rgb;
+      vec3 color = texture(tDiffuse, uv).rgb;
 
       outputColor = vec4(color, 1.0);
       return;

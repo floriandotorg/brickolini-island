@@ -7,6 +7,7 @@ import { getAction } from '../assets/load'
 import { getWorld } from '../assets/model'
 import { createTexture } from '../assets/texture'
 import { type Composer, Render2D } from '../effect/composer'
+import { TransparentEdgeBlurEffect } from '../effect/transparent-edge-blur'
 import { engine } from '../engine'
 import { switchWorld } from '../switch-world'
 import type { World } from './world'
@@ -20,6 +21,10 @@ export class Building {
     sourceScale: number
     destination: number
     destinationScale: number
+  }
+
+  constructor() {
+    this._render.addEffect(new TransparentEdgeBlurEffect())
   }
 
   public onButtonClicked: (buttonName: string) => boolean = _buttonName => false
