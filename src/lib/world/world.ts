@@ -42,7 +42,7 @@ export abstract class World {
     this._debugDirection = getElement('debug-direction')
     this._debugSlewMode = getElement('debug-slew-mode')
 
-    this.debugMode = false
+    this.debugMode = new URLSearchParams(window.location.search).get('debug') === 'true'
 
     this._render.scene.add(this._debugGroup)
   }
