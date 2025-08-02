@@ -21,6 +21,7 @@ import {
 import { InformationCenter_Music } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
+import { getSettings } from '../lib/settings'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
@@ -67,9 +68,11 @@ export class InfoMain extends World {
     centerPointLight.position.set(1.5, -4, 1)
     this.scene.add(centerPointLight)
 
-    const frontPointLight = new THREE.PointLight(0xffffff, 100)
-    frontPointLight.position.set(1.5, 0.75, -12)
-    this.scene.add(frontPointLight)
+    if (getSettings().graphics.shadows) {
+      leftPointLight.castShadow = true
+      rightPointLight.castShadow = true
+      centerPointLight.castShadow = true
+    }
 
     this.scene.add(await Plants.place(this, Plants.World.IMAIN))
 

@@ -11,3 +11,9 @@ export const createTexture = (action: ImageAction): THREE.Texture =>
     texture.magFilter = THREE.NearestFilter
     texture.minFilter = THREE.NearestFilter
   })
+
+export const createTextureAsync = async (action: ImageAction): Promise<THREE.Texture> => {
+  const texture = await textureLoader.loadAsync(getActionFileUrl(action))
+  texture.colorSpace = THREE.SRGBColorSpace
+  return texture
+}

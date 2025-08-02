@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { _StartUp, hho003cl_RunAnim } from '../actions/hospital'
 import { Hospital_Music } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
+import { getSettings } from '../lib/settings'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
 
@@ -26,6 +27,10 @@ export class Hospital extends World {
     const leftPointLight = new THREE.PointLight(0xfefefe, 20)
     leftPointLight.position.set(-0.25, 1, 1)
     this.scene.add(leftPointLight)
+
+    if (getSettings().graphics.shadows) {
+      leftPointLight.castShadow = true
+    }
 
     void this.playAnimation(hho003cl_RunAnim)
   }
