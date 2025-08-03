@@ -72,9 +72,9 @@ export abstract class IsleBase extends World {
     this.scene.add(world)
 
     const actor = await Actor.create(this, 'ml')
-    actor.mesh.position.set(22, 1, 30)
-    actor.mesh.rotateY(Math.PI / 2)
-    this.scene.add(actor.mesh)
+    actor.position.set(22, 1, 30)
+    actor.rotateY(Math.PI / 2)
+    this.scene.add(actor)
 
     this._plantGroup = await Plants.place(this, Plants.World.ACT1)
     this.scene.add(this._plantGroup)

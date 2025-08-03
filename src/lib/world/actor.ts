@@ -1338,15 +1338,10 @@ export const ACTORS: {
 
 // spellchecker: enable
 
-export class Actor {
-  private _mesh: THREE.Mesh = new THREE.Mesh()
+export class Actor extends THREE.Group {
   private _headMaterial: THREE.MeshBasicMaterial | null = null
 
   public onClicked: () => boolean = () => false
-
-  public get mesh() {
-    return this._mesh
-  }
 
   public get headMaterial() {
     if (this._headMaterial == null) {
@@ -1355,11 +1350,13 @@ export class Actor {
     return this._headMaterial
   }
 
-  private constructor(private _info: (typeof ACTORS)[keyof typeof ACTORS]) {}
+  private constructor(private _info: (typeof ACTORS)[keyof typeof ACTORS]) {
+    super()
+  }
 
   public static async create(world: World, name: string): Promise<Actor> {
     const actor = new Actor(ACTORS[name as keyof typeof ACTORS])
-    actor.mesh.name = name.toLowerCase()
+    actor.name = name.toLowerCase()
 
     for (const [bodyPartName, part] of Object.entries(BODY_PARTS)) {
       if (bodyPartName === 'top') {
@@ -1408,7 +1405,7 @@ export class Actor {
       parentMesh.name = `${name.toLowerCase()}_${bodyPartName.toLowerCase()}`
       parentMesh.add(mesh)
       mesh.name = `${mesh.name}-part`
-      actor.mesh.add(parentMesh)
+      actor.add(parentMesh)
 
       world.addClickListener(parentMesh, async () => {
         if (engine.currentPlayerCharacter === 'nick') {
@@ -1416,7 +1413,7 @@ export class Actor {
             case 'head':
             case 'infohat':
               actor._info.hatColor = nextColor(actor._info.hatColor)
-              actor._mesh.children
+              actor.children
                 .find(child => child.name.endsWith('infohat'))
                 ?.clear()
                 .add(await getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null))
@@ -1424,7 +1421,7 @@ export class Actor {
             case 'body':
             case 'infogron':
               actor._info.groinColor = nextColor(actor._info.groinColor)
-              actor._mesh.children
+              actor.children
                 .find(child => child.name.endsWith('infogron'))
                 ?.clear()
                 .add(await getGlobalPart('infogron', colorAliases[actor._info.groinColor], null))
@@ -1432,7 +1429,7 @@ export class Actor {
             case 'claw-lft':
             case 'arm-lft':
               actor._info.leftArmColor = nextColor(actor._info.leftArmColor)
-              actor._mesh.children
+              actor.children
                 .find(child => child.name.endsWith('arm-lft'))
                 ?.clear()
                 .add(await getGlobalPart('arm-lft', colorAliases[actor._info.leftArmColor], null))
@@ -1440,21 +1437,21 @@ export class Actor {
             case 'claw-rt':
             case 'arm-rt':
               actor._info.rightArmColor = nextColor(actor._info.rightArmColor)
-              actor._mesh.children
+              actor.children
                 .find(child => child.name.endsWith('arm-rt'))
                 ?.clear()
                 .add(await getGlobalPart('arm-rt', colorAliases[actor._info.rightArmColor], null))
               break
             case 'leg-lft':
               actor._info.leftLegColor = nextColor(actor._info.leftLegColor)
-              actor._mesh.children
+              actor.children
                 .find(child => child.name.endsWith('leg-lft'))
                 ?.clear()
                 .add(await getGlobalPart('leg', colorAliases[actor._info.leftLegColor], null))
               break
             case 'leg-rt':
               actor._info.rightLegColor = nextColor(actor._info.rightLegColor)
-              actor._mesh.children
+              actor.children
                 .find(child => child.name.endsWith('leg-rt'))
                 ?.clear()
                 .add(await getGlobalPart('leg', colorAliases[actor._info.rightLegColor], null))
@@ -1475,9 +1472,9 @@ export class Actor {
       matrix.decompose(parentMesh.position, parentMesh.quaternion, parentMesh.scale)
     }
 
-    world.addClickListener(actor.mesh, async (): Promise<boolean> => {
+    world.addClickListener(actor, async (): Promise<boolean> => {
       if (engine.currentPlayerCharacter === 'pepper') {
-        const hatParentMesh = actor.mesh.children.find(child => child.name.endsWith('infohat'))
+        const hatParentMesh = actor.children.find(child => child.name.endsWith('infohat'))
         if (hatParentMesh == null) {
           return false
         }

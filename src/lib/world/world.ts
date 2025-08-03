@@ -144,7 +144,6 @@ export abstract class World {
     this.setupCameraForAnimation(animation.tree)
 
     const actors = new THREE.Group()
-    const actorMap = new Map<string, Actor>()
 
     for (const actor of animation.actors) {
       switch (actor.type) {
@@ -169,10 +168,9 @@ export abstract class World {
         case WDB.ActorType.ManagedActor: {
           const minifig = await this.getActor(actor.name.replace(/^\*/, ''))
           if (actor.name.startsWith('*')) {
-            minifig.mesh.visible = false
+            minifig.visible = false
           }
-          actors.add(minifig.mesh)
-          actorMap.set(actor.name, minifig)
+          actors.add(minifig)
           break
         }
         case WDB.ActorType.ManagedInvisibleRoi: {
@@ -232,8 +230,8 @@ export abstract class World {
       if (phoneme.extra == null) {
         throw new Error('Phoneme extra is null')
       }
-      const actor = actorMap.get(phoneme.extra)
-      if (actor == null) {
+      const actor = actors.getObjectByName(phoneme.extra)
+      if (actor == null || !(actor instanceof Actor)) {
         throw new Error(`Actor not found: ${phoneme.extra}`)
       }
       const video = document.createElement('video')
