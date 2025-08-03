@@ -938,29 +938,31 @@ export class Isle extends IsleBase {
         srt004in_RunAnim,
         nrtflag0_RunAnim,
       ]) {
-        try {
-          const animationPresenter = animation.children.find(child => child.presenter === 'LegoAnimPresenter')
-          if (animationPresenter == null) {
-            console.warn(`No animation found: ${animation.name}`)
-            continue
-          }
-          const parsed = parse3DAnimation(await getAction(animationPresenter))
-          this.debugDrawSphere(new THREE.Vector3(parsed.center[0], parsed.center[1], parsed.center[2]), 'red', parsed.radius)
-          this._animationTrigger.push({
-            center: new THREE.Vector3(parsed.center[0], parsed.center[1], parsed.center[2]),
-            radius: parsed.radius,
-            animation: {
-              ...animation,
-              children: animation.children.filter(child => child.presenter !== 'LegoLoopingAnimPresenter'),
-            },
-          })
-        } catch (err) {
-          if (err instanceof Error && err.message.includes('Parse scene not supported')) {
-            console.warn(`Animation ${animation.name} caused "Parse scene not supported" error`)
-          } else {
-            throw err
-          }
+        const animationPresenter = animation.children.find(child => child.presenter === 'LegoAnimPresenter')
+        if (animationPresenter == null) {
+          console.warn(`No animation found: ${animation.name}`)
+          continue
         }
+        getAction(animationPresenter).then(action => {
+          try {
+            const parsed = parse3DAnimation(action)
+            this.debugDrawSphere(new THREE.Vector3(parsed.center[0], parsed.center[1], parsed.center[2]), 'red', parsed.radius)
+            this._animationTrigger.push({
+              center: new THREE.Vector3(parsed.center[0], parsed.center[1], parsed.center[2]),
+              radius: parsed.radius,
+              animation: {
+                ...animation,
+                children: animation.children.filter(child => child.presenter !== 'LegoLoopingAnimPresenter'),
+              },
+            })
+          } catch (err) {
+            if (err instanceof Error && err.message.includes('Parse scene not supported')) {
+              console.warn(`Animation ${animation.name} caused "Parse scene not supported" error`)
+            } else {
+              throw err
+            }
+          }
+        })
       }
     }
 
