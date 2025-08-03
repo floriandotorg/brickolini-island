@@ -28,6 +28,8 @@ const compileFragmentShader = (effects: Effect[]) =>
 export abstract class Render {
   private _effects: Effect[] = []
 
+  public material = new THREE.ShaderMaterial()
+
   public abstract get scene(): THREE.Scene
   public abstract get camera(): THREE.Camera
   public abstract get texture(): THREE.Texture
@@ -137,6 +139,7 @@ export class Composer {
       fragmentShader: compileFragmentShader(this._effects),
       uniforms: {
         tDiffuse: { value: this._renderTarget.texture },
+        uTime: { value: 0 },
       },
     })
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this._postMaterial)
@@ -144,8 +147,11 @@ export class Composer {
     this._postScene.add(mesh)
   }
 
-  public render(): void {
+  public render(time: number): void {
+    this._postMaterial.uniforms.uTime.value = time
+
     for (const render of this._pipeline) {
+      render.material.uniforms.uTime.value = time
       render.render(this._renderer)
     }
 
@@ -168,15 +174,16 @@ export class Composer {
   public add(render: Render): void {
     render.resize(this._canvas.width, this._canvas.height)
     this._pipeline.push(render)
-    const material = new THREE.ShaderMaterial({
+    render.material = new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
       fragmentShader: render.shader,
       uniforms: {
         tDiffuse: { value: render.texture },
+        uTime: { value: 0 },
       },
       transparent: true,
     })
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material)
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), render.material)
     mesh.position.z = -100 + this._pipeline.length
     this._scene.add(mesh)
   }

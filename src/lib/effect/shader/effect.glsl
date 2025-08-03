@@ -1,5 +1,5 @@
 uniform sampler2D tDiffuse;
-uniform vec2 uResolution;
+uniform float uTime;
 
 out vec4 fragColor;
 

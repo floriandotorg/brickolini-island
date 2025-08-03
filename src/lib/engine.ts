@@ -3,6 +3,7 @@ import type { AudioAction, CompositeMediaAction } from './action-types'
 import { getAudio } from './assets/audio'
 import { getActionFileUrl } from './assets/load'
 import { Composer, Render2D } from './effect/composer'
+import { FilmGrainEffect } from './effect/film-grain'
 import { MosaicEffect } from './effect/mosaic'
 import { getSettings } from './settings'
 import type { World } from './world/world'
@@ -118,6 +119,11 @@ class Engine {
     }
 
     this._composer = new Composer(this._canvas, this._renderer)
+
+    if (getSettings().graphics.postProcessing) {
+      this._composer.addEffect(new FilmGrainEffect())
+    }
+
     this._composer.addEffect(this._mosaicEffect)
 
     this._cutsceneComposer = new Composer(this._canvas, this._renderer)
@@ -276,9 +282,9 @@ class Engine {
     }
 
     if (this._state === 'cutscene') {
-      this._cutsceneComposer.render()
+      this._cutsceneComposer.render(this._clock.elapsedTime)
     } else {
-      this._composer.render()
+      this._composer.render(this._clock.elapsedTime)
     }
   }
 }
