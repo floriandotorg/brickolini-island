@@ -966,7 +966,9 @@ export class Isle extends IsleBase {
       }
     }
 
-    void loadTriggerAnimations()
+    if (new URLSearchParams(window.location.search).get('noAnimations') !== 'true') {
+      void loadTriggerAnimations()
+    }
   }
 
   public override activate(composer: Composer, param?: IsleParam): void {
