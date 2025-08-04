@@ -29,7 +29,7 @@ export class Building {
     this._render.addEffect(new TransparentEdgeBlurEffect())
   }
 
-  public onButtonClicked: (buttonName: string) => boolean = _buttonName => false
+  public onButtonClicked: (buttonName: string, state: number) => boolean = _buttonName => false
 
   public async init({
     world,
@@ -112,7 +112,9 @@ export class Building {
 
   public pointerDown(normalizedX: number, normalizedY: number): void {
     for (const control of this._controls) {
-      if (control.pointerDown(normalizedX, normalizedY)) {
+      const result = control.pointerDown(normalizedX, normalizedY)
+      if (result != null) {
+        console.log(control)
         if (control.name === 'Info_Ctl') {
           void switchWorld('infomain')
           return
@@ -129,7 +131,7 @@ export class Building {
           return
         }
 
-        if (!this.onButtonClicked(control.name)) {
+        if (!this.onButtonClicked(control.name, result)) {
           console.log(`Button ${control.name} not handled`)
         }
 

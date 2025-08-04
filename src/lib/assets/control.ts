@@ -53,7 +53,7 @@ const getPixel = (image: PlacedImage, normalizedX: number, normalizedY: number):
 }
 
 interface Handler {
-  pointerDown(normalizedX: number, normalizedY: number): boolean
+  pointerDown(normalizedX: number, normalizedY: number): number | null
 
   pointerUp(): boolean
 
@@ -76,24 +76,22 @@ class MapControl implements Handler {
     this._states = states
   }
 
-  public pointerDown(normalizedX: number, normalizedY: number): boolean {
+  public pointerDown(normalizedX: number, normalizedY: number): number | null {
     const pixel = getPixel(this._mask, normalizedX, normalizedY)
     if (pixel == null || pixel[3] === 0) {
-      return false
+      return null
     }
     if (this._states.length === 0) {
       this._state = 1
-      return true
+      return this._state
     }
-    this._state = 0
     for (const [index, state] of this._states.entries()) {
       if (state[0] === pixel[0] && state[1] === pixel[1] && state[2] === pixel[2]) {
         this._state = index + 1
-        console.log(this._state)
-        return true
+        return this._state
       }
     }
-    return false
+    return null
   }
 
   public pointerUp(): boolean {
@@ -127,16 +125,16 @@ class ToggleControl implements Handler {
     return pixel[3] > 0
   }
 
-  public pointerDown(normalizedX: number, normalizedY: number): boolean {
+  public pointerDown(normalizedX: number, normalizedY: number): number | null {
     if (this.test(normalizedX, normalizedY)) {
       if (!this._toggle) {
         this._pressedState = true
       } else {
         this._pressedState = !this._pressedState
       }
-      return true
+      return this._pressedState ? 0 : 1
     }
-    return false
+    return null
   }
 
   public pointerUp(): boolean {
@@ -243,12 +241,12 @@ export class Control {
     return this._action.name
   }
 
-  public pointerDown(normalizedX: number, normalizedY: number): boolean {
-    if (this._handler.pointerDown(normalizedX, normalizedY)) {
+  public pointerDown(normalizedX: number, normalizedY: number): number | null {
+    const result = this._handler.pointerDown(normalizedX, normalizedY)
+    if (result != null) {
       this.draw()
-      return true
     }
-    return false
+    return result
   }
 
   public pointerUp() {
