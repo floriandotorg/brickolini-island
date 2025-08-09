@@ -258,7 +258,6 @@ export const animationToTracks = (animation: Animation3DNode, offset: THREE.Vect
     return new THREE.BooleanKeyframeTrack(
       name,
       morphTimes.map(t => t / 1_000),
-      // @ts-expect-error https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/73394
       values,
     )
   })
