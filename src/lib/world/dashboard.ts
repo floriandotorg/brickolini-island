@@ -64,7 +64,7 @@ class Meter {
   private readonly _direction: (width: number, height: number, fill: number) => { x: number; y: number; width: number; height: number }
   private _fill: number = 0
 
-  private constructor(action: MeterAction, image: HTMLImageElement, canvasWidth: number, canvasHeight: number) {
+  private constructor(action: MeterAction, image: HTMLImageElement) {
     const fillerIndex = parseInt(getExtraValue(action, 'filler_index') ?? '')
     const fillColor = Number.isInteger(fillerIndex) && fillerIndex > 0 ? action.colorPalette.at(fillerIndex) : null
     if (fillColor == null) {
@@ -73,7 +73,7 @@ class Meter {
     this._fillColor = fillColor
 
     this._image = image
-    this._sprite = new CanvasSprite(action.location[0], action.location[1], image.width, image.height, canvasWidth, canvasHeight)
+    this._sprite = new CanvasSprite(action.location[0], action.location[1], image.width, image.height)
 
     const directionType = getExtraValue(action, 'type')
     this._direction = directionType != null ? parseDirection(directionType) : leftToRight
@@ -84,7 +84,7 @@ class Meter {
 
   public static async create(action: MeterAction): Promise<Meter> {
     const image = await getImage(action)
-    return new Meter(action, image, 640, 480)
+    return new Meter(action, image)
   }
 
   public get sprite(): THREE.Sprite {

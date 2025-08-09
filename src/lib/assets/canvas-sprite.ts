@@ -1,4 +1,17 @@
 import * as THREE from 'three'
+import { ORIGINAL_TOTAL_HEIGHT, ORIGINAL_TOTAL_WIDTH } from '../engine'
+
+export const createNormalizedSprite = (x: number, y: number, z: number, originalActionWidth: number, originalActionHeight: number): THREE.Sprite => {
+  const normalizedX = (x / ORIGINAL_TOTAL_WIDTH) * 2 - 1
+  const normalizedY = -((y / ORIGINAL_TOTAL_HEIGHT) * 2 - 1)
+  const normalizedWidth = (originalActionWidth / ORIGINAL_TOTAL_WIDTH) * 2
+  const normalizedHeight = (originalActionHeight / ORIGINAL_TOTAL_HEIGHT) * 2
+
+  const sprite = new THREE.Sprite()
+  sprite.scale.set(normalizedWidth, normalizedHeight, 1)
+  sprite.position.set(normalizedX + normalizedWidth / 2, normalizedY - normalizedHeight / 2, z)
+  return sprite
+}
 
 export class CanvasSprite {
   private readonly _canvas: HTMLCanvasElement
@@ -6,15 +19,10 @@ export class CanvasSprite {
   private readonly _texture: THREE.CanvasTexture
   private readonly _sprite: THREE.Sprite
 
-  public constructor(x: number, y: number, w: number, h: number, canvasWidth: number, canvasHeight: number) {
-    const normalizedX = (x / canvasWidth) * 2 - 1
-    const normalizedY = -((y / canvasHeight) * 2 - 1)
-    const normalizedWidth = (w / canvasWidth) * 2
-    const normalizedHeight = (h / canvasHeight) * 2
-
+  public constructor(x: number, y: number, originalActionWidth: number, originalActionHeight: number) {
     this._canvas = document.createElement('canvas')
-    this._canvas.width = w
-    this._canvas.height = h
+    this._canvas.width = originalActionWidth
+    this._canvas.height = originalActionHeight
     const context = this._canvas.getContext('2d')
     if (context == null) {
       throw new Error('HUD canvas context not found')
@@ -22,10 +30,8 @@ export class CanvasSprite {
     this._context = context
     this._texture = new THREE.CanvasTexture(this._canvas)
     this._texture.colorSpace = THREE.SRGBColorSpace
-    const material = new THREE.SpriteMaterial({ map: this._texture, transparent: true })
-    this._sprite = new THREE.Sprite(material)
-    this._sprite.scale.set(normalizedWidth, normalizedHeight, 1)
-    this._sprite.position.set(normalizedX + normalizedWidth / 2, normalizedY - normalizedHeight / 2, -0.5)
+    this._sprite = createNormalizedSprite(x, y, 0.5, originalActionWidth, originalActionHeight)
+    this._sprite.material = new THREE.SpriteMaterial({ map: this._texture, transparent: true })
   }
 
   public get context(): CanvasRenderingContext2D {

@@ -12,6 +12,9 @@ export const RESOLUTION_RATIO = 4 / 3
 const BACKGROUND_MUSIC_FADE_TIME = 2
 const BACKGROUND_MUSIC_FADE_TIME_SETTINGS = 0.5
 
+export const ORIGINAL_TOTAL_WIDTH: number = 640
+export const ORIGINAL_TOTAL_HEIGHT: number = 480
+
 class Engine {
   private _state: 'cutscene' | 'transition' | 'game' = 'game'
   private _clock: THREE.Clock = new THREE.Clock()
@@ -213,7 +216,7 @@ class Engine {
   public async transition(): Promise<void> {
     this._state = 'transition'
     this._transitionStart = this._clock.elapsedTime
-    this._mosaicEffect.tileSize = Math.ceil(Math.max(this._canvas.width / 640, this._canvas.height / 480) * 10)
+    this._mosaicEffect.tileSize = Math.ceil(Math.max(this._canvas.width / ORIGINAL_TOTAL_WIDTH, this._canvas.height / ORIGINAL_TOTAL_HEIGHT) * 10)
     this._mosaicEffect.progress = 0.0
     return new Promise(resolve => {
       this._transitionPromiseResolve = resolve

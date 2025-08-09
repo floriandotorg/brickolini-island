@@ -1,5 +1,6 @@
 import type * as THREE from 'three'
 import { type ControlAction, getExtraValue, type ImageAction, isImageAction, type ParallelActionTuple, splitExtraValue } from '../action-types'
+import { ORIGINAL_TOTAL_HEIGHT, ORIGINAL_TOTAL_WIDTH } from '../engine'
 import { CanvasSprite } from './canvas-sprite'
 import { getImage } from './image'
 
@@ -18,11 +19,9 @@ const getImageAction = (action: ControlChild | undefined): ImageAction => {
 }
 
 const createPlacedImage = async (action: ImageAction, willReadFrequently: boolean = false): Promise<PlacedImage> => {
-  const ORIGINAL_WIDTH = 640
-  const ORIGINAL_HEIGHT = 480
   const image = await getImage(action)
-  const normalizedX = (action.location[0] / ORIGINAL_WIDTH) * 2 - 1
-  const normalizedY = -(action.location[1] / ORIGINAL_HEIGHT) * 2 + 1
+  const normalizedX = (action.location[0] / ORIGINAL_TOTAL_WIDTH) * 2 - 1
+  const normalizedY = -(action.location[1] / ORIGINAL_TOTAL_HEIGHT) * 2 + 1
   const canvas = document.createElement('canvas')
   const context = canvas.getContext('2d', { willReadFrequently })
   if (context == null) {
@@ -31,10 +30,10 @@ const createPlacedImage = async (action: ImageAction, willReadFrequently: boolea
   canvas.width = image.width
   canvas.height = image.height
   context.drawImage(image, 0, 0)
-  return { context, normalizedX, normalizedY, normalizedWidth: (image.width / ORIGINAL_WIDTH) * 2, normalizedHeight: (image.height / ORIGINAL_HEIGHT) * 2 }
+  return { context, normalizedX, normalizedY, normalizedWidth: (image.width / ORIGINAL_TOTAL_WIDTH) * 2, normalizedHeight: (image.height / ORIGINAL_TOTAL_HEIGHT) * 2 }
 }
 
-const denormalize = (normalizedX: number, normalizedY: number, totalSize: [number, number] = [640, 480]): [number, number] => {
+const denormalize = (normalizedX: number, normalizedY: number, totalSize: [number, number] = [ORIGINAL_TOTAL_WIDTH, ORIGINAL_TOTAL_HEIGHT]): [number, number] => {
   const x = ((normalizedX + 1) / 2) * totalSize[0]
   const y = (1 - (normalizedY + 1) / 2) * totalSize[1]
   return [x, y]
@@ -230,7 +229,7 @@ export class Control {
   private constructor(action: ControlAction, handler: Handler) {
     this._action = action
     this._handler = handler
-    this._sprite = new CanvasSprite(0, 0, 640, 480, 640, 480)
+    this._sprite = new CanvasSprite(0, 0, ORIGINAL_TOTAL_WIDTH, ORIGINAL_TOTAL_HEIGHT)
   }
 
   public get sprite(): THREE.Sprite {
