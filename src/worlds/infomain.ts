@@ -52,6 +52,8 @@ export class InfoMain extends World {
         case 'RightArrow_Ctl':
           void switchWorld('infoscor')
           return true
+        case 'Mama_Ctl':
+          return true
       }
       return false
     }
@@ -104,5 +106,9 @@ export class InfoMain extends World {
 
   public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
     this._building.pointerDown(normalizedX, normalizedY)
+  }
+
+  public override pointerUp(_event: MouseEvent): void {
+    this._building.pointerUp()
   }
 }

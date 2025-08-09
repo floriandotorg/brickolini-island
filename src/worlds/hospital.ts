@@ -43,4 +43,8 @@ export class Hospital extends World {
   public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
     this._building.pointerDown(normalizedX, normalizedY)
   }
+
+  public override pointerUp(_event: MouseEvent): void {
+    this._building.pointerUp()
+  }
 }
