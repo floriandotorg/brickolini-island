@@ -48,14 +48,28 @@ const getWdb = async (): Promise<WDB.File> => {
 
 export const calculateTransformationMatrix = (location: [number, number, number], direction: [number, number, number], up: [number, number, number], matrix?: THREE.Matrix4): THREE.Matrix4 => {
   const locationVector = new THREE.Vector3(...location)
-  const directionVector = new THREE.Vector3(...direction).normalize()
-  const upVector = new THREE.Vector3(...up).normalize()
-
-  const right = new THREE.Vector3().crossVectors(upVector, directionVector).normalize()
-  const newUp = new THREE.Vector3().crossVectors(directionVector, right).normalize()
-
+  const dir = new THREE.Vector3(...direction)
+  if (dir.lengthSq() === 0) {
+    dir.set(0, 0, 1)
+  }
+  dir.normalize()
+  const upV = new THREE.Vector3(...up)
+  if (upV.lengthSq() === 0) {
+    upV.set(0, 1, 0)
+  }
+  upV.normalize()
+  let right = new THREE.Vector3().crossVectors(upV, dir)
+  if (right.lengthSq() === 0) {
+    const tmp = new THREE.Vector3(1, 0, 0)
+    if (Math.abs(dir.x) > 0.9) {
+      tmp.set(0, 1, 0)
+    }
+    right = new THREE.Vector3().crossVectors(tmp, dir)
+  }
+  right.normalize()
+  const newUp = new THREE.Vector3().crossVectors(dir, right).normalize()
   const transformationMatrix = matrix ?? new THREE.Matrix4()
-  transformationMatrix.makeBasis(right, newUp, directionVector)
+  transformationMatrix.makeBasis(right, newUp, dir)
   transformationMatrix.setPosition(locationVector)
   return transformationMatrix
 }
