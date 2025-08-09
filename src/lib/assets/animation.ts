@@ -33,11 +33,8 @@ export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<stri
   const radius = reader.readFloat32()
   const center = reader.readVector3()
   const parseScene = reader.readInt32()
-  if (parseScene !== 0) {
-    throw new Error('Parse scene not supported')
-  }
   const _val3 = reader.readInt32()
-  const animation = WDB.Animation.readAnimation(reader)
+  const animation = WDB.Animation.readAnimation(reader, parseScene !== 0)
   const convertNode = (node: WDB.Animation.Node): Animation3DNode => ({
     name: substitutions[node.name.toLowerCase()] ?? node.name.toLowerCase(),
     translationKeys: node.translationKeys.map(t => ({ timeAndFlags: t.timeAndFlags, vertex: new THREE.Vector3(...t.vertex) })),
@@ -52,6 +49,18 @@ export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<stri
     radius,
     center,
   }
+}
+
+export const getBeforeAndAfter = <T extends { timeAndFlags: { time: number } }>(keys: T[], time: number): { before: T; after: T | null } => {
+  let idx = keys.findIndex(k => k.timeAndFlags.time > time)
+  if (idx < 0) {
+    idx = keys.length
+  }
+  const before = keys[Math.max(0, idx - 1)]
+  if (before == null) {
+    throw new Error('No keyframes found')
+  }
+  return { before, after: keys[idx] }
 }
 
 export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTrack[] => {
@@ -90,18 +99,6 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
 
     const t = (before: { timeAndFlags: { time: number } }, after: { timeAndFlags: { time: number } }) => (time - before.timeAndFlags.time) / (after.timeAndFlags.time - before.timeAndFlags.time)
 
-    const getBeforeAndAfter = <T extends { timeAndFlags: { time: number } }>(keys: T[]): { before: T; after: T | null } => {
-      let idx = keys.findIndex(k => k.timeAndFlags.time > time)
-      if (idx < 0) {
-        idx = keys.length
-      }
-      const before = keys[Math.max(0, idx - 1)]
-      if (before == null) {
-        throw new Error('No keyframes found')
-      }
-      return { before, after: keys[idx] }
-    }
-
     const translateBy = (mat: THREE.Matrix4, vertex: THREE.Vector3) => {
       mat.elements[12] += vertex.x
       mat.elements[13] += vertex.y
@@ -109,7 +106,7 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
     }
 
     const getRotation = (): THREE.Matrix4 => {
-      const { before, after } = getBeforeAndAfter(animation.rotationKeys)
+      const { before, after } = getBeforeAndAfter(animation.rotationKeys, time)
       if (after == null) {
         if (before.timeAndFlags.flags & 1) {
           return new THREE.Matrix4().makeRotationFromQuaternion(before.quaternion)
@@ -129,7 +126,7 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
     let mat = new THREE.Matrix4()
 
     if (animation.scaleKeys.length > 0) {
-      const { before, after } = getBeforeAndAfter(animation.scaleKeys)
+      const { before, after } = getBeforeAndAfter(animation.scaleKeys, time)
       if (after == null) {
         mat.scale(before.vertex)
       } else {
@@ -145,7 +142,7 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
     }
 
     if (animation.translationKeys.length > 0) {
-      const { before, after } = getBeforeAndAfter(animation.translationKeys)
+      const { before, after } = getBeforeAndAfter(animation.translationKeys, time)
       if (after == null) {
         if (before.timeAndFlags.flags & 1) {
           translateBy(mat, before.vertex)

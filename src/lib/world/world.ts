@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
 import type { AnimationAction, AudioAction, ParallelAction, PhonemeAction, PositionalAudioAction } from '../action-types'
-import { type Animation3DNode, animationToTracks, findRecursively, parse3DAnimation } from '../assets/animation'
+import { type Animation3DNode, animationToTracks, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
 import { getGlobalPart } from '../assets/model'
@@ -26,6 +26,7 @@ export abstract class World {
     clipAction: THREE.AnimationAction
     audios: THREE.PositionalAudio[]
     resolve: () => void
+    lookAtKeys?: WDB.Animation.VertexKey[]
   }[] = []
   private _actors = new Map<string, Actor>()
 
@@ -46,6 +47,10 @@ export abstract class World {
     this.debugMode = new URLSearchParams(window.location.search).get('debug') === 'true'
 
     this._render.scene.add(this._debugGroup)
+  }
+
+  public get isRunningCameraAnimation(): boolean {
+    return this._runningAnimations.some(a => a.lookAtKeys != null)
   }
 
   public get scene(): THREE.Scene {
@@ -244,18 +249,46 @@ export abstract class World {
 
     this.scene.add(actors)
 
-    const clip = new THREE.AnimationClip(animation.tree.name, -1, animationToTracks(animation.tree))
-    return this.playAnimationClip(actors, clip, audios)
+    const tracks = animationToTracks(animation.tree)
+
+    if (animation.cameraAnimation != null) {
+      const cameraTranslationValues: number[] = []
+      const cameraTranslationTimes: number[] = []
+      for (const key of animation.cameraAnimation.translationKeys) {
+        if (key.timeAndFlags.flags !== 1) {
+          throw new Error('Camera translation key has unsupported flags')
+        }
+
+        cameraTranslationValues.push(...key.vertex)
+        cameraTranslationTimes.push(key.timeAndFlags.time)
+      }
+      if (cameraTranslationTimes.length > 0) {
+        tracks.push(new THREE.VectorKeyframeTrack('camera.position', cameraTranslationTimes, cameraTranslationValues))
+      }
+
+      const cameraZRotationValues: number[] = []
+      const cameraZRotationTimes: number[] = []
+      for (const key of animation.cameraAnimation.zRotationKeys) {
+        cameraZRotationValues.push(key.z)
+        cameraZRotationTimes.push(key.timeAndFlags.time)
+      }
+      if (cameraZRotationTimes.length > 0) {
+        tracks.push(new THREE.NumberKeyframeTrack('camera.rotation.z', cameraZRotationTimes, cameraZRotationValues))
+      }
+    }
+
+    const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
+    return this.playAnimationClip(this.scene, clip, audios, animation.cameraAnimation?.lookAtKeys)
   }
 
-  public async playAnimationClip(root: THREE.Object3D, clip: THREE.AnimationClip, audios: THREE.PositionalAudio[] = []): Promise<void> {
+  public async playAnimationClip(root: THREE.Object3D, clip: THREE.AnimationClip, audios: THREE.PositionalAudio[] = [], lookAtKeys?: WDB.Animation.VertexKey[]): Promise<void> {
     const mixer = new THREE.AnimationMixer(root)
     const clipAction = mixer.clipAction(clip)
     clipAction.loop = THREE.LoopOnce
     clipAction.clampWhenFinished = true
     clipAction.play()
     return new Promise(resolve => {
-      this._runningAnimations.push({ mixer, clipAction, audios, resolve })
+      this._runningAnimations.push({ mixer, clipAction, audios, resolve, lookAtKeys })
       mixer.addEventListener('finished', () => {
         this._runningAnimations = this._runningAnimations.filter(a => a.mixer !== mixer)
         resolve()
@@ -312,8 +345,24 @@ export abstract class World {
   }
 
   public update(delta: number): void {
-    for (const { mixer } of this._runningAnimations) {
+    for (const { mixer, lookAtKeys } of this._runningAnimations) {
       mixer.update(delta)
+      if (lookAtKeys != null) {
+        const { before, after } = getBeforeAndAfter(lookAtKeys, mixer.time * 1_000)
+        if (before.timeAndFlags.flags !== 1) {
+          throw new Error('Camera look at key has unsupported flags')
+        }
+        const beforePosition = new THREE.Vector3(before.vertex[0], before.vertex[1], before.vertex[2])
+        if (after == null) {
+          this.camera.lookAt(beforePosition)
+        } else {
+          if (after.timeAndFlags.flags !== 1) {
+            throw new Error('Camera look at key has unsupported flags')
+          }
+
+          this.camera.lookAt(new THREE.Vector3().lerpVectors(beforePosition, new THREE.Vector3(after.vertex[0], after.vertex[1], after.vertex[2]), (mixer.time - before.timeAndFlags.time) / (after.timeAndFlags.time - before.timeAndFlags.time)))
+        }
+      }
     }
   }
 

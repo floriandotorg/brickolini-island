@@ -60,6 +60,7 @@ export class Render3D extends Render {
   constructor() {
     super()
     this.scene.add(this.camera)
+    this.camera.name = 'camera'
     this.camera.rotation.order = 'YXZ'
   }
 

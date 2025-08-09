@@ -566,6 +566,8 @@ export class Isle extends IsleBase {
     this.camera.lookAt(60, 0, 25)
     this._placeObjectOnGround(this.camera)
 
+    this.playAnimation(hpz055pa_RunAnim)
+
     const loadTriggerAnimations = async () => {
       for (const animation of [
         sba001bu_RunAnim,
@@ -1136,6 +1138,10 @@ export class Isle extends IsleBase {
 
     if (this._water != null) {
       this._water.material.uniforms.time.value += delta * 0.1
+    }
+
+    if (this.isRunningCameraAnimation) {
+      return
     }
 
     const speedMultiplier = this._slewMode ? 4 : 1

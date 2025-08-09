@@ -78,24 +78,29 @@ export namespace WDB {
     export type RotationKey = { timeAndFlags: TimeAndFlags; quaternion: [number, number, number, number] }
     export type MorphKey = { timeAndFlags: TimeAndFlags; bool: boolean }
     export type Node = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Node[] }
-    export type Animation = { actors: { name: string; type: ActorType | null }[]; tree: Node; duration: number }
+    export type Animation = { actors: { name: string; type: ActorType | null }[]; tree: Node; duration: number; cameraAnimation: { translationKeys: VertexKey[]; lookAtKeys: VertexKey[]; zRotationKeys: { timeAndFlags: TimeAndFlags; z: number }[] } | null }
 
-    const readTimeAndFlags = (reader: BinaryReader): Animation.TimeAndFlags => {
+    export const readTimeAndFlags = (reader: BinaryReader): Animation.TimeAndFlags => {
       const tf = reader.readUint32()
       const flags = tf >>> 24
       const time = tf & 0xffffff
       return { time, flags }
     }
 
-    const readAnimationTree = (reader: BinaryReader): Node => {
-      const name = reader.readString()
-      const translations: Animation.VertexKey[] = []
+    export const readTranslationKeys = (reader: BinaryReader): Animation.VertexKey[] => {
+      const result: Animation.VertexKey[] = []
       const numTranslationKeys = reader.readUint16()
       for (let n = 0; n < numTranslationKeys; ++n) {
         const timeAndFlags = readTimeAndFlags(reader)
         const vertex = reader.readVector3()
-        translations.push({ timeAndFlags, vertex })
+        result.push({ timeAndFlags, vertex })
       }
+      return result
+    }
+
+    const readAnimationTree = (reader: BinaryReader): Node => {
+      const name = reader.readString()
+      const translations = readTranslationKeys(reader)
       const rotations: Animation.RotationKey[] = []
       const numRotationKeys = reader.readUint16()
       for (let n = 0; n < numRotationKeys; ++n) {
@@ -130,7 +135,7 @@ export namespace WDB {
       return { name, translationKeys: translations, rotationKeys: rotations, scaleKeys: scales, morphKeys: morphs, children }
     }
 
-    export const readAnimation = (reader: BinaryReader): Animation => {
+    export const readAnimation = (reader: BinaryReader, parseScene: boolean): Animation => {
       const numActors = reader.readUint32()
       const actors: { name: string; type: number }[] = []
       for (let n = 0; n < numActors; ++n) {
@@ -140,8 +145,25 @@ export namespace WDB {
         }
       }
       const duration = reader.readInt32()
+      let cameraAnimation: Animation['cameraAnimation'] | null = null
+      if (parseScene) {
+        const translationKeys = WDB.Animation.readTranslationKeys(reader)
+        const lookAtKeys = WDB.Animation.readTranslationKeys(reader)
+        const zRotationKeys: { timeAndFlags: WDB.Animation.TimeAndFlags; z: number }[] = []
+        const numTranslationKeys = reader.readUint16()
+        for (let n = 0; n < numTranslationKeys; ++n) {
+          const timeAndFlags = WDB.Animation.readTimeAndFlags(reader)
+          const z = reader.readFloat32()
+          zRotationKeys.push({ timeAndFlags, z })
+        }
+        cameraAnimation = {
+          translationKeys,
+          lookAtKeys,
+          zRotationKeys,
+        }
+      }
       const tree = readAnimationTree(reader)
-      return { actors, tree, duration }
+      return { actors, tree, duration, cameraAnimation }
     }
   }
 
@@ -223,7 +245,7 @@ export namespace WDB {
           }
           const textureInfoOffset = this._reader.readUint32()
           const _numRois = this._reader.readUint32()
-          const animation = Animation.readAnimation(this._reader)
+          const animation = Animation.readAnimation(this._reader, false)
           const roi = this._readRoi(offset)
           world.models.push({ roi, animation, position, rotation, up, visible })
           this._reader.seek(offset + textureInfoOffset)
