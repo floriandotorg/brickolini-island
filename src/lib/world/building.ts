@@ -131,6 +131,15 @@ export class Building {
           return
         }
 
+        if (control.name.endsWith('Radio_Ctl')) {
+          if (result === 1) {
+            engine.resumeBackgroundMusic()
+          } else {
+            engine.pauseBackgroundMusic()
+          }
+          return
+        }
+
         if (!this.onButtonClicked(control.name, result)) {
           console.log(`Button ${control.name} not handled`)
         }

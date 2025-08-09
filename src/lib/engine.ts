@@ -62,6 +62,18 @@ class Engine {
     this._backgroundAudio.audio.play()
   }
 
+  public pauseBackgroundMusic(): void {
+    if (this._backgroundAudio != null) {
+      this._backgroundAudio.audio.pause()
+    }
+  }
+
+  public resumeBackgroundMusic(): void {
+    if (this._backgroundAudio != null) {
+      this._backgroundAudio.audio.play()
+    }
+  }
+
   public updateBackgroundVolume() {
     if (this._backgroundAudio != null) {
       const targetVolume = this._backgroundAudio.sourceVolume * getSettings().musicVolume
