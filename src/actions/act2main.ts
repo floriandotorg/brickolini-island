@@ -5288,6 +5288,10 @@ export const BadEnd_Movie = {
       filename: 'q:\\lego\\media\\movies\\badend.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 320,
+        height: 240,
+      },
       children: [],
     },
   ],
@@ -5492,6 +5496,10 @@ export const BadEnd_Smk = {
   filename: 'q:\\lego\\media\\movies\\badend.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 320,
+    height: 240,
+  },
   children: [],
 } as const
 export const snsx50bu_Wav_500 = {
@@ -5529,6 +5537,10 @@ export const snsx50bu_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\bu\\snsx50bu.flc',
   fileType: 1129072160,
   extra: 'bu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx50bu_0_sfx = {
@@ -5641,6 +5653,10 @@ export const snsx51bu_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\bu\\snsx51bu.flc',
   fileType: 1129072160,
   extra: 'bu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx51bu_0_sfx = {
@@ -5753,6 +5769,10 @@ export const SNSX29NU_Pho_502 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\SNSX29NU.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx29nu_0_sfx = {
@@ -5957,6 +5977,10 @@ export const SNSX30NU_Pho_503 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\SNSX30NU.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx30nu_0_sfx = {
@@ -6069,6 +6093,10 @@ export const SNSX33NA_Pho_504 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\SNSX33NA.flc',
   fileType: 1129072160,
   extra: 'na',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx33na_0_sfx = {
@@ -6333,6 +6361,10 @@ export const SNSX34NA_Pho_505 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\SNSX34NA.flc',
   fileType: 1129072160,
   extra: 'na',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx34na_0_sfx = {
@@ -6615,6 +6647,10 @@ export const tns005br_Pho_507 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns005br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const VOhide_PlayWav = {
@@ -6671,6 +6707,10 @@ export const tns002br_Pho_507 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns002br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns002br_0_sfx = {
@@ -6859,6 +6899,10 @@ export const tns006br_Pho_508 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns006br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns003br_Wav_508 = {
@@ -6896,6 +6940,10 @@ export const tns003br_Pho_508 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns003br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns003br_0_sfx = {
@@ -7046,6 +7094,10 @@ export const tns007br_Pho_509 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns007br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns004br_Wav_509 = {
@@ -7083,6 +7135,10 @@ export const tns004br_Pho_509 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns004br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns004br_0_sfx = {
@@ -7290,6 +7346,10 @@ export const TJA028PA_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\PA\\TJA028PA.flc',
   fileType: 1129072160,
   extra: 'papa',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TJA027LA_Wav_510 = {
@@ -7327,6 +7387,10 @@ export const TJA027LA_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TJA027LA.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TJA026NI_Wav_510 = {
@@ -7364,6 +7428,10 @@ export const TJA026NI_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TJA026NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TJA025MA_Wav_510 = {
@@ -7401,6 +7469,10 @@ export const TJA025MA_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\MA\\TJA025MA.flc',
   fileType: 1129072160,
   extra: 'mama',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TJA024LA_Wav_510 = {
@@ -7438,6 +7510,10 @@ export const TJA024LA_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TJA024LA.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TJA023IN_Wav_510 = {
@@ -7475,6 +7551,10 @@ export const TJA023IN_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TJA023IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TJA022LA_Wav_510 = {
@@ -7512,6 +7592,10 @@ export const TJA022LA_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TJA022LA.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TJA021NI_Wav_510 = {
@@ -7549,6 +7633,10 @@ export const TJA021NI_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TJA021NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TJA019IN_Wav_510 = {
@@ -7586,6 +7674,10 @@ export const TJA019IN_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TJA019IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TJA018NI_Wav_510 = {
@@ -7623,6 +7715,10 @@ export const TJA018NI_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TJA018NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TJA017IN_Wav_510 = {
@@ -7660,6 +7756,10 @@ export const TJA017IN_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TJA017IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TJA016MA_Wav_510 = {
@@ -7697,6 +7797,10 @@ export const TJA016MA_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\MA\\TJA016MA.flc',
   fileType: 1129072160,
   extra: 'mama',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tja015pa_Wav_510 = {
@@ -7734,6 +7838,10 @@ export const tja015pa_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\pa\\tja015pa.flc',
   fileType: 1129072160,
   extra: 'papa',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tja013in_Wav_510 = {
@@ -7771,6 +7879,10 @@ export const tja013in_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\tja013in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tja012ni_Wav_510 = {
@@ -7808,6 +7920,10 @@ export const tja012ni_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\tja012ni.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tja011ni_Wav_510 = {
@@ -7845,6 +7961,10 @@ export const tja011ni_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\tja011ni.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tja010la_Wav_510 = {
@@ -7882,6 +8002,10 @@ export const tja010la_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\la\\tja010la.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tja009ni_Wav_510 = {
@@ -7919,6 +8043,10 @@ export const tja009ni_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\tja009ni.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tja009ni_0_sfx = {
@@ -8164,6 +8292,10 @@ export const TNS005BR_Pho_511 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\BR\\TNS005BR.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns005br_0_sfx = {
@@ -8276,6 +8408,10 @@ export const tns006br_Pho_512 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns006br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns006br_0_sfx = {
@@ -8388,6 +8524,10 @@ export const tns007br_Pho_513 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns007br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns007br_0_sfx = {
@@ -8500,6 +8640,10 @@ export const snsx58va_Pho_514 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\va\\snsx58va.flc',
   fileType: 1129072160,
   extra: 'valerie',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx58va_0_sfx = {
@@ -8574,6 +8718,10 @@ export const snsx59va_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\va\\snsx59va.flc',
   fileType: 1129072160,
   extra: 'valerie',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx59va_0_sfx = {
@@ -8667,6 +8815,10 @@ export const snsx60va_Pho_516 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\va\\snsx60va.flc',
   fileType: 1129072160,
   extra: 'valerie',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx60va_0_sfx = {
@@ -8835,6 +8987,10 @@ export const SNSX52SN_Pho_518 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SN\\SNSX52SN.flc',
   fileType: 1129072160,
   extra: 'snap',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx52sn_0_sfx = {
@@ -8947,6 +9103,10 @@ export const SNSX53SN_Pho_519 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SN\\SNSX53SN.flc',
   fileType: 1129072160,
   extra: 'snap',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx53sn_0_sfx = {
@@ -9059,6 +9219,10 @@ export const SNSX54SN_Pho_520 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SN\\SNSX54SN.flc',
   fileType: 1129072160,
   extra: 'snap',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx54sn_0_sfx = {
@@ -9171,6 +9335,10 @@ export const SNSX45EN_Pho_521 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\EN\\SNSX45EN.flc',
   fileType: 1129072160,
   extra: 'en',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const SNSX43EN_Wav_521 = {
@@ -9208,6 +9376,10 @@ export const SNSX43EN_Pho_521 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\EN\\SNSX43EN.flc',
   fileType: 1129072160,
   extra: 'en',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const SNSX41EN_Wav_521 = {
@@ -9245,6 +9417,10 @@ export const SNSX41EN_Pho_521 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\EN\\SNSX41EN.flc',
   fileType: 1129072160,
   extra: 'en',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const SNSX39EN_Wav_521 = {
@@ -9282,6 +9458,10 @@ export const SNSX39EN_Pho_521 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\EN\\SNSX39EN.flc',
   fileType: 1129072160,
   extra: 'en',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const SNSX45RE_Wav_521 = {
@@ -9319,6 +9499,10 @@ export const SNSX45RE_Pho_521 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RE\\SNSX45RE.flc',
   fileType: 1129072160,
   extra: 're',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const SNSX44RE_Wav_521 = {
@@ -9356,6 +9540,10 @@ export const SNSX44RE_Pho_521 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RE\\SNSX44RE.flc',
   fileType: 1129072160,
   extra: 're',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const SNSX42RE_Wav_521 = {
@@ -9393,6 +9581,10 @@ export const SNSX42RE_Pho_521 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RE\\SNSX42RE.flc',
   fileType: 1129072160,
   extra: 're',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const SNSX40RE_Wav_521 = {
@@ -9430,6 +9622,10 @@ export const SNSX40RE_Pho_521 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RE\\SNSX40RE.flc',
   fileType: 1129072160,
   extra: 're',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const SNSX38RE_Wav_521 = {
@@ -9467,6 +9663,10 @@ export const SNSX38RE_Pho_521 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RE\\SNSX38RE.flc',
   fileType: 1129072160,
   extra: 're',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx38re_0_sfx = {
@@ -9617,6 +9817,10 @@ export const snsx13la_Pho_522 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\la\\snsx13la.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx13la_0_sfx = {
@@ -9710,6 +9914,10 @@ export const snsx09ni_Pho_523 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\snsx09ni.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx09ni_0_sfx = {
@@ -9860,6 +10068,10 @@ export const snsx01ma_Pho_524 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\ma\\snsx01ma.flc',
   fileType: 1129072160,
   extra: 'mama',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx01ma_0_sfx = {
@@ -9972,6 +10184,10 @@ export const snsx03ma_Pho_525 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\ma\\snsx03ma.flc',
   fileType: 1129072160,
   extra: 'mama',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx03ma_Anim = {
@@ -10027,6 +10243,10 @@ export const snsx05pa_Pho_526 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\pa\\snsx05pa.flc',
   fileType: 1129072160,
   extra: 'papa',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx05pa_0_sfx = {
@@ -10120,6 +10340,10 @@ export const SNSX23BR_Pho_527 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\BR\\SNSX23BR.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA043NI_Wav_527 = {
@@ -10157,6 +10381,10 @@ export const TRA043NI_Pho_527 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA043NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA042LA_Wav_527 = {
@@ -10194,6 +10422,10 @@ export const TRA042LA_Pho_527 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA042LA.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA040NI_Wav_527 = {
@@ -10231,6 +10463,10 @@ export const TRA040NI_Pho_527 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA040NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA039LA_Wav_527 = {
@@ -10268,6 +10504,10 @@ export const TRA039LA_Pho_527 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA039LA.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA037NI_Wav_527 = {
@@ -10305,6 +10545,10 @@ export const TRA037NI_Pho_527 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA037NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA036RO_Wav_527 = {
@@ -10361,6 +10605,10 @@ export const TRA035BR_Pho_527 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\BR\\TRA035BR.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA033LA_Wav_527 = {
@@ -10398,6 +10646,10 @@ export const TRA033LA_Pho_527 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA033LA.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA031NI_Wav_527 = {
@@ -10435,6 +10687,10 @@ export const TRA031NI_Pho_527 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA031NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tra031ni_0_sfx = {
@@ -10604,6 +10860,10 @@ export const SNSX23BR_Pho_528 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\BR\\SNSX23BR.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA043NI_Wav_528 = {
@@ -10675,6 +10935,10 @@ export const snsx50bu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\bu\\snsx50bu.flc',
       fileType: 1129072160,
       extra: 'bu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -10804,6 +11068,10 @@ export const snsx51bu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\bu\\snsx51bu.flc',
       fileType: 1129072160,
       extra: 'bu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -10933,6 +11201,10 @@ export const snsx29nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\SNSX29NU.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11081,6 +11353,10 @@ export const snsx30nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\SNSX30NU.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11210,6 +11486,10 @@ export const snsx33na_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\SNSX33NA.flc',
       fileType: 1129072160,
       extra: 'na',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11377,6 +11657,10 @@ export const snsx34na_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\SNSX34NA.flc',
       fileType: 1129072160,
       extra: 'na',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11617,6 +11901,10 @@ export const tns002br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns005br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11654,6 +11942,10 @@ export const tns002br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns002br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11859,6 +12151,10 @@ export const tns003br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns006br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11896,6 +12192,10 @@ export const tns003br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns003br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12063,6 +12363,10 @@ export const tns004br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns007br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12100,6 +12404,10 @@ export const tns004br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns004br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12324,6 +12632,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\PA\\TJA028PA.flc',
       fileType: 1129072160,
       extra: 'papa',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12361,6 +12673,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TJA027LA.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12398,6 +12714,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TJA026NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12435,6 +12755,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\MA\\TJA025MA.flc',
       fileType: 1129072160,
       extra: 'mama',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12472,6 +12796,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TJA024LA.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12509,6 +12837,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TJA023IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12546,6 +12878,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TJA022LA.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12583,6 +12919,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TJA021NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12620,6 +12960,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TJA019IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12657,6 +13001,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TJA018NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12694,6 +13042,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TJA017IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12731,6 +13083,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\MA\\TJA016MA.flc',
       fileType: 1129072160,
       extra: 'mama',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12768,6 +13124,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\pa\\tja015pa.flc',
       fileType: 1129072160,
       extra: 'papa',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12805,6 +13165,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\tja013in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12842,6 +13206,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\tja012ni.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12879,6 +13247,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\tja011ni.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12916,6 +13288,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\la\\tja010la.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12953,6 +13329,10 @@ export const tja009ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\tja009ni.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -13215,6 +13595,10 @@ export const tns005br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\BR\\TNS005BR.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -13344,6 +13728,10 @@ export const tns006br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns006br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -13473,6 +13861,10 @@ export const tns007br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\tns007br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -13602,6 +13994,10 @@ export const snsx58va_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\va\\snsx58va.flc',
       fileType: 1129072160,
       extra: 'valerie',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -13693,6 +14089,10 @@ export const snsx59va_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\va\\snsx59va.flc',
       fileType: 1129072160,
       extra: 'valerie',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -13803,6 +14203,10 @@ export const snsx60va_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\va\\snsx60va.flc',
       fileType: 1129072160,
       extra: 'valerie',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14005,6 +14409,10 @@ export const snsx52sn_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SN\\SNSX52SN.flc',
       fileType: 1129072160,
       extra: 'snap',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14134,6 +14542,10 @@ export const snsx53sn_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SN\\SNSX53SN.flc',
       fileType: 1129072160,
       extra: 'snap',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14263,6 +14675,10 @@ export const snsx54sn_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SN\\SNSX54SN.flc',
       fileType: 1129072160,
       extra: 'snap',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14392,6 +14808,10 @@ export const snsx38re_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\EN\\SNSX45EN.flc',
       fileType: 1129072160,
       extra: 'en',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14429,6 +14849,10 @@ export const snsx38re_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\EN\\SNSX43EN.flc',
       fileType: 1129072160,
       extra: 'en',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14466,6 +14890,10 @@ export const snsx38re_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\EN\\SNSX41EN.flc',
       fileType: 1129072160,
       extra: 'en',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14503,6 +14931,10 @@ export const snsx38re_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\EN\\SNSX39EN.flc',
       fileType: 1129072160,
       extra: 'en',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14540,6 +14972,10 @@ export const snsx38re_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RE\\SNSX45RE.flc',
       fileType: 1129072160,
       extra: 're',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14577,6 +15013,10 @@ export const snsx38re_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RE\\SNSX44RE.flc',
       fileType: 1129072160,
       extra: 're',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14614,6 +15054,10 @@ export const snsx38re_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RE\\SNSX42RE.flc',
       fileType: 1129072160,
       extra: 're',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14651,6 +15095,10 @@ export const snsx38re_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RE\\SNSX40RE.flc',
       fileType: 1129072160,
       extra: 're',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14688,6 +15136,10 @@ export const snsx38re_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RE\\SNSX38RE.flc',
       fileType: 1129072160,
       extra: 're',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14855,6 +15307,10 @@ export const snsx13la_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\la\\snsx13la.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14965,6 +15421,10 @@ export const snsx09ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\snsx09ni.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15132,6 +15592,10 @@ export const snsx01ma_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\ma\\snsx01ma.flc',
       fileType: 1129072160,
       extra: 'mama',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15261,6 +15725,10 @@ export const snsx03ma_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\ma\\snsx03ma.flc',
       fileType: 1129072160,
       extra: 'mama',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15333,6 +15801,10 @@ export const snsx05pa_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\pa\\snsx05pa.flc',
       fileType: 1129072160,
       extra: 'papa',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15443,6 +15915,10 @@ export const tra031ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\BR\\SNSX23BR.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15480,6 +15956,10 @@ export const tra031ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA043NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15517,6 +15997,10 @@ export const tra031ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA042LA.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15554,6 +16038,10 @@ export const tra031ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA040NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15591,6 +16079,10 @@ export const tra031ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA039LA.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15628,6 +16120,10 @@ export const tra031ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA037NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15684,6 +16180,10 @@ export const tra031ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\BR\\TRA035BR.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15721,6 +16221,10 @@ export const tra031ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA033LA.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15758,6 +16262,10 @@ export const tra031ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA031NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15944,6 +16452,10 @@ export const tra032ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\BR\\SNSX23BR.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15981,6 +16493,10 @@ export const tra032ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA043NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16018,6 +16534,10 @@ export const tra032ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA042LA.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16055,6 +16575,10 @@ export const tra032ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA040NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16092,6 +16616,10 @@ export const tra032ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA039LA.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16129,6 +16657,10 @@ export const tra032ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA037NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16185,6 +16717,10 @@ export const tra032ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\BR\\TRA035BR.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16222,6 +16758,10 @@ export const tra032ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA033LA.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16259,6 +16799,10 @@ export const tra032ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA032NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16445,6 +16989,10 @@ export const snsx55sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\sl\\snsx55sl.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16593,6 +17141,10 @@ export const snsx56sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\sl\\snsx56sl.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16665,6 +17217,10 @@ export const snsx57sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\sl\\snsx57sl.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16791,6 +17347,10 @@ export const snsx02ma_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\ma\\snsx02ma.flc',
       fileType: 1129072160,
       extra: 'mama',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16977,6 +17537,10 @@ export const snsx04ma_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\ma\\snsx04ma.flc',
       fileType: 1129072160,
       extra: 'mama',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -17144,6 +17708,10 @@ export const snsx06pa_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\pa\\snsx06pa.flc',
       fileType: 1129072160,
       extra: 'papa',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -17254,6 +17822,10 @@ export const snsx07pa_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\pa\\snsx07pa.flc',
       fileType: 1129072160,
       extra: 'papa',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -17364,6 +17936,10 @@ export const snsx08pa_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\pa\\snsx08pa.flc',
       fileType: 1129072160,
       extra: 'papa',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -17474,6 +18050,10 @@ export const snsx10ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\snsx10ni.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -17603,6 +18183,10 @@ export const snsx11ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\snsx11ni.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -17751,6 +18335,10 @@ export const snsx12ni_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\snsx12ni.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -17823,6 +18411,10 @@ export const snsx14la_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\la\\snsx14la.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -17952,6 +18544,10 @@ export const snsx15la_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\la\\snsx15la.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18062,6 +18658,10 @@ export const snsx16la_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\la\\snsx16la.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18134,6 +18734,10 @@ export const snsx17br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx17br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18263,6 +18867,10 @@ export const snsx18br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx18br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18373,6 +18981,10 @@ export const snsx19br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx19br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18502,6 +19114,10 @@ export const snsx20br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx20br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18650,6 +19266,10 @@ export const snsx21br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\BR\\SNSX21BR.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18798,6 +19418,10 @@ export const snsx22br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx22br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18927,6 +19551,10 @@ export const snsx23br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx23br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19094,6 +19722,10 @@ export const snsx24br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx24br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19185,6 +19817,10 @@ export const snsx25br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx25br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19295,6 +19931,10 @@ export const snsx26br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx26br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19405,6 +20045,10 @@ export const snsx27br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx27br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19515,6 +20159,10 @@ export const snsx28br_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx28br.flc',
       fileType: 1129072160,
       extra: 'brickstr',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19606,6 +20254,10 @@ export const snsx32na_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\SNSX32NA.flc',
       fileType: 1129072160,
       extra: 'na',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19754,6 +20406,10 @@ export const snsx35ro_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RO\\SNSX35RO.flc',
       fileType: 1129072160,
       extra: 'ro',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19826,6 +20482,10 @@ export const snsx36ro_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RO\\SNSX36RO.flc',
       fileType: 1129072160,
       extra: 'ro',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19936,6 +20596,10 @@ export const snsx37ro_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RO\\SNSX37RO.flc',
       fileType: 1129072160,
       extra: 'ro',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20046,6 +20710,10 @@ export const snsx46cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\snsx46cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20118,6 +20786,10 @@ export const snsx47cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\snsx47cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20209,6 +20881,10 @@ export const snsx48cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\snsx48cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20338,6 +21014,10 @@ export const snsx49ml_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\ml\\snsx49ml.flc',
       fileType: 1129072160,
       extra: 'ml',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20448,6 +21128,10 @@ export const snsx61mg_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\MG\\SNSX61MG.flc',
       fileType: 1129072160,
       extra: 'mg',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20596,6 +21280,10 @@ export const snsx62mg_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\MG\\SNSX62MG.flc',
       fileType: 1129072160,
       extra: 'mg',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20725,6 +21413,10 @@ export const snsx63mg_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\MG\\SNSX63MG.flc',
       fileType: 1129072160,
       extra: 'mg',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20873,6 +21565,10 @@ export const snsx64rd_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RD\\SNSX64RD.flc',
       fileType: 1129072160,
       extra: 'rd',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20983,6 +21679,10 @@ export const snsx65pg_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\PG\\SNSX65PG.flc',
       fileType: 1129072160,
       extra: 'pg',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -21093,6 +21793,10 @@ export const snsx66bd_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\bd\\snsx66bd.flc',
       fileType: 1129072160,
       extra: 'bd',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -21203,6 +21907,10 @@ export const snsx67sy_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SY\\SNSX67SY.flc',
       fileType: 1129072160,
       extra: 'sy',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -21313,6 +22021,10 @@ export const snsx68pg_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\pg\\snsx68pg.flc',
       fileType: 1129072160,
       extra: 'pg',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -21423,6 +22135,10 @@ export const snsx69rd_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\rd\\snsx69rd.flc',
       fileType: 1129072160,
       extra: 'rd',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -21514,6 +22230,10 @@ export const snsx70pg_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\pg\\snsx70pg.flc',
       fileType: 1129072160,
       extra: 'pg',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -21624,6 +22344,10 @@ export const snsx72sy_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\sy\\snsx72sy.flc',
       fileType: 1129072160,
       extra: 'sy',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -21715,6 +22439,10 @@ export const snsx73rd_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\rd\\snsx73rd.flc',
       fileType: 1129072160,
       extra: 'rd',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -21825,6 +22553,10 @@ export const tns048ma_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\PA\\TNS049PA.flc',
       fileType: 1129072160,
       extra: 'papa',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -21862,6 +22594,10 @@ export const tns048ma_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\MA\\TNS048MA.flc',
       fileType: 1129072160,
       extra: 'mama',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -21991,6 +22727,10 @@ export const tns051in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TNS051IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -22120,6 +22860,10 @@ export const tra045la_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA046NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -22157,6 +22901,10 @@ export const tra045la_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA045LA.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -22286,6 +23034,10 @@ export const tns030bd_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\bd\\tns030bd.flc',
       fileType: 1129072160,
       extra: 'bd',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -22358,6 +23110,10 @@ export const tns030pg_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\pg\\tns030pg.flc',
       fileType: 1129072160,
       extra: 'pg',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -22430,6 +23186,10 @@ export const tns030rd_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\rd\\tns030rd.flc',
       fileType: 1129072160,
       extra: 'rd',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -22502,6 +23262,10 @@ export const tns030sy_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\sy\\tns030sy.flc',
       fileType: 1129072160,
       extra: 'sy',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -22711,6 +23475,10 @@ export const TRA043NI_Pho_528 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA043NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA042LA_Wav_528 = {
@@ -22748,6 +23516,10 @@ export const TRA042LA_Pho_528 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA042LA.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA040NI_Wav_528 = {
@@ -22785,6 +23557,10 @@ export const TRA040NI_Pho_528 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA040NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA039LA_Wav_528 = {
@@ -22822,6 +23598,10 @@ export const TRA039LA_Pho_528 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA039LA.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA037NI_Wav_528 = {
@@ -22859,6 +23639,10 @@ export const TRA037NI_Pho_528 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA037NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA036RO_Wav_528 = {
@@ -22915,6 +23699,10 @@ export const TRA035BR_Pho_528 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\BR\\TRA035BR.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA033LA_Wav_528 = {
@@ -22952,6 +23740,10 @@ export const TRA033LA_Pho_528 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA033LA.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA032NI_Wav_528 = {
@@ -22989,6 +23781,10 @@ export const TRA032NI_Pho_528 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA032NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tra032ni_0_sfx = {
@@ -23158,6 +23954,10 @@ export const snsx55sl_Pho_529 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\sl\\snsx55sl.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx55sl_0_sfx = {
@@ -23289,6 +24089,10 @@ export const snsx56sl_Pho_530 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\sl\\snsx56sl.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx56sl_Anim = {
@@ -23344,6 +24148,10 @@ export const snsx57sl_Pho_531 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\sl\\snsx57sl.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx57sl_0_sfx = {
@@ -23436,6 +24244,10 @@ export const snsx02ma_Pho_533 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\ma\\snsx02ma.flc',
   fileType: 1129072160,
   extra: 'mama',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx02ma_0_sfx = {
@@ -23605,6 +24417,10 @@ export const snsx04ma_Pho_534 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\ma\\snsx04ma.flc',
   fileType: 1129072160,
   extra: 'mama',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx04ma_0_sfx = {
@@ -23755,6 +24571,10 @@ export const snsx06pa_Pho_535 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\pa\\snsx06pa.flc',
   fileType: 1129072160,
   extra: 'papa',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx06pa_0_sfx = {
@@ -23848,6 +24668,10 @@ export const snsx07pa_Pho_536 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\pa\\snsx07pa.flc',
   fileType: 1129072160,
   extra: 'papa',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx07pa_0_sfx = {
@@ -23941,6 +24765,10 @@ export const snsx08pa_Pho_537 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\pa\\snsx08pa.flc',
   fileType: 1129072160,
   extra: 'papa',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx08pa_0_sfx = {
@@ -24034,6 +24862,10 @@ export const snsx10ni_Pho_538 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\snsx10ni.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx10ni_0_sfx = {
@@ -24146,6 +24978,10 @@ export const snsx11ni_Pho_539 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\snsx11ni.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx11ni_0_sfx = {
@@ -24277,6 +25113,10 @@ export const snsx12ni_Pho_540 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\ni\\snsx12ni.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx12ni_Anim = {
@@ -24332,6 +25172,10 @@ export const snsx14la_Pho_541 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\la\\snsx14la.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx14la_0_sfx = {
@@ -24444,6 +25288,10 @@ export const snsx15la_Pho_542 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\la\\snsx15la.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx15la_0_sfx = {
@@ -24537,6 +25385,10 @@ export const snsx16la_Pho_543 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\la\\snsx16la.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx16la_Anim = {
@@ -24592,6 +25444,10 @@ export const snsx17br_Pho_544 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx17br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx17br_0_sfx = {
@@ -24704,6 +25560,10 @@ export const snsx18br_Pho_545 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx18br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx18br_0_sfx = {
@@ -24797,6 +25657,10 @@ export const snsx19br_Pho_546 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx19br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx19br_0_sfx = {
@@ -24909,6 +25773,10 @@ export const snsx20br_Pho_547 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx20br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx20br_0_sfx = {
@@ -25040,6 +25908,10 @@ export const SNSX21BR_Pho_548 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\BR\\SNSX21BR.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx21br_0_sfx = {
@@ -25171,6 +26043,10 @@ export const snsx22br_Pho_549 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx22br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx22br_0_sfx = {
@@ -25283,6 +26159,10 @@ export const snsx23br_Pho_550 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx23br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx23br_0_sfx = {
@@ -25433,6 +26313,10 @@ export const snsx24br_Pho_551 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx24br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx24br_0_sfx = {
@@ -25507,6 +26391,10 @@ export const snsx25br_Pho_552 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx25br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx25br_0_sfx = {
@@ -25600,6 +26488,10 @@ export const snsx26br_Pho_553 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx26br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx26br_0_sfx = {
@@ -25693,6 +26585,10 @@ export const snsx27br_Pho_554 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx27br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx27br_0_sfx = {
@@ -25786,6 +26682,10 @@ export const snsx28br_Pho_555 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\br\\snsx28br.flc',
   fileType: 1129072160,
   extra: 'brickstr',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx28br_0_sfx = {
@@ -25860,6 +26760,10 @@ export const SNSX32NA_Pho_556 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\SNSX32NA.flc',
   fileType: 1129072160,
   extra: 'na',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx32na_0_sfx = {
@@ -25991,6 +26895,10 @@ export const SNSX35RO_Pho_557 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RO\\SNSX35RO.flc',
   fileType: 1129072160,
   extra: 'ro',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx35ro_Anim = {
@@ -26046,6 +26954,10 @@ export const SNSX36RO_Pho_558 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RO\\SNSX36RO.flc',
   fileType: 1129072160,
   extra: 'ro',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx36ro_0_sfx = {
@@ -26139,6 +27051,10 @@ export const SNSX37RO_Pho_559 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RO\\SNSX37RO.flc',
   fileType: 1129072160,
   extra: 'ro',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx37ro_0_sfx = {
@@ -26232,6 +27148,10 @@ export const snsx46cl_Pho_560 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\snsx46cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx46cl_Anim = {
@@ -26287,6 +27207,10 @@ export const snsx47cl_Pho_561 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\snsx47cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx47cl_0_sfx = {
@@ -26361,6 +27285,10 @@ export const snsx48cl_Pho_562 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\snsx48cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx48cl_0_sfx = {
@@ -26473,6 +27401,10 @@ export const snsx49ml_Pho_563 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\ml\\snsx49ml.flc',
   fileType: 1129072160,
   extra: 'ml',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx49ml_0_sfx = {
@@ -26566,6 +27498,10 @@ export const SNSX61MG_Pho_564 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\MG\\SNSX61MG.flc',
   fileType: 1129072160,
   extra: 'mg',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx61mg_0_sfx = {
@@ -26697,6 +27633,10 @@ export const SNSX62MG_Pho_565 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\MG\\SNSX62MG.flc',
   fileType: 1129072160,
   extra: 'mg',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx62mg_0_sfx = {
@@ -26809,6 +27749,10 @@ export const SNSX63MG_Pho_566 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\MG\\SNSX63MG.flc',
   fileType: 1129072160,
   extra: 'mg',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx63mg_0_sfx = {
@@ -26940,6 +27884,10 @@ export const SNSX64RD_Pho_567 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RD\\SNSX64RD.flc',
   fileType: 1129072160,
   extra: 'rd',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx64rd_0_sfx = {
@@ -27033,6 +27981,10 @@ export const SNSX65PG_Pho_568 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\PG\\SNSX65PG.flc',
   fileType: 1129072160,
   extra: 'pg',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx65pg_0_sfx = {
@@ -27126,6 +28078,10 @@ export const snsx66bd_Pho_569 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\bd\\snsx66bd.flc',
   fileType: 1129072160,
   extra: 'bd',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx66bd_0_sfx = {
@@ -27219,6 +28175,10 @@ export const SNSX67SY_Pho_570 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SY\\SNSX67SY.flc',
   fileType: 1129072160,
   extra: 'sy',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx67sy_0_sfx = {
@@ -27312,6 +28272,10 @@ export const snsx68pg_Pho_571 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\pg\\snsx68pg.flc',
   fileType: 1129072160,
   extra: 'pg',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx68pg_0_sfx = {
@@ -27405,6 +28369,10 @@ export const snsx69rd_Pho_572 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\rd\\snsx69rd.flc',
   fileType: 1129072160,
   extra: 'rd',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx69rd_0_sfx = {
@@ -27479,6 +28447,10 @@ export const snsx70pg_Pho_573 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\pg\\snsx70pg.flc',
   fileType: 1129072160,
   extra: 'pg',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx70pg_0_sfx = {
@@ -27572,6 +28544,10 @@ export const snsx72sy_Pho_574 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\sy\\snsx72sy.flc',
   fileType: 1129072160,
   extra: 'sy',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx72sy_0_sfx = {
@@ -27646,6 +28622,10 @@ export const snsx73rd_Pho_575 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\rd\\snsx73rd.flc',
   fileType: 1129072160,
   extra: 'rd',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const snsx73rd_0_sfx = {
@@ -27739,6 +28719,10 @@ export const TNS049PA_Pho_576 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\PA\\TNS049PA.flc',
   fileType: 1129072160,
   extra: 'papa',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TNS048MA_Wav_576 = {
@@ -27776,6 +28760,10 @@ export const TNS048MA_Pho_576 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\MA\\TNS048MA.flc',
   fileType: 1129072160,
   extra: 'mama',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns048ma_0_sfx = {
@@ -27888,6 +28876,10 @@ export const TNS051IN_Pho_577 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TNS051IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns051in_0_sfx = {
@@ -28000,6 +28992,10 @@ export const TRA046NI_Pho_578 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TRA046NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TRA045LA_Wav_578 = {
@@ -28037,6 +29033,10 @@ export const TRA045LA_Pho_578 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TRA045LA.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tra045la_0_sfx = {
@@ -28149,6 +29149,10 @@ export const tns030bd_Pho_579 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\bd\\tns030bd.flc',
   fileType: 1129072160,
   extra: 'bd',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns030bd_Anim = {
@@ -28204,6 +29208,10 @@ export const tns030pg_Pho_580 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\pg\\tns030pg.flc',
   fileType: 1129072160,
   extra: 'pg',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns030pg_Anim = {
@@ -28259,6 +29267,10 @@ export const tns030rd_Pho_581 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\rd\\tns030rd.flc',
   fileType: 1129072160,
   extra: 'rd',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns030rd_Anim = {
@@ -28314,6 +29326,10 @@ export const tns030sy_Pho_582 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\sy\\tns030sy.flc',
   fileType: 1129072160,
   extra: 'sy',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tns030sy_Anim = {

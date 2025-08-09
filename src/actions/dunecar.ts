@@ -3404,6 +3404,10 @@ export const IGS001D3_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D3\\IGS001D3.flc',
   fileType: 1129072160,
   extra: 'd3',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const igs001d3_0_sfx = {
@@ -3839,6 +3843,10 @@ export const IGSxx1D3_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D3\\IGSxx1D3.flc',
   fileType: 1129072160,
   extra: 'd3',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const igsxx1d3_0_sfx = {
@@ -3951,6 +3959,10 @@ export const IGS002D3_Pho_502 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D3\\IGS002D3.flc',
   fileType: 1129072160,
   extra: 'd3',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const igs002d3_0_sfx = {
@@ -4025,6 +4037,10 @@ export const IGS003D3_Pho_503 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D3\\IGS003D3.flc',
   fileType: 1129072160,
   extra: 'd3',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const igs003d3_0_sfx = {
@@ -4251,6 +4267,10 @@ export const IGS004D3_Pho_504 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D3\\IGS004D3.flc',
   fileType: 1129072160,
   extra: 'd3',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const igs004d3_0_sfx = {
@@ -4401,6 +4421,10 @@ export const IGS005D3_Pho_505 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D3\\IGS005D3.flc',
   fileType: 1129072160,
   extra: 'd3',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const igs005d3_0_sfx = {
@@ -4585,6 +4609,10 @@ export const igs001d3_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D3\\IGS001D3.flc',
       fileType: 1129072160,
       extra: 'd3',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5037,6 +5065,10 @@ export const igsxx1d3_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D3\\IGSxx1D3.flc',
       fileType: 1129072160,
       extra: 'd3',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5166,6 +5198,10 @@ export const igs002d3_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D3\\IGS002D3.flc',
       fileType: 1129072160,
       extra: 'd3',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5257,6 +5293,10 @@ export const igs003d3_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D3\\IGS003D3.flc',
       fileType: 1129072160,
       extra: 'd3',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5500,6 +5540,10 @@ export const igs004d3_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D3\\IGS004D3.flc',
       fileType: 1129072160,
       extra: 'd3',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5667,6 +5711,10 @@ export const igs005d3_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D3\\IGS005D3.flc',
       fileType: 1129072160,
       extra: 'd3',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {

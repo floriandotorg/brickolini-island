@@ -2489,6 +2489,10 @@ export const RegBookRed_Flc = {
   filename: 'q:\\lego\\scripts\\infocntr\\floor1\\register\\redbook.flc',
   fileType: 1129072160,
   extra: null,
+  dimensions: {
+    width: 108,
+    height: 172,
+  },
   children: [],
 } as const
 export const Mama_Ctl = {
@@ -3169,6 +3173,10 @@ export const Mama_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 280,
+            height: 212,
+          },
           children: [],
         },
       ],
@@ -3223,6 +3231,10 @@ export const Mama_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Mamafin.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 240,
+            height: 180,
+          },
           children: [],
         },
       ],
@@ -3277,6 +3289,10 @@ export const Mama_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 280,
+            height: 212,
+          },
           children: [],
         },
       ],
@@ -3348,6 +3364,10 @@ export const Papa_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 280,
+            height: 212,
+          },
           children: [],
         },
       ],
@@ -3402,6 +3422,10 @@ export const Papa_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Papafin.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 232,
+            height: 172,
+          },
           children: [],
         },
       ],
@@ -3456,6 +3480,10 @@ export const Papa_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 280,
+            height: 212,
+          },
           children: [],
         },
       ],
@@ -3527,6 +3555,10 @@ export const Pepper_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 280,
+            height: 212,
+          },
           children: [],
         },
       ],
@@ -3581,6 +3613,10 @@ export const Pepper_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Peprfin.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 232,
+            height: 172,
+          },
           children: [],
         },
       ],
@@ -3635,6 +3671,10 @@ export const Pepper_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 280,
+            height: 212,
+          },
           children: [],
         },
       ],
@@ -3706,6 +3746,10 @@ export const Nick_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 280,
+            height: 212,
+          },
           children: [],
         },
       ],
@@ -3760,6 +3804,10 @@ export const Nick_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Nickfin.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 240,
+            height: 180,
+          },
           children: [],
         },
       ],
@@ -3814,6 +3862,10 @@ export const Nick_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 280,
+            height: 212,
+          },
           children: [],
         },
       ],
@@ -3885,6 +3937,10 @@ export const Laura_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 280,
+            height: 212,
+          },
           children: [],
         },
       ],
@@ -3939,6 +3995,10 @@ export const Laura_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Laurafin.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 240,
+            height: 180,
+          },
           children: [],
         },
       ],
@@ -3993,6 +4053,10 @@ export const Laura_All_Movie = {
           filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
           fileType: 1263358752,
           extra: null,
+          dimensions: {
+            width: 280,
+            height: 212,
+          },
           children: [],
         },
       ],
@@ -4664,6 +4728,10 @@ export const GoTo_RegBook_Red = {
       filename: 'q:\\lego\\scripts\\infocntr\\floor1\\register\\redbook.flc',
       fileType: 1129072160,
       extra: null,
+      dimensions: {
+        width: 108,
+        height: 172,
+      },
       children: [],
     },
   ],
@@ -5044,6 +5112,10 @@ export const Mama_Start_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 280,
+        height: 212,
+      },
       children: [],
     },
   ],
@@ -5083,6 +5155,10 @@ export const Mama_ScreenDown_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 280,
+    height: 212,
+  },
   children: [],
 } as const
 export const Mama_Movie = {
@@ -5135,6 +5211,10 @@ export const Mama_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Mamafin.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 240,
+        height: 180,
+      },
       children: [],
     },
   ],
@@ -5174,6 +5254,10 @@ export const Mama_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Mamafin.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 240,
+    height: 180,
+  },
   children: [],
 } as const
 export const Mama_End_Movie = {
@@ -5226,6 +5310,10 @@ export const Mama_End_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 280,
+        height: 212,
+      },
       children: [],
     },
   ],
@@ -5265,6 +5353,10 @@ export const Mama_ScreenUp_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 280,
+    height: 212,
+  },
   children: [],
 } as const
 export const Papa_Start_Movie = {
@@ -5317,6 +5409,10 @@ export const Papa_Start_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 280,
+        height: 212,
+      },
       children: [],
     },
   ],
@@ -5356,6 +5452,10 @@ export const Papa_ScreenDown_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 280,
+    height: 212,
+  },
   children: [],
 } as const
 export const Papa_Movie = {
@@ -5408,6 +5508,10 @@ export const Papa_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Papafin.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 232,
+        height: 172,
+      },
       children: [],
     },
   ],
@@ -5447,6 +5551,10 @@ export const Papa_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Papafin.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 232,
+    height: 172,
+  },
   children: [],
 } as const
 export const Papa_End_Movie = {
@@ -5499,6 +5607,10 @@ export const Papa_End_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 280,
+        height: 212,
+      },
       children: [],
     },
   ],
@@ -5538,6 +5650,10 @@ export const Papa_ScreenUp_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 280,
+    height: 212,
+  },
   children: [],
 } as const
 export const Pepper_Start_Movie = {
@@ -5590,6 +5706,10 @@ export const Pepper_Start_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 280,
+        height: 212,
+      },
       children: [],
     },
   ],
@@ -5629,6 +5749,10 @@ export const Pepper_ScreenDown_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 280,
+    height: 212,
+  },
   children: [],
 } as const
 export const Pepper_Movie = {
@@ -5681,6 +5805,10 @@ export const Pepper_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Peprfin.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 232,
+        height: 172,
+      },
       children: [],
     },
   ],
@@ -5720,6 +5848,10 @@ export const Pepper_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Peprfin.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 232,
+    height: 172,
+  },
   children: [],
 } as const
 export const Pepper_End_Movie = {
@@ -5772,6 +5904,10 @@ export const Pepper_End_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 280,
+        height: 212,
+      },
       children: [],
     },
   ],
@@ -5811,6 +5947,10 @@ export const Pepper_ScreenUp_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 280,
+    height: 212,
+  },
   children: [],
 } as const
 export const Nick_Start_Movie = {
@@ -5863,6 +6003,10 @@ export const Nick_Start_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 280,
+        height: 212,
+      },
       children: [],
     },
   ],
@@ -5902,6 +6046,10 @@ export const Nick_ScreenDown_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 280,
+    height: 212,
+  },
   children: [],
 } as const
 export const Nick_Movie = {
@@ -5954,6 +6102,10 @@ export const Nick_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Nickfin.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 240,
+        height: 180,
+      },
       children: [],
     },
   ],
@@ -5993,6 +6145,10 @@ export const Nick_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Nickfin.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 240,
+    height: 180,
+  },
   children: [],
 } as const
 export const Nick_End_Movie = {
@@ -6045,6 +6201,10 @@ export const Nick_End_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 280,
+        height: 212,
+      },
       children: [],
     },
   ],
@@ -6084,6 +6244,10 @@ export const Nick_ScreenUp_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 280,
+    height: 212,
+  },
   children: [],
 } as const
 export const Laura_Start_Movie = {
@@ -6136,6 +6300,10 @@ export const Laura_Start_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 280,
+        height: 212,
+      },
       children: [],
     },
   ],
@@ -6175,6 +6343,10 @@ export const Laura_ScreenDown_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screendn.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 280,
+    height: 212,
+  },
   children: [],
 } as const
 export const Laura_Movie = {
@@ -6227,6 +6399,10 @@ export const Laura_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Laurafin.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 240,
+        height: 180,
+      },
       children: [],
     },
   ],
@@ -6266,6 +6442,10 @@ export const Laura_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\Laurafin.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 240,
+    height: 180,
+  },
   children: [],
 } as const
 export const Laura_End_Movie = {
@@ -6318,6 +6498,10 @@ export const Laura_End_Movie = {
       filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 280,
+        height: 212,
+      },
       children: [],
     },
   ],
@@ -6357,6 +6541,10 @@ export const Laura_ScreenUp_Smk = {
   filename: 'q:\\lego\\scripts\\infocntr\\Floor1\\Bio\\screenup.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 280,
+    height: 212,
+  },
   children: [],
 } as const
 export const IIC005IN_Wav_500 = {
@@ -6394,6 +6582,10 @@ export const IIC005IN_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC005IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const IIC004IN_Wav_500 = {
@@ -6431,6 +6623,10 @@ export const IIC004IN_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC004IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const IIC002IN_Wav_500 = {
@@ -6468,6 +6664,10 @@ export const IIC002IN_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC002IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic001in_0_sfx = {
@@ -6960,6 +7160,10 @@ export const IIC017IN_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC017IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const IIC016IN_Wav_501 = {
@@ -6997,6 +7201,10 @@ export const IIC016IN_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC016IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic016in_0_sfx = {
@@ -7318,6 +7526,10 @@ export const IICX17IN_Pho_502 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IICX17IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iicx17in_0_sfx = {
@@ -7392,6 +7604,10 @@ export const iic018in_Pho_503 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic018in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic018in_0_sfx = {
@@ -7732,6 +7948,10 @@ export const IICx18IN_Pho_504 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IICx18IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iicx18in_Anim = {
@@ -7787,6 +8007,10 @@ export const iic019in_Pho_505 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic019in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic019in_0_sfx = {
@@ -7937,6 +8161,10 @@ export const iic020in_Pho_506 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic020in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic020in_0_sfx = {
@@ -8106,6 +8334,10 @@ export const iic021in_Pho_507 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic021in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic021in_0_sfx = {
@@ -8218,6 +8450,10 @@ export const iic022in_Pho_508 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic022in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic022in_0_sfx = {
@@ -8425,6 +8661,10 @@ export const iic023in_Pho_509 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic023in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic023in_0_sfx = {
@@ -8708,6 +8948,10 @@ export const iicx23in_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iicx23in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iicx23in_Anim = {
@@ -8763,6 +9007,10 @@ export const iic024in_Pho_511 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic024in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic024in_0_sfx = {
@@ -8913,6 +9161,10 @@ export const iic025in_Pho_512 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic025in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic025in_0_sfx = {
@@ -8987,6 +9239,10 @@ export const iic026in_Pho_513 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic026in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic026in_0_sfx = {
@@ -9270,6 +9526,10 @@ export const iicx26in_Pho_514 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iicx26in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iicx26in_Anim = {
@@ -9325,6 +9585,10 @@ export const iic027in_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic027in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic027in_0_sfx = {
@@ -9494,6 +9758,10 @@ export const IIC029IN_Pho_516 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC029IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic029in_0_sfx = {
@@ -9606,6 +9874,10 @@ export const IIC032IN_Pho_517 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC032IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic032in_0_sfx = {
@@ -9756,6 +10028,10 @@ export const iic033in_Pho_518 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic033in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic033in_0_sfx = {
@@ -9944,6 +10220,10 @@ export const iic034in_Pho_519 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic034in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic034in_0_sfx = {
@@ -10075,6 +10355,10 @@ export const iic035in_Pho_520 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic035in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic035in_0_sfx = {
@@ -10168,6 +10452,10 @@ export const iic036in_Pho_521 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic036in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic036in_0_sfx = {
@@ -10375,6 +10663,10 @@ export const IIC044IN_Pho_522 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC044IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic043in_0_sfx = {
@@ -10772,6 +11064,10 @@ export const IIC045IN_Pho_523 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC045IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic045in_0_sfx = {
@@ -10998,6 +11294,10 @@ export const iic046in_Pho_524 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic046in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic046in_Anim = {
@@ -11053,6 +11353,10 @@ export const iic048in_Pho_525 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic048in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic048in_0_sfx = {
@@ -11203,6 +11507,10 @@ export const iic049in_Pho_526 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic049in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic049in_0_sfx = {
@@ -11467,6 +11775,10 @@ export const iic050in_Pho_527 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic050in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic050in_0_sfx = {
@@ -11617,6 +11929,10 @@ export const iic055in_Pho_528 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic055in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic055in_0_sfx = {
@@ -11767,6 +12083,10 @@ export const iic056in_Pho_529 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic056in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic056in_0_sfx = {
@@ -11974,6 +12294,10 @@ export const iic057in_Pho_530 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic057in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic057in_0_sfx = {
@@ -12105,6 +12429,10 @@ export const iic058in_Pho_531 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic058in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic058in_0_sfx = {
@@ -12217,6 +12545,10 @@ export const iica28in_Pho_532 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iica28in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iica28in_Anim = {
@@ -12309,6 +12641,10 @@ export const iicb28in_Pho_534 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iicb28in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iicb28in_0_sfx = {
@@ -12420,6 +12756,10 @@ export const iicc28in_Pho_536 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iicc28in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iicc28in_0_sfx = {
@@ -12568,6 +12908,10 @@ export const tic089in_Pho_539 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\tic089in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tic089in_0_sfx = {
@@ -12680,6 +13024,10 @@ export const tic092in_Pho_540 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\tic092in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tic092in_0_sfx = {
@@ -12792,6 +13140,10 @@ export const AVO901IN_Pho_541 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\AVO901IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const avo901in_Anim = {
@@ -12847,6 +13199,10 @@ export const AVO902IN_Pho_542 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\AVO902IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const avo902in_Anim = {
@@ -12902,6 +13258,10 @@ export const AVO903IN_Pho_543 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\AVO903IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const avo903in_Anim = {
@@ -12957,6 +13317,10 @@ export const AVO904IN_Pho_544 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\AVO904IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const avo904in_Anim = {
@@ -13012,6 +13376,10 @@ export const AVO905IN_Pho_545 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\AVO905IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const avo905in_Anim = {
@@ -13082,6 +13450,10 @@ export const iic001in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC005IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -13119,6 +13491,10 @@ export const iic001in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC004IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -13156,6 +13532,10 @@ export const iic001in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC002IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -13665,6 +14045,10 @@ export const iic016in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC017IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -13702,6 +14086,10 @@ export const iic016in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC016IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14040,6 +14428,10 @@ export const iicx17in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IICX17IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14131,6 +14523,10 @@ export const iic018in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic018in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14488,6 +14884,10 @@ export const iicx18in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IICx18IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14560,6 +14960,10 @@ export const iic019in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic019in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14727,6 +15131,10 @@ export const iic020in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic020in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -14913,6 +15321,10 @@ export const iic021in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic021in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15042,6 +15454,10 @@ export const iic022in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic022in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15266,6 +15682,10 @@ export const iic023in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic023in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15566,6 +15986,10 @@ export const iicx23in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iicx23in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15638,6 +16062,10 @@ export const iic024in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic024in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15805,6 +16233,10 @@ export const iic025in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic025in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -15896,6 +16328,10 @@ export const iic026in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic026in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16196,6 +16632,10 @@ export const iicx26in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iicx26in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16268,6 +16708,10 @@ export const iic027in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic027in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16454,6 +16898,10 @@ export const iic029in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC029IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16583,6 +17031,10 @@ export const iic032in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC032IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16750,6 +17202,10 @@ export const iic033in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic033in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -16955,6 +17411,10 @@ export const iic034in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic034in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -17103,6 +17563,10 @@ export const iic035in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic035in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -17213,6 +17677,10 @@ export const iic036in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic036in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -17437,6 +17905,10 @@ export const iic043in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC044IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -17851,6 +18323,10 @@ export const iic045in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC045IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18094,6 +18570,10 @@ export const iic046in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic046in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18166,6 +18646,10 @@ export const iic048in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic048in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18333,6 +18817,10 @@ export const iic049in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic049in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18614,6 +19102,10 @@ export const iic050in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic050in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18781,6 +19273,10 @@ export const iic055in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic055in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -18948,6 +19444,10 @@ export const iic056in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic056in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19172,6 +19672,10 @@ export const iic057in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic057in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19320,6 +19824,10 @@ export const iic058in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic058in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19449,6 +19957,10 @@ export const iica28in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iica28in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19575,6 +20087,10 @@ export const iicb28in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iicb28in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19720,6 +20236,10 @@ export const iicc28in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iicc28in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -19919,6 +20439,10 @@ export const tic089in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\tic089in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20048,6 +20572,10 @@ export const tic092in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\tic092in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20177,6 +20705,10 @@ export const avo901in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\AVO901IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20249,6 +20781,10 @@ export const avo902in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\AVO902IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20321,6 +20857,10 @@ export const avo903in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\AVO903IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20393,6 +20933,10 @@ export const avo904in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\AVO904IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -20465,6 +21009,10 @@ export const avo905in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\AVO905IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {

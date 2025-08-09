@@ -1096,5 +1096,9 @@ export const BookWig_Flic = {
   filename: 'Q:\\Lego\\scripts\\infocntr\\floor1\\main\\bookwig.flc',
   fileType: 1129072160,
   extra: null,
+  dimensions: {
+    width: 67,
+    height: 51,
+  },
   children: [],
 } as const

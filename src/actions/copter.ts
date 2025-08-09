@@ -7132,6 +7132,10 @@ export const IPS001D2_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPS001D2.flc',
   fileType: 1129072160,
   extra: 'd2',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ips001d2_0_sfx = {
@@ -7548,6 +7552,10 @@ export const IPSxx1D2_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPSxx1D2.flc',
   fileType: 1129072160,
   extra: 'd2',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ipsxx1d2_0_sfx = {
@@ -7679,6 +7687,10 @@ export const IPS002D2_Pho_502 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPS002D2.flc',
   fileType: 1129072160,
   extra: 'd2',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ips002d2_0_sfx = {
@@ -7810,6 +7822,10 @@ export const IPS003D2_Pho_503 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPS003D2.flc',
   fileType: 1129072160,
   extra: 'd2',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ips003d2_0_sfx = {
@@ -7979,6 +7995,10 @@ export const IPS004D2_Pho_504 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPS004D2.flc',
   fileType: 1129072160,
   extra: 'd2',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ips004d2_0_sfx = {
@@ -8129,6 +8149,10 @@ export const IPS005D2_Pho_505 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPS005D2.flc',
   fileType: 1129072160,
   extra: 'd2',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ips005d2_0_sfx = {
@@ -8336,6 +8360,10 @@ export const IPS006D2_Pho_506 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPS006D2.flc',
   fileType: 1129072160,
   extra: 'd2',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ips006d2_0_sfx = {
@@ -8505,6 +8533,10 @@ export const SLP01XD2_Pho_507 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\SLP01XD2.flc',
   fileType: 1129072160,
   extra: 'd2',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const slp01xd2_0_sfx = {
@@ -8651,6 +8683,10 @@ export const ips001d2_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPS001D2.flc',
       fileType: 1129072160,
       extra: 'd2',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -9084,6 +9120,10 @@ export const ipsxx1d2_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPSxx1D2.flc',
       fileType: 1129072160,
       extra: 'd2',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -9232,6 +9272,10 @@ export const ips002d2_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPS002D2.flc',
       fileType: 1129072160,
       extra: 'd2',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -9380,6 +9424,10 @@ export const ips003d2_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPS003D2.flc',
       fileType: 1129072160,
       extra: 'd2',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -9566,6 +9614,10 @@ export const ips004d2_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPS004D2.flc',
       fileType: 1129072160,
       extra: 'd2',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -9733,6 +9785,10 @@ export const ips005d2_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPS005D2.flc',
       fileType: 1129072160,
       extra: 'd2',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -9957,6 +10013,10 @@ export const ips006d2_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\IPS006D2.flc',
       fileType: 1129072160,
       extra: 'd2',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -10143,6 +10203,10 @@ export const slp01xd2_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D2\\SLP01XD2.flc',
       fileType: 1129072160,
       extra: 'd2',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {

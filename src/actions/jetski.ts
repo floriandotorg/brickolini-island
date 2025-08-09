@@ -5503,6 +5503,10 @@ export const IJS001D4_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS001D4.flc',
   fileType: 1129072160,
   extra: 'd4',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const IJS002D4_Wav_500 = {
@@ -5540,6 +5544,10 @@ export const IJS002D4_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS002D4.flc',
   fileType: 1129072160,
   extra: 'd4',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ijs001d4_0_sfx = {
@@ -5899,6 +5907,10 @@ export const IJSxx2D4_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJSxx2D4.flc',
   fileType: 1129072160,
   extra: 'd4',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ijsxx2d4_0_sfx = {
@@ -6087,6 +6099,10 @@ export const IJS003D4_Pho_502 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS003D4.flc',
   fileType: 1129072160,
   extra: 'd4',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ijs003d4_0_sfx = {
@@ -6180,6 +6196,10 @@ export const IJS004D4_Pho_503 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS004D4.flc',
   fileType: 1129072160,
   extra: 'd4',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ijs004d4_0_sfx = {
@@ -6349,6 +6369,10 @@ export const IJS005D4_Pho_504 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS005D4.flc',
   fileType: 1129072160,
   extra: 'd4',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ijs005d4_0_sfx = {
@@ -6651,6 +6675,10 @@ export const IJS006D4_Pho_505 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS006D4.flc',
   fileType: 1129072160,
   extra: 'd4',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ijs006d4_0_sfx = {
@@ -7029,6 +7057,10 @@ export const IJS007D4_Pho_506 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS007D4.flc',
   fileType: 1129072160,
   extra: 'd4',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const ijs007d4_0_sfx = {
@@ -7270,6 +7302,10 @@ export const ijs001d4_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS001D4.flc',
       fileType: 1129072160,
       extra: 'd4',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -7307,6 +7343,10 @@ export const ijs001d4_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS002D4.flc',
       fileType: 1129072160,
       extra: 'd4',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -7683,6 +7723,10 @@ export const ijsxx2d4_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJSxx2D4.flc',
       fileType: 1129072160,
       extra: 'd4',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -7888,6 +7932,10 @@ export const ijs003d4_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS003D4.flc',
       fileType: 1129072160,
       extra: 'd4',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -7998,6 +8046,10 @@ export const ijs004d4_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS004D4.flc',
       fileType: 1129072160,
       extra: 'd4',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -8184,6 +8236,10 @@ export const ijs005d4_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS005D4.flc',
       fileType: 1129072160,
       extra: 'd4',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -8503,6 +8559,10 @@ export const ijs006d4_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS006D4.flc',
       fileType: 1129072160,
       extra: 'd4',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -8898,6 +8958,10 @@ export const ijs007d4_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D4\\IJS007D4.flc',
       fileType: 1129072160,
       extra: 'd4',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {

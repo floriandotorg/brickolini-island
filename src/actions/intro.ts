@@ -30,6 +30,10 @@ export const Lego_Movie = {
       filename: 'q:\\lego\\media\\movies\\legomed.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 320,
+        height: 240,
+      },
       children: [],
     },
     {
@@ -84,6 +88,10 @@ export const Mindscape_Movie = {
       filename: 'q:\\lego\\media\\movies\\mindscap.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 640,
+        height: 480,
+      },
       children: [],
     },
     {
@@ -138,6 +146,10 @@ export const Intro_Movie = {
       filename: 'q:\\lego\\media\\movies\\intro.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 320,
+        height: 240,
+      },
       children: [],
     },
     {
@@ -192,6 +204,10 @@ export const Outro_Movie = {
       filename: 'q:\\lego\\media\\movies\\Outro.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 320,
+        height: 240,
+      },
       children: [],
     },
     {
@@ -246,6 +262,10 @@ export const BadEnd_Movie = {
       filename: 'q:\\lego\\media\\movies\\BadEnd.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 320,
+        height: 240,
+      },
       children: [],
     },
     {
@@ -300,6 +320,10 @@ export const GoodEnd_Movie = {
       filename: 'q:\\lego\\media\\movies\\GoodEnd.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 320,
+        height: 240,
+      },
       children: [],
     },
     {
@@ -339,6 +363,10 @@ export const Lego_Smk = {
   filename: 'q:\\lego\\media\\movies\\legomed.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 320,
+    height: 240,
+  },
   children: [],
 } as const
 export const Lego_Wave = {
@@ -376,6 +404,10 @@ export const Mindscape_Smk = {
   filename: 'q:\\lego\\media\\movies\\mindscap.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 640,
+    height: 480,
+  },
   children: [],
 } as const
 export const Mindscape_Wave = {
@@ -413,6 +445,10 @@ export const Intro_Smk = {
   filename: 'q:\\lego\\media\\movies\\intro.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 320,
+    height: 240,
+  },
   children: [],
 } as const
 export const Intro_Wave = {
@@ -450,6 +486,10 @@ export const Outro_Smk = {
   filename: 'q:\\lego\\media\\movies\\Outro.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 320,
+    height: 240,
+  },
   children: [],
 } as const
 export const Outro_Wave = {
@@ -487,6 +527,10 @@ export const BadEnd_Smk = {
   filename: 'q:\\lego\\media\\movies\\BadEnd.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 320,
+    height: 240,
+  },
   children: [],
 } as const
 export const BadEnd_Wave = {
@@ -524,6 +568,10 @@ export const GoodEnd_Smk = {
   filename: 'q:\\lego\\media\\movies\\GoodEnd.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 320,
+    height: 240,
+  },
   children: [],
 } as const
 export const GoodEnd_Wave = {

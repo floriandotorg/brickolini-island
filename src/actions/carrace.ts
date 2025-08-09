@@ -7036,6 +7036,10 @@ export const srt001rh_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\rh\\srt001rh.flc',
   fileType: 1129072160,
   extra: 'rhoda',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt001rh_0_sfx = {
@@ -7148,6 +7152,10 @@ export const SRT001SL_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT001SL.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt001sl_0_sfx = {
@@ -7298,6 +7306,10 @@ export const srt002rh_Pho_502 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\rh\\srt002rh.flc',
   fileType: 1129072160,
   extra: 'rhoda',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt002rh_0_sfx = {
@@ -7410,6 +7422,10 @@ export const SRT002SL_Pho_503 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT002SL.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt002sl_0_sfx = {
@@ -7541,6 +7557,10 @@ export const srt003rh_Pho_504 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\rh\\srt003rh.flc',
   fileType: 1129072160,
   extra: 'rhoda',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt003rh_0_sfx = {
@@ -7634,6 +7654,10 @@ export const SRT003SL_Pho_505 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT003SL.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt003sl_0_sfx = {
@@ -7727,6 +7751,10 @@ export const SRT004SL_Pho_506 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT004SL.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt004sl_0_sfx = {
@@ -7839,6 +7867,10 @@ export const srt005sl_Pho_507 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\sl\\srt005sl.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt005sl_0_sfx = {
@@ -8007,6 +8039,10 @@ export const SRT007RH_Pho_509 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RH\\SRT007RH.flc',
   fileType: 1129072160,
   extra: 'rhoda',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt007rh_0_sfx = {
@@ -8138,6 +8174,10 @@ export const SRT008RH_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RH\\SRT008RH.flc',
   fileType: 1129072160,
   extra: 'rhoda',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt008rh_0_sfx = {
@@ -8269,6 +8309,10 @@ export const SRT009RH_Pho_511 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RH\\SRT009RH.flc',
   fileType: 1129072160,
   extra: 'rhoda',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt009rh_0_sfx = {
@@ -8400,6 +8444,10 @@ export const SRT010RH_Pho_512 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RH\\SRT010RH.flc',
   fileType: 1129072160,
   extra: 'rhoda',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt010rh_0_sfx = {
@@ -8512,6 +8560,10 @@ export const SRT011RH_Pho_513 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RH\\SRT011RH.flc',
   fileType: 1129072160,
   extra: 'rhoda',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt011rh_0_sfx = {
@@ -8643,6 +8695,10 @@ export const SRT011SL_Pho_514 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT011SL.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt011sl_0_sfx = {
@@ -8774,6 +8830,10 @@ export const SRT012RH_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\RH\\SRT012RH.flc',
   fileType: 1129072160,
   extra: 'rhoda',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt012rh_0_sfx = {
@@ -8905,6 +8965,10 @@ export const SRT012SL_Pho_516 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT012SL.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt012sl_0_sfx = {
@@ -9036,6 +9100,10 @@ export const SRT013SL_Pho_517 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT013SL.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt013sl_0_sfx = {
@@ -9167,6 +9235,10 @@ export const SRT014SL_Pho_518 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT014SL.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt014sl_0_sfx = {
@@ -9317,6 +9389,10 @@ export const SRT015SL_Pho_519 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT015SL.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt015sl_0_sfx = {
@@ -9448,6 +9524,10 @@ export const SRT016SL_Pho_520 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT016SL.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt016sl_0_sfx = {
@@ -9598,6 +9678,10 @@ export const SRT017SL_Pho_521 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT017SL.flc',
   fileType: 1129072160,
   extra: 'studs',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const srt017sl_0_sfx = {
@@ -10446,6 +10530,10 @@ export const srt001rh_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\rh\\srt001rh.flc',
       fileType: 1129072160,
       extra: 'rhoda',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -10575,6 +10663,10 @@ export const srt001sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT001SL.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -10742,6 +10834,10 @@ export const srt002rh_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\rh\\srt002rh.flc',
       fileType: 1129072160,
       extra: 'rhoda',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -10871,6 +10967,10 @@ export const srt002sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT002SL.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11019,6 +11119,10 @@ export const srt003rh_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\rh\\srt003rh.flc',
       fileType: 1129072160,
       extra: 'rhoda',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11129,6 +11233,10 @@ export const srt003sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT003SL.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11239,6 +11347,10 @@ export const srt004sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT004SL.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11368,6 +11480,10 @@ export const srt005sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\sl\\srt005sl.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11570,6 +11686,10 @@ export const srt007rh_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RH\\SRT007RH.flc',
       fileType: 1129072160,
       extra: 'rhoda',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11718,6 +11838,10 @@ export const srt008rh_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RH\\SRT008RH.flc',
       fileType: 1129072160,
       extra: 'rhoda',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -11866,6 +11990,10 @@ export const srt009rh_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RH\\SRT009RH.flc',
       fileType: 1129072160,
       extra: 'rhoda',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12014,6 +12142,10 @@ export const srt010rh_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RH\\SRT010RH.flc',
       fileType: 1129072160,
       extra: 'rhoda',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12143,6 +12275,10 @@ export const srt011rh_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RH\\SRT011RH.flc',
       fileType: 1129072160,
       extra: 'rhoda',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12291,6 +12427,10 @@ export const srt011sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT011SL.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12439,6 +12579,10 @@ export const srt012rh_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\RH\\SRT012RH.flc',
       fileType: 1129072160,
       extra: 'rhoda',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12587,6 +12731,10 @@ export const srt012sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT012SL.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12735,6 +12883,10 @@ export const srt013sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT013SL.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -12883,6 +13035,10 @@ export const srt014sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT014SL.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -13050,6 +13206,10 @@ export const srt015sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT015SL.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -13198,6 +13358,10 @@ export const srt016sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT016SL.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -13365,6 +13529,10 @@ export const srt017sl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\SL\\SRT017SL.flc',
       fileType: 1129072160,
       extra: 'studs',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {

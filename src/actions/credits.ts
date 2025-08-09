@@ -34,6 +34,10 @@ export const Credits_Smk = {
   filename: 'q:\\lego\\media\\movies\\credits.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 272,
+    height: 300,
+  },
   children: [],
 } as const
 export const Credit01_Bitmap = {
@@ -834,6 +838,10 @@ export const LegoCredits = {
       filename: 'q:\\lego\\media\\movies\\credits.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 272,
+        height: 300,
+      },
       children: [],
     },
     {

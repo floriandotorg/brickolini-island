@@ -1010,6 +1010,10 @@ export const HistBook_Flc = {
   filename: 'q:\\lego\\scripts\\infocntr\\floor1\\score\\histbook.flc',
   fileType: 1129072160,
   extra: null,
+  dimensions: {
+    width: 111,
+    height: 289,
+  },
   children: [],
 } as const
 export const LegoBox1_Flc = {
@@ -1028,6 +1032,10 @@ export const LegoBox1_Flc = {
   filename: 'q:\\lego\\scripts\\infocntr\\floor1\\score\\box1.flc',
   fileType: 1129072160,
   extra: null,
+  dimensions: {
+    width: 218,
+    height: 311,
+  },
   children: [],
 } as const
 export const LegoBox2_Flc = {
@@ -1046,6 +1054,10 @@ export const LegoBox2_Flc = {
   filename: 'q:\\lego\\scripts\\infocntr\\floor1\\score\\box2.flc',
   fileType: 1129072160,
   extra: null,
+  dimensions: {
+    width: 214,
+    height: 283,
+  },
   children: [],
 } as const
 export const LegoBox3_Flc = {
@@ -1064,6 +1076,10 @@ export const LegoBox3_Flc = {
   filename: 'q:\\lego\\scripts\\infocntr\\floor1\\score\\box3.flc',
   fileType: 1129072160,
   extra: null,
+  dimensions: {
+    width: 218,
+    height: 190,
+  },
   children: [],
 } as const
 export const GoTo_HistBook = {
@@ -1119,6 +1135,10 @@ export const GoTo_HistBook = {
       filename: 'q:\\lego\\scripts\\infocntr\\floor1\\score\\histbook.flc',
       fileType: 1129072160,
       extra: null,
+      dimensions: {
+        width: 111,
+        height: 289,
+      },
       children: [],
     },
   ],

@@ -6687,6 +6687,10 @@ export const sjs012in_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\sjs012in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const sjs012in_0_sfx = {
@@ -6837,6 +6841,10 @@ export const sjs013in_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\sjs013in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const sjs013in_0_sfx = {
@@ -6968,6 +6976,10 @@ export const sjs014in_Pho_502 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\sjs014in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const sjs014in_0_sfx = {
@@ -7114,6 +7126,10 @@ export const sjs012in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\sjs012in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -7281,6 +7297,10 @@ export const sjs013in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\sjs013in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -7429,6 +7449,10 @@ export const sjs014in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\sjs014in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {

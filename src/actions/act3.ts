@@ -3014,6 +3014,10 @@ export const TLP067PA_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\PA\\TLP067PA.flc',
   fileType: 1129072160,
   extra: 'papa',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TLP066MA_Wav_500 = {
@@ -3051,6 +3055,10 @@ export const TLP066MA_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\MA\\TLP066MA.flc',
   fileType: 1129072160,
   extra: 'mama',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TLP065NI_Wav_500 = {
@@ -3088,6 +3096,10 @@ export const TLP065NI_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TLP065NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TLP053IN_Wav_500 = {
@@ -3125,6 +3137,10 @@ export const TLP053IN_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TLP053IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TLP064LA_Wav_500 = {
@@ -3162,6 +3178,10 @@ export const TLP064LA_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TLP064LA.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TLP063MA_Wav_500 = {
@@ -3199,6 +3219,10 @@ export const TLP063MA_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\MA\\TLP063MA.flc',
   fileType: 1129072160,
   extra: 'mama',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TLP061NI_Wav_500 = {
@@ -3236,6 +3260,10 @@ export const TLP061NI_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TLP061NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TLP060IN_Wav_500 = {
@@ -3273,6 +3301,10 @@ export const TLP060IN_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TLP060IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TLP058MA_Wav_500 = {
@@ -3310,6 +3342,10 @@ export const TLP058MA_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\MA\\TLP058MA.flc',
   fileType: 1129072160,
   extra: 'mama',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TLP057IN_Wav_500 = {
@@ -3347,6 +3383,10 @@ export const TLP057IN_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TLP057IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TLP055PA_Wav_500 = {
@@ -3384,6 +3424,10 @@ export const TLP055PA_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\PA\\TLP055PA.flc',
   fileType: 1129072160,
   extra: 'papa',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tlp053in_0_sfx = {
@@ -3553,6 +3597,10 @@ export const TLP065NI_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TLP065NI.flc',
   fileType: 1129072160,
   extra: 'nick',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const TLP064LA_Wav_501 = {
@@ -3590,6 +3638,10 @@ export const TLP064LA_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TLP064LA.flc',
   fileType: 1129072160,
   extra: 'laura',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tlp064la_0_sfx = {
@@ -3664,6 +3716,10 @@ export const TLP068IN_Pho_502 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TLP068IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const tlp068in_0_sfx = {
@@ -3848,6 +3904,10 @@ export const tlp053in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\PA\\TLP067PA.flc',
       fileType: 1129072160,
       extra: 'papa',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3885,6 +3945,10 @@ export const tlp053in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\MA\\TLP066MA.flc',
       fileType: 1129072160,
       extra: 'mama',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3922,6 +3986,10 @@ export const tlp053in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TLP065NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3959,6 +4027,10 @@ export const tlp053in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TLP053IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3996,6 +4068,10 @@ export const tlp053in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TLP064LA.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4033,6 +4109,10 @@ export const tlp053in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\MA\\TLP063MA.flc',
       fileType: 1129072160,
       extra: 'mama',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4070,6 +4150,10 @@ export const tlp053in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TLP061NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4107,6 +4191,10 @@ export const tlp053in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TLP060IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4144,6 +4232,10 @@ export const tlp053in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\MA\\TLP058MA.flc',
       fileType: 1129072160,
       extra: 'mama',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4181,6 +4273,10 @@ export const tlp053in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TLP057IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4218,6 +4314,10 @@ export const tlp053in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\PA\\TLP055PA.flc',
       fileType: 1129072160,
       extra: 'papa',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4404,6 +4504,10 @@ export const tlp064la_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NI\\TLP065NI.flc',
       fileType: 1129072160,
       extra: 'nick',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4441,6 +4545,10 @@ export const tlp064la_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\LA\\TLP064LA.flc',
       fileType: 1129072160,
       extra: 'laura',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4532,6 +4640,10 @@ export const tlp068in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\TLP068IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {

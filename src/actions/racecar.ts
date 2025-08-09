@@ -5438,6 +5438,10 @@ export const IRT001D1_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D1\\IRT001D1.flc',
   fileType: 1129072160,
   extra: 'd1',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const irt001d1_0_sfx = {
@@ -5607,6 +5611,10 @@ export const IRT002D1_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D1\\IRT002D1.flc',
   fileType: 1129072160,
   extra: 'd1',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const irt002d1_0_sfx = {
@@ -5719,6 +5727,10 @@ export const IRT003D1_Pho_502 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D1\\IRT003D1.flc',
   fileType: 1129072160,
   extra: 'd1',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const irt003d1_0_sfx = {
@@ -5926,6 +5938,10 @@ export const IRT004D1_Pho_503 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D1\\IRT004D1.flc',
   fileType: 1129072160,
   extra: 'd1',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const irt004d1_0_sfx = {
@@ -6076,6 +6092,10 @@ export const IRTXX4D1_Pho_504 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D1\\IRTXX4D1.flc',
   fileType: 1129072160,
   extra: 'd1',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const irtxx4d1_0_sfx = {
@@ -6264,6 +6284,10 @@ export const IRT005D1_Pho_505 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\D1\\IRT005D1.flc',
   fileType: 1129072160,
   extra: 'd1',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const irt005d1_0_sfx = {
@@ -6600,6 +6624,10 @@ export const irt001d1_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D1\\IRT001D1.flc',
       fileType: 1129072160,
       extra: 'd1',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -6786,6 +6814,10 @@ export const irt002d1_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D1\\IRT002D1.flc',
       fileType: 1129072160,
       extra: 'd1',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -6915,6 +6947,10 @@ export const irt003d1_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D1\\IRT003D1.flc',
       fileType: 1129072160,
       extra: 'd1',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -7139,6 +7175,10 @@ export const irt004d1_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D1\\IRT004D1.flc',
       fileType: 1129072160,
       extra: 'd1',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -7306,6 +7346,10 @@ export const irtxx4d1_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D1\\IRTXX4D1.flc',
       fileType: 1129072160,
       extra: 'd1',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -7511,6 +7555,10 @@ export const irt005d1_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\D1\\IRT005D1.flc',
       fileType: 1129072160,
       extra: 'd1',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {

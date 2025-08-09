@@ -923,6 +923,10 @@ export const HelicopterBuild_Movie = {
       filename: 'Q:\\Lego\\Media\\Build\\Copter\\Heliflc.flc',
       fileType: 1129072160,
       extra: null,
+      dimensions: {
+        width: 83,
+        height: 57,
+      },
       children: [],
     },
     {
@@ -996,6 +1000,10 @@ export const DuneCarBuild_Movie = {
       filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\DUNEbld.FLC',
       fileType: 1129072160,
       extra: null,
+      dimensions: {
+        width: 88,
+        height: 59,
+      },
       children: [],
     },
     {
@@ -1069,6 +1077,10 @@ export const JetskiBuild_Movie = {
       filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jetflc.flc',
       fileType: 1129072160,
       extra: null,
+      dimensions: {
+        width: 100,
+        height: 104,
+      },
       children: [],
     },
     {
@@ -1142,6 +1154,10 @@ export const RaceCarBuild_Movie = {
       filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Racbuild.flc',
       fileType: 1129072160,
       extra: null,
+      dimensions: {
+        width: 85,
+        height: 62,
+      },
       children: [],
     },
     {
@@ -1371,6 +1387,10 @@ export const HelicopterBuild_Flic = {
   filename: 'Q:\\Lego\\Media\\Build\\Copter\\Heliflc.flc',
   fileType: 1129072160,
   extra: null,
+  dimensions: {
+    width: 83,
+    height: 57,
+  },
   children: [],
 } as const
 export const DuneCarBuild_Flic = {
@@ -1389,6 +1409,10 @@ export const DuneCarBuild_Flic = {
   filename: 'Q:\\Lego\\Media\\Build\\Dunecar\\DUNEbld.FLC',
   fileType: 1129072160,
   extra: null,
+  dimensions: {
+    width: 88,
+    height: 59,
+  },
   children: [],
 } as const
 export const JetskiBuild_Flic = {
@@ -1407,6 +1431,10 @@ export const JetskiBuild_Flic = {
   filename: 'Q:\\Lego\\Media\\Build\\Jetski\\jetflc.flc',
   fileType: 1129072160,
   extra: null,
+  dimensions: {
+    width: 100,
+    height: 104,
+  },
   children: [],
 } as const
 export const RaceCarBuild_Flic = {
@@ -1425,5 +1453,9 @@ export const RaceCarBuild_Flic = {
   filename: 'Q:\\Lego\\Media\\Build\\RaceCar\\Racbuild.flc',
   fileType: 1129072160,
   extra: null,
+  dimensions: {
+    width: 85,
+    height: 62,
+  },
   children: [],
 } as const

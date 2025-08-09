@@ -1093,6 +1093,10 @@ export const wgs002nu_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs002nu.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs002nu_0_sfx = {
@@ -1186,6 +1190,10 @@ export const wgs003nu_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs003nu.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs003nu_0_sfx = {
@@ -1298,6 +1306,10 @@ export const wgs004nu_Pho_502 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs004nu.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs004nu_0_sfx = {
@@ -1372,6 +1384,10 @@ export const wgs006nu_Pho_503 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs006nu.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs006nu_0_sfx = {
@@ -1446,6 +1462,10 @@ export const wgs007nu_Pho_504 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs007nu.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs007nu_Anim = {
@@ -1501,6 +1521,10 @@ export const wgs005nu_Pho_505 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs005nu.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs008nu_Anim = {
@@ -1556,6 +1580,10 @@ export const wgs009nu_Pho_506 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs009nu.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs009nu_0_sfx = {
@@ -1649,6 +1677,10 @@ export const wgs010nu_Pho_507 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs010nu.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs010nu_0_sfx = {
@@ -1723,6 +1755,10 @@ export const wgs012nu_Pho_508 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs012nu.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs012nu_Anim = {
@@ -1778,6 +1814,10 @@ export const WGS014NU_Pho_509 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS014NU.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const WGS016P1_Wav_509 = {
@@ -1871,6 +1911,10 @@ export const WGS019NU_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS019NU.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const WGS017NU_Wav_510 = {
@@ -1908,6 +1952,10 @@ export const WGS017NU_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS017NU.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs017nu_0_sfx = {
@@ -1982,6 +2030,10 @@ export const WGS020NU_Pho_511 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS020NU.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs020nu_0_sfx = {
@@ -2056,6 +2108,10 @@ export const WGS021NU_Pho_512 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS021NU.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs021nu_0_sfx = {
@@ -2130,6 +2186,10 @@ export const WGS022NU_Pho_513 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS022NU.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs022nu_0_sfx = {
@@ -2242,6 +2302,10 @@ export const WGS028NU_Pho_514 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS028NU.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const WGS027NA_Wav_514 = {
@@ -2279,6 +2343,10 @@ export const WGS027NA_Pho_514 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\WGS027NA.flc',
   fileType: 1129072160,
   extra: 'na',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const WGS026NA_Wav_514 = {
@@ -2316,6 +2384,10 @@ export const WGS026NA_Pho_514 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\WGS026NA.flc',
   fileType: 1129072160,
   extra: 'na',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const WGS025NA_Wav_514 = {
@@ -2353,6 +2425,10 @@ export const WGS025NA_Pho_514 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\WGS025NA.flc',
   fileType: 1129072160,
   extra: 'na',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const WGS024NA_Wav_514 = {
@@ -2390,6 +2466,10 @@ export const WGS024NA_Pho_514 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\WGS024NA.flc',
   fileType: 1129072160,
   extra: 'na',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs023nu_0_sfx = {
@@ -2635,6 +2715,10 @@ export const wgs030nu_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs030nu.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs029nu_Wav_515 = {
@@ -2672,6 +2756,10 @@ export const wgs029nu_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs029nu.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs029nu_0_sfx = {
@@ -2746,6 +2834,10 @@ export const wgs031nu_Pho_516 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs031nu.flc',
   fileType: 1129072160,
   extra: 'nu',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const wgs031nu_0_sfx = {
@@ -2835,6 +2927,10 @@ export const wgs002nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs002nu.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -2945,6 +3041,10 @@ export const wgs003nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs003nu.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3074,6 +3174,10 @@ export const wgs004nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs004nu.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3165,6 +3269,10 @@ export const wgs006nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs006nu.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3256,6 +3364,10 @@ export const wgs007nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs007nu.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3328,6 +3440,10 @@ export const wgs008nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs005nu.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3400,6 +3516,10 @@ export const wgs009nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs009nu.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3510,6 +3630,10 @@ export const wgs010nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs010nu.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3601,6 +3725,10 @@ export const wgs012nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs012nu.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3673,6 +3801,10 @@ export const wgs014nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS014NU.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3783,6 +3915,10 @@ export const wgs017nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS019NU.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3820,6 +3956,10 @@ export const wgs017nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS017NU.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3911,6 +4051,10 @@ export const wgs020nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS020NU.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4002,6 +4146,10 @@ export const wgs021nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS021NU.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4093,6 +4241,10 @@ export const wgs022nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS022NU.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4222,6 +4374,10 @@ export const wgs023nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NU\\WGS028NU.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4259,6 +4415,10 @@ export const wgs023nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\WGS027NA.flc',
       fileType: 1129072160,
       extra: 'na',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4296,6 +4456,10 @@ export const wgs023nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\WGS026NA.flc',
       fileType: 1129072160,
       extra: 'na',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4333,6 +4497,10 @@ export const wgs023nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\WGS025NA.flc',
       fileType: 1129072160,
       extra: 'na',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4370,6 +4538,10 @@ export const wgs023nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\NA\\WGS024NA.flc',
       fileType: 1129072160,
       extra: 'na',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4632,6 +4804,10 @@ export const wgs029nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs030nu.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4669,6 +4845,10 @@ export const wgs029nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs029nu.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4760,6 +4940,10 @@ export const wgs031nu_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\nu\\wgs031nu.flc',
       fileType: 1129072160,
       extra: 'nu',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {

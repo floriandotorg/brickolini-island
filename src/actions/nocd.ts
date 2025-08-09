@@ -30,6 +30,10 @@ export const NoCD_Movie = {
       filename: 'q:\\lego\\media\\movies\\CDSpin1.smk',
       fileType: 1263358752,
       extra: null,
+      dimensions: {
+        width: 320,
+        height: 240,
+      },
       children: [],
     },
     {
@@ -69,6 +73,10 @@ export const CDSpin1_Smk = {
   filename: 'q:\\lego\\media\\movies\\CDSpin1.smk',
   fileType: 1263358752,
   extra: null,
+  dimensions: {
+    width: 320,
+    height: 240,
+  },
   children: [],
 } as const
 export const Iicx62In_Wave = {

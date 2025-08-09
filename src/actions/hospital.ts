@@ -573,6 +573,10 @@ export const hho002cl_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho002cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho002cl_0_sfx = {
@@ -666,6 +670,10 @@ export const HHO003CL_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\CL\\HHO003CL.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho003cl_0_sfx = {
@@ -816,6 +824,10 @@ export const hho004jk_Pho_502 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\jk\\hho004jk.flc',
   fileType: 1129072160,
   extra: 'jk',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho004jk_0_sfx = {
@@ -985,6 +997,10 @@ export const hho016cl_Pho_503 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho016cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho016cl_0_sfx = {
@@ -1078,6 +1094,10 @@ export const hho017cl_Pho_504 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho017cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho017cl_0_sfx = {
@@ -1171,6 +1191,10 @@ export const hho018cl_Pho_505 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho018cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho018cl_0_sfx = {
@@ -1302,6 +1326,10 @@ export const hho019cl_Pho_506 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho019cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho019cl_0_sfx = {
@@ -1414,6 +1442,10 @@ export const hho020cl_Pho_507 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho020cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho020cl_0_sfx = {
@@ -1507,6 +1539,10 @@ export const hho021cl_Pho_508 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho021cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho021cl_0_sfx = {
@@ -1619,6 +1655,10 @@ export const hho023cl_Pho_509 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho023cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho023cl_0_sfx = {
@@ -1731,6 +1771,10 @@ export const hho024cl_Pho_510 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho024cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho024cl_0_sfx = {
@@ -1862,6 +1906,10 @@ export const hho025cl_Pho_511 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho025cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho025cl_0_sfx = {
@@ -1974,6 +2022,10 @@ export const hho026cl_Pho_512 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho026cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho026cl_0_sfx = {
@@ -2067,6 +2119,10 @@ export const hhoa22cl_Pho_513 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hhoa22cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hhoa22cl_0_sfx = {
@@ -2330,6 +2386,10 @@ export const hho006cl_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho006cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho015cl_Wav_515 = {
@@ -2367,6 +2427,10 @@ export const hho015cl_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho015cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho009en_Wav_515 = {
@@ -2404,6 +2468,10 @@ export const hho009en_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\en\\hho009en.flc',
   fileType: 1129072160,
   extra: 'en',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho010re_Wav_515 = {
@@ -2441,6 +2509,10 @@ export const hho010re_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\re\\hho010re.flc',
   fileType: 1129072160,
   extra: 're',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho014en_Wav_515 = {
@@ -2478,6 +2550,10 @@ export const hho014en_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\en\\hho014en.flc',
   fileType: 1129072160,
   extra: 'en',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho013re_Wav_515 = {
@@ -2515,6 +2591,10 @@ export const hho013re_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\re\\hho013re.flc',
   fileType: 1129072160,
   extra: 're',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho012en_Wav_515 = {
@@ -2552,6 +2632,10 @@ export const hho012en_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\en\\hho012en.flc',
   fileType: 1129072160,
   extra: 'en',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho011en_Wav_515 = {
@@ -2589,6 +2673,10 @@ export const hho011en_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\en\\hho011en.flc',
   fileType: 1129072160,
   extra: 'en',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho011re_Wav_515 = {
@@ -2626,6 +2714,10 @@ export const hho011re_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\re\\hho011re.flc',
   fileType: 1129072160,
   extra: 're',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho008cl_Wav_515 = {
@@ -2663,6 +2755,10 @@ export const hho008cl_Pho_515 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho008cl.flc',
   fileType: 1129072160,
   extra: 'cl',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const hho006cl_0_sfx = {
@@ -2980,6 +3076,10 @@ export const hho002cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho002cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3090,6 +3190,10 @@ export const hho003cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\CL\\HHO003CL.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3257,6 +3361,10 @@ export const hho004jk_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\jk\\hho004jk.flc',
       fileType: 1129072160,
       extra: 'jk',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3443,6 +3551,10 @@ export const hho016cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho016cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3553,6 +3665,10 @@ export const hho017cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho017cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3663,6 +3779,10 @@ export const hho018cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho018cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3811,6 +3931,10 @@ export const hho019cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho019cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -3940,6 +4064,10 @@ export const hho020cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho020cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4050,6 +4178,10 @@ export const hho021cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho021cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4179,6 +4311,10 @@ export const hho023cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho023cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4308,6 +4444,10 @@ export const hho024cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho024cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4456,6 +4596,10 @@ export const hho025cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho025cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4585,6 +4729,10 @@ export const hho026cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho026cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4695,6 +4843,10 @@ export const hhoa22cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hhoa22cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -4992,6 +5144,10 @@ export const hho006cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho006cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5029,6 +5185,10 @@ export const hho006cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho015cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5066,6 +5226,10 @@ export const hho006cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\en\\hho009en.flc',
       fileType: 1129072160,
       extra: 'en',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5103,6 +5267,10 @@ export const hho006cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\re\\hho010re.flc',
       fileType: 1129072160,
       extra: 're',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5140,6 +5308,10 @@ export const hho006cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\en\\hho014en.flc',
       fileType: 1129072160,
       extra: 'en',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5177,6 +5349,10 @@ export const hho006cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\re\\hho013re.flc',
       fileType: 1129072160,
       extra: 're',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5214,6 +5390,10 @@ export const hho006cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\en\\hho012en.flc',
       fileType: 1129072160,
       extra: 'en',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5251,6 +5431,10 @@ export const hho006cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\en\\hho011en.flc',
       fileType: 1129072160,
       extra: 'en',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5288,6 +5472,10 @@ export const hho006cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\re\\hho011re.flc',
       fileType: 1129072160,
       extra: 're',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -5325,6 +5513,10 @@ export const hho006cl_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\cl\\hho008cl.flc',
       fileType: 1129072160,
       extra: 'cl',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {

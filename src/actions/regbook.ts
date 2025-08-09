@@ -28014,6 +28014,10 @@ export const iic006in_Pho_500 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic006in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic006in_0_sfx = {
@@ -28145,6 +28149,10 @@ export const IIC010IN_Pho_501 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC010IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic010in_0_sfx = {
@@ -28390,6 +28398,10 @@ export const IIC012IN_Pho_502 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC012IN.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic012in_0_sfx = {
@@ -28597,6 +28609,10 @@ export const iic014in_Pho_503 = {
   filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic014in.flc',
   fileType: 1129072160,
   extra: 'infoman',
+  dimensions: {
+    width: 128,
+    height: 128,
+  },
   children: [],
 } as const
 export const iic014in_0_sfx = {
@@ -28838,6 +28854,10 @@ export const iic006in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic006in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -28986,6 +29006,10 @@ export const iic010in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC010IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -29248,6 +29272,10 @@ export const iic012in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\IN\\IIC012IN.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
@@ -29472,6 +29500,10 @@ export const iic014in_RunAnim = {
       filename: 'Q:\\Lego\\Audio\\Onscreen\\in\\iic014in.flc',
       fileType: 1129072160,
       extra: 'infoman',
+      dimensions: {
+        width: 128,
+        height: 128,
+      },
       children: [],
     },
     {
