@@ -74,13 +74,12 @@ export const calculateTransformationMatrix = (location: [number, number, number]
   return transformationMatrix
 }
 
-const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animation.Node | undefined, path: string[] = []): Promise<THREE.Mesh> => {
-  const result = new THREE.Mesh()
-  result.name = roi.name.toLowerCase()
+const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animation.Node | undefined, path: string[] = []): Promise<THREE.Object3D[]> => {
+  const result: THREE.Object3D[] = []
 
-  if (path.length < 1) {
-    path.push(roi.name)
-  }
+  const parent = new THREE.Mesh()
+  parent.name = [...path, roi.name.toLowerCase()].join('_')
+  result.push(parent)
 
   if (animation) {
     if (animation.translationKeys.length === 1) {
@@ -90,7 +89,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
       if (animation.translationKeys[0].timeAndFlags.flags !== 1) {
         console.warn(`Translation key for model ${roi.name} has non-standard flags of ${animation.translationKeys[0].timeAndFlags.flags}`)
       }
-      result.position.set(...animation.translationKeys[0].vertex)
+      parent.position.set(...animation.translationKeys[0].vertex)
     } else if (animation.translationKeys.length > 1) {
       console.warn(`Model ${roi.name} has ${animation.translationKeys.length} translation keys`)
     }
@@ -101,7 +100,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
       if (animation.rotationKeys[0].timeAndFlags.flags !== 1) {
         console.warn(`Rotation key for model ${roi.name} has non-standard flags of ${animation.rotationKeys[0].timeAndFlags.flags}`)
       }
-      result.quaternion.set(...animation.rotationKeys[0].quaternion)
+      parent.quaternion.set(...animation.rotationKeys[0].quaternion)
     } else if (animation.rotationKeys.length > 1) {
       console.warn(`Model ${roi.name} has ${animation.rotationKeys.length} rotation keys`)
     }
@@ -112,7 +111,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
       if (animation.scaleKeys[0].timeAndFlags.flags !== 1) {
         console.warn(`Scale key for model ${roi.name} has non-standard flags of ${animation.scaleKeys[0].timeAndFlags.flags}`)
       }
-      result.scale.set(...animation.scaleKeys[0].vertex)
+      parent.scale.set(...animation.scaleKeys[0].vertex)
     } else if (animation.scaleKeys.length > 1) {
       console.warn(`Model ${roi.name} has ${animation.scaleKeys.length} scale keys`)
     }
@@ -151,8 +150,8 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
           distortionScale: 5,
         })
         mesh.material.uniforms.size.value = 7
-        mesh.name = `${path.join('-')}-${++n}`.toLowerCase()
-        result.add(mesh)
+        mesh.name = `${path.join('_')}-${++n}`.toLowerCase()
+        parent.add(mesh)
         if (engine.currentWorld instanceof Isle) {
           engine.currentWorld.water = mesh
         }
@@ -160,24 +159,24 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
       }
 
       const mesh = new THREE.Mesh(geometry, material)
-      mesh.name = `${path.join('-')}-${++n}`.toLowerCase()
+      mesh.name = `${path.join('_')}-${++n}`.toLowerCase()
       if (getSettings().graphics.shadows) {
         mesh.castShadow = true
         mesh.receiveShadow = true
       }
-      result.add(mesh)
+      parent.add(mesh)
       meshes.push(mesh)
     }
     createdMeshes.push({ meshes, lod, texture: null, customColor })
   }
   for (const child of roi.children) {
-    result.add(
-      await roiToMesh(
+    result.push(
+      ...(await roiToMesh(
         child,
         parts,
         animation?.children.find(n => n.name.toLowerCase() === child.name.toLowerCase()),
-        [...path, child.name],
-      ),
+        [...path, roi.name.toLowerCase()],
+      )),
     )
   }
   return result
@@ -196,11 +195,13 @@ export const getWorld = async (name: 'BLDD' | 'BLDH' | 'BLDJ' | 'BLDR' | 'HOSP' 
       continue
     }
 
-    const mesh = await roiToMesh(model.roi, world.parts, model.animation.tree)
-    const matrix = calculateTransformationMatrix(model.position, model.rotation, model.up)
-    matrix.decompose(mesh.position, mesh.quaternion, mesh.scale)
-    mesh.visible = model.visible
-    group.add(mesh)
+    const models = await roiToMesh(model.roi, world.parts, model.animation.tree)
+    for (const object of models) {
+      const matrix = calculateTransformationMatrix(model.position, model.rotation, model.up)
+      matrix.decompose(object.position, object.quaternion, object.scale)
+      object.visible = model.visible
+    }
+    group.add(...models)
   }
   for (const part of world.parts) {
     const mesh = await getWorldPart(world, part.name, null, null)

@@ -63,16 +63,17 @@ export const getBeforeAndAfter = <T extends { timeAndFlags: { time: number } }>(
   return { before, after: keys[idx] }
 }
 
-export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTrack[] => {
+export const animationToTracks = (animation: Animation3DNode, offset: THREE.Vector3 = new THREE.Vector3()): THREE.KeyframeTrack[] => {
   const position = new THREE.Vector3()
   const quaternion = new THREE.Quaternion()
   const scale = new THREE.Vector3()
 
   const isBodyPart = (name: string) => ['body', 'arm-rt', 'arm-lft', 'leg-rt', 'leg-lft', 'head', 'infohat', 'infogron', 'claw-rt', 'claw-lft'].includes(name)
+  const isActor = (name: string) => Object.keys(ACTORS).includes(name)
 
   const getDurationMs = (animation: Animation3DNode): number => Math.max(animation.translationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.rotationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.scaleKeys.at(-1)?.timeAndFlags.time ?? 0, ...animation.children.map(getDurationMs))
 
-  const getTransform = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name = '', parent: THREE.Matrix4 = new THREE.Matrix4(), actorName: string | null = null): void => {
+  const getTransform = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name = '', parent: THREE.Matrix4 = new THREE.Matrix4(), path: string[] = []): void => {
     if (animation.name === 'target' || animation.name.startsWith('cam')) {
       if (animation.translationKeys.length > 1 || animation.rotationKeys.length > 1 || animation.scaleKeys.length > 1 || animation.morphKeys.length > 1) {
         throw new Error('Camera movement is not implemented. If you see this, please implement it.')
@@ -81,17 +82,11 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
       return
     }
 
-    const isActor = Object.keys(ACTORS).includes(animation.name)
-
     const push = (key: string, values: number[]) => {
-      if (name.length < 1 || isActor) {
-        return
-      }
-      const prefix = actorName != null && isBodyPart(name) ? `${actorName}_` : ''
-      const path = prefix + [name, key].join('.')
-      const existing = valueMap.get(path)
+      const propertyPath = `${[...path, name].filter(x => !isActor(x) || isActor(name) || isBodyPart(name)).join('_')}.${key}`
+      const existing = valueMap.get(propertyPath)
       if (existing == null) {
-        valueMap.set(path, values)
+        valueMap.set(propertyPath, values)
       } else {
         existing.push(...values)
       }
@@ -154,31 +149,38 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
 
     mat = parent.clone().multiply(mat)
 
-    if (!name.startsWith('-')) {
+    if (!name.startsWith('-') && !isActor(name) && name.length > 0) {
       mat.decompose(position, quaternion, scale)
-      push('position', position.toArray())
+      push('position', position.add(offset).toArray())
       push('quaternion', quaternion.toArray())
       push('scale', scale.toArray())
     }
 
     for (const child of animation.children) {
-      getTransform(child, time, valueMap, child.name, mat, isActor ? animation.name : actorName)
+      getTransform(
+        child,
+        time,
+        valueMap,
+        child.name,
+        mat,
+        [...path, name].filter(x => !x.startsWith('-') && !isBodyPart(x) && x.length > 0),
+      )
     }
   }
 
   const duration = getDurationMs(animation)
-  const getNextTime = (animation: Animation3DNode, start: number): number => {
+  const getNextTime = (animation: Animation3DNode, start: number, keys: ('translationKeys' | 'rotationKeys' | 'scaleKeys' | 'morphKeys')[]): number => {
     let next = Number.POSITIVE_INFINITY
-    for (const key of [animation.translationKeys, animation.rotationKeys, animation.scaleKeys, animation.morphKeys]) {
+    for (const key of keys.map(k => animation[k])) {
       const nextKey = key.find(k => k.timeAndFlags.time > start)
       if (nextKey != null) {
         next = Math.min(next, nextKey.timeAndFlags.time)
       }
     }
-    return Math.min(next, ...animation.children.map(c => getNextTime(c, start)))
+    return Math.min(next, ...animation.children.map(c => getNextTime(c, start, keys)))
   }
   const times = []
-  for (let start = 0; start <= duration; start = getNextTime(animation, start)) {
+  for (let start = 0; start <= duration; start = getNextTime(animation, start, ['translationKeys', 'rotationKeys', 'scaleKeys'])) {
     times.push(start)
   }
   const valueMap = new Map<string, number[]>()
@@ -200,39 +202,68 @@ export const animationToTracks = (animation: Animation3DNode): THREE.KeyframeTra
     throw new Error(`Unknown track: ${name}`)
   })
 
-  const getMorph = (animation: Animation3DNode, name = '', actorName: string | null = null): void => {
-    const isActor = Object.keys(ACTORS).includes(animation.name)
-
-    if (animation.morphKeys.length > 0) {
-      const keys =
-        animation.morphKeys[0].timeAndFlags.time === 0
-          ? animation.morphKeys
-          : [
-              {
-                timeAndFlags: { time: 0, flags: 0 },
-                visible: true,
-              },
-              ...animation.morphKeys,
-            ]
-
-      result.push(
-        new THREE.BooleanKeyframeTrack(
-          `${actorName != null && isBodyPart(name) ? `${actorName}_` : ''}${name}.visible`,
-          keys.map(k => k.timeAndFlags.time / 1_000),
-          // @ts-expect-error https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/73394
-          keys.map(k => k.visible),
-        ),
-      )
+  const addZeroMorphKey = (animation: Animation3DNode): void => {
+    if (animation.morphKeys.length > 0 && animation.morphKeys[0].timeAndFlags.time > 0) {
+      animation.morphKeys.unshift({
+        timeAndFlags: { time: 0, flags: 0 },
+        visible: true,
+      })
     }
 
     for (const child of animation.children) {
-      getMorph(child, child.name, isActor ? animation.name : actorName)
+      addZeroMorphKey(child)
+    }
+  }
+  addZeroMorphKey(animation)
+
+  const getMorph = (animation: Animation3DNode, time: number, valueMap: Map<string, boolean[]>, name = '', parent: boolean, path: string[] = []): void => {
+    const push = (key: string, value: boolean) => {
+      if (name.startsWith('-') || isActor(name) || name.length < 1) {
+        return
+      }
+      const propertyPath = `${[...path, name].filter(x => !isActor(x) || isActor(name) || isBodyPart(name)).join('_')}.${key}`
+      const existing = valueMap.get(propertyPath)
+      if (existing == null) {
+        valueMap.set(propertyPath, [value])
+      } else {
+        existing.push(value)
+      }
+    }
+
+    const visible = animation.morphKeys.length < 1 ? parent : getBeforeAndAfter(animation.morphKeys, time).before.visible
+    push('visible', visible)
+
+    for (const child of animation.children) {
+      getMorph(
+        child,
+        time,
+        valueMap,
+        child.name,
+        visible,
+        [...path, name].filter(x => !x.startsWith('-') && !isBodyPart(x) && x.length > 0),
+      )
     }
   }
 
-  for (const child of animation.children) {
-    getMorph(child, child.name)
+  const morphTimes: number[] = []
+  for (let start = 0; start <= duration; start = getNextTime(animation, start, ['morphKeys'])) {
+    morphTimes.push(start)
   }
+  const morphValueMap = new Map<string, boolean[]>()
+  for (const time of morphTimes) {
+    getMorph(animation, time, morphValueMap, '', true)
+  }
+
+  const morphResult = Array.from(morphValueMap.entries()).map(([name, values]) => {
+    return new THREE.BooleanKeyframeTrack(
+      name,
+      morphTimes.map(t => t / 1_000),
+      // @ts-expect-error https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/73394
+      values,
+    )
+  })
+
+  result.push(...morphResult)
 
   return result
 }

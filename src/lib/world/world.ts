@@ -127,16 +127,23 @@ export abstract class World {
   }
 
   public getObjectByNameRecursive(name: string, root: THREE.Object3D = this.scene): THREE.Object3D | null {
+    let found: THREE.Object3D | null = null
     for (const child of root.children) {
       if (child.name.toLowerCase() === name.toLowerCase()) {
-        return child
+        if (found != null) {
+          throw new Error(`Multiple objects found with name ${name}`)
+        }
+        found = child
       }
       const result = this.getObjectByNameRecursive(name, child)
       if (result != null) {
-        return result
+        if (found != null) {
+          throw new Error(`Multiple objects found with name ${name}`)
+        }
+        found = result
       }
     }
-    return null
+    return found
   }
 
   public async playAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction>): Promise<void> {
@@ -148,26 +155,14 @@ export abstract class World {
     const animation = parse3DAnimation(await getAction(animationActions[0]))
     this.setupCameraForAnimation(animation.tree)
 
-    const actors = new THREE.Group()
-
     for (const actor of animation.actors) {
       switch (actor.type) {
         case WDB.ActorType.Unknown: {
-          const node = this.getObjectByNameRecursive(actor.name)?.clone()
+          const node = this.getObjectByNameRecursive(actor.name)
           if (node == null) {
             throw new Error(`Actor not found: ${actor.name}`)
           }
-          node.name = actor.name.toLowerCase()
           node.visible = true
-          actors.add(node)
-          for (const child of Array.from(node.children)) {
-            // we only want to flatten objects that have sub-meshes, otherwise we put the sub-meshes into the scene
-            if (child.children.length < 1) {
-              continue
-            }
-            node.remove(child)
-            actors.add(child)
-          }
           break
         }
         case WDB.ActorType.ManagedActor: {
@@ -175,7 +170,7 @@ export abstract class World {
           if (actor.name.startsWith('*')) {
             minifig.visible = false
           }
-          actors.add(minifig)
+          this.scene.add(minifig)
           break
         }
         case WDB.ActorType.ManagedInvisibleRoi: {
@@ -186,7 +181,7 @@ export abstract class World {
           }
           node.name = actor.name.toLowerCase()
           node.visible = false
-          actors.add(node)
+          this.scene.add(node)
           break
         }
         case WDB.ActorType.ManagedInvisibleRoiTrimmed: {
@@ -197,7 +192,7 @@ export abstract class World {
           }
           node.name = actor.name.toLowerCase()
           node.visible = false
-          actors.add(node)
+          this.scene.add(node)
           break
         }
         case WDB.ActorType.SceneRoi1:
@@ -207,7 +202,7 @@ export abstract class World {
             throw new Error(`ROI not found: ${actor.name} (SceneRoi)`)
           }
           node.name = actor.name.toLowerCase()
-          actors.add(node)
+          this.scene.add(node)
           break
         }
         default:
@@ -219,7 +214,7 @@ export abstract class World {
       action.children
         .filter(c => c.presenter === 'Lego3DWavePresenter')
         .map(async audio => {
-          const actor = this.getObjectByNameRecursive(audio.extra, actors)
+          const actor = this.getObjectByNameRecursive(audio.extra)
           if (actor == null) {
             throw new Error(`Actor not found: ${audio.extra}`)
           }
@@ -235,7 +230,7 @@ export abstract class World {
       if (phoneme.extra == null) {
         throw new Error('Phoneme extra is null')
       }
-      const actor = actors.getObjectByName(phoneme.extra)
+      const actor = this.getObjectByNameRecursive(phoneme.extra)
       if (actor == null || !(actor instanceof Actor)) {
         throw new Error(`Actor not found: ${phoneme.extra}`)
       }
@@ -247,9 +242,8 @@ export abstract class World {
       actor.headMaterial.map = texture
     }
 
-    this.scene.add(actors)
-
-    const tracks = animationToTracks(animation.tree)
+    const location = new THREE.Vector3(-animationActions[0].location[0], animationActions[0].location[1], animationActions[0].location[2])
+    const tracks = animationToTracks(animation.tree, location)
 
     if (animation.cameraAnimation != null) {
       const cameraTranslationValues: number[] = []
@@ -259,7 +253,7 @@ export abstract class World {
           throw new Error('Camera translation key has unsupported flags')
         }
 
-        cameraTranslationValues.push(...key.vertex)
+        cameraTranslationValues.push(...new THREE.Vector3(...key.vertex).add(location).toArray())
         cameraTranslationTimes.push(key.timeAndFlags.time)
       }
       if (cameraTranslationTimes.length > 0) {
@@ -278,7 +272,12 @@ export abstract class World {
     }
 
     const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
-    return this.playAnimationClip(this.scene, clip, audios, animation.cameraAnimation?.lookAtKeys)
+    return this.playAnimationClip(
+      this.scene,
+      clip,
+      audios,
+      animation.cameraAnimation?.lookAtKeys?.map(key => ({ ...key, vertex: new THREE.Vector3(...key.vertex).add(location).toArray() })),
+    )
   }
 
   public async playAnimationClip(root: THREE.Object3D, clip: THREE.AnimationClip, audios: THREE.PositionalAudio[] = [], lookAtKeys?: WDB.Animation.VertexKey[]): Promise<void> {
@@ -344,10 +343,16 @@ export abstract class World {
     this._initialized = true
   }
 
+  private _timeSinceLastLookAtKey = 0
+
   public update(delta: number): void {
+    this._timeSinceLastLookAtKey += delta
+
     for (const { mixer, lookAtKeys } of this._runningAnimations) {
       mixer.update(delta)
+
       if (lookAtKeys != null) {
+        this._timeSinceLastLookAtKey = 0
         const { before, after } = getBeforeAndAfter(lookAtKeys, mixer.time * 1_000)
         if (before.timeAndFlags.flags !== 1) {
           throw new Error('Camera look at key has unsupported flags')
@@ -359,8 +364,7 @@ export abstract class World {
           if (after.timeAndFlags.flags !== 1) {
             throw new Error('Camera look at key has unsupported flags')
           }
-
-          this.camera.lookAt(new THREE.Vector3().lerpVectors(beforePosition, new THREE.Vector3(after.vertex[0], after.vertex[1], after.vertex[2]), (mixer.time - before.timeAndFlags.time) / (after.timeAndFlags.time - before.timeAndFlags.time)))
+          this.camera.lookAt(new THREE.Vector3().lerpVectors(beforePosition, new THREE.Vector3(after.vertex[0], after.vertex[1], after.vertex[2]), (mixer.time * 1_000 - before.timeAndFlags.time) / (after.timeAndFlags.time - before.timeAndFlags.time)))
         }
       }
     }
@@ -407,7 +411,7 @@ export abstract class World {
           engine.currentPlayerCharacter = 'pepper'
           break
       }
-      console.log(`Current actor: ${engine.currentPlayerCharacter}`)
+      console.info(`Current actor: ${engine.currentPlayerCharacter}`)
     }
 
     if (key === ' ') {
@@ -481,12 +485,28 @@ export abstract class World {
   }
 
   public debugPrintSceneGraph(): void {
-    const print = (node: THREE.Object3D, indent = 0) => {
-      console.log(' '.repeat(indent) + node.name)
-      for (const child of node.children) {
-        print(child, indent + 2)
-      }
+    type Graph = {
+      name: string
+      children: Graph[]
     }
-    print(this.scene)
+
+    const walk = (root: THREE.Object3D, parent: Graph) => {
+      const node: Graph = {
+        name: root.name,
+        children: [],
+      }
+      for (const child of root.children) {
+        walk(child, node)
+      }
+      parent.children.push(node)
+    }
+
+    const graph: Graph = {
+      name: 'scene',
+      children: [],
+    }
+    walk(this.scene, graph)
+
+    console.log(graph.children[0])
   }
 }

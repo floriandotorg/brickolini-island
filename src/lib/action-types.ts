@@ -18,7 +18,7 @@ export type ParallelActionTuple<T, P extends string | null = string | null> = Ov
 
 export type SerialAction<T, P extends string | null = string | null> = Override<ActionBase, { type: Action.Type.SerialAction; fileType?: Action.FileType; children: readonly T[]; presenter: P }>
 
-export type AnimationAction = Override<FileActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoAnimPresenter' }>
+export type AnimationAction = Override<FileActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoAnimPresenter'; location: readonly [number, number, number] }>
 
 export type BoundaryAction = Override<ActionBase, { presenter: 'LegoPathPresenter'; fileType: Action.FileType; location: readonly [number, number, number] }>
 
