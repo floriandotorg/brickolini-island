@@ -386,7 +386,7 @@ import { getSettings } from '../lib/settings'
 import { switchWorld } from '../lib/switch-world'
 import { IsleBase } from './isle-base'
 
-const CAM_HEIGHT = 1.3
+const CAM_HEIGHT = 1.24
 const MAX_LINEAR_VEL = 10
 const MAX_ROT_VEL = 80
 const MAX_LINEAR_ACCEL = 15
