@@ -7,43 +7,42 @@ const worlds = new Map<WorldName, World>()
 
 export const switchWorld = async (worldName: WorldName, param?: unknown) => {
   if (engine.hasWorld) {
-    engine.currentWorld.skipAllCurrentAnimation()
+    engine.currentWorld.skipAllRunningAnimations()
   }
 
   const transition = engine.hasWorld ? engine.transition() : Promise.resolve()
 
-  let world: World | null = worlds.get(worldName) ?? null
-  if (world == null) {
+  if (!worlds.has(worldName)) {
     switch (worldName) {
       case 'isle':
-        world = await import('../worlds/isle').then(m => new m.Isle())
+        worlds.set('isle', await import('../worlds/isle').then(m => new m.Isle()))
         break
       case 'hospital':
-        world = await import('../worlds/hospital').then(m => new m.Hospital())
+        worlds.set('hospital', await import('../worlds/hospital').then(m => new m.Hospital()))
         break
       case 'garage':
-        world = await import('../worlds/garage').then(m => new m.Garage())
+        worlds.set('garage', await import('../worlds/garage').then(m => new m.Garage()))
         break
       case 'infomain':
-        world = await import('../worlds/infomain').then(m => new m.InfoMain())
+        worlds.set('infomain', await import('../worlds/infomain').then(m => new m.InfoMain()))
         break
       case 'police':
-        world = await import('../worlds/police').then(m => new m.Police())
+        worlds.set('police', await import('../worlds/police').then(m => new m.Police()))
         break
       case 'elevbott':
-        world = await import('../worlds/elevbott').then(m => new m.ElevBott())
+        worlds.set('elevbott', await import('../worlds/elevbott').then(m => new m.ElevBott()))
         break
       case 'infodoor':
-        world = await import('../worlds/infodoor').then(m => new m.InfoDoor())
+        worlds.set('infodoor', await import('../worlds/infodoor').then(m => new m.InfoDoor()))
         break
       case 'infoscor':
-        world = await import('../worlds/infoscor').then(m => new m.InfoScor())
+        worlds.set('infoscor', await import('../worlds/infoscor').then(m => new m.InfoScor()))
         break
       case 'polidoor':
-        world = await import('../worlds/polidoor').then(m => new m.PoliDoor())
+        worlds.set('polidoor', await import('../worlds/polidoor').then(m => new m.PoliDoor()))
         break
       case 'garadoor':
-        world = await import('../worlds/garadoor').then(m => new m.GarDoor())
+        worlds.set('garadoor', await import('../worlds/garadoor').then(m => new m.GarDoor()))
         break
       default: {
         const _exhaustiveCheck: never = worldName
@@ -52,6 +51,7 @@ export const switchWorld = async (worldName: WorldName, param?: unknown) => {
     }
   }
 
+  const world = worlds.get(worldName)
   if (world == null) {
     throw new Error(`World ${worldName} not found`)
   }

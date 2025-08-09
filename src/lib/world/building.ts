@@ -114,7 +114,6 @@ export class Building {
     for (const control of this._controls) {
       const result = control.pointerDown(normalizedX, normalizedY)
       if (result != null) {
-        console.log(control)
         if (control.name === 'Info_Ctl') {
           void switchWorld('infomain')
           return
@@ -141,7 +140,7 @@ export class Building {
         }
 
         if (!this.onButtonClicked(control.name, result)) {
-          console.log(`Button ${control.name} not handled`)
+          console.warn(`Button ${control.name} not handled`)
         }
 
         return

@@ -415,11 +415,11 @@ export abstract class World {
     }
 
     if (key === ' ') {
-      this.skipAllCurrentAnimation()
+      this.skipAllRunningAnimations()
     }
   }
 
-  public skipAllCurrentAnimation(): void {
+  public skipAllRunningAnimations(): void {
     for (const runningAnimation of this._runningAnimations) {
       runningAnimation.clipAction.time = runningAnimation.clipAction.getClip().duration
       for (const audio of runningAnimation.audios) {
