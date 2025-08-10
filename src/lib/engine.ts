@@ -214,7 +214,7 @@ class Engine {
 
   public start() {
     this._clock.start()
-    this._render()
+    this.renderer.setAnimationLoop(() => this._render())
   }
 
   public async setWorld(world: World, param?: unknown) {
@@ -276,8 +276,6 @@ class Engine {
   }
 
   private _render() {
-    requestAnimationFrame(() => this._render())
-
     const delta = this._clock.getDelta()
 
     if (this._state === 'game') {
