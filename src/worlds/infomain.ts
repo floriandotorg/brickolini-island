@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import {
   _InfoMain,
+  FrameHot_Bitmap,
   iic001in_RunAnim,
   iic019in_RunAnim,
   iic020in_RunAnim,
@@ -18,17 +19,24 @@ import {
   iicc28in_RunAnim,
   iicx17in_RunAnim,
   Laura_All_Movie,
+  Laura_Up_Bitmap,
   Mama_All_Movie,
+  Mama_Up_Bitmap,
   Nick_All_Movie,
+  Nick_Up_Bitmap,
   Papa_All_Movie,
+  Papa_Up_Bitmap,
   Pepper_All_Movie,
+  Pepper_Up_Bitmap,
 } from '../actions/infomain'
 import { InformationCenter_Music } from '../actions/jukebox'
 import { BookWig_Flic } from '../actions/sndanim'
-import type { CharacterMovieAction } from '../lib/action-types'
+import type { CharacterMovieAction, ImageAction } from '../lib/action-types'
+import { createNormalizedSprite } from '../lib/assets/canvas-sprite'
+import { getImage } from '../lib/assets/image'
 import { MovieSprite } from '../lib/assets/movie-sprite'
 import type { Composer } from '../lib/effect/composer'
-import { engine } from '../lib/engine'
+import { engine, normalizePoint } from '../lib/engine'
 import { getSettings } from '../lib/settings'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
@@ -40,12 +48,24 @@ const ANIMATIONS = [iic019in_RunAnim, iic020in_RunAnim, iic021in_RunAnim, iic022
 export class InfoMain extends World {
   private _building = new Building()
 
+  private readonly _characterFrame: THREE.Sprite
   private _welcomeTimeout: number | null = null
   private _currentAnimationIndex = 0
   private _infomanHasBeenClicked = false
 
   constructor() {
     super('infomain')
+    const bitmap = FrameHot_Bitmap
+    this._characterFrame = createNormalizedSprite(0, 0, -0.4, bitmap.dimensions.width, bitmap.dimensions.height)
+    this._building.scene.add(this._characterFrame)
+    this._characterFrame.visible = false
+    getImage(bitmap).then(image => {
+      const map = new THREE.Texture()
+      map.image = image
+      map.needsUpdate = true
+      const material = new THREE.SpriteMaterial({ map, color: 0xffffff })
+      this._characterFrame.material = material
+    })
   }
 
   private async playCharacterMovie(characterMovie: { children: readonly [CharacterMovieAction, CharacterMovieAction, CharacterMovieAction] }): Promise<void> {
@@ -57,6 +77,13 @@ export class InfoMain extends World {
     movie.removeFromParent()
     await end.play(this._building.scene)
     end.removeFromParent()
+  }
+
+  private placeCharacterFrame(control: ImageAction): void {
+    const [normalizedX, normalizedY] = normalizePoint(control.location[0], control.location[1])
+    this._characterFrame.position.x = normalizedX + this._characterFrame.scale.x / 2
+    this._characterFrame.position.y = normalizedY - this._characterFrame.scale.y / 2
+    this._characterFrame.visible = true
   }
 
   public override async init(): Promise<void> {
@@ -76,18 +103,28 @@ export class InfoMain extends World {
           void switchWorld('infoscor')
           return true
         case 'Mama_Ctl':
+          engine.currentPlayerCharacter = 'mama'
+          this.placeCharacterFrame(Mama_Up_Bitmap)
           void this.playCharacterMovie(Mama_All_Movie)
           return true
         case 'Papa_Ctl':
+          engine.currentPlayerCharacter = 'papa'
+          this.placeCharacterFrame(Papa_Up_Bitmap)
           void this.playCharacterMovie(Papa_All_Movie)
           return true
         case 'Pepper_Ctl':
+          engine.currentPlayerCharacter = 'pepper'
+          this.placeCharacterFrame(Pepper_Up_Bitmap)
           void this.playCharacterMovie(Pepper_All_Movie)
           return true
         case 'Nick_Ctl':
+          engine.currentPlayerCharacter = 'nick'
+          this.placeCharacterFrame(Nick_Up_Bitmap)
           void this.playCharacterMovie(Nick_All_Movie)
           return true
         case 'Laura_Ctl':
+          engine.currentPlayerCharacter = 'laura'
+          this.placeCharacterFrame(Laura_Up_Bitmap)
           void this.playCharacterMovie(Laura_All_Movie)
           return true
       }
