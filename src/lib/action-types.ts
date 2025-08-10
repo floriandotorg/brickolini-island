@@ -26,9 +26,15 @@ export type ImageAction = Override<FileActionBase, { type: Action.Type.Still; fi
 
 export type PhonemeAction = Override<ActionBase, { type: Action.Type.Anim; fileType: Action.FileType.FLC; presenter: 'LegoPhonemePresenter'; startTime: number; duration: number }>
 
-export type CompositeMediaAction = ParallelActionTuple<readonly [Override<ActionBase, { fileType: Action.FileType.SMK; presenter: null; dimensions: { width: number; height: number } }>, AudioAction], 'MxCompositeMediaPresenter'>
+export type VideoAction = Override<FileActionBase, { presenter: null; dimensions: { width: number; height: number } }>
 
-export type CharacterMovieAction = ParallelActionTuple<readonly [AudioAction, Override<ActionBase, { fileType: Action.FileType.SMK; presenter: null; dimensions: { width: number; height: number } }>], null>
+export type FlcAction = Override<VideoAction, { fileType: Action.FileType.FLC }>
+
+export type SmackerAction = Override<VideoAction, { fileType: Action.FileType.SMK }>
+
+export type CompositeMediaAction = ParallelActionTuple<readonly [SmackerAction, AudioAction], 'MxCompositeMediaPresenter'>
+
+export type CharacterMovieAction = ParallelActionTuple<readonly [AudioAction, SmackerAction], null>
 
 export type ActorAction = ParallelActionTuple<readonly [Override<ActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoModelPresenter' }>], 'LegoActorPresenter'>
 
