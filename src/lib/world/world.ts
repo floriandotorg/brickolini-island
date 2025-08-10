@@ -27,6 +27,16 @@ export abstract class World {
     audios: THREE.PositionalAudio[]
     resolve: () => void
     lookAtKeys?: WDB.Animation.VertexKey[]
+    faceAnimations: {
+      actor: Actor
+      currentVideoElement?: HTMLVideoElement
+      animations: {
+        start: number
+        duration: number
+        videoElement: HTMLVideoElement
+        videoTexture: THREE.VideoTexture
+      }[]
+    }[]
   }[] = []
   private _actors = new Map<string, Actor>()
 
@@ -218,28 +228,12 @@ export abstract class World {
           if (actor == null) {
             throw new Error(`Actor not found: ${audio.extra}`)
           }
-          return this.playPositionalAudio(audio, actor, audio.startTime / 1_000)
+          return this.playPositionalAudio(audio, actor instanceof Actor ? actor.head : actor, audio.startTime / 1_000)
         }),
     )
 
     for (const audio of action.children.filter(c => c.fileType === Action.FileType.WAV && c.presenter === null)) {
       engine.playAudio(audio)
-    }
-
-    for (const phoneme of action.children.filter(c => c.presenter === 'LegoPhonemePresenter')) {
-      if (phoneme.extra == null) {
-        throw new Error('Phoneme extra is null')
-      }
-      const actor = this.getObjectByNameRecursive(phoneme.extra)
-      if (actor == null || !(actor instanceof Actor)) {
-        throw new Error(`Actor not found: ${phoneme.extra}`)
-      }
-      const video = document.createElement('video')
-      video.src = getActionFileUrl(phoneme)
-      video.play()
-      const texture = new THREE.VideoTexture(video)
-      texture.colorSpace = THREE.SRGBColorSpace
-      actor.headMaterial.map = texture
     }
 
     const location = new THREE.Vector3(-animationActions[0].location[0], animationActions[0].location[1], animationActions[0].location[2])
@@ -277,17 +271,52 @@ export abstract class World {
       clip,
       audios,
       animation.cameraAnimation?.lookAtKeys?.map(key => ({ ...key, vertex: new THREE.Vector3(...key.vertex).add(location).toArray() })),
+      action.children
+        .filter(c => c.presenter === 'LegoPhonemePresenter')
+        .map(phoneme => {
+          if (phoneme.extra == null) {
+            throw new Error('Phoneme extra is null')
+          }
+          const actor = this.getObjectByNameRecursive(phoneme.extra)
+          if (actor == null || !(actor instanceof Actor)) {
+            throw new Error(`Actor not found: ${phoneme.extra}`)
+          }
+          const videoElement = document.createElement('video')
+          videoElement.src = getActionFileUrl(phoneme)
+          const videoTexture = new THREE.VideoTexture(videoElement)
+          videoTexture.colorSpace = THREE.SRGBColorSpace
+          return {
+            actor,
+            videoElement,
+            videoTexture,
+            start: phoneme.startTime,
+            duration: phoneme.duration,
+          }
+        })
+        .reduce(
+          (acc, { actor, ...rest }) => {
+            const existing = acc.find(a => a.actor === actor)
+            if (existing == null) {
+              acc.push({ actor, animations: [rest] })
+            } else {
+              existing.animations.push(rest)
+            }
+            return acc
+          },
+          [] as (typeof this._runningAnimations)[number]['faceAnimations'],
+        )
+        .map(a => ({ ...a, animations: a.animations.sort((a, b) => b.start - a.start) })),
     )
   }
 
-  public async playAnimationClip(root: THREE.Object3D, clip: THREE.AnimationClip, audios: THREE.PositionalAudio[] = [], lookAtKeys?: WDB.Animation.VertexKey[]): Promise<void> {
+  public async playAnimationClip(root: THREE.Object3D, clip: THREE.AnimationClip, audios: THREE.PositionalAudio[] = [], lookAtKeys?: WDB.Animation.VertexKey[], faceAnimations: (typeof this._runningAnimations)[number]['faceAnimations'] = []): Promise<void> {
     const mixer = new THREE.AnimationMixer(root)
     const clipAction = mixer.clipAction(clip)
     clipAction.loop = THREE.LoopOnce
     clipAction.clampWhenFinished = true
     clipAction.play()
     return new Promise(resolve => {
-      this._runningAnimations.push({ mixer, clipAction, audios, resolve, lookAtKeys })
+      this._runningAnimations.push({ mixer, clipAction, audios, resolve, lookAtKeys, faceAnimations })
       mixer.addEventListener('finished', () => {
         this._runningAnimations = this._runningAnimations.filter(a => a.mixer !== mixer)
         resolve()
@@ -343,16 +372,11 @@ export abstract class World {
     this._initialized = true
   }
 
-  private _timeSinceLastLookAtKey = 0
-
   public update(delta: number): void {
-    this._timeSinceLastLookAtKey += delta
-
-    for (const { mixer, lookAtKeys } of this._runningAnimations) {
+    for (const { mixer, lookAtKeys, faceAnimations } of this._runningAnimations) {
       mixer.update(delta)
 
       if (lookAtKeys != null) {
-        this._timeSinceLastLookAtKey = 0
         const { before, after } = getBeforeAndAfter(lookAtKeys, mixer.time * 1_000)
         if (before.timeAndFlags.flags !== 1) {
           throw new Error('Camera look at key has unsupported flags')
@@ -366,6 +390,20 @@ export abstract class World {
           }
           this.camera.lookAt(new THREE.Vector3().lerpVectors(beforePosition, new THREE.Vector3(after.vertex[0], after.vertex[1], after.vertex[2]), (mixer.time * 1_000 - before.timeAndFlags.time) / (after.timeAndFlags.time - before.timeAndFlags.time)))
         }
+      }
+
+      for (const faceAnimation of faceAnimations) {
+        const currentAnimation = faceAnimation.animations.find(a => mixer.time * 1_000 >= a.start)
+        if (currentAnimation == null) {
+          continue
+        }
+        const { videoElement } = currentAnimation
+        if (faceAnimation.currentVideoElement !== videoElement) {
+          faceAnimation.currentVideoElement = videoElement
+          faceAnimation.actor.headMaterial.map = currentAnimation.videoTexture
+          faceAnimation.actor.headMaterial.needsUpdate = true
+        }
+        faceAnimation.currentVideoElement.currentTime = mixer.time - currentAnimation.start / 1_000
       }
     }
   }
