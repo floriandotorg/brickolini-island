@@ -15,7 +15,12 @@ const getImageAction = (action: ControlChild | undefined): ImageAction => {
   if (isImageAction(action)) {
     return action
   }
-  return action.children[0]
+  for (const child of action.children) {
+    if (isImageAction(child)) {
+      return child
+    }
+  }
+  throw new Error('Action and children are no image action')
 }
 
 const createPlacedImage = async (action: ImageAction, willReadFrequently: boolean = false): Promise<PlacedImage> => {
@@ -66,7 +71,7 @@ class MapControl implements Handler {
 
   public constructor(mask: PlacedImage, images: PlacedImage[], states: [number, number, number][]) {
     if (images.length !== 0 && states.length !== 0 && images.length !== states.length) {
-      throw new Error('No images and states defined for Map')
+      throw new Error('Number of states and images does not match')
     }
     this._state = 0
     this._mask = mask
@@ -99,6 +104,52 @@ class MapControl implements Handler {
 
   public get image(): PlacedImage | null {
     return this._state === 0 || this._images.length === 0 ? null : this._images[this._state - 1]
+  }
+}
+
+class GridControl implements Handler {
+  private _state: number
+  private readonly _idleImage: PlacedImage
+  private readonly _stateImages: PlacedImage[]
+  public readonly numberOfColumns: number
+
+  public constructor(idleImage: PlacedImage, stateImages: PlacedImage[], numberOfColumns: number) {
+    if (stateImages.length === 0) {
+      throw new Error('No images defined for Grid')
+    }
+    if (stateImages.length % numberOfColumns !== 0) {
+      throw new Error('No pressed image for every cell defined')
+    }
+    this._state = 0
+    this._idleImage = idleImage
+    this._stateImages = stateImages
+    this.numberOfColumns = numberOfColumns
+  }
+
+  public pointerDown(normalizedX: number, normalizedY: number): number | null {
+    const pixel = getPixel(this._idleImage, normalizedX, normalizedY)
+    if (pixel == null || pixel[3] === 0) {
+      return null
+    }
+    const offsetX = normalizedX - this._idleImage.normalizedX
+    const offsetY = -(normalizedY - this._idleImage.normalizedY)
+    const col = Math.floor(offsetX / (this._idleImage.normalizedWidth / this.numberOfColumns))
+    const row = Math.floor(offsetY / (this._idleImage.normalizedHeight / this.numberOfRows))
+    this._state = row * this.numberOfColumns + col + 1
+    return this._state
+  }
+
+  public get numberOfRows(): number {
+    return this._stateImages.length / this.numberOfColumns
+  }
+
+  public pointerUp(): boolean {
+    this._state = 0
+    return true
+  }
+
+  public get image(): PlacedImage | null {
+    return this._state === 0 ? this._idleImage : this._stateImages[this._state - 1]
   }
 }
 
@@ -158,70 +209,90 @@ export class Control {
   private readonly _handler: Handler
 
   public static async create(action: ControlAction): Promise<Control> {
-    const styleValue = getExtraValue(action, 'Style')
-    // This is currently a very basic implementation
-    const [style, ...styleParams] = styleValue == null ? [''] : splitExtraValue(styleValue)
-    switch (style.toLowerCase()) {
-      case 'map': {
-        const maskAction = action.children[0]
-        if (maskAction == null || !isImageAction(maskAction)) {
-          throw new Error('Unknown first child action')
-        }
-        if (maskAction.extra?.toLowerCase() !== 'bmp_ismap') {
-          throw new Error('Unknown mask extra string')
-        }
-        const colorState: [number, number, number][] = []
-        if (styleParams.length > 0) {
-          const stateCount = parseInt(styleParams[0])
-          if (!Number.isInteger(stateCount) && stateCount < 1) {
-            throw new Error('State count in map-style is not a positive integer')
+    try {
+      const styleValue = getExtraValue(action, 'Style')
+      // This is currently a very basic implementation
+      const [style, ...styleParams] = styleValue == null ? [''] : splitExtraValue(styleValue)
+      switch (style.toLowerCase()) {
+        case 'map': {
+          const maskAction = getImageAction(action.children[0])
+          if (maskAction.extra?.toLowerCase() !== 'bmp_ismap') {
+            throw new Error(`Unknown mask extra string`)
           }
-          if (stateCount !== styleParams.length - 1) {
-            throw new Error('Invalid state count in map')
-          }
-          if (!isWithColorPalette(maskAction)) {
-            throw new Error('Multiple states without color palette')
-          }
-          for (const param of styleParams.slice(1)) {
-            const state = parseInt(param)
-            if (!Number.isInteger(state) && state < 1 && state < maskAction.colorPalette.length) {
-              throw new Error('State in map-style is not a positive integer')
+          const colorState: [number, number, number][] = []
+          if (styleParams.length > 0 && styleParams[0].length > 0) {
+            const stateCount = parseInt(styleParams[0])
+            if (!Number.isInteger(stateCount) || stateCount < 1) {
+              throw new Error(`State count in map-style is not a positive integer`)
             }
-            const color = maskAction.colorPalette[state]
-            const colorMatch = color.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/)
-            if (colorMatch == null) {
-              throw new Error(`Unknown color '${color}"`)
+            if (stateCount !== styleParams.length - 1) {
+              throw new Error(`Invalid state count in map`)
             }
-            const r = parseInt(colorMatch[1], 16)
-            const g = parseInt(colorMatch[2], 16)
-            const b = parseInt(colorMatch[3], 16)
-            colorState.push([r, g, b])
+            if (!isWithColorPalette(maskAction)) {
+              throw new Error(`Multiple states without color palette`)
+            }
+            for (const param of styleParams.slice(1)) {
+              const state = parseInt(param)
+              if (!Number.isInteger(state) || state < 1 || state >= maskAction.colorPalette.length) {
+                throw new Error('State in map-style is not a positive integer')
+              }
+              const color = maskAction.colorPalette[state]
+              const colorMatch = color.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/)
+              if (colorMatch == null) {
+                throw new Error(`Unknown color '${color}"`)
+              }
+              const r = parseInt(colorMatch[1], 16)
+              const g = parseInt(colorMatch[2], 16)
+              const b = parseInt(colorMatch[3], 16)
+              colorState.push([r, g, b])
+            }
           }
+          const mask = await createPlacedImage(maskAction, true)
+          const stateImages = []
+          for (const child of action.children.slice(1)) {
+            const image = getImageAction(child)
+            stateImages.push(await createPlacedImage(image))
+          }
+          return new Control(action, new MapControl(mask, stateImages, colorState))
         }
-        const mask = await createPlacedImage(maskAction, true)
-        const stateImages = []
-        for (const child of action.children.slice(1)) {
-          const image = getImageAction(child)
-          stateImages.push(await createPlacedImage(image))
+        case 'grid': {
+          // The original did parse them but only checked if they are two, so it could be in either order
+          for (const param of styleParams) {
+            const colsOrRows = parseInt(param)
+            if (!Number.isInteger(colsOrRows) || colsOrRows !== 2) {
+              throw new Error(`Number of columns or rows is not exactly 2 but '${param}'`)
+            }
+          }
+          const maskAction = getImageAction(action.children[0])
+          const rows = 2
+          const columns = 2
+          if (action.children.length !== rows * columns + 1) {
+            throw new Error(`Invalid number of state images for ${rows} rows and ${columns} columns`)
+          }
+          const idleImage = await createPlacedImage(maskAction, true)
+          const stateImages = []
+          for (const child of action.children.slice(1)) {
+            const image = getImageAction(child)
+            stateImages.push(await createPlacedImage(image))
+          }
+          return new Control(action, new GridControl(idleImage, stateImages, columns))
         }
-        return new Control(action, new MapControl(mask, stateImages, colorState))
+        case 'toggle': // TODO: Properly handle this state
+        case '': {
+          if (styleParams.length > 0) {
+            throw new Error(`Style parameters in ${style} is not supported`)
+          }
+          const upAction = getImageAction(action.children[0])
+          const downAction = getImageAction(action.children[1])
+          const up = await createPlacedImage(upAction)
+          const down = await createPlacedImage(downAction)
+          return new Control(action, new ToggleControl(up, down, style.toLowerCase() === 'toggle'))
+        }
+        default:
+          throw new Error(`Style ${style} not supported yet`)
       }
-      case 'toggle': // TODO: Properly handle this state
-      case '': {
-        if (styleParams.length > 0) {
-          throw new Error(`Style parameters in ${style} is not supported`)
-        }
-        const upAction = action.children[0]
-        if (upAction == null || !isImageAction(upAction)) {
-          throw new Error('Unknown up action')
-        }
-        const downAction = getImageAction(action.children[1])
-        const up = await createPlacedImage(upAction)
-        const down = await createPlacedImage(downAction)
-        return new Control(action, new ToggleControl(up, down, style.toLowerCase() === 'toggle'))
-      }
-      default:
-        throw new Error(`Style ${style} not supported yet`)
+    } catch (e) {
+      throw new Error(`Unable to create control for '${action.name}'`, { cause: e })
     }
   }
 
@@ -229,6 +300,8 @@ export class Control {
     this._action = action
     this._handler = handler
     this._sprite = new CanvasSprite(0, 0, ORIGINAL_TOTAL_WIDTH, ORIGINAL_TOTAL_HEIGHT)
+    this._sprite.context.globalCompositeOperation = 'copy'
+    this.draw()
   }
 
   public get sprite(): THREE.Sprite {
