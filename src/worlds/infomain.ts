@@ -17,8 +17,17 @@ import {
   iicb28in_RunAnim,
   iicc28in_RunAnim,
   iicx17in_RunAnim,
+  Laura_All_Movie,
+  Mama_All_Movie,
+  Nick_All_Movie,
+  Papa_All_Movie,
+  Pepper_All_Movie,
 } from '../actions/infomain'
 import { InformationCenter_Music } from '../actions/jukebox'
+import type { CharacterMovieAction } from '../lib/action-types'
+import { getAudio } from '../lib/assets/audio'
+import { createNormalizedSprite } from '../lib/assets/canvas-sprite'
+import { getActionFileUrl } from '../lib/assets/load'
 import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
 import { getSettings } from '../lib/settings'
@@ -29,12 +38,72 @@ import { World } from '../lib/world/world'
 
 const ANIMATIONS = [iic019in_RunAnim, iic020in_RunAnim, iic021in_RunAnim, iic022in_RunAnim, iic023in_RunAnim, iic024in_RunAnim, iic025in_RunAnim, iic026in_RunAnim, iic027in_RunAnim, iica28in_RunAnim, iicb28in_RunAnim, iicc28in_RunAnim, iic029in_RunAnim, iic032in_RunAnim]
 
+class CharacterMovie {
+  private constructor(
+    private readonly _audio: THREE.Audio<GainNode>,
+    private readonly _videoElement: HTMLVideoElement,
+    private readonly _sprite: THREE.Sprite,
+  ) {}
+
+  public static async create(movie: CharacterMovieAction, z: number): Promise<CharacterMovie> {
+    const audio = await getAudio(engine.audioListener, movie.children[0])
+    const videoElement = document.createElement('video')
+    const loadPromise = new Promise<void>(resolve => {
+      videoElement.oncanplaythrough = () => {
+        resolve()
+      }
+    })
+    videoElement.src = getActionFileUrl(movie.children[1])
+    videoElement.load()
+    const texture = new THREE.VideoTexture(videoElement)
+    texture.colorSpace = THREE.SRGBColorSpace
+    const [x, y, _] = movie.children[1].location
+    const { width, height } = movie.children[1].dimensions
+    const sprite = createNormalizedSprite(x, y, z, width, height)
+    const map = new THREE.VideoTexture(videoElement)
+    map.colorSpace = THREE.SRGBColorSpace
+    sprite.material = new THREE.SpriteMaterial({ map })
+    await loadPromise
+    return new CharacterMovie(audio, videoElement, sprite)
+  }
+
+  public play(scene: THREE.Scene): Promise<void> {
+    scene.add(this._sprite)
+    this._audio.play()
+    this._videoElement.play()
+    return new Promise<void>(resolve => {
+      this._videoElement.onended = () => {
+        this._audio.stop()
+        resolve()
+      }
+
+      this._videoElement.onpause = () => {
+        this._audio.stop()
+        resolve()
+      }
+    })
+  }
+
+  public removeFromParent = () => this._sprite.removeFromParent()
+}
+
 export class InfoMain extends World {
   private _building = new Building()
 
   private _welcomeTimeout: number | null = null
   private _currentAnimationIndex = 0
   private _infomanHasBeenClicked = false
+
+  private async playCharacterMovie(characterMovie: { children: readonly [CharacterMovieAction, CharacterMovieAction, CharacterMovieAction] }): Promise<void> {
+    const promises = [CharacterMovie.create(characterMovie.children[0], -0.252), CharacterMovie.create(characterMovie.children[1], -0.251), CharacterMovie.create(characterMovie.children[2], -0.25)]
+    const [start, movie, end] = await Promise.all(promises)
+    await start.play(this._building.scene)
+    await movie.play(this._building.scene)
+    start.removeFromParent()
+    movie.removeFromParent()
+    await end.play(this._building.scene)
+    end.removeFromParent()
+  }
 
   public override async init(): Promise<void> {
     await super.init()
@@ -53,6 +122,19 @@ export class InfoMain extends World {
           void switchWorld('infoscor')
           return true
         case 'Mama_Ctl':
+          void this.playCharacterMovie(Mama_All_Movie)
+          return true
+        case 'Papa_Ctl':
+          void this.playCharacterMovie(Papa_All_Movie)
+          return true
+        case 'Pepper_Ctl':
+          void this.playCharacterMovie(Pepper_All_Movie)
+          return true
+        case 'Nick_Ctl':
+          void this.playCharacterMovie(Nick_All_Movie)
+          return true
+        case 'Laura_Ctl':
+          void this.playCharacterMovie(Laura_All_Movie)
           return true
       }
       return false

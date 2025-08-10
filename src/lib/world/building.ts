@@ -106,6 +106,10 @@ export class Building {
     await Promise.all(configAnimationPromises)
   }
 
+  public get scene(): THREE.Scene {
+    return this._render.scene
+  }
+
   public activate(composer: Composer): void {
     composer.add(this._render)
   }

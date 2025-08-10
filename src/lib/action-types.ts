@@ -22,11 +22,13 @@ export type AnimationAction = Override<FileActionBase, { type: Action.Type.Objec
 
 export type BoundaryAction = Override<ActionBase, { presenter: 'LegoPathPresenter'; fileType: Action.FileType; location: readonly [number, number, number] }>
 
-export type ImageAction = Override<FileActionBase, { type: Action.Type.Still; fileType: Action.FileType.STL; presenter: string | null }>
+export type ImageAction = Override<FileActionBase, { type: Action.Type.Still; fileType: Action.FileType.STL; presenter: string | null; dimensions: { width: number; height: number } }>
 
 export type PhonemeAction = Override<ActionBase, { type: Action.Type.Anim; fileType: Action.FileType.FLC; presenter: 'LegoPhonemePresenter' }>
 
-export type CompositeMediaAction = ParallelActionTuple<readonly [Override<ActionBase, { fileType: Action.FileType.SMK; presenter: null }>, AudioAction], 'MxCompositeMediaPresenter'>
+export type CompositeMediaAction = ParallelActionTuple<readonly [Override<ActionBase, { fileType: Action.FileType.SMK; presenter: null; dimensions: { width: number; height: number } }>, AudioAction], 'MxCompositeMediaPresenter'>
+
+export type CharacterMovieAction = ParallelActionTuple<readonly [AudioAction, Override<ActionBase, { fileType: Action.FileType.SMK; presenter: null; dimensions: { width: number; height: number } }>], null>
 
 export type ActorAction = ParallelActionTuple<readonly [Override<ActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoModelPresenter' }>], 'LegoActorPresenter'>
 
