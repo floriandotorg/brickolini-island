@@ -1,6 +1,6 @@
 import type * as THREE from 'three'
 import { type ControlAction, getExtraValue, type ImageAction, isImageAction, type ParallelActionTuple, splitExtraValue } from '../action-types'
-import { ORIGINAL_TOTAL_HEIGHT, ORIGINAL_TOTAL_WIDTH } from '../engine'
+import { normalizeRect, ORIGINAL_TOTAL_HEIGHT, ORIGINAL_TOTAL_WIDTH } from '../engine'
 import { CanvasSprite } from './canvas-sprite'
 import { getImage } from './image'
 
@@ -20,8 +20,7 @@ const getImageAction = (action: ControlChild | undefined): ImageAction => {
 
 const createPlacedImage = async (action: ImageAction, willReadFrequently: boolean = false): Promise<PlacedImage> => {
   const image = await getImage(action)
-  const normalizedX = (action.location[0] / ORIGINAL_TOTAL_WIDTH) * 2 - 1
-  const normalizedY = -(action.location[1] / ORIGINAL_TOTAL_HEIGHT) * 2 + 1
+  const [normalizedX, normalizedY, normalizedWidth, normalizedHeight] = normalizeRect(action.location[0], action.location[1], image.width, image.height)
   const canvas = document.createElement('canvas')
   const context = canvas.getContext('2d', { willReadFrequently })
   if (context == null) {
@@ -30,7 +29,7 @@ const createPlacedImage = async (action: ImageAction, willReadFrequently: boolea
   canvas.width = image.width
   canvas.height = image.height
   context.drawImage(image, 0, 0)
-  return { context, normalizedX, normalizedY, normalizedWidth: (image.width / ORIGINAL_TOTAL_WIDTH) * 2, normalizedHeight: (image.height / ORIGINAL_TOTAL_HEIGHT) * 2 }
+  return { context, normalizedX, normalizedY, normalizedWidth, normalizedHeight }
 }
 
 const denormalize = (normalizedX: number, normalizedY: number, totalSize: [number, number] = [ORIGINAL_TOTAL_WIDTH, ORIGINAL_TOTAL_HEIGHT]): [number, number] => {

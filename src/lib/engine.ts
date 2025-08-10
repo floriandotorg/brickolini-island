@@ -15,6 +15,19 @@ const BACKGROUND_MUSIC_FADE_TIME_SETTINGS = 0.5
 export const ORIGINAL_TOTAL_WIDTH: number = 640
 export const ORIGINAL_TOTAL_HEIGHT: number = 480
 
+export const normalizePoint = (x: number, y: number, totalSize: [number, number] = [ORIGINAL_TOTAL_WIDTH, ORIGINAL_TOTAL_HEIGHT]): [number, number] => {
+  const normalizedX = (x / totalSize[0]) * 2 - 1
+  const normalizedY = -((y / totalSize[1]) * 2 - 1)
+  return [normalizedX, normalizedY]
+}
+
+export const normalizeRect = (x: number, y: number, w: number, h: number, totalSize: [number, number] = [ORIGINAL_TOTAL_WIDTH, ORIGINAL_TOTAL_HEIGHT]): [number, number, number, number] => {
+  const [normalizedX, normalizedY] = normalizePoint(x, y, totalSize)
+  const normalizedWidth = (w / totalSize[0]) * 2
+  const normalizedHeight = (h / totalSize[1]) * 2
+  return [normalizedX, normalizedY, normalizedWidth, normalizedHeight]
+}
+
 class Engine {
   private _state: 'cutscene' | 'transition' | 'game' = 'game'
   private _clock: THREE.Clock = new THREE.Clock()
@@ -158,8 +171,7 @@ class Engine {
 
       if (this._state === 'game') {
         const rect = canvas.getBoundingClientRect()
-        const normalizedX = ((event.clientX - rect.left) / rect.width) * 2 - 1
-        const normalizedY = -((event.clientY - rect.top) / rect.height) * 2 + 1
+        const [normalizedX, normalizedY] = normalizePoint(event.clientX - rect.left, event.clientY - rect.top, [rect.width, rect.height])
 
         this._world?.click(event, normalizedX, normalizedY)
       }
@@ -171,8 +183,7 @@ class Engine {
 
       if (this._state === 'game') {
         const rect = canvas.getBoundingClientRect()
-        const normalizedX = ((event.clientX - rect.left) / rect.width) * 2 - 1
-        const normalizedY = -((event.clientY - rect.top) / rect.height) * 2 + 1
+        const [normalizedX, normalizedY] = normalizePoint(event.clientX - rect.left, event.clientY - rect.top, [rect.width, rect.height])
 
         this._world?.pointerDown(event, normalizedX, normalizedY)
       }

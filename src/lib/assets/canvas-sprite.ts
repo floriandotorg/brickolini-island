@@ -1,11 +1,8 @@
 import * as THREE from 'three'
-import { ORIGINAL_TOTAL_HEIGHT, ORIGINAL_TOTAL_WIDTH } from '../engine'
+import { normalizeRect } from '../engine'
 
 export const createNormalizedSprite = (x: number, y: number, z: number, originalActionWidth: number, originalActionHeight: number): THREE.Sprite => {
-  const normalizedX = (x / ORIGINAL_TOTAL_WIDTH) * 2 - 1
-  const normalizedY = -((y / ORIGINAL_TOTAL_HEIGHT) * 2 - 1)
-  const normalizedWidth = (originalActionWidth / ORIGINAL_TOTAL_WIDTH) * 2
-  const normalizedHeight = (originalActionHeight / ORIGINAL_TOTAL_HEIGHT) * 2
+  const [normalizedX, normalizedY, normalizedWidth, normalizedHeight] = normalizeRect(x, y, originalActionWidth, originalActionHeight)
 
   const sprite = new THREE.Sprite()
   sprite.scale.set(normalizedWidth, normalizedHeight, 1)
