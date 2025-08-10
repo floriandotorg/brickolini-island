@@ -30,7 +30,7 @@ export class CanvasSprite {
     this._context = context
     this._texture = new THREE.CanvasTexture(this._canvas)
     this._texture.colorSpace = THREE.SRGBColorSpace
-    this._sprite = createNormalizedSprite(x, y, 0.5, originalActionWidth, originalActionHeight)
+    this._sprite = createNormalizedSprite(x, y, -0.5, originalActionWidth, originalActionHeight)
     this._sprite.material = new THREE.SpriteMaterial({ map: this._texture, transparent: true })
   }
 
