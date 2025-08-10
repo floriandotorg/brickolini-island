@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { tns003br_RunAnim, tns030bd_RunAnim } from '../actions/act2main'
 import {
   _Isle,
   AmbulanceDashboard,
@@ -501,76 +502,76 @@ export class Isle extends IsleBase {
     }
     this._isleMesh = isle
 
-    const bikeMesh = this.scene.getObjectByName('bike')
-    const motobkMesh = this.scene.getObjectByName('motobk')
-    const skateMesh = this.scene.getObjectByName('skate')
-    const ambulanceMesh = this.scene.getObjectByName('ambul')
-    const towtruckMesh = this.scene.getObjectByName('towtk')
+    // const bikeMesh = this.scene.getObjectByName('bike')
+    // const motobkMesh = this.scene.getObjectByName('motobk')
+    // const skateMesh = this.scene.getObjectByName('skate')
+    // const ambulanceMesh = this.scene.getObjectByName('ambul')
+    // const towtruckMesh = this.scene.getObjectByName('towtk')
 
-    if (bikeMesh == null || !(bikeMesh instanceof THREE.Mesh) || motobkMesh == null || !(motobkMesh instanceof THREE.Mesh) || skateMesh == null || !(skateMesh instanceof THREE.Mesh) || ambulanceMesh == null || !(ambulanceMesh instanceof THREE.Mesh) || towtruckMesh == null || !(towtruckMesh instanceof THREE.Mesh)) {
-      throw new Error('Vehicle meshes not found')
-    }
+    // if (bikeMesh == null || !(bikeMesh instanceof THREE.Mesh) || motobkMesh == null || !(motobkMesh instanceof THREE.Mesh) || skateMesh == null || !(skateMesh instanceof THREE.Mesh) || ambulanceMesh == null || !(ambulanceMesh instanceof THREE.Mesh) || towtruckMesh == null || !(towtruckMesh instanceof THREE.Mesh)) {
+    //   throw new Error('Vehicle meshes not found')
+    // }
 
-    this._boundaryManager.placeObject(bikeMesh, 'INT44', 2, 0.5, 0, 0.5)
-    this._boundaryManager.placeObject(motobkMesh, 'INT43', 4, 0.5, 1, 0.5)
-    this._boundaryManager.placeObject(skateMesh, 'EDG02_84', 4, 0.5, 0, 0.5)
+    // this._boundaryManager.placeObject(bikeMesh, 'INT44', 2, 0.5, 0, 0.5)
+    // this._boundaryManager.placeObject(motobkMesh, 'INT43', 4, 0.5, 1, 0.5)
+    // this._boundaryManager.placeObject(skateMesh, 'EDG02_84', 4, 0.5, 0, 0.5)
 
-    const enterVehicle = async (vehicle: THREE.Mesh): Promise<void> => {
-      await engine.transition()
+    // const enterVehicle = async (vehicle: THREE.Mesh): Promise<void> => {
+    //   await engine.transition()
 
-      this._vehicleMesh = vehicle
-      this._vehicleMesh.visible = false
-      this.camera.position.set(vehicle.position.x, vehicle.position.y, vehicle.position.z)
-      this.camera.quaternion.copy(vehicle.quaternion)
-      this._placeObjectOnGround(this.camera)
+    //   this._vehicleMesh = vehicle
+    //   this._vehicleMesh.visible = false
+    //   this.camera.position.set(vehicle.position.x, vehicle.position.y, vehicle.position.z)
+    //   this.camera.quaternion.copy(vehicle.quaternion)
+    //   this._placeObjectOnGround(this.camera)
 
-      this._showDashboard()
-    }
+    //   this._showDashboard()
+    // }
 
-    if (import.meta.hot) {
-      import.meta.hot.accept('../lib/world/dashboard', newModule => {
-        if (newModule == null) {
-          return
-        }
-        this._dashboard = new newModule.Dashboard()
-        this._dashboard.onExit = () => {
-          this._exitVehicle()
-        }
-        this._dashboard.resize(engine.width, engine.height)
-        this._showDashboard()
-      })
-    }
+    // if (import.meta.hot) {
+    //   import.meta.hot.accept('../lib/world/dashboard', newModule => {
+    //     if (newModule == null) {
+    //       return
+    //     }
+    //     this._dashboard = new newModule.Dashboard()
+    //     this._dashboard.onExit = () => {
+    //       this._exitVehicle()
+    //     }
+    //     this._dashboard.resize(engine.width, engine.height)
+    //     this._showDashboard()
+    //   })
+    // }
 
-    this.addClickListener(bikeMesh, async () => {
-      await enterVehicle(bikeMesh)
-      return true
-    })
-    this.addClickListener(motobkMesh, async () => {
-      await enterVehicle(motobkMesh)
-      return true
-    })
-    this.addClickListener(skateMesh, async () => {
-      await enterVehicle(skateMesh)
-      return true
-    })
-    this.addClickListener(ambulanceMesh, async () => {
-      await enterVehicle(ambulanceMesh)
-      return true
-    })
-    this.addClickListener(towtruckMesh, async () => {
-      await enterVehicle(towtruckMesh)
-      return true
-    })
+    // this.addClickListener(bikeMesh, async () => {
+    //   await enterVehicle(bikeMesh)
+    //   return true
+    // })
+    // this.addClickListener(motobkMesh, async () => {
+    //   await enterVehicle(motobkMesh)
+    //   return true
+    // })
+    // this.addClickListener(skateMesh, async () => {
+    //   await enterVehicle(skateMesh)
+    //   return true
+    // })
+    // this.addClickListener(ambulanceMesh, async () => {
+    //   await enterVehicle(ambulanceMesh)
+    //   return true
+    // })
+    // this.addClickListener(towtruckMesh, async () => {
+    //   await enterVehicle(towtruckMesh)
+    //   return true
+    // })
 
-    this._dashboard.onExit = () => {
-      this._exitVehicle()
-    }
+    // this._dashboard.onExit = () => {
+    //   this._exitVehicle()
+    // }
 
     this.camera.position.set(20, CAM_HEIGHT, 30)
     this.camera.lookAt(60, 0, 25)
     this._placeObjectOnGround(this.camera)
 
-    this.playAnimation(hpz055pa_RunAnim)
+    this.playAnimation(tns030bd_RunAnim, new THREE.Vector3(this.camera.position.x + 2, 1, this.camera.position.z - 1))
 
     const loadTriggerAnimations = async () => {
       for (const animation of [
@@ -944,31 +945,31 @@ export class Isle extends IsleBase {
         srt004in_RunAnim,
         nrtflag0_RunAnim,
       ]) {
-        const animationPresenter = animation.children.find(child => child.presenter === 'LegoAnimPresenter')
-        if (animationPresenter == null) {
-          console.warn(`No animation found: ${animation.name}`)
-          continue
-        }
-        getAction(animationPresenter).then(action => {
-          try {
-            const parsed = parse3DAnimation(action)
-            this.debugDrawSphere(new THREE.Vector3(parsed.center[0], parsed.center[1], parsed.center[2]), 'red', parsed.radius)
-            this._animationTrigger.push({
-              center: new THREE.Vector3(parsed.center[0], parsed.center[1], parsed.center[2]),
-              radius: parsed.radius,
-              animation: {
-                ...animation,
-                children: animation.children.filter(child => child.presenter !== 'LegoLoopingAnimPresenter'),
-              },
-            })
-          } catch (err) {
-            if (err instanceof Error && err.message.includes('Parse scene not supported')) {
-              console.warn(`Animation ${animation.name} caused "Parse scene not supported" error`)
-            } else {
-              throw err
-            }
-          }
-        })
+        // const animationPresenter = animation.children.find(child => child.presenter === 'LegoAnimPresenter')
+        // if (animationPresenter == null) {
+        //   console.warn(`No animation found: ${animation.name}`)
+        //   continue
+        // }
+        // getAction(animationPresenter).then(action => {
+        //   try {
+        //     const parsed = parse3DAnimation(action)
+        //     this.debugDrawSphere(new THREE.Vector3(parsed.center[0], parsed.center[1], parsed.center[2]), 'red', parsed.radius)
+        //     this._animationTrigger.push({
+        //       center: new THREE.Vector3(parsed.center[0], parsed.center[1], parsed.center[2]),
+        //       radius: parsed.radius,
+        //       animation: {
+        //         ...animation,
+        //         children: animation.children.filter(child => child.presenter !== 'LegoLoopingAnimPresenter'),
+        //       },
+        //     })
+        //   } catch (err) {
+        //     if (err instanceof Error && err.message.includes('Parse scene not supported')) {
+        //       console.warn(`Animation ${animation.name} caused "Parse scene not supported" error`)
+        //     } else {
+        //       throw err
+        //     }
+        //   }
+        // })
       }
     }
 

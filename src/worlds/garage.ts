@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { _StartUp, wgs023nu_RunAnim } from '../actions/garage'
 import { GarageArea_Music } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
@@ -32,7 +33,7 @@ export class Garage extends World {
       return false
     }
 
-    void this.playAnimation(wgs023nu_RunAnim)
+    void this.playAnimation(wgs023nu_RunAnim, new THREE.Vector3(0, 0, 0))
   }
 
   public override activate(composer: Composer): void {

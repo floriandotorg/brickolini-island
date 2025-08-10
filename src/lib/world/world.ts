@@ -39,6 +39,7 @@ export abstract class World {
         videoTexture: THREE.VideoTexture
       }[]
     }[]
+    pointAtCameraObjects: THREE.Object3D[]
   }[] = []
   private _actors = new Map<string, Actor>()
 
@@ -158,7 +159,7 @@ export abstract class World {
     return found
   }
 
-  public async playAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction>): Promise<void> {
+  public async playAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction>, location?: THREE.Vector3): Promise<void> {
     const animationActions = action.children.filter(c => c.presenter === 'LegoAnimPresenter')
     if (animationActions.length !== 1) {
       throw new Error('Expected one animation')
@@ -166,6 +167,8 @@ export abstract class World {
 
     const animation = parse3DAnimation(await getAction(animationActions[0]))
     this.setupCameraForAnimation(animation.tree)
+
+    const animationObjects: THREE.Object3D[] = []
 
     for (const actor of animation.actors) {
       switch (actor.type) {
@@ -183,6 +186,10 @@ export abstract class World {
             minifig.visible = false
           }
           this.scene.add(minifig)
+          animationObjects.push(minifig)
+          for (const child of minifig.children) {
+            animationObjects.push(child)
+          }
           break
         }
         case WDB.ActorType.ManagedInvisibleRoi: {
@@ -238,7 +245,20 @@ export abstract class World {
       engine.playAudio(audio)
     }
 
-    const location = new THREE.Vector3(-animationActions[0].location[0], animationActions[0].location[1], animationActions[0].location[2])
+    const pointAtCameraObjects: THREE.Object3D[] = []
+    for (const extra of animationActions[0].extra?.toLowerCase().split(',') ?? []) {
+      if (extra.startsWith('ptatcam')) {
+        for (const name of extra.slice(extra.indexOf(':') + 1).split(';')) {
+          const object = animationObjects.find(o => o.name.toLowerCase().endsWith(name))
+          if (object == null) {
+            throw new Error(`Object not found: ${name}`)
+          }
+          pointAtCameraObjects.push(object)
+        }
+      }
+    }
+
+    location ??= new THREE.Vector3(-animationActions[0].location[0], animationActions[0].location[1], animationActions[0].location[2])
     const tracks = animationToTracks(animation.tree, location)
 
     if (animation.cameraAnimation != null) {
@@ -308,17 +328,18 @@ export abstract class World {
           [] as (typeof this._runningAnimations)[number]['faceAnimations'],
         )
         .map(a => ({ ...a, animations: a.animations.sort((a, b) => b.start - a.start) })),
+      pointAtCameraObjects,
     )
   }
 
-  public async playAnimationClip(root: THREE.Object3D, clip: THREE.AnimationClip, audios: THREE.PositionalAudio[] = [], lookAtKeys?: WDB.Animation.VertexKey[], faceAnimations: (typeof this._runningAnimations)[number]['faceAnimations'] = []): Promise<void> {
+  public async playAnimationClip(root: THREE.Object3D, clip: THREE.AnimationClip, audios: THREE.PositionalAudio[] = [], lookAtKeys?: WDB.Animation.VertexKey[], faceAnimations: (typeof this._runningAnimations)[number]['faceAnimations'] = [], pointAtCameraObjects: THREE.Object3D[] = []): Promise<void> {
     const mixer = new THREE.AnimationMixer(root)
     const clipAction = mixer.clipAction(clip)
     clipAction.loop = THREE.LoopOnce
     clipAction.clampWhenFinished = true
     clipAction.play()
     return new Promise(resolve => {
-      this._runningAnimations.push({ mixer, clipAction, audios, resolve, lookAtKeys, faceAnimations })
+      this._runningAnimations.push({ mixer, clipAction, audios, resolve, lookAtKeys, faceAnimations, pointAtCameraObjects })
       mixer.addEventListener('finished', () => {
         this._runningAnimations = this._runningAnimations.filter(a => a.mixer !== mixer)
         resolve()
@@ -375,7 +396,7 @@ export abstract class World {
   }
 
   public update(delta: number): void {
-    for (const { mixer, lookAtKeys, faceAnimations } of this._runningAnimations) {
+    for (const { mixer, lookAtKeys, faceAnimations, pointAtCameraObjects } of this._runningAnimations) {
       mixer.update(delta)
 
       if (lookAtKeys != null) {
@@ -406,6 +427,20 @@ export abstract class World {
           faceAnimation.actor.headMaterial.needsUpdate = true
         }
         faceAnimation.currentVideoElement.currentTime = mixer.time - currentAnimation.start / 1_000
+      }
+
+      for (const object of pointAtCameraObjects) {
+        const a = object.getWorldPosition(new THREE.Vector3())
+        const b = this.camera.getWorldPosition(new THREE.Vector3())
+        b.y = a.y
+        const dir = b.clone().sub(a)
+        if (dir.length() < 1e-8) {
+          return
+        }
+
+        const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
+        const targetYaw = Math.atan2(dir.x, -dir.z)
+        object.quaternion.setFromEuler(new THREE.Euler(-euler.x, -targetYaw, -euler.z, 'YXZ'))
       }
     }
   }
