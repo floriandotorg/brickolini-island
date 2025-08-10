@@ -10,6 +10,8 @@ import { type Composer, Render3D } from '../effect/composer'
 import { engine } from '../engine'
 import { Actor } from './actor'
 
+export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor'
+
 export abstract class World {
   protected _render = new Render3D()
 
@@ -40,7 +42,7 @@ export abstract class World {
   }[] = []
   private _actors = new Map<string, Actor>()
 
-  constructor() {
+  constructor(public readonly name: WorldName) {
     const getElement = (id: string): HTMLElement => {
       const element = document.getElementById(id)
       if (element == null) {

@@ -2,7 +2,8 @@ import { Intro_Movie, Lego_Movie, Mindscape_Movie } from './actions/intro'
 import { engine } from './lib/engine'
 import './lib/settings-dialog'
 import './style.css'
-import { switchWorld, type WorldName } from './lib/switch-world'
+import { switchWorld } from './lib/switch-world'
+import type { WorldName } from './lib/world/world'
 
 const playButton = document.getElementById('play-button')
 if (playButton == null || !(playButton instanceof HTMLButtonElement)) {

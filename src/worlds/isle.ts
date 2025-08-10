@@ -412,6 +412,10 @@ export class Isle extends IsleBase {
     animation: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction>
   }> = []
 
+  constructor() {
+    super('isle')
+  }
+
   override async init(): Promise<void> {
     await super.init()
 

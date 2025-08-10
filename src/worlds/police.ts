@@ -10,6 +10,10 @@ export class Police extends World {
   private _building = new Building()
   private _numVisits = 0
 
+  constructor() {
+    super('police')
+  }
+
   public override async init(): Promise<void> {
     await super.init()
 

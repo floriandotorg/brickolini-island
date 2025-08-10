@@ -8,6 +8,10 @@ import { World } from '../lib/world/world'
 export class InfoScor extends World {
   private _building = new Building()
 
+  constructor() {
+    super('infoscor')
+  }
+
   public override async init(): Promise<void> {
     await super.init()
 

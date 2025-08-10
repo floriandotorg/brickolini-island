@@ -118,7 +118,7 @@ export class Building {
     for (const control of this._controls) {
       const result = control.pointerDown(normalizedX, normalizedY)
       if (result != null) {
-        if (control.name === 'Info_Ctl') {
+        if (engine.currentWorld.name !== 'infomain' && control.name === 'Info_Ctl') {
           void switchWorld('infomain')
           return
         }

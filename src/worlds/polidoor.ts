@@ -10,6 +10,10 @@ import { IsleBase } from './isle-base'
 export class PoliDoor extends IsleBase {
   public _building = new Building()
 
+  constructor() {
+    super('polidoor')
+  }
+
   public override async init(): Promise<void> {
     await super.init()
 

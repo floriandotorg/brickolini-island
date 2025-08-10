@@ -1,7 +1,5 @@
 import { engine } from './engine'
-import type { World } from './world/world'
-
-export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor'
+import type { World, WorldName } from './world/world'
 
 const worlds = new Map<WorldName, World>()
 

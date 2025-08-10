@@ -44,6 +44,10 @@ export class InfoMain extends World {
   private _currentAnimationIndex = 0
   private _infomanHasBeenClicked = false
 
+  constructor() {
+    super('infomain')
+  }
+
   private async playCharacterMovie(characterMovie: { children: readonly [CharacterMovieAction, CharacterMovieAction, CharacterMovieAction] }): Promise<void> {
     const promises = [MovieSprite.createCharacterMovie(characterMovie.children[0], -0.252), MovieSprite.createCharacterMovie(characterMovie.children[1], -0.251), MovieSprite.createCharacterMovie(characterMovie.children[2], -0.25)]
     const [start, movie, end] = await Promise.all(promises)

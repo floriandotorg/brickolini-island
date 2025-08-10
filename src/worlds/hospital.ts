@@ -9,6 +9,10 @@ import { World } from '../lib/world/world'
 export class Hospital extends World {
   private _building = new Building()
 
+  constructor() {
+    super('hospital')
+  }
+
   public override async init(): Promise<void> {
     await super.init()
     await this._building.init({

@@ -10,6 +10,10 @@ import { IsleBase } from './isle-base'
 export class GarDoor extends IsleBase {
   public _building = new Building()
 
+  constructor() {
+    super('garadoor')
+  }
+
   public override async init(): Promise<void> {
     await super.init()
 
