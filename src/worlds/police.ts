@@ -21,6 +21,7 @@ export class Police extends World {
       world: this,
       startUpAction: _StartUp,
       backgroundMusic: PoliceStation_Music,
+      exitSpawnPoint: 'copter',
     })
 
     this._building.onButtonClicked = buttonName => {

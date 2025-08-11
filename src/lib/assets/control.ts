@@ -1,12 +1,12 @@
 import type * as THREE from 'three'
-import { type ControlAction, getExtraValue, type ImageAction, isImageAction, type ParallelActionTuple, splitExtraValue } from '../action-types'
+import { type ActionBase, type ControlAction, getExtraValue, type ImageAction, isImageAction, type ParallelActionTuple, splitExtraValue } from '../action-types'
 import { normalizeRect, ORIGINAL_TOTAL_HEIGHT, ORIGINAL_TOTAL_WIDTH } from '../engine'
 import { CanvasSprite } from './canvas-sprite'
 import { getImage } from './image'
 
 type PlacedImage = { context: CanvasRenderingContext2D; normalizedX: number; normalizedY: number; normalizedWidth: number; normalizedHeight: number }
 
-type ControlChild = ImageAction | ParallelActionTuple<readonly [ImageAction]>
+type ControlChild = ImageAction | ParallelActionTuple<readonly [ImageAction, ActionBase?]>
 
 const getImageAction = (action: ControlChild | undefined): ImageAction => {
   if (action == null) {

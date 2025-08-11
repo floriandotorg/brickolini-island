@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator.js'
 import type { IsleParam } from '../../worlds/isle'
-import { type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
+import { type ActionBase, type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
 import { Control } from '../assets/control'
 import { getAction } from '../assets/load'
@@ -12,18 +12,20 @@ import { TransparentEdgeBlurEffect } from '../effect/transparent-edge-blur'
 import { engine } from '../engine'
 import { getSettings } from '../settings'
 import { switchWorld } from '../switch-world'
-import type { World } from './world'
+import type { World, WorldName } from './world'
 
 export class Building {
   private _render = new Render2D()
   private _controls: Control[] = []
-  private _exitSpawnPoint?: {
-    boundaryName: string
-    source: number
-    sourceScale: number
-    destination: number
-    destinationScale: number
-  }
+  private _exitSpawnPoint?:
+    | {
+        boundaryName: string
+        source: number
+        sourceScale: number
+        destination: number
+        destinationScale: number
+      }
+    | WorldName
 
   constructor() {
     this._render.addEffect(new TransparentEdgeBlurEffect())
@@ -39,17 +41,19 @@ export class Building {
   }: {
     world: World
     startUpAction:
-      | ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'>
-      | SerialAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, 'LegoWorldPresenter'>
-      | ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction, null>
+      | ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction | AudioAction | ActionBase, 'LegoWorldPresenter'>
+      | SerialAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction | AudioAction, 'LegoWorldPresenter'>
+      | ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction | AudioAction, null>
     backgroundMusic?: AudioAction
-    exitSpawnPoint?: {
-      boundaryName: string
-      source: number
-      sourceScale: number
-      destination: number
-      destinationScale: number
-    }
+    exitSpawnPoint?:
+      | {
+          boundaryName: string
+          source: number
+          sourceScale: number
+          destination: number
+          destinationScale: number
+        }
+      | WorldName
   }): Promise<void> {
     this._exitSpawnPoint = exitSpawnPoint
 
@@ -68,7 +72,7 @@ export class Building {
 
     const configAnimationPromises: Promise<void>[] = []
     for (const child of startUpAction.children) {
-      if (isImageAction(child) && child.name.endsWith('Background_Bitmap')) {
+      if (isImageAction(child) && (child.name.endsWith('Background_Bitmap') || child.name.endsWith('Background'))) {
         const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: createTexture(child), transparent: true }))
         mesh.position.z = -1
         this._render.scene.add(mesh)
@@ -128,9 +132,13 @@ export class Building {
             throw new Error('exitSpawnPoint not found in building config')
           }
 
-          void switchWorld('isle', {
-            position: this._exitSpawnPoint,
-          } satisfies IsleParam)
+          if (typeof this._exitSpawnPoint === 'string') {
+            void switchWorld(this._exitSpawnPoint)
+          } else {
+            void switchWorld('isle', {
+              position: this._exitSpawnPoint,
+            } satisfies IsleParam)
+          }
           return
         }
 

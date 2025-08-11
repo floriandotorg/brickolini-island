@@ -42,6 +42,18 @@ export const switchWorld = async (worldName: WorldName, param?: unknown) => {
       case 'garadoor':
         worlds.set('garadoor', await import('../worlds/garadoor').then(m => new m.GarDoor()))
         break
+      case 'copter':
+        worlds.set('copter', await import('../worlds/build/copter').then(m => new m.Copter()))
+        break
+      case 'dunecar':
+        worlds.set('dunecar', await import('../worlds/build/dunecar').then(m => new m.Dunecar()))
+        break
+      case 'jetski':
+        worlds.set('jetski', await import('../worlds/build/jetski').then(m => new m.Jetski()))
+        break
+      case 'racecar':
+        worlds.set('racecar', await import('../worlds/build/racecar').then(m => new m.Racecar()))
+        break
       default: {
         const _exhaustiveCheck: never = worldName
         throw new Error(`Unhandled world: ${worldName}`)

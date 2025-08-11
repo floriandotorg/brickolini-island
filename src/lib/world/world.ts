@@ -10,7 +10,7 @@ import { type Composer, Render3D } from '../effect/composer'
 import { engine } from '../engine'
 import { Actor } from './actor'
 
-export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor'
+export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar'
 
 export abstract class World {
   protected _render = new Render3D()

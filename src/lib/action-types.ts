@@ -40,7 +40,7 @@ export type ActorAction = ParallelActionTuple<readonly [Override<ActionBase, { t
 
 export type EntityAction = ParallelActionTuple<readonly [Override<ActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoModelPresenter' }>], 'LegoEntityPresenter'>
 
-export type ControlAction = ParallelAction<ImageAction | ParallelActionTuple<readonly [ImageAction]>, 'MxControlPresenter'>
+export type ControlAction = ParallelAction<ImageAction | ParallelActionTuple<readonly [ImageAction, ActionBase?]>, 'MxControlPresenter'>
 
 export type MeterAction = Override<ImageAction, { extra: string; presenter: 'LegoMeterPresenter'; colorPalette: string[] }>
 

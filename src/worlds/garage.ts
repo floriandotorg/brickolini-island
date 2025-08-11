@@ -29,6 +29,9 @@ export class Garage extends World {
         case 'RightArrow_Ctl':
           void switchWorld('garadoor')
           return true
+        case 'Buggy_Ctl':
+          void switchWorld('dunecar')
+          return true
       }
       return false
     }
