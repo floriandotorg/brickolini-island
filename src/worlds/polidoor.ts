@@ -22,11 +22,13 @@ export class PoliDoor extends IsleBase {
       startUpAction: PoliDoor_StartUp,
       backgroundMusic: PoliceStation_Music,
       exitSpawnPoint: {
-        boundaryName: 'EDG02_64',
-        source: 2,
-        sourceScale: 0.24,
-        destination: 0,
-        destinationScale: 0.84,
+        position: {
+          boundaryName: 'EDG02_64',
+          source: 2,
+          sourceScale: 0.24,
+          destination: 0,
+          destinationScale: 0.84,
+        },
       },
     })
 

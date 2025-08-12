@@ -17,16 +17,8 @@ export class Copter extends World {
     await this._building.init({
       world: this,
       startUpAction: _StartUp,
+      exitSpawnPoint: { position: 'police', control: 'Exit_Ctl' },
     })
-
-    this._building.onButtonClicked = buttonName => {
-      switch (buttonName) {
-        case 'Exit_Ctl':
-          void switchWorld('police')
-          return true
-      }
-      return false
-    }
   }
 
   public override activate(composer: Composer): void {

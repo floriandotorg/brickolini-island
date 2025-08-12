@@ -17,16 +17,8 @@ export class Dunecar extends World {
     await this._building.init({
       world: this,
       startUpAction: _StartUp,
+      exitSpawnPoint: { position: 'garage', control: 'Exit_Ctl' },
     })
-
-    this._building.onButtonClicked = buttonName => {
-      switch (buttonName) {
-        case 'Exit_Ctl':
-          void switchWorld('garage')
-          return true
-      }
-      return false
-    }
   }
 
   public override activate(composer: Composer): void {

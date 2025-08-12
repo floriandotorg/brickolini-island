@@ -19,11 +19,13 @@ export class InfoDoor extends World {
       startUpAction: _StartUp,
       backgroundMusic: InformationCenter_Music,
       exitSpawnPoint: {
-        boundaryName: 'INT46',
-        source: 0,
-        sourceScale: 0.5,
-        destination: 2,
-        destinationScale: 0.5,
+        position: {
+          boundaryName: 'INT46',
+          source: 0,
+          sourceScale: 0.5,
+          destination: 2,
+          destinationScale: 0.5,
+        },
       },
     })
 

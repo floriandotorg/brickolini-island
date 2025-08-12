@@ -16,6 +16,16 @@ export class Jetski extends World {
     await this._building.init({
       world: this,
       startUpAction: _StartUp,
+      exitSpawnPoint: {
+        position: {
+          boundaryName: 'EDG00_46',
+          source: 3,
+          sourceScale: 0.625,
+          destination: 2,
+          destinationScale: 0.03,
+        },
+        control: 'Exit_Ctl',
+      },
     })
   }
 

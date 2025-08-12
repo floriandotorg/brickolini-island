@@ -16,6 +16,16 @@ export class Racecar extends World {
     await this._building.init({
       world: this,
       startUpAction: _StartUp,
+      exitSpawnPoint: {
+        position: {
+          boundaryName: 'INT16',
+          source: 4,
+          sourceScale: 0.1,
+          destination: 2,
+          destinationScale: 0,
+        },
+        control: 'Exit_Ctl',
+      },
     })
   }
 

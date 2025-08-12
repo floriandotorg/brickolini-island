@@ -22,11 +22,13 @@ export class GarDoor extends IsleBase {
       startUpAction: GaraDoor_StartUp,
       backgroundMusic: GarageArea_Music,
       exitSpawnPoint: {
-        boundaryName: 'INT24',
-        source: 0,
-        sourceScale: 0.55,
-        destination: 2,
-        destinationScale: 0.71,
+        position: {
+          boundaryName: 'INT24',
+          source: 0,
+          sourceScale: 0.55,
+          destination: 2,
+          destinationScale: 0.71,
+        },
       },
     })
 

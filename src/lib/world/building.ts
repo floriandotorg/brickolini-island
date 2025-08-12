@@ -17,15 +17,18 @@ import type { World, WorldName } from './world'
 export class Building {
   private _render = new Render2D()
   private _controls: Control[] = []
-  private _exitSpawnPoint?:
-    | {
-        boundaryName: string
-        source: number
-        sourceScale: number
-        destination: number
-        destinationScale: number
-      }
-    | WorldName
+  private _exitSpawnPoint?: {
+    position:
+      | {
+          boundaryName: string
+          source: number
+          sourceScale: number
+          destination: number
+          destinationScale: number
+        }
+      | WorldName
+    control: string
+  }
 
   constructor() {
     this._render.addEffect(new TransparentEdgeBlurEffect())
@@ -45,17 +48,21 @@ export class Building {
       | SerialAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction | AudioAction, 'LegoWorldPresenter'>
       | ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction | AudioAction, null>
     backgroundMusic?: AudioAction
-    exitSpawnPoint?:
-      | {
-          boundaryName: string
-          source: number
-          sourceScale: number
-          destination: number
-          destinationScale: number
-        }
-      | WorldName
+    exitSpawnPoint?: {
+      position:
+        | {
+            boundaryName: string
+            source: number
+            sourceScale: number
+            destination: number
+            destinationScale: number
+          }
+        | WorldName
+      control?: string
+    }
   }): Promise<void> {
-    this._exitSpawnPoint = exitSpawnPoint
+    const control = exitSpawnPoint?.control ?? 'Door_Ctl'
+    this._exitSpawnPoint = exitSpawnPoint == null ? undefined : { position: exitSpawnPoint.position, control }
 
     if (backgroundMusic != null) {
       engine.switchBackgroundMusic(backgroundMusic)
@@ -127,16 +134,12 @@ export class Building {
           return
         }
 
-        if (control.name.endsWith('Door_Ctl')) {
-          if (this._exitSpawnPoint == null) {
-            throw new Error('exitSpawnPoint not found in building config')
-          }
-
-          if (typeof this._exitSpawnPoint === 'string') {
-            void switchWorld(this._exitSpawnPoint)
+        if (this._exitSpawnPoint != null && control.name.endsWith(this._exitSpawnPoint.control)) {
+          if (typeof this._exitSpawnPoint.position === 'string') {
+            void switchWorld(this._exitSpawnPoint.position)
           } else {
             void switchWorld('isle', {
-              position: this._exitSpawnPoint,
+              position: this._exitSpawnPoint.position,
             } satisfies IsleParam)
           }
           return
