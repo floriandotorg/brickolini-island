@@ -1,6 +1,7 @@
 import { _StartUp } from '../../actions/dunecar'
+import { DuneCarBuild_Flic, DuneCarBuild_Music } from '../../actions/jukebox'
+import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
-import { switchWorld } from '../../lib/switch-world'
 import { Building } from '../../lib/world/building'
 import { World } from '../../lib/world/world'
 
@@ -17,8 +18,13 @@ export class Dunecar extends World {
     await this._building.init({
       world: this,
       startUpAction: _StartUp,
+      backgroundMusic: DuneCarBuild_Music,
       exitSpawnPoint: { position: 'garage', control: 'Exit_Ctl' },
     })
+
+    const sprite = await MovieSprite.create(DuneCarBuild_Flic, -0.25)
+    sprite.loop = true
+    sprite.play(this._building.scene)
   }
 
   public override activate(composer: Composer): void {

@@ -38,6 +38,14 @@ export class MovieSprite {
     return new MovieSprite(videoElement, sprite, audio)
   }
 
+  public get loop(): boolean {
+    return this._videoElement.loop
+  }
+
+  public set loop(value: boolean) {
+    this._videoElement.loop = value
+  }
+
   public play(scene: THREE.Scene): Promise<void> {
     scene.add(this._sprite)
     this._audio?.play()

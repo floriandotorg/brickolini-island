@@ -1,4 +1,6 @@
 import { _StartUp } from '../../actions/jetski'
+import { JetskiBuild_Flic, JetskiBuild_Music } from '../../actions/jukebox'
+import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
 import { Building } from '../../lib/world/building'
 import { World } from '../../lib/world/world'
@@ -16,6 +18,7 @@ export class Jetski extends World {
     await this._building.init({
       world: this,
       startUpAction: _StartUp,
+      backgroundMusic: JetskiBuild_Music,
       exitSpawnPoint: {
         position: {
           boundaryName: 'EDG00_46',
@@ -27,6 +30,10 @@ export class Jetski extends World {
         control: 'Exit_Ctl',
       },
     })
+
+    const sprite = await MovieSprite.create(JetskiBuild_Flic, -0.25)
+    sprite.loop = true
+    sprite.play(this._building.scene)
   }
 
   public override activate(composer: Composer): void {

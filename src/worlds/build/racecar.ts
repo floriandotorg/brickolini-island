@@ -1,4 +1,6 @@
+import { RaceCarBuild_Flic, RaceCarBuild_Music } from '../../actions/jukebox'
 import { _StartUp } from '../../actions/racecar'
+import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
 import { Building } from '../../lib/world/building'
 import { World } from '../../lib/world/world'
@@ -16,6 +18,7 @@ export class Racecar extends World {
     await this._building.init({
       world: this,
       startUpAction: _StartUp,
+      backgroundMusic: RaceCarBuild_Music,
       exitSpawnPoint: {
         position: {
           boundaryName: 'INT16',
@@ -27,6 +30,10 @@ export class Racecar extends World {
         control: 'Exit_Ctl',
       },
     })
+
+    const sprite = await MovieSprite.create(RaceCarBuild_Flic, -0.25)
+    sprite.loop = true
+    sprite.play(this._building.scene)
   }
 
   public override activate(composer: Composer): void {

@@ -1,6 +1,7 @@
 import { _StartUp } from '../../actions/copter'
+import { HelicopterBuild_Flic, HelicopterBuild_Music } from '../../actions/jukebox'
+import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
-import { switchWorld } from '../../lib/switch-world'
 import { Building } from '../../lib/world/building'
 import { World } from '../../lib/world/world'
 
@@ -17,8 +18,13 @@ export class Copter extends World {
     await this._building.init({
       world: this,
       startUpAction: _StartUp,
+      backgroundMusic: HelicopterBuild_Music,
       exitSpawnPoint: { position: 'police', control: 'Exit_Ctl' },
     })
+
+    const sprite = await MovieSprite.create(HelicopterBuild_Flic, -0.25)
+    sprite.loop = true
+    sprite.play(this._building.scene)
   }
 
   public override activate(composer: Composer): void {
