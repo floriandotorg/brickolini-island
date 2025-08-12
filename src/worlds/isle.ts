@@ -385,6 +385,7 @@ import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
 import { getSettings } from '../lib/settings'
 import { switchWorld } from '../lib/switch-world'
+import type { WorldName } from '../lib/world/world'
 import { IsleBase } from './isle-base'
 
 const CAM_HEIGHT = 1.25
@@ -461,7 +462,7 @@ export class Isle extends IsleBase {
 
     for (const child of _Isle.children) {
       const entity = getExtraValue(child, 'Object')?.toLowerCase()
-      const worldName = (() => {
+      const worldName: WorldName | undefined = (() => {
         switch (entity) {
           case 'hospitalentity':
             return 'hospital'
@@ -471,6 +472,10 @@ export class Isle extends IsleBase {
             return 'infomain'
           case 'policeentity':
             return 'police'
+          case 'beachhouseentity':
+            return 'jetski'
+          case 'racestandsentity':
+            return 'racecar'
           default:
             return undefined
         }
