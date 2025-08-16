@@ -11,7 +11,7 @@ This project aims to recreate the charm of LEGO ISLAND in your browser to make i
 *Note: This project is currently in the very early stages of development.*
 
 ## Contributing
-Contributions are welcome! Anyone who wishes to contribute is encouraged to join the project's [Discord](https://discord.gg/cEQx9aUk), where most of the communication happens.
+Contributions are welcome! Anyone who wishes to contribute is encouraged to join the project's [Discord](https://discord.gg/jcX3JE9Az3), where most of the communication happens.
 
 Also, please feel free to open an issue or submit a pull request.
 
