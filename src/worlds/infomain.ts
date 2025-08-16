@@ -183,6 +183,13 @@ export class InfoMain extends World {
     super.activate(composer)
   }
 
+  public override deactivate(): void {
+    if (this._welcomeTimeout != null) {
+      clearTimeout(this._welcomeTimeout)
+    }
+    super.deactivate()
+  }
+
   public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
     this._building.pointerDown(normalizedX, normalizedY)
   }
