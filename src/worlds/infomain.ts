@@ -123,6 +123,9 @@ export class InfoMain extends World {
         case 'RightArrow_Ctl':
           void switchWorld('infoscor')
           return true
+        case 'Book_Ctl':
+          void switchWorld('regbook')
+          return true
         case 'Mama_Ctl':
           engine.currentPlayerCharacter = 'mama'
           this.placeCharacterFrame(Mama_Up_Bitmap)

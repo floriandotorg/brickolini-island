@@ -24,6 +24,9 @@ export const switchWorld = async (worldName: WorldName, param?: unknown) => {
       case 'infomain':
         worlds.set('infomain', await import('../worlds/infomain').then(m => new m.InfoMain()))
         break
+      case 'regbook':
+        worlds.set('regbook', await import('../worlds/regbook').then(m => new m.RegBook()))
+        break
       case 'police':
         worlds.set('police', await import('../worlds/police').then(m => new m.Police()))
         break
