@@ -63,5 +63,10 @@ export class MovieSprite {
     })
   }
 
+  public stop() {
+    this._audio?.stop()
+    this._videoElement.pause()
+  }
+
   public removeFromParent = () => this._sprite.removeFromParent()
 }

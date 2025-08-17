@@ -45,6 +45,12 @@ import { World } from '../lib/world/world'
 
 const ANIMATIONS = [iic019in_RunAnim, iic020in_RunAnim, iic021in_RunAnim, iic022in_RunAnim, iic023in_RunAnim, iic024in_RunAnim, iic025in_RunAnim, iic026in_RunAnim, iic027in_RunAnim, iica28in_RunAnim, iicb28in_RunAnim, iicc28in_RunAnim, iic029in_RunAnim, iic032in_RunAnim]
 
+enum CharacterMovieState {
+  idle,
+  playing,
+  cancelled,
+}
+
 export class InfoMain extends World {
   private _building = new Building()
 
@@ -52,6 +58,8 @@ export class InfoMain extends World {
   private _welcomeTimeout: number | null = null
   private _currentAnimationIndex = 0
   private _infomanHasBeenClicked = false
+  private _characterMovieState: CharacterMovieState = CharacterMovieState.idle
+  private _characterMovie: [MovieSprite, MovieSprite, MovieSprite] | null = null
 
   constructor() {
     super('infomain')
@@ -69,14 +77,27 @@ export class InfoMain extends World {
   }
 
   private async playCharacterMovie(characterMovie: { children: readonly [CharacterMovieAction, CharacterMovieAction, CharacterMovieAction] }): Promise<void> {
+    const play = async (movie: MovieSprite): Promise<void> => {
+      if (this._characterMovieState !== CharacterMovieState.cancelled) {
+        await movie.play(this._building.scene)
+      }
+    }
+
+    if (this._characterMovieState === CharacterMovieState.playing) {
+      return
+    }
+    this._characterMovieState = CharacterMovieState.playing
     const promises = [MovieSprite.createCharacterMovie(characterMovie.children[0], -0.252), MovieSprite.createCharacterMovie(characterMovie.children[1], -0.251), MovieSprite.createCharacterMovie(characterMovie.children[2], -0.25)]
     const [start, movie, end] = await Promise.all(promises)
-    await start.play(this._building.scene)
-    await movie.play(this._building.scene)
+    this._characterMovie = [start, movie, end]
+    await play(start)
+    await play(movie)
     start.removeFromParent()
     movie.removeFromParent()
-    await end.play(this._building.scene)
+    await play(end)
     end.removeFromParent()
+    this._characterMovieState = CharacterMovieState.idle
+    this._characterMovie = null
   }
 
   private placeCharacterFrame(control: ImageAction): void {
@@ -196,5 +217,15 @@ export class InfoMain extends World {
 
   public override pointerUp(_event: MouseEvent): void {
     this._building.pointerUp()
+  }
+
+  public override skipAllRunningAnimations(): void {
+    super.skipAllRunningAnimations()
+    this._characterMovieState = CharacterMovieState.cancelled
+    if (this._characterMovie != null) {
+      this._characterMovie[0].stop()
+      this._characterMovie[1].stop()
+      this._characterMovie[2].stop()
+    }
   }
 }
