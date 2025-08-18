@@ -28,6 +28,9 @@ export const normalizeRect = (x: number, y: number, w: number, h: number, totalS
   return [normalizedX, normalizedY, normalizedWidth, normalizedHeight]
 }
 
+const SAVE_GAME_STORAGE_KEY = 'saves'
+type SaveGame = { readonly name: string }
+
 class Engine {
   private _state: 'cutscene' | 'transition' | 'game' = 'game'
   private _clock: THREE.Clock = new THREE.Clock()
@@ -46,8 +49,33 @@ class Engine {
   private _backgroundAudio: { actionId: number; audio: THREE.Audio; sourceVolume: number } | null = null
   private _transitionStart: number = 0
   private _transitionPromiseResolve: (() => void) | null = null
+  private _currentSaveGame: SaveGame = { name: '' }
+  private _saveGames: SaveGame[]
 
-  public currentPlayerCharacter: 'pepper' | 'papa' | 'mama' | 'nick' | 'laura' = 'pepper'
+  public currentPlayerCharacter: 'pepper' | 'papa' | 'mama' | 'nick' | 'laura' | null = null
+
+  public get saveGameNames(): string[] {
+    return this._saveGames.map(save => save.name)
+  }
+
+  public get currentSaveGame(): SaveGame {
+    return this._currentSaveGame
+  }
+
+  public loadSaveGame(name: string): void {
+    for (const saveGame of this._saveGames) {
+      if (saveGame.name.toUpperCase() === name.toUpperCase()) {
+        this._currentSaveGame = saveGame
+        return
+      }
+    }
+    this._currentSaveGame = { name }
+    this._saveGames.splice(0, 0, this._currentSaveGame)
+  }
+
+  public storeSaveGames(): void {
+    localStorage.setItem(SAVE_GAME_STORAGE_KEY, JSON.stringify(this._saveGames))
+  }
 
   public async switchBackgroundMusic(action: AudioAction): Promise<void> {
     if (this._backgroundAudio?.actionId === action.id) {
@@ -217,6 +245,9 @@ class Engine {
 
     window.addEventListener('resize', this._setRendererSize)
     this._setRendererSize()
+
+    const savesJson = localStorage.getItem(SAVE_GAME_STORAGE_KEY)
+    this._saveGames = savesJson == null ? [] : JSON.parse(savesJson)
   }
 
   public isKeyDown(key: string): boolean {

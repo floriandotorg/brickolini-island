@@ -42,6 +42,7 @@ import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
 import { World } from '../lib/world/world'
+import { Name } from './regbook'
 
 const ANIMATIONS = [iic019in_RunAnim, iic020in_RunAnim, iic021in_RunAnim, iic022in_RunAnim, iic023in_RunAnim, iic024in_RunAnim, iic025in_RunAnim, iic026in_RunAnim, iic027in_RunAnim, iica28in_RunAnim, iicb28in_RunAnim, iicc28in_RunAnim, iic029in_RunAnim, iic032in_RunAnim]
 
@@ -55,6 +56,7 @@ export class InfoMain extends World {
   private _building = new Building()
 
   private readonly _characterFrame: THREE.Sprite
+  private readonly _name: Name
   private _welcomeTimeout: number | null = null
   private _currentAnimationIndex = 0
   private _infomanHasBeenClicked = false
@@ -74,6 +76,7 @@ export class InfoMain extends World {
       const material = new THREE.SpriteMaterial({ map, color: 0xffffff })
       this._characterFrame.material = material
     })
+    this._name = new Name(this._building.scene, 223, 45, 29)
   }
 
   private async playCharacterMovie(characterMovie: { children: readonly [CharacterMovieAction, CharacterMovieAction, CharacterMovieAction] }): Promise<void> {
@@ -205,6 +208,8 @@ export class InfoMain extends World {
   public override activate(composer: Composer): void {
     this._building.activate(composer)
     super.activate(composer)
+    const pad = Math.floor((7 - engine.currentSaveGame.name.length) / 2)
+    this._name.name = engine.currentSaveGame.name.padStart(pad + engine.currentSaveGame.name.length, ' ')
   }
 
   public override deactivate(): void {

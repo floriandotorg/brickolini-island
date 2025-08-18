@@ -1,9 +1,11 @@
-import { _StartUp } from '../actions/infodoor'
+import { _StartUp, iic007in_PlayWav, iic037in_PlayWav } from '../actions/infodoor'
 import { InformationCenter_Music } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
+import { engine } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
+import type { IsleParam } from './isle-base'
 
 export class InfoDoor extends World {
   private _building = new Building()
@@ -18,19 +20,27 @@ export class InfoDoor extends World {
       world: this,
       startUpAction: _StartUp,
       backgroundMusic: InformationCenter_Music,
-      exitSpawnPoint: {
-        position: {
-          boundaryName: 'INT46',
-          source: 0,
-          sourceScale: 0.5,
-          destination: 2,
-          destinationScale: 0.5,
-        },
-      },
     })
 
     this._building.onButtonClicked = buttonName => {
       switch (buttonName) {
+        case 'Door_Ctl':
+          if (engine.currentPlayerCharacter == null) {
+            void engine.playAudio(iic037in_PlayWav)
+          } else if (engine.currentSaveGame.name.length === 0) {
+            void engine.playAudio(iic007in_PlayWav)
+          } else {
+            void switchWorld('isle', {
+              position: {
+                boundaryName: 'INT46',
+                source: 0,
+                sourceScale: 0.5,
+                destination: 2,
+                destinationScale: 0.5,
+              },
+            } satisfies IsleParam)
+          }
+          return true
         case 'LeftArrow_Ctl':
           void switchWorld('infoscor')
           return true
