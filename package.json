@@ -12,17 +12,17 @@
     "lefthook:install": "lefthook install"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.1.4",
-    "@tailwindcss/vite": "^4.1.11",
+    "@biomejs/biome": "^2.2.0",
+    "@tailwindcss/vite": "^4.1.12",
     "@types/three": "^0.179.0",
-    "lefthook": "^1.12.2",
+    "lefthook": "^1.12.3",
     "typescript": "~5.9.2",
-    "vite": "^7.1.1",
+    "vite": "^7.1.3",
     "vite-plugin-glsl": "^1.5.1"
   },
   "dependencies": {
     "95css": "^0.4.2",
-    "tailwindcss": "^4.1.11",
+    "tailwindcss": "^4.1.12",
     "three": "^0.179.1"
   }
 }
