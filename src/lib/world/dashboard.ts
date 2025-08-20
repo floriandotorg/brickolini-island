@@ -65,7 +65,7 @@ class Meter {
   private _fill: number = 0
 
   private constructor(action: MeterAction, image: HTMLImageElement) {
-    const fillerIndex = parseInt(getExtraValue(action, 'filler_index') ?? '')
+    const fillerIndex = parseInt(getExtraValue(action, 'filler_index') ?? '', 10)
     const fillColor = Number.isInteger(fillerIndex) && fillerIndex > 0 ? action.colorPalette.at(fillerIndex) : null
     if (fillColor == null) {
       throw new Error('The filler_index is not a valid index')

@@ -221,7 +221,7 @@ export class Control {
           }
           const colorState: [number, number, number][] = []
           if (styleParams.length > 0 && styleParams[0].length > 0) {
-            const stateCount = parseInt(styleParams[0])
+            const stateCount = parseInt(styleParams[0], 10)
             if (!Number.isInteger(stateCount) || stateCount < 1) {
               throw new Error(`State count in map-style is not a positive integer`)
             }
@@ -232,7 +232,7 @@ export class Control {
               throw new Error(`Multiple states without color palette`)
             }
             for (const param of styleParams.slice(1)) {
-              const state = parseInt(param)
+              const state = parseInt(param, 10)
               if (!Number.isInteger(state) || state < 1 || state >= maskAction.colorPalette.length) {
                 throw new Error('State in map-style is not a positive integer')
               }
@@ -258,7 +258,7 @@ export class Control {
         case 'grid': {
           // The original did parse them but only checked if they are two, so it could be in either order
           for (const param of styleParams) {
-            const colsOrRows = parseInt(param)
+            const colsOrRows = parseInt(param, 10)
             if (!Number.isInteger(colsOrRows) || colsOrRows !== 2) {
               throw new Error(`Number of columns or rows is not exactly 2 but '${param}'`)
             }

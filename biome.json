@@ -23,7 +23,8 @@
         "useSortedClasses": "error"
       },
       "suspicious": {
-        "noIrregularWhitespace": "error"
+        "noIrregularWhitespace": "error",
+        "noGlobalIsNan": "error"
       },
       "complexity": {
         "noUselessEscapeInRegex": "error"
@@ -31,6 +32,10 @@
       "style": {
         "useCollapsedIf": "error",
         "useTrimStartEnd": "error"
+      },
+      "correctness": {
+        "noUnusedImports": "error",
+        "useParseIntRadix": "error"
       }
     }
   },

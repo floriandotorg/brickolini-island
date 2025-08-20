@@ -117,7 +117,7 @@ export abstract class World {
     if (match?.[1] == null) {
       throw new Error('Camera fov not found')
     }
-    this.setVerticalFOV(Number.parseInt(match[1]))
+    this.setVerticalFOV(Number.parseInt(match[1], 10))
 
     this.camera.position.copy(pathToPosition(cameraConfigPath))
 

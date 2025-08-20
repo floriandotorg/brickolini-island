@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { CNs001Pe, tns003br_RunAnim, tns030bd_RunAnim } from '../actions/act2main'
+import { CNs001Pe } from '../actions/act2main'
 import {
   _Isle,
   AmbulanceDashboard,
@@ -15,7 +15,6 @@ import {
   bns146rd_RunAnim,
   bns147rd_RunAnim,
   bns191en_RunAnim,
-  CNs001xx,
   cnsx12la_RunAnim,
   cnsx12ni_RunAnim,
   fjs019rd_RunAnim,
@@ -380,8 +379,6 @@ import {
 } from '../actions/isle'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../actions/jukebox'
 import { type AnimationAction, type AudioAction, getExtraValue, type ParallelAction, type PhonemeAction, type PositionalAudioAction } from '../lib/action-types'
-import { parse3DAnimation } from '../lib/assets/animation'
-import { getAction } from '../lib/assets/load'
 import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
 import { getSettings } from '../lib/settings'
@@ -580,7 +577,7 @@ export class Isle extends IsleBase {
     this.playAnimation(CNs001Pe) //, new THREE.Vector3(this.camera.position.x + 2, 1, this.camera.position.z - 1))
 
     const loadTriggerAnimations = async () => {
-      for (const animation of [
+      for (const _animation of [
         sba001bu_RunAnim,
         sba002bu_RunAnim,
         sba003bu_RunAnim,
