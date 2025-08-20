@@ -159,8 +159,9 @@ export abstract class World {
     return found
   }
 
-  public async playAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction>, location?: THREE.Vector3): Promise<void> {
-    const animationActions = action.children.filter(c => c.presenter === 'LegoAnimPresenter')
+  public async playAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction> | AnimationAction, location?: THREE.Vector3): Promise<void> {
+    const children = action.type === Action.Type.ParallelAction ? action.children : []
+    const animationActions = action.type === Action.Type.ParallelAction ? children.filter(c => c.presenter === 'LegoAnimPresenter' || c.presenter === 'LegoLocomotionAnimPresenter') : [action]
     if (animationActions.length !== 1) {
       throw new Error('Expected one animation')
     }
@@ -230,7 +231,7 @@ export abstract class World {
     }
 
     const audios: THREE.PositionalAudio[] = await Promise.all(
-      action.children
+      children
         .filter(c => c.presenter === 'Lego3DWavePresenter')
         .map(async audio => {
           const actor = this.getObjectByNameRecursive(audio.extra)
@@ -241,7 +242,7 @@ export abstract class World {
         }),
     )
 
-    for (const audio of action.children.filter(c => c.fileType === Action.FileType.WAV && c.presenter === null)) {
+    for (const audio of children.filter(c => c.fileType === Action.FileType.WAV && c.presenter === null)) {
       engine.playAudio(audio)
     }
 
@@ -293,7 +294,7 @@ export abstract class World {
       clip,
       audios,
       animation.cameraAnimation?.lookAtKeys?.map(key => ({ ...key, vertex: new THREE.Vector3(...key.vertex).add(location).toArray() })),
-      action.children
+      children
         .filter(c => c.presenter === 'LegoPhonemePresenter')
         .map(phoneme => {
           if (phoneme.extra == null) {

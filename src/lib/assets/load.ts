@@ -196,7 +196,7 @@ const getExtension = (fileType: Action.FileType, presenter: string | null) => {
       if (presenter == null) {
         throw new Error(`Presenter is null for file type: ${fileType}`)
       }
-      if (presenter === 'LegoAnimPresenter') {
+      if (presenter === 'LegoAnimPresenter' || presenter === 'LegoLocomotionAnimPresenter') {
         return 'ani'
       }
       return 'gph'
