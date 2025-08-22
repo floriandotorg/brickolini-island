@@ -228,10 +228,18 @@ class Engine {
 
     document.addEventListener('keydown', event => {
       this._keyStates.add(event.key)
+
+      if (this._state === 'game') {
+        this._world?.keyDown(event)
+      }
     })
 
     document.addEventListener('keyup', event => {
       this._keyStates.delete(event.key)
+
+      if (this._state === 'game') {
+        this._world?.keyUp(event)
+      }
     })
 
     document.addEventListener('keypress', event => {

@@ -367,6 +367,9 @@ export abstract class World {
   public pointerDown(_event: MouseEvent, _normalizedX: number, _normalizedY: number): void {}
   public pointerUp(_event: MouseEvent): void {}
 
+  public keyDown(_event: KeyboardEvent): void {}
+  public keyUp(_event: KeyboardEvent): void {}
+
   public get debugMode(): boolean {
     return this._debugGroup.visible
   }

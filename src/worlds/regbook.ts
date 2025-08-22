@@ -68,7 +68,7 @@ export class Name {
   }
 
   public set name(value: string) {
-    this._name = value
+    this._name = value.substring(0, MAX_LENGTH)
     for (let i = 0; i < MAX_LENGTH; i++) {
       if (i < value.length && value[i] !== ' ') {
         const texture = letterTextures.get(value[i])
@@ -111,13 +111,11 @@ export class RegBook extends World {
         case 'Alphabet_Ctl':
           if (state >= 1 && state <= 26) {
             if (this._names[0].name.length < MAX_LENGTH) {
-              const nextChar = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[state - 1]
+              const nextChar = letterActions[state - 1][0]
               this._names[0].name = this._names[0].name + nextChar
             }
           } else if (state === 27) {
-            if (this._names[0].name.length > 0) {
-              this._names[0].name = this._names[0].name.substring(0, this._names[0].name.length - 1)
-            }
+            this.removeChar()
           } else if (state === 28) {
             void switchWorld('infomain')
           }
@@ -180,5 +178,27 @@ export class RegBook extends World {
 
   public override pointerUp(_event: MouseEvent): void {
     this._building.pointerUp()
+  }
+
+  private removeChar(): void {
+    if (this._names[0].name.length > 0) {
+      this._names[0].name = this._names[0].name.substring(0, this._names[0].name.length - 1)
+    }
+  }
+
+  public override keyDown(_event: KeyboardEvent): void {
+    if (_event.key === 'Backspace') {
+      this.removeChar()
+    }
+  }
+
+  public override keyPressed(key: string): void {
+    const upper = key.toUpperCase()
+    if (letterActions.find(entry => entry[0] === upper) != null) {
+      this._names[0].name = this._names[0].name + upper
+      return
+    }
+
+    super.keyPressed(key)
   }
 }
