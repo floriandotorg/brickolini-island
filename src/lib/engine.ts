@@ -62,15 +62,20 @@ class Engine {
     return this._currentSaveGame
   }
 
+  private set currentSaveGame(saveGame: SaveGame) {
+    this._saveGames.splice(0, 0, saveGame)
+    this._currentSaveGame = saveGame
+  }
+
   public loadSaveGame(name: string): void {
-    for (const saveGame of this._saveGames) {
+    for (const [index, saveGame] of this._saveGames.entries()) {
       if (saveGame.name.toUpperCase() === name.toUpperCase()) {
-        this._currentSaveGame = saveGame
+        this._saveGames.splice(index, 1)
+        this.currentSaveGame = saveGame
         return
       }
     }
-    this._currentSaveGame = { name }
-    this._saveGames.splice(0, 0, this._currentSaveGame)
+    this.currentSaveGame = { name }
   }
 
   public storeSaveGames(): void {
