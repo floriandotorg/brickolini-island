@@ -312,6 +312,14 @@ export class Control {
     return this._action.name
   }
 
+  public get visible(): boolean {
+    return this._sprite.sprite.visible
+  }
+
+  public set visible(value: boolean) {
+    this._sprite.sprite.visible = value
+  }
+
   public pointerDown(normalizedX: number, normalizedY: number): number | null {
     const result = this._handler.pointerDown(normalizedX, normalizedY)
     if (result != null) {

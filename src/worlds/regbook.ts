@@ -1,8 +1,38 @@
 import type * as THREE from 'three'
 import { InformationCenter_Music } from '../actions/jukebox'
-import { _StartUp, A_Bitmap, B_Bitmap, C_Bitmap, D_Bitmap, E_Bitmap, F_Bitmap, G_Bitmap, H_Bitmap, I_Bitmap, J_Bitmap, K_Bitmap, L_Bitmap, M_Bitmap, N_Bitmap, O_Bitmap, P_Bitmap, Q_Bitmap, R_Bitmap, S_Bitmap, T_Bitmap, U_Bitmap, V_Bitmap, W_Bitmap, X_Bitmap, Y_Bitmap, Z_Bitmap } from '../actions/regbook'
+import {
+  _StartUp,
+  A_Bitmap,
+  B_Bitmap,
+  C_Bitmap,
+  CheckHiLite_Bitmap,
+  D_Bitmap,
+  E_Bitmap,
+  F_Bitmap,
+  G_Bitmap,
+  H_Bitmap,
+  I_Bitmap,
+  J_Bitmap,
+  K_Bitmap,
+  L_Bitmap,
+  M_Bitmap,
+  N_Bitmap,
+  O_Bitmap,
+  P_Bitmap,
+  Q_Bitmap,
+  R_Bitmap,
+  S_Bitmap,
+  T_Bitmap,
+  U_Bitmap,
+  V_Bitmap,
+  W_Bitmap,
+  X_Bitmap,
+  Y_Bitmap,
+  Z_Bitmap,
+} from '../actions/regbook'
 import type { ImageAction } from '../lib/action-types'
-import { createNormalizedSprite } from '../lib/assets/canvas-sprite'
+import { createImageSprite, createNormalizedSprite } from '../lib/assets/canvas-sprite'
+import type { Control } from '../lib/assets/control'
 import { createTexture } from '../lib/assets/texture'
 import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
@@ -84,12 +114,33 @@ export class Name {
   }
 }
 
+class NameWithCheck {
+  constructor(
+    private readonly _name: Name,
+    private readonly _button: Control,
+  ) {}
+
+  public get name(): string {
+    return this._name.name
+  }
+
+  public set name(value: string) {
+    this._name.name = value
+    this._button.visible = value.length > 0
+  }
+}
+
 export class RegBook extends World {
   private _building = new Building()
-  private _names: Name[] = []
+  private _names: NameWithCheck[] = []
+  private _highLightSprite: THREE.Sprite
 
   constructor() {
     super('regbook')
+
+    this._highLightSprite = createImageSprite(CheckHiLite_Bitmap, -0.1)
+    this._building.scene.add(this._highLightSprite)
+    this._highLightSprite.visible = false
   }
 
   public override async init(): Promise<void> {
@@ -103,7 +154,12 @@ export class RegBook extends World {
 
     this._names = []
     for (let row = 0; row < 10; row++) {
-      this._names.push(new Name(this._building.scene, X_OFFSET, Y_OFFSET + ROW_HEIGHT * row, CHAR_WIDTH))
+      const controlName = `Check${row}_Ctl`
+      const button = this._building.getControl(controlName)
+      if (button == null) {
+        throw new Error(`Control ${controlName} does not exist`)
+      }
+      this._names.push(new NameWithCheck(new Name(this._building.scene, X_OFFSET, Y_OFFSET + ROW_HEIGHT * row, CHAR_WIDTH), button))
     }
 
     this._building.onButtonClicked = (buttonName, state) => {
@@ -154,6 +210,12 @@ export class RegBook extends World {
       }
       return false
     }
+
+    setInterval(async () => {
+      if (this._names[0].name.length > 0) {
+        this._highLightSprite.visible = !this._highLightSprite.visible
+      }
+    }, 500)
   }
 
   private loadSave(name?: string) {
@@ -183,6 +245,9 @@ export class RegBook extends World {
   private removeChar(): void {
     if (this._names[0].name.length > 0) {
       this._names[0].name = this._names[0].name.substring(0, this._names[0].name.length - 1)
+    }
+    if (this._names[0].name.length === 0) {
+      this._highLightSprite.visible = false
     }
   }
 

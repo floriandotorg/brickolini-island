@@ -32,8 +32,7 @@ import {
 import { InformationCenter_Music } from '../actions/jukebox'
 import { BookWig_Flic } from '../actions/sndanim'
 import type { CharacterMovieAction, ImageAction } from '../lib/action-types'
-import { createNormalizedSprite } from '../lib/assets/canvas-sprite'
-import { getImage } from '../lib/assets/image'
+import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { MovieSprite } from '../lib/assets/movie-sprite'
 import type { Composer } from '../lib/effect/composer'
 import { engine, normalizePoint } from '../lib/engine'
@@ -65,17 +64,9 @@ export class InfoMain extends World {
 
   constructor() {
     super('infomain')
-    const bitmap = FrameHot_Bitmap
-    this._characterFrame = createNormalizedSprite(0, 0, -0.4, bitmap.dimensions.width, bitmap.dimensions.height)
+    this._characterFrame = createImageSprite(FrameHot_Bitmap, -0.4)
     this._building.scene.add(this._characterFrame)
     this._characterFrame.visible = false
-    getImage(bitmap).then(image => {
-      const map = new THREE.Texture()
-      map.image = image
-      map.needsUpdate = true
-      const material = new THREE.SpriteMaterial({ map, color: 0xffffff })
-      this._characterFrame.material = material
-    })
     this._name = new Name(this._building.scene, 223, 45, 29)
   }
 

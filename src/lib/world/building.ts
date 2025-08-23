@@ -36,6 +36,15 @@ export class Building {
 
   public onButtonClicked: (buttonName: string, state: number) => boolean = _buttonName => false
 
+  public getControl(name: string): Control | null {
+    for (const control of this._controls) {
+      if (control.name === name) {
+        return control
+      }
+    }
+    return null
+  }
+
   public async init({
     world,
     startUpAction,
@@ -77,7 +86,7 @@ export class Building {
       }
     }
 
-    const configAnimationPromises: Promise<void>[] = []
+    const initPromises: Promise<void>[] = []
     for (const child of startUpAction.children) {
       if (isImageAction(child) && (child.name.endsWith('Background_Bitmap') || child.name.endsWith('Background'))) {
         const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: createTexture(child), transparent: true }))
@@ -98,7 +107,7 @@ export class Building {
       }
 
       if (isAnimationAction(child) && child.name === 'ConfigAnimation') {
-        configAnimationPromises.push(
+        initPromises.push(
           getAction(child).then(action => {
             const animation = parse3DAnimation(action)
             world.setupCameraForAnimation(animation.tree)
@@ -107,14 +116,16 @@ export class Building {
       }
 
       if (isControlAction(child)) {
-        void Control.create(child).then(control => {
-          this._controls.push(control)
-          this._render.scene.add(control.sprite)
-        })
+        initPromises.push(
+          Control.create(child).then(control => {
+            this._controls.push(control)
+            this._render.scene.add(control.sprite)
+          }),
+        )
       }
     }
 
-    await Promise.all(configAnimationPromises)
+    await Promise.all(initPromises)
   }
 
   public get scene(): THREE.Scene {
