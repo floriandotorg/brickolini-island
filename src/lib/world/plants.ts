@@ -3,6 +3,7 @@ import { AnimB1, AnimB2, AnimB3, AnimF1, AnimF2, AnimF3, AnimP1, AnimP2, AnimP3,
 import type { AnimationAction, PositionalAudioAction } from '../action-types'
 import { getAnimation } from '../assets/animation'
 import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
+import { WDB } from '../assets/wdb'
 import { engine } from '../engine'
 import type { World as WorldType } from './world'
 
@@ -271,16 +272,16 @@ export namespace Plants {
         animationRoot.name = 'animation'
         mesh.add(animationRoot)
         animationRoot.add(await getGlobalPart(partName(plantState.variant, plantState.color), null, null))
-        const animation = await getAnimation(animations[plantState.variant][plantState.animationIndex], {
-          '-flower': 'animation',
-          '-360': 'animation',
-          '-move': 'animation',
-          flwrred: animationRoot.children[0].name,
-          flwgrn: animationRoot.children[0].name,
-          tree: animationRoot.children[0].name,
-          bush: animationRoot.children[0].name,
-          palm: animationRoot.children[0].name,
-        })
+        const animation = await getAnimation(
+          animations[plantState.variant][plantState.animationIndex],
+          new Map([
+            ['flwrred', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map() }],
+            ['flwgrn', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map() }],
+            ['tree', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map() }],
+            ['bush', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map() }],
+            ['palm', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map() }],
+          ]),
+        )
         if (engine.currentPlayerCharacter === 'laura') {
           void world.playPositionalAudio(Sound17, mesh)
         }

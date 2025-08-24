@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import { CNs001Pe } from '../actions/act2main'
+import { tns030bd_RunAnim } from '../actions/act2main'
+// import { CNs001Pe, tns030bd_RunAnim } from '../actions/act2main'
 import {
   _Isle,
   AmbulanceDashboard,
@@ -386,6 +387,8 @@ import { switchWorld } from '../lib/switch-world'
 import type { WorldName } from '../lib/world/world'
 import { IsleBase } from './isle-base'
 
+// import { tns002br_RunAnim } from '../actions/act2main'
+
 const CAM_HEIGHT = 1.25
 const MAX_LINEAR_VEL = 10
 const MAX_ROT_VEL = 80
@@ -574,7 +577,17 @@ export class Isle extends IsleBase {
     this.camera.lookAt(60, 0, 25)
     this._placeObjectOnGround(this.camera)
 
-    this.playAnimation(CNs001Pe) //, new THREE.Vector3(this.camera.position.x + 2, 1, this.camera.position.z - 1))
+    // extra
+    // this.playAnimation(CNs001Pe)
+
+    // brickster is loose
+    this.playAnimation(tns030bd_RunAnim, new THREE.Vector3(this.camera.position.x + 2, 1, this.camera.position.z - 1))
+
+    // hospital pizzeria scene
+    // this.playAnimation(hpz057ma_RunAnim)
+
+    // brickster scene (only works in ACT2)
+    // this.playAnimation(tns002br_RunAnim)
 
     const loadTriggerAnimations = async () => {
       for (const _animation of [

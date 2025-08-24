@@ -169,16 +169,37 @@ export abstract class World {
     const animation = parse3DAnimation(await getAction(animationActions[0]))
     this.setupCameraForAnimation(animation.tree)
 
-    const animationObjects: THREE.Object3D[] = []
+    const worldGroup = this.scene.children.find(c => c.name.endsWith('_world'))
+    if (worldGroup == null) {
+      throw new Error('World group not found')
+    }
+
+    const animationActors = new Map<
+      string,
+      {
+        type: WDB.ActorType
+        object: THREE.Object3D
+        children: Map<string, THREE.Object3D>
+      }
+    >()
+
+    const addActorToList = (type: WDB.ActorType, actor: THREE.Object3D) => {
+      animationActors.set(actor.name, {
+        type,
+        object: actor,
+        children: type !== WDB.ActorType.ManagedActor ? new Map(worldGroup.children.filter(child => child.name.startsWith(actor.name)).map(c => [c.name.split('_').at(-1) ?? '', c])) : new Map(actor.children.filter(c => !(c instanceof THREE.Mesh)).map(c => [c.name, c])),
+      })
+    }
 
     for (const actor of animation.actors) {
       switch (actor.type) {
         case WDB.ActorType.Unknown: {
-          const node = this.getObjectByNameRecursive(actor.name)
+          const node = worldGroup.getObjectByName(actor.name)
           if (node == null) {
             throw new Error(`Actor not found: ${actor.name}`)
           }
           node.visible = true
+          addActorToList(actor.type, node)
           break
         }
         case WDB.ActorType.ManagedActor: {
@@ -187,48 +208,50 @@ export abstract class World {
             minifig.visible = false
           }
           this.scene.add(minifig)
-          animationObjects.push(minifig)
-          for (const child of minifig.children) {
-            animationObjects.push(child)
-          }
+          addActorToList(actor.type, minifig)
           break
         }
         case WDB.ActorType.ManagedInvisibleRoi: {
           const name = actor.name.slice(1)
-          const node = this.getObjectByNameRecursive(name)?.clone()
+          const node = worldGroup.getObjectByName(name)?.clone()
           if (node == null) {
             throw new Error(`Actor not found: ${name} (ManagedInvisibleRoi)`)
           }
           node.name = actor.name.toLowerCase()
           node.visible = false
           this.scene.add(node)
+          addActorToList(actor.type, node)
           break
         }
         case WDB.ActorType.ManagedInvisibleRoiTrimmed: {
           const name = actor.name.slice(1).replace(/[0-9_]*$/, '')
-          const node = this.getObjectByNameRecursive(name)?.clone()
+          const node = worldGroup.getObjectByName(name)?.clone()
           if (node == null) {
             throw new Error(`ROI not found: ${name} (ManagedInvisibleRoiTrimmed)`)
           }
           node.name = actor.name.toLowerCase()
           node.visible = false
           this.scene.add(node)
+          addActorToList(actor.type, node)
           break
         }
         case WDB.ActorType.SceneRoi1:
         case WDB.ActorType.SceneRoi2: {
-          const node = (this.getObjectByNameRecursive(actor.name) ?? (await getGlobalPart(actor.name, null, null)))?.clone()
+          const node = (worldGroup.getObjectByName(actor.name) ?? (await getGlobalPart(actor.name, null, null)))?.clone()
           if (node == null) {
             throw new Error(`ROI not found: ${actor.name} (SceneRoi)`)
           }
           node.name = actor.name.toLowerCase()
           this.scene.add(node)
+          addActorToList(actor.type, node)
           break
         }
         default:
           throw new Error(`Unsupported actor type ${actor.type} for ${actor.name}`)
       }
     }
+
+    this.debugPrintSceneGraph()
 
     const audios: THREE.PositionalAudio[] = await Promise.all(
       children
@@ -250,7 +273,9 @@ export abstract class World {
     for (const extra of animationActions[0].extra?.toLowerCase().split(',') ?? []) {
       if (extra.startsWith('ptatcam')) {
         for (const name of extra.slice(extra.indexOf(':') + 1).split(';')) {
-          const object = animationObjects.find(o => o.name.toLowerCase().endsWith(name))
+          const object = Array.from(animationActors.entries())
+            .flatMap(([_, obj]) => Array.from(obj.children.values()))
+            .find(c => c.name.toLowerCase() === name)
           if (object == null) {
             throw new Error(`Object not found: ${name}`)
           }
@@ -260,7 +285,7 @@ export abstract class World {
     }
 
     location ??= new THREE.Vector3(-animationActions[0].location[0], animationActions[0].location[1], animationActions[0].location[2])
-    const tracks = animationToTracks(animation.tree, location)
+    const tracks = animationToTracks(animation.tree, animationActors, location)
 
     if (animation.cameraAnimation != null) {
       const cameraTranslationValues: number[] = []
@@ -566,12 +591,14 @@ export abstract class World {
   public debugPrintSceneGraph(): void {
     type Graph = {
       name: string
+      uuid: string
       children: Graph[]
     }
 
     const walk = (root: THREE.Object3D, parent: Graph) => {
       const node: Graph = {
         name: root.name,
+        uuid: root.uuid,
         children: [],
       }
       for (const child of root.children) {
@@ -582,10 +609,9 @@ export abstract class World {
 
     const graph: Graph = {
       name: 'scene',
+      uuid: this.scene.uuid,
       children: [],
     }
     walk(this.scene, graph)
-
-    console.log(graph.children[0])
   }
 }

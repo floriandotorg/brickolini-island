@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import type { AnimationAction } from '../action-types'
-import { ACTORS } from '../world/actor'
 import { BinaryReader } from './binary-reader'
 import { getAction } from './load'
 import { WDB } from './wdb'
@@ -24,7 +23,7 @@ export const findRecursively = (node: Animation3DNode, predicate: (node: Animati
   return undefined
 }
 
-export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<string, string> = {}) => {
+export const parse3DAnimation = (buffer: ArrayBuffer) => {
   const reader = new BinaryReader(buffer)
   const magic = reader.readInt32()
   if (magic !== 17) {
@@ -36,7 +35,7 @@ export const parse3DAnimation = (buffer: ArrayBuffer, substitutions: Record<stri
   const _val3 = reader.readInt32()
   const animation = WDB.Animation.readAnimation(reader, parseScene !== 0)
   const convertNode = (node: WDB.Animation.Node): Animation3DNode => ({
-    name: substitutions[node.name.toLowerCase()] ?? node.name.toLowerCase(),
+    name: node.name.toLowerCase(),
     translationKeys: node.translationKeys.map(t => ({ timeAndFlags: t.timeAndFlags, vertex: new THREE.Vector3(...t.vertex) })),
     rotationKeys: node.rotationKeys.map(t => ({ timeAndFlags: t.timeAndFlags, quaternion: new THREE.Quaternion(...t.quaternion) })),
     scaleKeys: node.scaleKeys.map(t => ({ timeAndFlags: t.timeAndFlags, vertex: new THREE.Vector3(...t.vertex) })),
@@ -63,30 +62,42 @@ export const getBeforeAndAfter = <T extends { timeAndFlags: { time: number } }>(
   return { before, after: keys[idx] }
 }
 
-export const animationToTracks = (animation: Animation3DNode, offset: THREE.Vector3 = new THREE.Vector3()): THREE.KeyframeTrack[] => {
+export const animationToTracks = (animation: Animation3DNode, actors: Map<string, { type: WDB.ActorType; object: THREE.Object3D; children: Map<string, THREE.Object3D> }>, offset: THREE.Vector3 = new THREE.Vector3()): THREE.KeyframeTrack[] => {
   const position = new THREE.Vector3()
   const quaternion = new THREE.Quaternion()
   const scale = new THREE.Vector3()
 
-  const isBodyPart = (name: string) => ['body', 'arm-rt', 'arm-lft', 'leg-rt', 'leg-lft', 'head', 'infohat', 'infogron', 'claw-rt', 'claw-lft'].includes(name)
-  const isActor = (name: string) => Object.keys(ACTORS).includes(name)
-
   const getDurationMs = (animation: Animation3DNode): number => Math.max(animation.translationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.rotationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.scaleKeys.at(-1)?.timeAndFlags.time ?? 0, ...animation.children.map(getDurationMs))
 
-  const getTransform = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name = '', parent: THREE.Matrix4 = new THREE.Matrix4(), path: string[] = []): void => {
-    if (animation.name === 'target' || animation.name.startsWith('cam')) {
-      if (animation.translationKeys.length > 1 || animation.rotationKeys.length > 1 || animation.scaleKeys.length > 1 || animation.morphKeys.length > 1) {
-        throw new Error('Camera movement is not implemented. If you see this, please implement it.')
-      }
+  const getUuid = (name: string, path: string[]): string | undefined => {
+    let uuid: string | undefined
 
-      return
+    for (const key of path.toReversed()) {
+      const parent = actors.get(key)
+      if (parent != null) {
+        const actor = parent.children.get(name)
+        if (actor != null) {
+          uuid = actor.uuid
+          break
+        }
+      }
     }
 
+    if (uuid == null) {
+      const actor = actors.get(name)
+      if (actor != null && actor.type !== WDB.ActorType.ManagedActor) {
+        uuid = actor.object.uuid
+      }
+    }
+
+    return uuid
+  }
+
+  const getTransform = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name = '', parent: THREE.Matrix4 = new THREE.Matrix4(), path: string[] = []): void => {
     const push = (key: string, values: number[]) => {
-      const propertyPath = `${[...path, name].filter(x => !isActor(x) || isActor(name) || isBodyPart(name)).join('_')}.${key}`
-      const existing = valueMap.get(propertyPath)
+      const existing = valueMap.get(key)
       if (existing == null) {
-        valueMap.set(propertyPath, values)
+        valueMap.set(key, values)
       } else {
         existing.push(...values)
       }
@@ -149,22 +160,17 @@ export const animationToTracks = (animation: Animation3DNode, offset: THREE.Vect
 
     mat = parent.clone().multiply(mat)
 
-    if (!name.startsWith('-') && !isActor(name) && name.length > 0) {
+    const uuid = getUuid(name, path)
+
+    if (uuid != null) {
       mat.decompose(position, quaternion, scale)
-      push('position', position.add(offset).toArray())
-      push('quaternion', quaternion.toArray())
-      push('scale', scale.toArray())
+      push(`${uuid}.position`, position.add(offset).toArray())
+      push(`${uuid}.quaternion`, quaternion.toArray())
+      push(`${uuid}.scale`, scale.toArray())
     }
 
     for (const child of animation.children) {
-      getTransform(
-        child,
-        time,
-        valueMap,
-        child.name,
-        mat,
-        [...path, name].filter(x => !x.startsWith('-') && !isBodyPart(x) && x.length > 0),
-      )
+      getTransform(child, time, valueMap, child.name, mat, [...path, name])
     }
   }
 
@@ -218,30 +224,23 @@ export const animationToTracks = (animation: Animation3DNode, offset: THREE.Vect
 
   const getMorph = (animation: Animation3DNode, time: number, valueMap: Map<string, boolean[]>, name = '', parent: boolean, path: string[] = []): void => {
     const push = (key: string, value: boolean) => {
-      if (name.startsWith('-') || isActor(name) || name.length < 1) {
-        return
-      }
-      const propertyPath = `${[...path, name].filter(x => !isActor(x) || isActor(name) || isBodyPart(name)).join('_')}.${key}`
-      const existing = valueMap.get(propertyPath)
+      const existing = valueMap.get(key)
       if (existing == null) {
-        valueMap.set(propertyPath, [value])
+        valueMap.set(key, [value])
       } else {
         existing.push(value)
       }
     }
 
     const visible = animation.morphKeys.length < 1 ? parent : getBeforeAndAfter(animation.morphKeys, time).before.visible
-    push('visible', visible)
+
+    const uuid = getUuid(name, path)
+    if (uuid != null) {
+      push(`${uuid}.visible`, visible)
+    }
 
     for (const child of animation.children) {
-      getMorph(
-        child,
-        time,
-        valueMap,
-        child.name,
-        visible,
-        [...path, name].filter(x => !x.startsWith('-') && !isBodyPart(x) && x.length > 0),
-      )
+      getMorph(child, time, valueMap, child.name, visible, [...path, name])
     }
   }
 
@@ -267,7 +266,7 @@ export const animationToTracks = (animation: Animation3DNode, offset: THREE.Vect
   return result
 }
 
-export const getAnimation = async (action: AnimationAction, substitutions: Record<string, string> = {}): Promise<THREE.AnimationClip> => {
-  const animation = parse3DAnimation(await getAction(action), substitutions)
-  return new THREE.AnimationClip(action.name, -1, animationToTracks(animation.tree))
+export const getAnimation = async (action: AnimationAction, actors: Map<string, { type: WDB.ActorType; object: THREE.Object3D; children: Map<string, THREE.Object3D> }>): Promise<THREE.AnimationClip> => {
+  const animation = parse3DAnimation(await getAction(action))
+  return new THREE.AnimationClip(action.name, -1, animationToTracks(animation.tree, actors))
 }

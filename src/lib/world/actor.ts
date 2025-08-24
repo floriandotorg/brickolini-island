@@ -1410,7 +1410,7 @@ export class Actor extends THREE.Group {
       })()
 
       const parentMesh = new THREE.Group()
-      parentMesh.name = `${name.toLowerCase()}_${bodyPartName.toLowerCase()}`
+      parentMesh.name = bodyPartName.toLowerCase()
       parentMesh.add(mesh)
       mesh.name = `${mesh.name}-part`
       actor.add(parentMesh)
@@ -1422,7 +1422,7 @@ export class Actor extends THREE.Group {
             case 'infohat':
               actor._info.hatColor = nextColor(actor._info.hatColor)
               actor.children
-                .find(child => child.name.endsWith('infohat'))
+                .find(child => child.name === 'infohat')
                 ?.clear()
                 .add(await getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null))
               break
@@ -1430,7 +1430,7 @@ export class Actor extends THREE.Group {
             case 'infogron':
               actor._info.groinColor = nextColor(actor._info.groinColor)
               actor.children
-                .find(child => child.name.endsWith('infogron'))
+                .find(child => child.name === 'infogron')
                 ?.clear()
                 .add(await getGlobalPart('infogron', colorAliases[actor._info.groinColor], null))
               break
@@ -1438,7 +1438,7 @@ export class Actor extends THREE.Group {
             case 'arm-lft':
               actor._info.leftArmColor = nextColor(actor._info.leftArmColor)
               actor.children
-                .find(child => child.name.endsWith('arm-lft'))
+                .find(child => child.name === 'arm-lft')
                 ?.clear()
                 .add(await getGlobalPart('arm-lft', colorAliases[actor._info.leftArmColor], null))
               break
@@ -1446,21 +1446,21 @@ export class Actor extends THREE.Group {
             case 'arm-rt':
               actor._info.rightArmColor = nextColor(actor._info.rightArmColor)
               actor.children
-                .find(child => child.name.endsWith('arm-rt'))
+                .find(child => child.name === 'arm-rt')
                 ?.clear()
                 .add(await getGlobalPart('arm-rt', colorAliases[actor._info.rightArmColor], null))
               break
             case 'leg-lft':
               actor._info.leftLegColor = nextColor(actor._info.leftLegColor)
               actor.children
-                .find(child => child.name.endsWith('leg-lft'))
+                .find(child => child.name === 'leg-lft')
                 ?.clear()
                 .add(await getGlobalPart('leg', colorAliases[actor._info.leftLegColor], null))
               break
             case 'leg-rt':
               actor._info.rightLegColor = nextColor(actor._info.rightLegColor)
               actor.children
-                .find(child => child.name.endsWith('leg-rt'))
+                .find(child => child.name === 'leg-rt')
                 ?.clear()
                 .add(await getGlobalPart('leg', colorAliases[actor._info.rightLegColor], null))
               break
@@ -1482,7 +1482,7 @@ export class Actor extends THREE.Group {
 
     world.addClickListener(actor, async (): Promise<boolean> => {
       if (engine.currentPlayerCharacter === 'pepper') {
-        const hatParentMesh = actor.children.find(child => child.name.endsWith('infohat'))
+        const hatParentMesh = actor.children.find(child => child.name === 'infohat')
         if (hatParentMesh == null) {
           return false
         }
