@@ -142,60 +142,6 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
         })
       }
 
-      if (new URLSearchParams(window.location.search).get('hd') === 'true' && import.meta.env.VITE_HD_ASSETS_AVAILABLE === 'true') {
-        if (modelMesh.materialName.toLowerCase().includes('grass')) {
-          const material = new THREE.MeshPhysicalMaterial({
-            flatShading: modelMesh.shading === WDB.Shading.Flat,
-            metalness: 0,
-            map: loadTexture('leafy-grass2-albedo'),
-            roughnessMap: loadTexture('leafy-grass2-roughness'),
-            aoMap: loadTexture('leafy-grass2-ao'),
-            normalMap: loadTexture('leafy-grass2-normal-ogl'),
-          })
-          material.normalScale.set(10, 10)
-          return material
-        }
-
-        if (modelMesh.materialName.toLowerCase().includes('pebble')) {
-          const material = new THREE.MeshPhysicalMaterial({
-            flatShading: modelMesh.shading === WDB.Shading.Flat,
-            metalness: 0,
-            map: loadTexture('rocky-dunes1_albedo'),
-            roughnessMap: loadTexture('ocean-rock_roughness'),
-            aoMap: loadTexture('rocky-dunes1_ao'),
-            normalMap: loadTexture('rocky-dunes1_normal-ogl'),
-          })
-          material.normalScale.set(5, 5)
-          return material
-        }
-
-        if (modelMesh.materialName.toLowerCase().includes('rock')) {
-          const material = new THREE.MeshPhysicalMaterial({
-            flatShading: modelMesh.shading === WDB.Shading.Flat,
-            metalness: 0,
-            map: loadTexture('black-streaked-rock1-albedo'),
-            roughnessMap: loadTexture('black-streaked-rock1-Roughness'),
-            aoMap: loadTexture('black-streaked-rock1-ao'),
-            normalMap: loadTexture('black-streaked-rock1-Normal-ogl'),
-          })
-          material.normalScale.set(1, 1)
-          return material
-        }
-
-        if (modelMesh.materialName.toLowerCase().includes('sand')) {
-          const material = new THREE.MeshPhysicalMaterial({
-            flatShading: modelMesh.shading === WDB.Shading.Flat,
-            metalness: 0,
-            roughness: 1,
-            map: loadTexture('wavy-sand_albedo'),
-            aoMap: loadTexture('wavy-sand_ao'),
-            normalMap: loadTexture('wavy-sand_normal-ogl'),
-          })
-          material.normalScale.set(10, 10)
-          return material
-        }
-      }
-
       return material
     }
 
