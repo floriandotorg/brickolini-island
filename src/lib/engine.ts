@@ -290,9 +290,10 @@ class Engine {
     })
   }
 
-  public async playAudio(action: AudioAction): Promise<void> {
+  public async playAudio(action: AudioAction): Promise<THREE.Audio<GainNode>> {
     const audio = await getAudio(this._audioListener, action)
     audio.play(action.startTime / 1_000)
+    return audio
   }
 
   public async playCutscene(action: CompositeMediaAction): Promise<void> {

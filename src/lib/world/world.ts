@@ -41,6 +41,7 @@ export abstract class World {
     }[]
     pointAtCameraObjects: THREE.Object3D[]
   }[] = []
+  private _runningAudios: THREE.Audio<GainNode>[] = []
   private _actors = new Map<string, Actor>()
 
   constructor(public readonly name: WorldName) {
@@ -157,6 +158,17 @@ export abstract class World {
       }
     }
     return found
+  }
+
+  public async playAudio(action: AudioAction): Promise<void> {
+    const audio = await engine.playAudio(action)
+    this._runningAudios.push(audio)
+    audio.onEnded = () => {
+      const index = this._runningAudios.indexOf(audio)
+      if (index >= 0) {
+        this._runningAudios.splice(index, 1)
+      }
+    }
   }
 
   public async playAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction> | AnimationAction, location?: THREE.Vector3): Promise<void> {
@@ -530,6 +542,10 @@ export abstract class World {
         audio.stop()
       }
     }
+    for (const runningAudio of this._runningAudios) {
+      runningAudio.stop()
+    }
+    this._runningAudios.splice(0)
   }
 
   public debugDrawArrow(from: THREE.Vector3, to: THREE.Vector3, color: string): THREE.ArrowHelper {
