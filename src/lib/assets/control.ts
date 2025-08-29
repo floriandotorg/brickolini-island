@@ -321,6 +321,9 @@ export class Control {
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): number | null {
+    if (!this.visible) {
+      return null
+    }
     const result = this._handler.pointerDown(normalizedX, normalizedY)
     if (result != null) {
       this.draw()
@@ -329,7 +332,7 @@ export class Control {
   }
 
   public pointerUp() {
-    if (this._handler.pointerUp()) {
+    if (this.visible && this._handler.pointerUp()) {
       this.draw()
     }
   }
