@@ -12,6 +12,8 @@ import {
   G_Bitmap,
   H_Bitmap,
   I_Bitmap,
+  iic006in_RunAnim,
+  iic008in_PlayWav,
   J_Bitmap,
   K_Bitmap,
   L_Bitmap,
@@ -231,6 +233,12 @@ export class RegBook extends World {
     const saveGameNames = engine.saveGameNames
     for (let row = 0; row < 10; row++) {
       this._names[row].name = row > 0 && row <= saveGameNames.length ? saveGameNames[row - 1] : ''
+    }
+
+    if (engine.currentSaveGame.name.length > 0) {
+      void this.playAudio(iic008in_PlayWav)
+    } else {
+      this.playAnimation(iic006in_RunAnim)
     }
   }
 
