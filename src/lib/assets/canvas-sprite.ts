@@ -3,12 +3,15 @@ import type { ImageAction } from '../action-types'
 import { normalizeRect } from '../engine'
 import { createTexture } from './texture'
 
-export const createNormalizedSprite = (x: number, y: number, z: number, originalActionWidth: number, originalActionHeight: number): THREE.Sprite => {
+export const setScaleAndPosition = (sprite: THREE.Sprite, originalActionWidth: number, originalActionHeight: number, x: number, y: number, z?: number) => {
   const [normalizedX, normalizedY, normalizedWidth, normalizedHeight] = normalizeRect(x, y, originalActionWidth, originalActionHeight)
-
-  const sprite = new THREE.Sprite()
   sprite.scale.set(normalizedWidth, normalizedHeight, 1)
-  sprite.position.set(normalizedX + normalizedWidth / 2, normalizedY - normalizedHeight / 2, z)
+  sprite.position.set(normalizedX + normalizedWidth / 2, normalizedY - normalizedHeight / 2, z ?? sprite.position.z)
+}
+
+export const createNormalizedSprite = (x: number, y: number, z: number, originalActionWidth: number, originalActionHeight: number): THREE.Sprite => {
+  const sprite = new THREE.Sprite()
+  setScaleAndPosition(sprite, originalActionWidth, originalActionHeight, x, y, z)
   return sprite
 }
 

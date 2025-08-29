@@ -1,10 +1,11 @@
-import type * as THREE from 'three'
+import * as THREE from 'three'
 import { type ActionBase, type ControlAction, getExtraValue, type ImageAction, isImageAction, type ParallelActionTuple, splitExtraValue } from '../action-types'
 import { normalizeRect, ORIGINAL_TOTAL_HEIGHT, ORIGINAL_TOTAL_WIDTH } from '../engine'
-import { CanvasSprite } from './canvas-sprite'
+import { setScaleAndPosition } from './canvas-sprite'
 import { getImage } from './image'
+import { createTexture } from './texture'
 
-type PlacedImage = { context: CanvasRenderingContext2D; normalizedX: number; normalizedY: number; normalizedWidth: number; normalizedHeight: number }
+type PlacedImage = { context: CanvasRenderingContext2D; action: ImageAction; normalizedX: number; normalizedY: number; normalizedWidth: number; normalizedHeight: number }
 
 type ControlChild = ImageAction | ParallelActionTuple<readonly [ImageAction, ActionBase?]>
 
@@ -34,7 +35,7 @@ const createPlacedImage = async (action: ImageAction, willReadFrequently: boolea
   canvas.width = image.width
   canvas.height = image.height
   context.drawImage(image, 0, 0)
-  return { context, normalizedX, normalizedY, normalizedWidth, normalizedHeight }
+  return { context, action, normalizedX, normalizedY, normalizedWidth, normalizedHeight }
 }
 
 const denormalize = (normalizedX: number, normalizedY: number, totalSize: [number, number] = [ORIGINAL_TOTAL_WIDTH, ORIGINAL_TOTAL_HEIGHT]): [number, number] => {
@@ -60,16 +61,16 @@ interface Handler {
 
   pointerUp(): boolean
 
-  get image(): PlacedImage | null
+  get image(): ImageAction | null
 }
 
 class MapControl implements Handler {
   private _state: number
   private readonly _mask: PlacedImage
-  private readonly _images: PlacedImage[]
+  private readonly _images: ImageAction[]
   private readonly _states: [number, number, number][]
 
-  public constructor(mask: PlacedImage, images: PlacedImage[], states: [number, number, number][]) {
+  public constructor(mask: PlacedImage, images: ImageAction[], states: [number, number, number][]) {
     if (images.length !== 0 && states.length !== 0 && images.length !== states.length) {
       throw new Error('Number of states and images does not match')
     }
@@ -102,7 +103,7 @@ class MapControl implements Handler {
     return true
   }
 
-  public get image(): PlacedImage | null {
+  public get image(): ImageAction | null {
     return this._state === 0 || this._images.length === 0 ? null : this._images[this._state - 1]
   }
 }
@@ -110,10 +111,10 @@ class MapControl implements Handler {
 class GridControl implements Handler {
   private _state: number
   private readonly _idleImage: PlacedImage
-  private readonly _stateImages: PlacedImage[]
+  private readonly _stateImages: ImageAction[]
   public readonly numberOfColumns: number
 
-  public constructor(idleImage: PlacedImage, stateImages: PlacedImage[], numberOfColumns: number) {
+  public constructor(idleImage: PlacedImage, stateImages: ImageAction[], numberOfColumns: number) {
     if (stateImages.length === 0) {
       throw new Error('No images defined for Grid')
     }
@@ -148,8 +149,8 @@ class GridControl implements Handler {
     return true
   }
 
-  public get image(): PlacedImage | null {
-    return this._state === 0 ? this._idleImage : this._stateImages[this._state - 1]
+  public get image(): ImageAction | null {
+    return this._state === 0 ? this._idleImage.action : this._stateImages[this._state - 1]
   }
 }
 
@@ -167,7 +168,7 @@ class ToggleControl implements Handler {
   }
 
   private test(normalizedX: number, normalizedY: number): boolean {
-    const pixel = getPixel(this.image, normalizedX, normalizedY)
+    const pixel = getPixel(this._placedImage, normalizedX, normalizedY)
     if (pixel == null) {
       return false
     }
@@ -194,8 +195,12 @@ class ToggleControl implements Handler {
     return false
   }
 
-  public get image(): PlacedImage {
+  private get _placedImage(): PlacedImage {
     return this._pressedState ? this._pressedImage : this._idleImage
+  }
+
+  public get image(): ImageAction {
+    return this._placedImage.action
   }
 }
 
@@ -205,7 +210,7 @@ const isWithColorPalette = (action: unknown): action is WithColorPalette => acti
 
 export class Control {
   private readonly _action: ControlAction
-  private readonly _sprite: CanvasSprite
+  private readonly _sprite: THREE.Sprite
   private readonly _handler: Handler
 
   public static async create(action: ControlAction): Promise<Control> {
@@ -251,7 +256,7 @@ export class Control {
           const stateImages = []
           for (const child of action.children.slice(1)) {
             const image = getImageAction(child)
-            stateImages.push(await createPlacedImage(image))
+            stateImages.push(image)
           }
           return new Control(action, new MapControl(mask, stateImages, colorState))
         }
@@ -273,7 +278,7 @@ export class Control {
           const stateImages = []
           for (const child of action.children.slice(1)) {
             const image = getImageAction(child)
-            stateImages.push(await createPlacedImage(image))
+            stateImages.push(image)
           }
           return new Control(action, new GridControl(idleImage, stateImages, columns))
         }
@@ -299,13 +304,13 @@ export class Control {
   private constructor(action: ControlAction, handler: Handler) {
     this._action = action
     this._handler = handler
-    this._sprite = new CanvasSprite(0, 0, ORIGINAL_TOTAL_WIDTH, ORIGINAL_TOTAL_HEIGHT)
-    this._sprite.context.globalCompositeOperation = 'copy'
+    this._sprite = new THREE.Sprite()
+    this._sprite.position.z = -0.5
     this.draw()
   }
 
   public get sprite(): THREE.Sprite {
-    return this._sprite.sprite
+    return this._sprite
   }
 
   public get name(): string {
@@ -313,11 +318,11 @@ export class Control {
   }
 
   public get visible(): boolean {
-    return this._sprite.sprite.visible
+    return this._sprite.visible
   }
 
   public set visible(value: boolean) {
-    this._sprite.sprite.visible = value
+    this._sprite.visible = value
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): number | null {
@@ -340,13 +345,12 @@ export class Control {
   public draw(): void {
     const image = this._handler.image
     if (image == null) {
-      this._sprite.clear()
-      return
+      this._sprite.material.map = null
+      this._sprite.scale.set(0, 0, 0)
+    } else {
+      setScaleAndPosition(this._sprite, image.dimensions.width, image.dimensions.height, image.location[0], image.location[1])
+      this._sprite.material.map = createTexture(image)
     }
-    const [x, y] = denormalize(image.normalizedX, image.normalizedY, [this._sprite.context.canvas.width, this._sprite.context.canvas.height])
-    const width = (image.normalizedWidth * this._sprite.context.canvas.width) / 2
-    const height = (image.normalizedHeight * this._sprite.context.canvas.height) / 2
-    this._sprite.context.drawImage(image.context.canvas, x, y, width, height)
-    this._sprite.needsUpdate = true
+    this._sprite.material.needsUpdate = true
   }
 }
