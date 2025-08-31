@@ -79,7 +79,7 @@ export class Building {
 
     const worldName = getExtraValue(startUpAction, 'World')?.trim()
     if (worldName != null) {
-      world.scene.add(await getWorld(worldName as Parameters<typeof getWorld>[0]))
+      world.worldGroup = await getWorld(worldName as Parameters<typeof getWorld>[0])
       if (!getSettings().graphics.pbrMaterials) {
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.2)
         world.scene.add(ambientLight)

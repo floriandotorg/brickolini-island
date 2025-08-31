@@ -43,6 +43,7 @@ export abstract class World {
   }[] = []
   private _runningAudios: THREE.Audio<GainNode>[] = []
   private _actors = new Map<string, Actor>()
+  private _worldGroup: THREE.Group | null = null
 
   constructor(public readonly name: WorldName) {
     const getElement = (id: string): HTMLElement => {
@@ -69,6 +70,21 @@ export abstract class World {
 
   public get scene(): THREE.Scene {
     return this._render.scene
+  }
+
+  public get worldGroup(): THREE.Group {
+    if (this._worldGroup == null) {
+      throw new Error('World group is not set yet')
+    }
+    return this._worldGroup
+  }
+
+  public set worldGroup(value: THREE.Group) {
+    if (this._worldGroup != null) {
+      throw new Error('World group is already set')
+    }
+    this._worldGroup = value
+    this.scene.add(this._worldGroup)
   }
 
   protected get camera(): THREE.PerspectiveCamera {
@@ -181,10 +197,7 @@ export abstract class World {
     const animation = parse3DAnimation(await getAction(animationActions[0]))
     this.setupCameraForAnimation(animation.tree)
 
-    const worldGroup = this.scene.children.find(c => c.name.endsWith('_world'))
-    if (worldGroup == null) {
-      throw new Error('World group not found')
-    }
+    const worldGroup = this.worldGroup
 
     const animationActors = new Map<
       string,
