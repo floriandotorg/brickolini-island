@@ -26,9 +26,9 @@ export class InfoDoor extends World {
       switch (buttonName) {
         case 'Door_Ctl':
           if (engine.currentPlayerCharacter == null) {
-            void engine.playAudio(iic037in_PlayWav)
+            void this.playAudio(iic037in_PlayWav)
           } else if (engine.currentSaveGame.name.length === 0) {
-            void engine.playAudio(iic007in_PlayWav)
+            void this.playAudio(iic007in_PlayWav)
           } else {
             void switchWorld('isle', {
               position: {
