@@ -195,10 +195,11 @@ export const getWorld = async (name: 'BLDD' | 'BLDH' | 'BLDJ' | 'BLDR' | 'HOSP' 
       continue
     }
 
+    const matrix = calculateTransformationMatrix(model.position, model.rotation, model.up)
+
     const models = await roiToMesh(model.roi, world.parts, model.animation.tree)
     for (const object of models) {
-      const matrix = calculateTransformationMatrix(model.position, model.rotation, model.up)
-      matrix.decompose(object.position, object.quaternion, object.scale)
+      object.applyMatrix4(matrix)
       object.visible = model.visible
     }
     group.add(...models)
