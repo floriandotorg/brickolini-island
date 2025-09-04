@@ -167,7 +167,7 @@ const fileLoader = new THREE.FileLoader(manager)
 fileLoader.setResponseType('arraybuffer')
 
 export const getFileUrl = (path: string) => {
-  if (import.meta.env.VITE_HD_ASSETS_AVAILABLE === 'true' && getSettings().graphics.hdTextures) {
+  if (getSettings().graphics.hdTextures) {
     if (hdFiles.has(path)) {
       return `hd/${path}`
     }

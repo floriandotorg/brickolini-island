@@ -55,7 +55,7 @@ export const setPreset = (preset: Preset) => {
 
 export const getSettings = (): Settings => {
   if (!['original', 'hd', 'next-gen', 'custom'].includes(localStorage.getItem('settings.graphics.preset') ?? '')) {
-    setPreset(import.meta.env.VITE_HD_ASSETS_AVAILABLE === 'true' ? 'hd' : 'original')
+    setPreset('hd')
   }
 
   const musicVolume = localStorage.getItem('settings.musicVolume')

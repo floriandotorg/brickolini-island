@@ -140,7 +140,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
     const meshes: THREE.Mesh[] = []
     let n = 0
     for (const [geometry, material] of createGeometryAndMaterials(lod, customColor, null, 'model')) {
-      if (getSettings().graphics.realisticWater && import.meta.env.VITE_HD_ASSETS_AVAILABLE === 'true' && material.name.toLowerCase() === 'ocean flat') {
+      if (getSettings().graphics.realisticWater && material.name.toLowerCase() === 'ocean flat') {
         const mesh = new Water(geometry, {
           textureWidth: 512,
           textureHeight: 512,

@@ -49,7 +49,7 @@ export abstract class IsleBase extends World {
   override async init(): Promise<void> {
     await super.init()
 
-    if (getSettings().graphics.pbrMaterials && import.meta.env.VITE_HD_ASSETS_AVAILABLE === 'true') {
+    if (getSettings().graphics.pbrMaterials) {
       new THREE.CubeTextureLoader(manager).load(
         [...Array(6).keys()].map(f => `hd/isle-cubemap/face_${f}.png`),
         async cubeTexture => {
@@ -146,7 +146,7 @@ export abstract class IsleBase extends World {
       this._sky.material.uniforms.mieCoefficient.value = 0.005
       this._sky.material.uniforms.mieDirectionalG.value = 0.8
 
-      if (import.meta.env.VITE_HD_ASSETS_AVAILABLE !== 'true' || !settings.graphics.pbrMaterials) {
+      if (!settings.graphics.pbrMaterials) {
         this._ambientLight = new THREE.AmbientLight()
         this.scene.add(this._ambientLight)
       }
