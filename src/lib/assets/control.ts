@@ -93,8 +93,9 @@ class MapControl implements Handler {
   }
 
   public pointerUp(): boolean {
+    const stateBefore = this._state
     this._state = 0
-    return true
+    return this._state !== stateBefore
   }
 
   public get image(): ImageAction | null {
@@ -139,8 +140,9 @@ class GridControl implements Handler {
   }
 
   public pointerUp(): boolean {
+    const stateBefore = this._state
     this._state = 0
-    return true
+    return this._state !== stateBefore
   }
 
   public get image(): ImageAction | null {
@@ -183,8 +185,9 @@ class ToggleControl implements Handler {
 
   public pointerUp(): boolean {
     if (!this._toggle) {
+      const stateBefore = this._pressedState
       this._pressedState = false
-      return true
+      return this._pressedState !== stateBefore
     }
     return false
   }
