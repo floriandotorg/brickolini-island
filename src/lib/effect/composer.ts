@@ -70,6 +70,8 @@ export class Render3D extends Render {
 
   public resize(width: number, height: number): void {
     this._renderTarget.setSize(width, height)
+    this.camera.aspect = width / height
+    this.camera.updateProjectionMatrix()
   }
 
   public render(renderer: THREE.WebGLRenderer): void {
@@ -133,7 +135,6 @@ export class Composer {
   constructor(canvas: HTMLCanvasElement, renderer: THREE.WebGLRenderer) {
     this._canvas = canvas
     this._renderer = renderer
-    this._renderer.setPixelRatio(window.devicePixelRatio)
 
     this._postMaterial = new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
@@ -164,7 +165,6 @@ export class Composer {
   }
 
   public resize(width: number, height: number): void {
-    this._renderer.setSize(width, height)
     this._renderTarget.setSize(width, height)
 
     for (const render of this._pipeline) {
@@ -173,7 +173,7 @@ export class Composer {
   }
 
   public add(render: Render): void {
-    render.resize(this._canvas.width, this._canvas.height)
+    render.resize(this._canvas.clientWidth, this._canvas.clientHeight)
     this._pipeline.push(render)
     render.material = new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,

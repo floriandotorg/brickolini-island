@@ -172,7 +172,6 @@ class Engine {
       stencil: false,
       powerPreference: 'high-performance',
     })
-    this._renderer.setPixelRatio(window.devicePixelRatio)
 
     if (getSettings().graphics.shadows) {
       this._renderer.shadowMap.enabled = true
@@ -276,14 +275,14 @@ class Engine {
     this._world?.deactivate()
     this._composer.resetPipeline()
     this._world = world
-    this._world.resize(this._canvas.width, this._canvas.height)
+    this._world.resize(this._canvas.clientWidth, this._canvas.clientHeight)
     this._world.activate(this._composer, param)
   }
 
   public async transition(): Promise<void> {
     this._state = 'transition'
     this._transitionStart = this._clock.elapsedTime
-    this._mosaicEffect.tileSize = Math.ceil(Math.max(this._canvas.width / ORIGINAL_TOTAL_WIDTH, this._canvas.height / ORIGINAL_TOTAL_HEIGHT) * 10)
+    this._mosaicEffect.tileSize = Math.ceil(Math.max(this._canvas.clientWidth / ORIGINAL_TOTAL_WIDTH, this._canvas.clientHeight / ORIGINAL_TOTAL_HEIGHT) * 10)
     this._mosaicEffect.progress = 0.0
     return new Promise(resolve => {
       this._transitionPromiseResolve = resolve
@@ -321,12 +320,20 @@ class Engine {
   }
 
   private _setRendererSize = () => {
-    let width = Math.floor(window.innerHeight * RESOLUTION_RATIO)
+    let width = window.innerWidth
     let height = window.innerHeight
-    if (width > window.innerWidth) {
-      width = window.innerWidth
-      height = Math.floor(window.innerWidth / RESOLUTION_RATIO)
+    const targetRatio = 4 / 3
+
+    if (width / height > targetRatio) {
+      width = height * targetRatio
+    } else {
+      height = width / targetRatio
     }
+
+    this._canvas.style.left = `${(window.innerWidth - width) / 2}px`
+    this._canvas.style.top = `${(window.innerHeight - height) / 2}px`
+
+    this._renderer.setSize(width, height, false)
     this._composer.resize(width, height)
     this._world?.resize(width, height)
   }

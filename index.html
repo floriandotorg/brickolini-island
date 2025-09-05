@@ -11,23 +11,20 @@
   <meta name="google-site-verification" content="La7odqDYVSiOCGvjzK-mEIxvmJCMQApzqbz5cHXXW68" />
 </head>
 
-<body class="bg-black text-white">
-  <div class="fixed inset-0 flex justify-center items-center">
-    <div class="aspect-[4/3] h-full max-w-full flex items-center justify-center relative">
-      <div id="debug" class="absolute top-4 left-4 p-1 text-white bg-black font-mono hidden">
-        <div id="debug-slew-mode" class="text-red-500">
-          SLEW MODE
-        </div>
-        <div>
-          position: <span id="debug-position"></span>
-        </div>
-        <div>
-          direction: <span id="debug-direction"></span>
-        </div>
-      </div>
-      <canvas id="game" class="select-none aspect-[4/3] h-full max-w-full"></canvas>
+<body class="bg-black text-white h-full">
+  <div id="debug" class="fixed top-4 left-4 p-1 text-white bg-black font-mono hidden">
+    <div id="debug-slew-mode" class="text-red-500">
+      SLEW MODE
+    </div>
+    <div>
+      position: <span id="debug-position"></span>
+    </div>
+    <div>
+      direction: <span id="debug-direction"></span>
     </div>
   </div>
+
+  <canvas id="game" class="block select-none absolute"></canvas>
 
   <div id="menu" class="flex flex-col justify-center items-center h-screen gap-8 relative">
     <a class="absolute top-4 right-4 flex items-center opacity-50 hover:opacity-100 transition-opacity duration-100"
