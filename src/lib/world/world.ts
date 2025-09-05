@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
 import { type AnimationAction, type AudioAction, getExtraValue, type ParallelAction, type PhonemeAction, type PositionalAudioAction, splitExtraValue } from '../action-types'
-import { type Animation3DNode, animationToTracks, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
+import { type Animation3DNode, type AnimationActor, animationToTracks, createAnimationActor, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
 import { getGlobalPart } from '../assets/model'
@@ -11,6 +11,17 @@ import { engine } from '../engine'
 import { Actor } from './actor'
 
 export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar'
+
+type FaceAnimation = {
+  actor: Actor
+  currentVideoElement?: HTMLVideoElement
+  animations: {
+    start: number
+    duration: number
+    videoElement: HTMLVideoElement
+    videoTexture: THREE.VideoTexture
+  }[]
+}
 
 export abstract class World {
   protected _render = new Render3D()
@@ -31,16 +42,7 @@ export abstract class World {
     lookAtKeys?: WDB.Animation.VertexKey[]
     lockCamera?: boolean
     unskippable?: boolean
-    faceAnimations: {
-      actor: Actor
-      currentVideoElement?: HTMLVideoElement
-      animations: {
-        start: number
-        duration: number
-        videoElement: HTMLVideoElement
-        videoTexture: THREE.VideoTexture
-      }[]
-    }[]
+    faceAnimations: FaceAnimation[]
     pointAtCameraObjects: THREE.Object3D[]
   }[] = []
   private _runningAudios: THREE.Audio<GainNode>[] = []
@@ -204,21 +206,10 @@ export abstract class World {
 
     const worldGroup = this.worldGroup
 
-    const animationActors = new Map<
-      string,
-      {
-        type: WDB.ActorType
-        object: THREE.Object3D
-        children: Map<string, THREE.Object3D>
-      }
-    >()
+    const animationActors = new Map<string, AnimationActor>()
 
     const addActorToList = (type: WDB.ActorType, actor: THREE.Object3D) => {
-      animationActors.set(actor.name, {
-        type,
-        object: actor,
-        children: type !== WDB.ActorType.ManagedActor ? new Map(worldGroup.children.filter(child => child.name.startsWith(actor.name)).map(c => [c.name.split('_').at(-1) ?? '', c])) : new Map(actor.children.filter(c => !(c instanceof THREE.Mesh)).map(c => [c.name, c])),
-      })
+      animationActors.set(actor.name, createAnimationActor(type, actor, worldGroup))
     }
 
     for (const actor of animation.actors) {
@@ -370,18 +361,15 @@ export abstract class World {
             duration: phoneme.duration,
           }
         })
-        .reduce(
-          (acc, { actor, ...rest }) => {
-            const existing = acc.find(a => a.actor === actor)
-            if (existing == null) {
-              acc.push({ actor, animations: [rest] })
-            } else {
-              existing.animations.push(rest)
-            }
-            return acc
-          },
-          [] as (typeof this._runningAnimations)[number]['faceAnimations'],
-        )
+        .reduce((acc, { actor, ...rest }) => {
+          const existing = acc.find(a => a.actor === actor)
+          if (existing == null) {
+            acc.push({ actor, animations: [rest] })
+          } else {
+            existing.animations.push(rest)
+          }
+          return acc
+        }, [] as FaceAnimation[])
         .map(a => ({ ...a, animations: a.animations.sort((a, b) => b.start - a.start) })),
       pointAtCameraObjects,
       lockCamera,
@@ -389,16 +377,7 @@ export abstract class World {
     )
   }
 
-  public async playAnimationClip(
-    root: THREE.Object3D,
-    clip: THREE.AnimationClip,
-    audios: THREE.PositionalAudio[] = [],
-    lookAtKeys?: WDB.Animation.VertexKey[],
-    faceAnimations: (typeof this._runningAnimations)[number]['faceAnimations'] = [],
-    pointAtCameraObjects: THREE.Object3D[] = [],
-    lockCamera?: boolean,
-    unskippable?: boolean,
-  ): Promise<void> {
+  public async playAnimationClip(root: THREE.Object3D, clip: THREE.AnimationClip, audios: THREE.PositionalAudio[] = [], lookAtKeys?: WDB.Animation.VertexKey[], faceAnimations: FaceAnimation[] = [], pointAtCameraObjects: THREE.Object3D[] = [], lockCamera?: boolean, unskippable?: boolean): Promise<void> {
     const mixer = new THREE.AnimationMixer(root)
     const clipAction = mixer.clipAction(clip)
     clipAction.loop = THREE.LoopOnce

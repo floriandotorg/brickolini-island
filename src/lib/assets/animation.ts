@@ -8,6 +8,7 @@ export type TimeAndFlags = { time: number; flags: number }
 export type VertexKey = { timeAndFlags: TimeAndFlags; vertex: THREE.Vector3 }
 export type RotationKey = { timeAndFlags: TimeAndFlags; quaternion: THREE.Quaternion }
 export type MorphKey = { timeAndFlags: TimeAndFlags; visible: boolean }
+export type Animation3D = Omit<WDB.Animation.Animation, 'tree'> & { tree: Animation3DNode; radius: number; center: WDB.Vertex }
 export type Animation3DNode = { name: string; translationKeys: VertexKey[]; rotationKeys: RotationKey[]; scaleKeys: VertexKey[]; morphKeys: MorphKey[]; children: Animation3DNode[] }
 
 export const findRecursively = (node: Animation3DNode, predicate: (node: Animation3DNode) => boolean): Animation3DNode[] | undefined => {
@@ -23,7 +24,7 @@ export const findRecursively = (node: Animation3DNode, predicate: (node: Animati
   return undefined
 }
 
-export const parse3DAnimation = (buffer: ArrayBuffer) => {
+export const parse3DAnimation = (buffer: ArrayBuffer): Animation3D => {
   const reader = new BinaryReader(buffer)
   const magic = reader.readInt32()
   if (magic !== 17) {
@@ -62,7 +63,18 @@ export const getBeforeAndAfter = <T extends { timeAndFlags: { time: number } }>(
   return { before, after: keys[idx] }
 }
 
-export const animationToTracks = (animation: Animation3DNode, actors: Map<string, { type: WDB.ActorType; object: THREE.Object3D; children: Map<string, THREE.Object3D> }>, offset: THREE.Vector3 = new THREE.Vector3()): THREE.KeyframeTrack[] => {
+export type AnimationActor = { type: WDB.ActorType; object: THREE.Object3D; children: Map<string, THREE.Object3D> }
+
+export const createAnimationActor = (type: WDB.ActorType, actor: THREE.Object3D, worldGroup: THREE.Group): AnimationActor => {
+  const children = type !== WDB.ActorType.ManagedActor ? new Map(worldGroup.children.filter(child => child.name.startsWith(actor.name)).map(c => [c.name.split('_').at(-1) ?? '', c])) : new Map(actor.children.filter(c => !(c instanceof THREE.Mesh)).map(c => [c.name, c]))
+  return {
+    type,
+    object: actor,
+    children,
+  }
+}
+
+export const animationToTracks = (animation: Animation3DNode, actors: Map<string, AnimationActor>, offset: THREE.Vector3 = new THREE.Vector3()): THREE.KeyframeTrack[] => {
   const position = new THREE.Vector3()
   const quaternion = new THREE.Quaternion()
   const scale = new THREE.Vector3()
