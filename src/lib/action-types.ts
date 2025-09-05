@@ -2,6 +2,8 @@ import { Action } from '../actions/types'
 
 type Override<T, U> = Omit<T, keyof U> & U
 
+export const animationPresenters = ['LegoAnimPresenter', 'LegoLocomotionAnimPresenter', 'LegoCarBuildAnimPresenter'] as const
+
 export type ActionBase = { id: number; siFile: string; type: Action.Type; presenter: string | null; extra: string | null; name: string; location: readonly [number, number, number] }
 
 export type FileActionBase = Override<ActionBase, { fileType: Action.FileType }>
@@ -18,7 +20,7 @@ export type ParallelActionTuple<T, P extends string | null = string | null> = Ov
 
 export type SerialAction<T, P extends string | null = string | null> = Override<ActionBase, { type: Action.Type.SerialAction; fileType?: Action.FileType; children: readonly T[]; presenter: P }>
 
-export type AnimationAction = Override<FileActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoAnimPresenter' | 'LegoLocomotionAnimPresenter'; location: readonly [number, number, number] }>
+export type AnimationAction = Override<FileActionBase, { type: Action.Type.ObjectAction; presenter: (typeof animationPresenters)[number]; location: readonly [number, number, number] }>
 
 export type BoundaryAction = Override<ActionBase, { presenter: 'LegoPathPresenter'; fileType: Action.FileType; location: readonly [number, number, number] }>
 
@@ -52,7 +54,7 @@ export const isImageAction = (action: unknown): action is ImageAction => isFileA
 
 export const isAudioAction = (action: unknown): action is AudioAction => isFileAction(action) && action.fileType === Action.FileType.WAV && action.presenter === null
 
-export const isAnimationAction = (action: unknown): action is AnimationAction => isAction(action) && action.presenter === 'LegoAnimPresenter'
+export const isAnimationAction = (action: unknown): action is AnimationAction => isAction(action) && isAnimationPresenter(action.presenter)
 
 export const isControlAction = (action: unknown): action is ControlAction => isAction(action) && action.presenter === 'MxControlPresenter'
 
@@ -66,3 +68,5 @@ export const getExtraValue = (action: { extra: string | null }, key: string): st
 export const splitExtraValue = (value: string): string[] => {
   return value.split(/[:;]/)
 }
+
+export const isAnimationPresenter = (presenter: string | null): boolean => presenter != null && (animationPresenters as readonly string[]).includes(presenter)

@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
+import { isAnimationPresenter } from '../action-types'
 import { getSettings } from '../settings'
 
 THREE.Cache.enabled = !import.meta.env.DEV
@@ -196,7 +197,7 @@ const getExtension = (fileType: Action.FileType, presenter: string | null) => {
       if (presenter == null) {
         throw new Error(`Presenter is null for file type: ${fileType}`)
       }
-      if (presenter === 'LegoAnimPresenter' || presenter === 'LegoLocomotionAnimPresenter') {
+      if (isAnimationPresenter(presenter)) {
         return 'ani'
       }
       return 'gph'
