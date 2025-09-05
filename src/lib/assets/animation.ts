@@ -93,7 +93,7 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
     return uuid
   }
 
-  const getTransform = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name = '', parent: THREE.Matrix4 = new THREE.Matrix4(), path: string[] = []): void => {
+  const getTransform = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name: string, parent: THREE.Matrix4 = new THREE.Matrix4(), path: string[] = []): void => {
     const push = (key: string, values: number[]) => {
       const existing = valueMap.get(key)
       if (existing == null) {
@@ -191,7 +191,7 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
   }
   const valueMap = new Map<string, number[]>()
   for (const time of times) {
-    getTransform(animation, time, valueMap)
+    getTransform(animation, time, valueMap, animation.name)
   }
 
   const timesSec = times.map(t => t / 1_000)
@@ -222,7 +222,7 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
   }
   addZeroMorphKey(animation)
 
-  const getMorph = (animation: Animation3DNode, time: number, valueMap: Map<string, boolean[]>, name = '', parent: boolean, path: string[] = []): void => {
+  const getMorph = (animation: Animation3DNode, time: number, valueMap: Map<string, boolean[]>, name: string, parent: boolean, path: string[] = []): void => {
     const push = (key: string, value: boolean) => {
       const existing = valueMap.get(key)
       if (existing == null) {
@@ -250,7 +250,7 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
   }
   const morphValueMap = new Map<string, boolean[]>()
   for (const time of morphTimes) {
-    getMorph(animation, time, morphValueMap, '', true)
+    getMorph(animation, time, morphValueMap, animation.name, true)
   }
 
   const morphResult = Array.from(morphValueMap.entries()).map(([name, values]) => {
