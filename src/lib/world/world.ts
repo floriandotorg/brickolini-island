@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
-import type { AnimationAction, AudioAction, ParallelAction, PhonemeAction, PositionalAudioAction } from '../action-types'
+import { type AnimationAction, type AudioAction, getExtraValue, type ParallelAction, type PhonemeAction, type PositionalAudioAction, splitExtraValue } from '../action-types'
 import { type Animation3DNode, animationToTracks, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
@@ -282,17 +282,16 @@ export abstract class World {
     }
 
     const pointAtCameraObjects: THREE.Object3D[] = []
-    for (const extra of animationActions[0].extra?.toLowerCase().split(',') ?? []) {
-      if (extra.startsWith('ptatcam')) {
-        for (const name of extra.slice(extra.indexOf(':') + 1).split(';')) {
-          const object = Array.from(animationActors.entries())
-            .flatMap(([_, obj]) => Array.from(obj.children.values()))
-            .find(c => c.name.toLowerCase() === name)
-          if (object == null) {
-            throw new Error(`Object not found: ${name}`)
-          }
-          pointAtCameraObjects.push(object)
+    const extra = getExtraValue(animationActions[0], 'ptatcam')
+    if (extra != null) {
+      for (const name of splitExtraValue(extra)) {
+        const object = Array.from(animationActors.entries())
+          .flatMap(([_, obj]) => Array.from(obj.children.values()))
+          .find(c => c.name.toLowerCase() === name)
+        if (object == null) {
+          throw new Error(`Object not found: ${name}`)
         }
+        pointAtCameraObjects.push(object)
       }
     }
 
