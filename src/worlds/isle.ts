@@ -1,8 +1,8 @@
 import * as THREE from 'three'
 // import { CNs001Pe, tns030bd_RunAnim } from '../actions/act2main'
 import {
-  _Isle,
   AmbulanceDashboard,
+  Beach,
   BikeDashboard,
   bho142en_RunAnim,
   bic143sy_RunAnim,
@@ -39,6 +39,7 @@ import {
   frt135df_RunAnim,
   frt137df_RunAnim,
   frt139df_RunAnim,
+  Gas,
   hho027en_RunAnim,
   hho142cl_RunAnim,
   hho143cl_RunAnim,
@@ -64,6 +65,7 @@ import {
   hpzx51gd_RunAnim,
   hpzy51gd_RunAnim,
   hpzz51gd_RunAnim,
+  InfoCenter_Entity,
   igs001na_RunAnim,
   igs008na_RunAnim,
   ijs001sn_RunAnim,
@@ -75,6 +77,7 @@ import {
   irt007in_RunAnim,
   irtx01sl_RunAnim,
   ivo918in_RunAnim,
+  MedCtr,
   MotoBikeDashboard,
   nca001ca_RunAnim,
   nca002sk_RunAnim,
@@ -143,6 +146,7 @@ import {
   npz006bd_RunAnim,
   npz007bd_RunAnim,
   nrtflag0_RunAnim,
+  Police,
   pgs050nu_RunAnim,
   pgs051nu_RunAnim,
   pgs052nu_RunAnim,
@@ -204,6 +208,7 @@ import {
   prt072sl_RunAnim,
   prt073sl_RunAnim,
   prt074sl_RunAnim,
+  Racej,
   SkateDashboard,
   sba001bu_RunAnim,
   sba002bu_RunAnim,
@@ -930,7 +935,7 @@ export class Isle extends IsleBase {
       }
     }
 
-    for (const child of _Isle.children) {
+    for (const child of [Gas, Police, InfoCenter_Entity, Beach, Racej, MedCtr]) {
       const entity = getExtraValue(child, 'Object')?.toLowerCase()
       const worldName: WorldName | undefined = (() => {
         switch (entity) {
@@ -951,7 +956,7 @@ export class Isle extends IsleBase {
         }
       })()
       if (worldName == null) {
-        continue
+        throw new Error(`World name not found for ${child.name}`)
       }
       if (child.children[0] == null) {
         throw new Error(`Action for world ${worldName} has no children`)
@@ -966,7 +971,7 @@ export class Isle extends IsleBase {
       }
       this.addClickListener(buildingMesh, async () => {
         console.log(`switched to ${meshName}, ${worldName}`)
-        switchWorld(worldName)
+        void switchWorld(worldName)
         return true
       })
     }
