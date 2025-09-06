@@ -1,6 +1,6 @@
-import * as THREE from 'three'
+import type * as THREE from 'three'
 import { type AudioAction, type ControlAction, getExtraValue, type ImageAction, isAudioAction, isControlAction, isImageAction, isMeterAction, type MeterAction, type ParallelAction } from '../action-types'
-import { CanvasSprite } from '../assets/canvas-sprite'
+import { CanvasSprite, createImageSprite } from '../assets/canvas-sprite'
 import { Control } from '../assets/control'
 import { getImage } from '../assets/image'
 import { type Composer, Render2D } from '../effect/composer'
@@ -107,12 +107,7 @@ class Meter {
 
 export class Dashboard {
   private _render = new Render2D()
-  private _canvas: HTMLCanvasElement
-  private _context: CanvasRenderingContext2D
-  private _texture: THREE.CanvasTexture
-  private _material: THREE.MeshBasicMaterial
-  private _mesh: THREE.Mesh
-  private _dashboardImage: HTMLImageElement | null = null
+  private _background: THREE.Sprite | null = null
   private _armsMask: Control | null = null
   private _hornControl: Control | null = null
   private _hornSound: AudioAction | null = null
@@ -122,28 +117,6 @@ export class Dashboard {
 
   public onExit: () => void = () => {}
   public onInfoButtonClicked: () => void = () => {}
-
-  constructor() {
-    this._canvas = document.createElement('canvas')
-    const context = this._canvas.getContext('2d')
-    if (context == null) {
-      throw new Error('HUD canvas context not found')
-    }
-    this._context = context
-
-    this._texture = new THREE.CanvasTexture(this._canvas)
-    this._texture.colorSpace = THREE.SRGBColorSpace
-    this._material = new THREE.MeshBasicMaterial({ map: this._texture, transparent: true })
-    this._mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this._material)
-    this._mesh.position.z = -1
-    this._render.scene.add(this._mesh)
-  }
-
-  public resize(width: number, height: number): void {
-    this._canvas.width = width
-    this._canvas.height = height
-    this._render.resize(width, height)
-  }
 
   public pointerDown(normalizedX: number, normalizedY: number): void {
     if (this._armsMask?.pointerDown(normalizedX, normalizedY)) {
@@ -169,19 +142,6 @@ export class Dashboard {
     }
   }
 
-  private _drawDashboard(): void {
-    if (this._dashboardImage == null) {
-      return
-    }
-
-    const aspect = this._dashboardImage.width / this._dashboardImage.height
-    const drawWidth = this._canvas.width
-    const drawHeight = drawWidth / aspect
-    const y = this._canvas.height - drawHeight
-    this._context.drawImage(this._dashboardImage, 0, y, drawWidth, drawHeight)
-    this._texture.needsUpdate = true
-  }
-
   public async show(action: ParallelAction<ImageAction | AudioAction | ControlAction>): Promise<void> {
     this.clear()
 
@@ -202,13 +162,11 @@ export class Dashboard {
       }
     }
 
-    const dashboardAction = action.children.find(child => child.name.endsWith('Dashboard_Bitmap') || child.name.endsWith('SkatePizza_Bitmap'))
-    if (dashboardAction == null || !isImageAction(dashboardAction)) {
-      throw new Error('Dashboard image not found')
+    const dashboardAction = action.children.find(child => child.name.endsWith('Dashboard_Bitmap'))
+    if (dashboardAction != null && isImageAction(dashboardAction)) {
+      this._background = createImageSprite(dashboardAction, -1)
+      this._render.scene.add(this._background)
     }
-
-    this._dashboardImage = await getImage(dashboardAction)
-    this._drawDashboard()
 
     const armsAction = action.children.find(child => child.name.endsWith('Arms_Ctl'))
     if (armsAction == null || !isControlAction(armsAction)) {
@@ -216,6 +174,7 @@ export class Dashboard {
     }
 
     this._armsMask = await Control.create(armsAction)
+    this._render.scene.add(this._armsMask.sprite)
 
     const hornAction = action.children.find(child => child.name.endsWith('Horn_Ctl'))
     if (hornAction != null && isControlAction(hornAction)) {
@@ -238,19 +197,20 @@ export class Dashboard {
   }
 
   public clear(): void {
+    this._background?.removeFromParent()
+    this._armsMask?.sprite.removeFromParent()
     this._hornControl?.sprite.removeFromParent()
     this._infoControl?.sprite.removeFromParent()
     this._speedMeter?.sprite.removeFromParent()
     this._fuelMeter?.sprite.removeFromParent()
 
     this._hornSound = null
+    this._background = null
+    this._armsMask = null
     this._hornControl = null
     this._infoControl = null
     this._speedMeter = null
     this._fuelMeter = null
-
-    this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
-    this._texture.needsUpdate = true
   }
 
   public update(velocity: number): void {

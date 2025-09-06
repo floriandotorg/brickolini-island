@@ -1019,7 +1019,6 @@ export class Isle extends IsleBase {
         this._dashboard.onExit = () => {
           this._exitVehicle()
         }
-        this._dashboard.resize(engine.width, engine.height)
         this._showDashboard()
       })
     }
@@ -1120,7 +1119,6 @@ export class Isle extends IsleBase {
 
   public override resize(width: number, height: number): void {
     super.resize(width, height)
-    this._dashboard.resize(width, height)
   }
 
   public override pointerDown(event: MouseEvent, normalizedX: number, normalizedY: number): void {

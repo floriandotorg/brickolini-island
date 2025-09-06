@@ -274,7 +274,6 @@ export abstract class IsleBase extends World {
 
   public override resize(width: number, height: number): void {
     super.resize(width, height)
-    this._dashboard.resize(width, height)
   }
 
   public override pointerDown(event: MouseEvent, normalizedX: number, normalizedY: number): void {
