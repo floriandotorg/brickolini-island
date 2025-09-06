@@ -61,8 +61,19 @@ export const isControlAction = (action: unknown): action is ControlAction => isA
 export const isMeterAction = (action: unknown): action is MeterAction => isImageAction(action) && action.presenter === 'LegoMeterPresenter'
 
 export const getExtraValue = (action: { extra: string | null }, key: string): string | undefined => {
-  const re = new RegExp(String.raw`${key}:([^, \t\r\n:]+)`, 'i')
-  return action?.extra?.match(re)?.[1]
+  if (action.extra != null) {
+    for (const part of action.extra.split(/[, \t\r\n]+/)) {
+      const delim = part.indexOf(':')
+      const partKey = delim > 0 ? part.slice(0, delim) : part
+      if (partKey.toLowerCase() === key.toLowerCase()) {
+        if (delim < 0) {
+          return ''
+        }
+        return part.slice(delim + 1)
+      }
+    }
+  }
+  return undefined
 }
 
 export const splitExtraValue = (value: string): string[] => {

@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
-import { isAnimationPresenter } from '../action-types'
+import { type FileActionBase, getExtraValue, isAnimationPresenter } from '../action-types'
 import { getSettings } from '../settings'
 
 THREE.Cache.enabled = !import.meta.env.DEV
@@ -312,14 +312,10 @@ avifTestImage.onload = () => {
 }
 
 export const getFileUrl = (path: string) => {
-  if (supportsAvif) {
-    path = path.replace('.png', '.avif')
-  }
-
   if (getSettings().graphics.hdTextures && hdFiles.has(path)) {
     return `hd/${path}`
   }
-  return `/org/${path}`
+  return `org/${path}`
 }
 
 export const getFile = async (path: string): Promise<ArrayBuffer> => {
@@ -330,7 +326,7 @@ export const getFile = async (path: string): Promise<ArrayBuffer> => {
   return res
 }
 
-const getExtension = (fileType: Action.FileType, presenter: string | null) => {
+const getExtension = (fileType: Action.FileType, presenter: string | null, extra: string | null) => {
   switch (fileType) {
     case Action.FileType.SMK:
       return 'mp4'
@@ -345,6 +341,9 @@ const getExtension = (fileType: Action.FileType, presenter: string | null) => {
       }
       return 'gph'
     case Action.FileType.STL:
+      if (supportsAvif && getExtraValue({ extra }, 'BMP_ISMAP') == null) {
+        return 'avif'
+      }
       return 'png'
     case Action.FileType.FLC:
       return 'mp4'
@@ -353,6 +352,6 @@ const getExtension = (fileType: Action.FileType, presenter: string | null) => {
   throw new Error(`Unknown file type: ${fileType}`)
 }
 
-export const getActionFileUrl = (action: { id: number; siFile: string; fileType: Action.FileType; presenter: string | null }) => getFileUrl(`${action.siFile}/${action.id}.${getExtension(action.fileType, action.presenter)}`)
+export const getActionFileUrl = (action: FileActionBase) => getFileUrl(`${action.siFile}/${action.id}.${getExtension(action.fileType, action.presenter, action.extra)}`)
 
-export const getAction = async (action: { id: number; siFile: string; fileType: Action.FileType; presenter: string | null }): Promise<ArrayBuffer> => getFile(getActionFileUrl(action))
+export const getAction = async (action: FileActionBase): Promise<ArrayBuffer> => getFile(getActionFileUrl(action))
