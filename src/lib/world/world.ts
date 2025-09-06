@@ -108,25 +108,37 @@ export abstract class World {
 
     const pathToPosition = (path: Animation3DNode[]) =>
       path.reduce((acc, node) => {
-        if (node.translationKeys.length === 0) {
-          return acc
+        if (node.translationKeys.length > 1) {
+          throw new Error(`Expected at most one translation key, got ${node.translationKeys.length}`)
         }
-        if (node.translationKeys.length !== 1) {
-          throw new Error(`Expected one translation key, got ${node.translationKeys.length}`)
-        }
-        if (node.translationKeys[0].timeAndFlags.time > 0) {
-          throw new Error(`Translation key has time > 0`)
-        }
-        if (node.translationKeys[0].timeAndFlags.flags > 1) {
-          throw new Error(`Translation key has flags > 1`)
-        }
-        if (node.rotationKeys.length > 0) {
-          throw new Error(`Rotation keys found`)
+        if (node.rotationKeys.length > 1) {
+          throw new Error(`Expected at most one rotation key, got ${node.rotationKeys.length}`)
         }
         if (node.scaleKeys.length > 0) {
           throw new Error(`Scale keys found`)
         }
-        return acc.add(node.translationKeys[0].vertex)
+        if (node.morphKeys.length > 0) {
+          throw new Error(`Morph keys found`)
+        }
+        if (node.translationKeys.length === 1) {
+          if (node.translationKeys[0].timeAndFlags.time > 0) {
+            throw new Error(`Translation key has time > 0`)
+          }
+          if (node.translationKeys[0].timeAndFlags.flags > 1) {
+            throw new Error(`Translation key has flags > 1`)
+          }
+          acc.add(node.translationKeys[0].vertex)
+        }
+        if (node.rotationKeys.length === 1) {
+          if (node.rotationKeys[0].timeAndFlags.time > 0) {
+            throw new Error(`Rotation key has time > 0`)
+          }
+          if (node.rotationKeys[0].timeAndFlags.flags > 1) {
+            throw new Error(`Rotation key has flags > 1`)
+          }
+          acc.applyQuaternion(node.rotationKeys[0].quaternion)
+        }
+        return acc
       }, new THREE.Vector3())
 
     const cameraConfig = cameraConfigPath.at(-1)
