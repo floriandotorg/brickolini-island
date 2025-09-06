@@ -965,11 +965,11 @@ export class Isle extends IsleBase {
       if (meshName == null) {
         throw new Error(`Found no valid mesh name for world ${worldName}`)
       }
-      const buildingMesh = this.scene.getObjectByName(meshName)
-      if (buildingMesh == null || !(buildingMesh instanceof THREE.Mesh)) {
+      const buildingMeshes = this.getObjectsByPrefix(meshName)
+      if (buildingMeshes.length < 1) {
         throw new Error(`Mesh ${meshName} not found`)
       }
-      this.addClickListener(buildingMesh, async () => {
+      this.addClickListener(buildingMeshes, async () => {
         console.log(`switched to ${meshName}, ${worldName}`)
         void switchWorld(worldName)
         return true
@@ -985,10 +985,10 @@ export class Isle extends IsleBase {
     const bikeMesh = this.scene.getObjectByName('bike')
     const motobkMesh = this.scene.getObjectByName('motobk')
     const skateMesh = this.scene.getObjectByName('skate')
-    const ambulanceMesh = this.scene.getObjectByName('ambul')
-    const towtruckMesh = this.scene.getObjectByName('towtk')
+    const ambulanceMesh = this.getObjectsByPrefix('ambul')
+    const towtruckMesh = this.getObjectsByPrefix('towtk')
 
-    if (bikeMesh == null || !(bikeMesh instanceof THREE.Mesh) || motobkMesh == null || !(motobkMesh instanceof THREE.Mesh) || skateMesh == null || !(skateMesh instanceof THREE.Mesh) || ambulanceMesh == null || !(ambulanceMesh instanceof THREE.Mesh) || towtruckMesh == null || !(towtruckMesh instanceof THREE.Mesh)) {
+    if (bikeMesh == null || motobkMesh == null || skateMesh == null || ambulanceMesh.length < 1 || towtruckMesh.length < 1) {
       throw new Error('Vehicle meshes not found')
     }
 
@@ -996,13 +996,15 @@ export class Isle extends IsleBase {
     this._boundaryManager.placeObject(motobkMesh, 'INT43', 4, 0.5, 1, 0.5)
     this._boundaryManager.placeObject(skateMesh, 'EDG02_84', 4, 0.5, 0, 0.5)
 
-    const enterVehicle = async (vehicle: THREE.Mesh): Promise<void> => {
+    const enterVehicle = async (vehicle: THREE.Object3D[]): Promise<void> => {
       await engine.transition()
 
       this._vehicleMesh = vehicle
-      this._vehicleMesh.visible = false
-      this.camera.position.set(vehicle.position.x, vehicle.position.y, vehicle.position.z)
-      this.camera.quaternion.copy(vehicle.quaternion)
+      for (const mesh of vehicle) {
+        mesh.visible = false
+      }
+      this.camera.position.set(vehicle[0].position.x, vehicle[0].position.y, vehicle[0].position.z)
+      this.camera.quaternion.copy(vehicle[0].quaternion)
       this._placeObjectOnGround(this.camera)
 
       this._showDashboard()
@@ -1023,15 +1025,15 @@ export class Isle extends IsleBase {
     }
 
     this.addClickListener(bikeMesh, async () => {
-      await enterVehicle(bikeMesh)
+      await enterVehicle([bikeMesh])
       return true
     })
     this.addClickListener(motobkMesh, async () => {
-      await enterVehicle(motobkMesh)
+      await enterVehicle([motobkMesh])
       return true
     })
     this.addClickListener(skateMesh, async () => {
-      await enterVehicle(skateMesh)
+      await enterVehicle([skateMesh])
       return true
     })
     this.addClickListener(ambulanceMesh, async () => {
@@ -1077,7 +1079,7 @@ export class Isle extends IsleBase {
       return
     }
 
-    switch (this._vehicleMesh.name) {
+    switch (this._vehicleMesh[0].name) {
       case 'bike':
         this._dashboard.show(BikeDashboard)
         break
@@ -1094,7 +1096,7 @@ export class Isle extends IsleBase {
         this._dashboard.show(TowTrackDashboard)
         break
       default:
-        throw new Error(`Unknown vehicle: ${this._vehicleMesh.name}`)
+        throw new Error(`Unknown vehicle: ${this._vehicleMesh[0].name}`)
     }
   }
 
@@ -1103,15 +1105,17 @@ export class Isle extends IsleBase {
       return
     }
 
-    this._vehicleMesh.position.copy(this.camera.position)
-    this._vehicleMesh.quaternion.copy(this.camera.quaternion)
-    this._placeObjectOnGround(this._vehicleMesh, new THREE.Vector3(0, 0, 0))
-    this._vehicleMesh.visible = true
+    const groundPosition = this._getGroundPosition(this.camera.position, new THREE.Vector3(0, 0, 0))
+    this.moveObjectTo(this._vehicleMesh, groundPosition, this.camera.quaternion)
+    for (const mesh of this._vehicleMesh) {
+      mesh.visible = true
+    }
 
-    this.camera.position.add(new THREE.Vector3(0, 0, -2).applyQuaternion(this.camera.quaternion))
+    this.camera.position.add(new THREE.Vector3(0, 0, -4).applyQuaternion(this.camera.quaternion))
     this._placeObjectOnGround(this.camera)
 
     this._dashboard.clear()
+    this._vehicleMesh = null
   }
 
   public override resize(width: number, height: number): void {
@@ -1129,12 +1133,17 @@ export class Isle extends IsleBase {
     this._dashboard.pointerUp()
   }
 
-  private _placeObjectOnGround(object: THREE.Object3D, offset = new THREE.Vector3(0, CAM_HEIGHT, 0)): void {
-    const downRay = new THREE.Raycaster(object.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0), 0, 1000)
+  private _getGroundPosition(position: THREE.Vector3, offset = new THREE.Vector3(0, CAM_HEIGHT, 0)): THREE.Vector3 {
+    const downRay = new THREE.Raycaster(position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0), 0, 1000)
     const hit = downRay.intersectObjects(this._groundGroup)[0]
     if (hit) {
-      object.position.copy(hit.point.clone().add(offset))
+      return hit.point.clone().add(offset)
     }
+    throw new Error('No ground hit')
+  }
+
+  private _placeObjectOnGround(object: THREE.Object3D, offset = new THREE.Vector3(0, CAM_HEIGHT, 0)): void {
+    object.position.copy(this._getGroundPosition(object.position, offset))
   }
 
   private _calculateSlopeTilt(): number {

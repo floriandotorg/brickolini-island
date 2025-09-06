@@ -34,7 +34,7 @@ export abstract class IsleBase extends World {
   protected _plantGroup: THREE.Group = new THREE.Group()
   protected _boundaryManager = new BoundaryManager([], this)
   protected _dashboard = new Dashboard()
-  protected _vehicleMesh: THREE.Mesh | null = null
+  protected _vehicleMesh: THREE.Object3D[] | null = null
   protected _sky: Sky | null = null
   protected _ambientLight: THREE.AmbientLight | null = null
   protected _sunLight: THREE.DirectionalLight | null = null
