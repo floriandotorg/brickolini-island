@@ -202,7 +202,7 @@ export class Dashboard {
       }
     }
 
-    const dashboardAction = action.children.find(child => child.name.endsWith('Dashboard_Bitmap'))
+    const dashboardAction = action.children.find(child => child.name.endsWith('Dashboard_Bitmap') || child.name.endsWith('SkatePizza_Bitmap'))
     if (dashboardAction == null || !isImageAction(dashboardAction)) {
       throw new Error('Dashboard image not found')
     }
@@ -230,13 +230,11 @@ export class Dashboard {
     }
 
     const infoAction = action.children.find(child => child.name.endsWith('Info_Ctl'))
-    if (infoAction == null || !isControlAction(infoAction)) {
-      throw new Error('Info button not found')
+    if (isControlAction(infoAction)) {
+      this._infoControl = await Control.create(infoAction)
+      this._render.scene.add(this._infoControl.sprite)
+      this._infoControl.draw()
     }
-
-    this._infoControl = await Control.create(infoAction)
-    this._render.scene.add(this._infoControl.sprite)
-    this._infoControl.draw()
   }
 
   public clear(): void {
