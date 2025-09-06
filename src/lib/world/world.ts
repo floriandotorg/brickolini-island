@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
 import { type AnimationAction, type AudioAction, getExtraValue, type ParallelAction, type PhonemeAction, type PositionalAudioAction, splitExtraValue } from '../action-types'
-import { type Animation3DNode, type AnimationActor, animationToTracks, createAnimationActor, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
+import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, createAnimationActor, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
 import { getGlobalPart } from '../assets/model'
@@ -203,10 +203,20 @@ export abstract class World {
     }
   }
 
-  public async playAnimation(
+  public async buildAnimation(
     action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction> | AnimationAction,
-    { location, unskippable, lockCamera, extraTracks }: { location?: THREE.Vector3; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[] } = {},
-  ): Promise<void> {
+    { location, extraTracks }: { location?: THREE.Vector3; extraTracks?: THREE.KeyframeTrack[] } = {},
+  ): Promise<{
+    animation: Animation3D
+    animationActors: Map<string, AnimationActor>
+    positionalAudioActions: PositionalAudioAction[]
+    audioActions: AudioAction[]
+    tracks: THREE.KeyframeTrack[]
+    lookAtKeys?: WDB.Animation.VertexKey[]
+    faceAnimations: FaceAnimation[]
+    pointAtCameraObjects: THREE.Object3D[]
+    location: THREE.Vector3
+  }> {
     const children = action.type === Action.Type.ParallelAction ? action.children : []
     const animationActions = action.type === Action.Type.ParallelAction ? children.filter(c => c.presenter === 'LegoAnimPresenter' || c.presenter === 'LegoLocomotionAnimPresenter') : [action]
     if (animationActions.length !== 1) {
@@ -214,20 +224,17 @@ export abstract class World {
     }
 
     const animation = parse3DAnimation(await getAction(animationActions[0]))
-    this.setupCameraForAnimation(animation.tree)
-
-    const worldGroup = this.worldGroup
 
     const animationActors = new Map<string, AnimationActor>()
 
     const addActorToList = (type: WDB.ActorType, actor: THREE.Object3D) => {
-      animationActors.set(actor.name, createAnimationActor(type, actor, worldGroup))
+      animationActors.set(actor.name, createAnimationActor(type, actor, this.worldGroup))
     }
 
     for (const actor of animation.actors) {
       switch (actor.type) {
         case WDB.ActorType.Unknown: {
-          const node = worldGroup.getObjectByName(actor.name)
+          const node = this.worldGroup.getObjectByName(actor.name)
           if (node == null) {
             throw new Error(`Actor not found: ${actor.name}`)
           }
@@ -246,7 +253,7 @@ export abstract class World {
         }
         case WDB.ActorType.ManagedInvisibleRoi: {
           const name = actor.name.slice(1)
-          const node = worldGroup.getObjectByName(name)?.clone()
+          const node = this.worldGroup.getObjectByName(name)?.clone()
           if (node == null) {
             throw new Error(`Actor not found: ${name} (ManagedInvisibleRoi)`)
           }
@@ -258,7 +265,7 @@ export abstract class World {
         }
         case WDB.ActorType.ManagedInvisibleRoiTrimmed: {
           const name = actor.name.slice(1).replace(/[0-9_]*$/, '')
-          const node = worldGroup.getObjectByName(name)?.clone()
+          const node = this.worldGroup.getObjectByName(name)?.clone()
           if (node == null) {
             throw new Error(`ROI not found: ${name} (ManagedInvisibleRoiTrimmed)`)
           }
@@ -270,7 +277,7 @@ export abstract class World {
         }
         case WDB.ActorType.SceneRoi1:
         case WDB.ActorType.SceneRoi2: {
-          const node = (worldGroup.getObjectByName(actor.name) ?? (await getGlobalPart(actor.name, null, null)))?.clone()
+          const node = (this.worldGroup.getObjectByName(actor.name) ?? (await getGlobalPart(actor.name, null, null)))?.clone()
           if (node == null) {
             throw new Error(`ROI not found: ${actor.name} (SceneRoi)`)
           }
@@ -286,21 +293,8 @@ export abstract class World {
 
     this.debugPrintSceneGraph()
 
-    const audios: THREE.PositionalAudio[] = await Promise.all(
-      children
-        .filter(c => c.presenter === 'Lego3DWavePresenter')
-        .map(async audio => {
-          const actor = this.getObjectByNameRecursive(audio.extra)
-          if (actor == null) {
-            throw new Error(`Actor not found: ${audio.extra}`)
-          }
-          return this.playPositionalAudio(audio, actor instanceof Actor ? actor.head : actor, audio.startTime / 1_000)
-        }),
-    )
-
-    for (const audio of children.filter(c => c.fileType === Action.FileType.WAV && c.presenter === null)) {
-      engine.playAudio(audio)
-    }
+    const positionalAudioActions = children.filter(c => c.presenter === 'Lego3DWavePresenter')
+    const audioActions = children.filter(c => c.fileType === Action.FileType.WAV && c.presenter === null)
 
     const pointAtCameraObjects: THREE.Object3D[] = []
     const extra = getExtraValue(animationActions[0], 'ptatcam')
@@ -315,6 +309,39 @@ export abstract class World {
         pointAtCameraObjects.push(object)
       }
     }
+
+    const faceAnimations = children
+      .filter(c => c.presenter === 'LegoPhonemePresenter')
+      .map(phoneme => {
+        if (phoneme.extra == null) {
+          throw new Error('Phoneme extra is null')
+        }
+        const actor = this.getObjectByNameRecursive(phoneme.extra)
+        if (actor == null || !(actor instanceof Actor)) {
+          throw new Error(`Actor not found: ${phoneme.extra}`)
+        }
+        const videoElement = document.createElement('video')
+        videoElement.src = getActionFileUrl(phoneme)
+        const videoTexture = new THREE.VideoTexture(videoElement)
+        videoTexture.colorSpace = THREE.SRGBColorSpace
+        return {
+          actor,
+          videoElement,
+          videoTexture,
+          start: phoneme.startTime,
+          duration: phoneme.duration,
+        }
+      })
+      .reduce((acc, { actor, ...rest }) => {
+        const existing = acc.find(a => a.actor === actor)
+        if (existing == null) {
+          acc.push({ actor, animations: [rest] })
+        } else {
+          existing.animations.push(rest)
+        }
+        return acc
+      }, [] as FaceAnimation[])
+      .map(a => ({ ...a, animations: a.animations.sort((a, b) => b.start - a.start) }))
 
     location ??= new THREE.Vector3(-animationActions[0].location[0], animationActions[0].location[1], animationActions[0].location[2])
     const tracks = [...animationToTracks(animation.tree, animationActors, location), ...(extraTracks ?? [])]
@@ -344,49 +371,35 @@ export abstract class World {
         tracks.push(new THREE.NumberKeyframeTrack('camera.rotation.z', cameraZRotationTimes, cameraZRotationValues))
       }
     }
+    const lookAtKeys = animation.cameraAnimation?.lookAtKeys?.map(key => ({ ...key, vertex: new THREE.Vector3(...key.vertex).add(location).toArray() }))
+
+    return { animation, animationActors, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, location }
+  }
+
+  public async playAnimation(
+    action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction> | AnimationAction,
+    { location, unskippable, lockCamera, extraTracks }: { location?: THREE.Vector3; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[] } = {},
+  ): Promise<void> {
+    const { animation, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects } = await this.buildAnimation(action, { location, extraTracks })
+
+    this.setupCameraForAnimation(animation.tree)
+
+    for (const audio of audioActions) {
+      engine.playAudio(audio)
+    }
+
+    const audios: THREE.PositionalAudio[] = await Promise.all(
+      positionalAudioActions.map(async audio => {
+        const actor = this.getObjectByNameRecursive(audio.extra)
+        if (actor == null) {
+          throw new Error(`Actor not found: ${audio.extra}`)
+        }
+        return this.playPositionalAudio(audio, actor instanceof Actor ? actor.head : actor, audio.startTime / 1_000)
+      }),
+    )
 
     const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
-    return this.playAnimationClip(
-      this.scene,
-      clip,
-      audios,
-      animation.cameraAnimation?.lookAtKeys?.map(key => ({ ...key, vertex: new THREE.Vector3(...key.vertex).add(location).toArray() })),
-      children
-        .filter(c => c.presenter === 'LegoPhonemePresenter')
-        .map(phoneme => {
-          if (phoneme.extra == null) {
-            throw new Error('Phoneme extra is null')
-          }
-          const actor = this.getObjectByNameRecursive(phoneme.extra)
-          if (actor == null || !(actor instanceof Actor)) {
-            throw new Error(`Actor not found: ${phoneme.extra}`)
-          }
-          const videoElement = document.createElement('video')
-          videoElement.src = getActionFileUrl(phoneme)
-          const videoTexture = new THREE.VideoTexture(videoElement)
-          videoTexture.colorSpace = THREE.SRGBColorSpace
-          return {
-            actor,
-            videoElement,
-            videoTexture,
-            start: phoneme.startTime,
-            duration: phoneme.duration,
-          }
-        })
-        .reduce((acc, { actor, ...rest }) => {
-          const existing = acc.find(a => a.actor === actor)
-          if (existing == null) {
-            acc.push({ actor, animations: [rest] })
-          } else {
-            existing.animations.push(rest)
-          }
-          return acc
-        }, [] as FaceAnimation[])
-        .map(a => ({ ...a, animations: a.animations.sort((a, b) => b.start - a.start) })),
-      pointAtCameraObjects,
-      lockCamera,
-      unskippable,
-    )
+    return this.playAnimationClip(this.scene, clip, audios, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable)
   }
 
   public async playAnimationClip(root: THREE.Object3D, clip: THREE.AnimationClip, audios: THREE.PositionalAudio[] = [], lookAtKeys?: WDB.Animation.VertexKey[], faceAnimations: FaceAnimation[] = [], pointAtCameraObjects: THREE.Object3D[] = [], lockCamera?: boolean, unskippable?: boolean): Promise<void> {
