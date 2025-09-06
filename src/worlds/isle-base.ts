@@ -68,8 +68,7 @@ export abstract class IsleBase extends World {
       }
     }
 
-    const world = await getWorld('ACT1')
-    this.scene.add(world)
+    this.worldGroup = await getWorld('ACT1')
 
     const actor = await Actor.create(this, 'ml')
     actor.position.set(22, 1, 30)
