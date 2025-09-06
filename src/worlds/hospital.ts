@@ -28,6 +28,7 @@ export class Hospital extends World {
           destinationScale: 0.52,
         },
       },
+      noLights: true,
     })
 
     const leftPointLight = new THREE.PointLight(0xfefefe, 20)

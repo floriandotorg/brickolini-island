@@ -50,6 +50,7 @@ export class Building {
     startUpAction,
     backgroundMusic,
     exitSpawnPoint,
+    noLights,
   }: {
     world: World
     startUpAction:
@@ -69,6 +70,7 @@ export class Building {
         | WorldName
       control?: string
     }
+    noLights?: boolean
   }): Promise<void> {
     const control = exitSpawnPoint?.control ?? 'Door_Ctl'
     this._exitSpawnPoint = exitSpawnPoint == null ? undefined : { position: exitSpawnPoint.position, control }
@@ -83,6 +85,23 @@ export class Building {
       if (!getSettings().graphics.pbrMaterials) {
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.2)
         world.scene.add(ambientLight)
+      }
+
+      if (noLights !== true) {
+        const sunLight = new THREE.PointLight(0xffffff, 1, 1000, 0)
+        this.scene.add(sunLight)
+        const directionalLight = new THREE.DirectionalLight(0xffffff)
+        if (getSettings().graphics.shadows) {
+          directionalLight.castShadow = true
+          directionalLight.shadow.mapSize.set(4096, 4096)
+          directionalLight.shadow.camera.near = 0.5
+          directionalLight.shadow.camera.far = 500
+          directionalLight.shadow.camera.left = -200
+          directionalLight.shadow.camera.right = 200
+          directionalLight.shadow.camera.top = 200
+          directionalLight.shadow.camera.bottom = -200
+        }
+        this.scene.add(directionalLight)
       }
     }
 

@@ -107,6 +107,7 @@ export class InfoMain extends World {
     await this._building.init({
       world: this,
       startUpAction: _InfoMain,
+      noLights: true,
     })
 
     this._building.onButtonClicked = buttonName => {
