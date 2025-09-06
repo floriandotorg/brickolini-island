@@ -23,6 +23,18 @@ type FaceAnimation = {
   }[]
 }
 
+export type BuiltAnimation = {
+  animation: Animation3D
+  animationActors: Map<string, AnimationActor>
+  positionalAudioActions: PositionalAudioAction[]
+  audioActions: AudioAction[]
+  tracks: THREE.KeyframeTrack[]
+  lookAtKeys?: WDB.Animation.VertexKey[]
+  faceAnimations: FaceAnimation[]
+  pointAtCameraObjects: THREE.Object3D[]
+  location: THREE.Vector3
+}
+
 export abstract class World {
   protected _render = new Render3D()
 
@@ -204,20 +216,7 @@ export abstract class World {
     }
   }
 
-  public async buildAnimation(
-    action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction> | AnimationAction,
-    { location, extraTracks }: { location?: THREE.Vector3; extraTracks?: THREE.KeyframeTrack[] } = {},
-  ): Promise<{
-    animation: Animation3D
-    animationActors: Map<string, AnimationActor>
-    positionalAudioActions: PositionalAudioAction[]
-    audioActions: AudioAction[]
-    tracks: THREE.KeyframeTrack[]
-    lookAtKeys?: WDB.Animation.VertexKey[]
-    faceAnimations: FaceAnimation[]
-    pointAtCameraObjects: THREE.Object3D[]
-    location: THREE.Vector3
-  }> {
+  public async buildAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction> | AnimationAction, { location, extraTracks }: { location?: THREE.Vector3; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<BuiltAnimation> {
     const children = action.type === Action.Type.ParallelAction ? action.children : []
     const animationActions = action.type === Action.Type.ParallelAction ? children.filter(c => c.presenter === 'LegoAnimPresenter' || c.presenter === 'LegoLocomotionAnimPresenter') : [action]
     if (animationActions.length !== 1) {
