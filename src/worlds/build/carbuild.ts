@@ -225,7 +225,7 @@ export class Carbuild {
       this._movingShelf = true
       const shelfAnimationTimeStop = this.shelfAnimationTime + this._animation.interval
       console.log(`${this.shelfAnimationTime} -> ${shelfAnimationTimeStop}`)
-      this._world.playAnimationClip(this._world.scene, this._animation.clip, undefined, undefined, undefined, undefined, this.shelfAnimationTime / 1000, shelfAnimationTimeStop / 1000, THREE.LoopRepeat).then(() => {
+      this._world.playAnimationClip(this._world.scene, this._animation.clip, undefined, undefined, undefined, undefined, undefined, undefined, this.shelfAnimationTime / 1000, shelfAnimationTimeStop / 1000, THREE.LoopRepeat).then(() => {
         this._movingShelf = false
       })
       this.shelfAnimationTime = shelfAnimationTimeStop
