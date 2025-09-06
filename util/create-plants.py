@@ -38,11 +38,17 @@ src_file = "LEGO1\\lego\\legoomni\\src\\common\\legoplants.cpp"
 with open(src_file, "r", encoding="ascii") as f:
     lines = f.readlines()
 
-extract_worlds_line = re.compile(r"^\s*((?:LegoPlantInfo::c_(?:act1|imain|ielev|iisle|act2|act3)\s*\|?\s*)+),$")
-extract_worlds_value = re.compile(r"^\s*LegoPlantInfo::c_(act1|imain|ielev|iisle|act2|act3)\s*$")
-#^\s*((LegoPlantInfo::c_(act1|imain|ielev|iisle|act2|act3)\s*\|?\s*)+),$
+extract_worlds_line = re.compile(
+    r"^\s*((?:LegoPlantInfo::c_(?:act1|imain|ielev|iisle|act2|act3)\s*\|?\s*)+),$"
+)
+extract_worlds_value = re.compile(
+    r"^\s*LegoPlantInfo::c_(act1|imain|ielev|iisle|act2|act3)\s*$"
+)
+# ^\s*((LegoPlantInfo::c_(act1|imain|ielev|iisle|act2|act3)\s*\|?\s*)+),$
 extract_variant_value = re.compile(r"^\s*LegoPlantInfo::e_(flower|tree|bush|palm),$")
-extract_color_value = re.compile(r"^\s*LegoPlantInfo::e_(white|black|yellow|red|green),$")
+extract_color_value = re.compile(
+    r"^\s*LegoPlantInfo::e_(white|black|yellow|red|green),$"
+)
 extract_float_value = re.compile(r"^\s*(-?\d+\.\d+)f(?:\},?|,)$")
 
 
@@ -73,7 +79,10 @@ def make_values_constant(s: str) -> str:
 
 
 def generate_vector(offset: int) -> str:
-    x, y, z = [parse_via_regex(extract_float_value, value) for value in lines[offset:offset + 3]]
+    x, y, z = [
+        parse_via_regex(extract_float_value, value)
+        for value in lines[offset : offset + 3]
+    ]
     if abs(float(x)) > 0.000000001:
         if x[0] == "-":
             x = x[1:]
@@ -86,7 +95,10 @@ START = 6
 LINES_ENTRY = 24
 for offset in range(START, len(lines) - LINES_ENTRY + 1, LINES_ENTRY):
     worlds_line = parse_via_regex(extract_worlds_line, lines[offset + 1])
-    worlds = [f"World.{parse_via_regex(extract_worlds_value, value).upper()}" for value in worlds_line.split("|")]
+    worlds = [
+        f"World.{parse_via_regex(extract_worlds_value, value).upper()}"
+        for value in worlds_line.split("|")
+    ]
     variant = first_upper(parse_via_regex(extract_variant_value, lines[offset + 2]))
     color = first_upper(parse_via_regex(extract_color_value, lines[offset + 2 + 4]))
     location = generate_vector(offset + 2 + 4 + 9)
@@ -98,6 +110,8 @@ for offset in range(START, len(lines) - LINES_ENTRY + 1, LINES_ENTRY):
     # print(y)
     # print(z)
     # { variant: Variant.Flower, color: Color.Red, location: [0, 0, 0] },
-    print(f"    {{ worlds: {' | '.join(worlds)}, variant: Variant.{variant}, color: Color.{color}, locationAndDirection: {{ location: {location}, direction: {direction}, up: {up} }}}},")
+    print(
+        f"    {{ worlds: {' | '.join(worlds)}, variant: Variant.{variant}, color: Color.{color}, locationAndDirection: {{ location: {location}, direction: {direction}, up: {up} }}}},"
+    )
     # print(f"    {{ variant: Variant.{variant}, color: Color.{color}, location: {location}, up: {up}, direction: {direction}}},")
     # break

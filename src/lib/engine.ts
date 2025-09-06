@@ -54,6 +54,25 @@ class Engine {
 
   public currentPlayerCharacter: 'pepper' | 'papa' | 'mama' | 'nick' | 'laura' | null = null
 
+  public get currentPlayerMask(): number {
+    switch (this.currentPlayerCharacter) {
+      case null:
+        return 0
+      case 'pepper':
+        return 1
+      case 'mama':
+        return 2
+      case 'papa':
+        return 4
+      case 'nick':
+        return 8
+      case 'laura':
+        return 16
+    }
+
+    throw new Error('Invalid player character')
+  }
+
   public get saveGameNames(): string[] {
     return this._saveGames.map(save => save.name)
   }

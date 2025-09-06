@@ -40,6 +40,12 @@ export class BinaryReader {
     return value
   }
 
+  readInt16(): number {
+    const value = this._view.getInt16(this._offset, true)
+    this._offset += 2
+    return value
+  }
+
   readInt32(): number {
     const value = this._view.getInt32(this._offset, true)
     this._offset += 4
@@ -91,6 +97,10 @@ export class BinaryReader {
 
   readVector3(): [number, number, number] {
     return [-this.readFloat32(), this.readFloat32(), this.readFloat32()]
+  }
+
+  readVector3f(): [number, number, number] {
+    return [this.readFloat32(), this.readFloat32(), this.readFloat32()]
   }
 
   readVector4(): [number, number, number, number] {

@@ -36,7 +36,9 @@ export class Garage extends World {
       return false
     }
 
-    void this.playAnimation(wgs023nu_RunAnim, new THREE.Vector3(0, 0, 0))
+    void this.playAnimation(wgs023nu_RunAnim, {
+      location: new THREE.Vector3(0, 0, 0),
+    })
   }
 
   public override activate(composer: Composer): void {

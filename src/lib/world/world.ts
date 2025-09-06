@@ -29,6 +29,8 @@ export abstract class World {
     audios: THREE.PositionalAudio[]
     resolve: () => void
     lookAtKeys?: WDB.Animation.VertexKey[]
+    lockCamera?: boolean
+    unskippable?: boolean
     faceAnimations: {
       actor: Actor
       currentVideoElement?: HTMLVideoElement
@@ -65,7 +67,7 @@ export abstract class World {
   }
 
   public get isRunningCameraAnimation(): boolean {
-    return this._runningAnimations.some(a => a.lookAtKeys != null)
+    return this._runningAnimations.some(a => a.lookAtKeys != null || a.lockCamera)
   }
 
   public get scene(): THREE.Scene {
@@ -187,7 +189,10 @@ export abstract class World {
     }
   }
 
-  public async playAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction> | AnimationAction, location?: THREE.Vector3): Promise<void> {
+  public async playAnimation(
+    action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction> | AnimationAction,
+    { location, unskippable, lockCamera, extraTracks }: { location?: THREE.Vector3; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[] } = {},
+  ): Promise<void> {
     const children = action.type === Action.Type.ParallelAction ? action.children : []
     const animationActions = action.type === Action.Type.ParallelAction ? children.filter(c => c.presenter === 'LegoAnimPresenter' || c.presenter === 'LegoLocomotionAnimPresenter') : [action]
     if (animationActions.length !== 1) {
@@ -309,7 +314,7 @@ export abstract class World {
     }
 
     location ??= new THREE.Vector3(-animationActions[0].location[0], animationActions[0].location[1], animationActions[0].location[2])
-    const tracks = animationToTracks(animation.tree, animationActors, location)
+    const tracks = [...animationToTracks(animation.tree, animationActors, location), ...(extraTracks ?? [])]
 
     if (animation.cameraAnimation != null) {
       const cameraTranslationValues: number[] = []
@@ -379,17 +384,28 @@ export abstract class World {
         )
         .map(a => ({ ...a, animations: a.animations.sort((a, b) => b.start - a.start) })),
       pointAtCameraObjects,
+      lockCamera,
+      unskippable,
     )
   }
 
-  public async playAnimationClip(root: THREE.Object3D, clip: THREE.AnimationClip, audios: THREE.PositionalAudio[] = [], lookAtKeys?: WDB.Animation.VertexKey[], faceAnimations: (typeof this._runningAnimations)[number]['faceAnimations'] = [], pointAtCameraObjects: THREE.Object3D[] = []): Promise<void> {
+  public async playAnimationClip(
+    root: THREE.Object3D,
+    clip: THREE.AnimationClip,
+    audios: THREE.PositionalAudio[] = [],
+    lookAtKeys?: WDB.Animation.VertexKey[],
+    faceAnimations: (typeof this._runningAnimations)[number]['faceAnimations'] = [],
+    pointAtCameraObjects: THREE.Object3D[] = [],
+    lockCamera?: boolean,
+    unskippable?: boolean,
+  ): Promise<void> {
     const mixer = new THREE.AnimationMixer(root)
     const clipAction = mixer.clipAction(clip)
     clipAction.loop = THREE.LoopOnce
     clipAction.clampWhenFinished = true
     clipAction.play()
     return new Promise(resolve => {
-      this._runningAnimations.push({ mixer, clipAction, audios, resolve, lookAtKeys, faceAnimations, pointAtCameraObjects })
+      this._runningAnimations.push({ mixer, clipAction, audios, resolve, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable })
       mixer.addEventListener('finished', () => {
         this._runningAnimations = this._runningAnimations.filter(a => a.mixer !== mixer)
         resolve()
@@ -549,6 +565,11 @@ export abstract class World {
 
   public skipAllRunningAnimations(): void {
     for (const runningAnimation of this._runningAnimations) {
+      if (runningAnimation.unskippable) {
+        runningAnimation.lockCamera = false
+        continue
+      }
+
       runningAnimation.clipAction.time = runningAnimation.clipAction.getClip().duration
       for (const audio of runningAnimation.audios) {
         audio.stop()
