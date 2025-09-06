@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { type ActionBase, type ControlAction, getExtraValue, type ImageAction, isImageAction, type ParallelActionTuple, splitExtraValue } from '../action-types'
-import { normalizeRect, ORIGINAL_TOTAL_HEIGHT, ORIGINAL_TOTAL_WIDTH } from '../engine'
+import { normalizeRect } from '../engine'
 import { setScaleAndPosition } from './canvas-sprite'
 import { getImage } from './image'
 import { createTexture } from './texture'
@@ -36,12 +36,6 @@ const createPlacedImage = async (action: ImageAction, willReadFrequently: boolea
   canvas.height = image.height
   context.drawImage(image, 0, 0)
   return { context, action, normalizedX, normalizedY, normalizedWidth, normalizedHeight }
-}
-
-const denormalize = (normalizedX: number, normalizedY: number, totalSize: [number, number] = [ORIGINAL_TOTAL_WIDTH, ORIGINAL_TOTAL_HEIGHT]): [number, number] => {
-  const x = ((normalizedX + 1) / 2) * totalSize[0]
-  const y = (1 - (normalizedY + 1) / 2) * totalSize[1]
-  return [x, y]
 }
 
 const getPixel = (image: PlacedImage, normalizedX: number, normalizedY: number): [number, number, number, number] | null => {

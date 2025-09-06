@@ -129,19 +129,6 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
         material.reflectivity = modelMesh.materialName.toLowerCase().includes('windo blue') ? 1 : 0.5
       }
 
-      const loadTexture = (name: string) => {
-        return textureLoader.load(`hd/textures/${name}.png`, texture => {
-          if (name.includes('normal')) {
-            texture.colorSpace = THREE.NoColorSpace
-          } else {
-            texture.colorSpace = THREE.SRGBColorSpace
-          }
-          texture.wrapS = THREE.RepeatWrapping
-          texture.wrapT = THREE.RepeatWrapping
-          texture.repeat.set(1, 1)
-        })
-      }
-
       return material
     }
 
