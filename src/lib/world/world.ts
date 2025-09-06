@@ -291,8 +291,6 @@ export abstract class World {
       }
     }
 
-    this.debugPrintSceneGraph()
-
     const positionalAudioActions = children.filter(c => c.presenter === 'Lego3DWavePresenter')
     const audioActions = children.filter(c => c.fileType === Action.FileType.WAV && c.presenter === null)
 
@@ -697,5 +695,6 @@ export abstract class World {
       children: [],
     }
     walk(this.scene, graph)
+    console.log(graph.children[0])
   }
 }
