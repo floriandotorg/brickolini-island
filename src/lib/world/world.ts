@@ -44,6 +44,7 @@ export abstract class World {
     unskippable?: boolean
     faceAnimations: FaceAnimation[]
     pointAtCameraObjects: THREE.Object3D[]
+    stopAtTime?: number
   }[] = []
   private _runningAudios: THREE.Audio<GainNode>[] = []
   private _actors = new Map<string, Actor>()
@@ -402,18 +403,40 @@ export abstract class World {
     return this.playAnimationClip(this.scene, clip, audios, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable)
   }
 
-  public async playAnimationClip(root: THREE.Object3D, clip: THREE.AnimationClip, audios: THREE.PositionalAudio[] = [], lookAtKeys?: WDB.Animation.VertexKey[], faceAnimations: FaceAnimation[] = [], pointAtCameraObjects: THREE.Object3D[] = [], lockCamera?: boolean, unskippable?: boolean): Promise<void> {
+  public async playAnimationClip(
+    root: THREE.Object3D,
+    clip: THREE.AnimationClip,
+    audios: THREE.PositionalAudio[] = [],
+    lookAtKeys?: WDB.Animation.VertexKey[],
+    faceAnimations: FaceAnimation[] = [],
+    pointAtCameraObjects: THREE.Object3D[] = [],
+    lockCamera?: boolean,
+    unskippable?: boolean,
+    startAtTime?: number,
+    stopAtTime?: number,
+    loop?: THREE.AnimationActionLoopStyles,
+  ): Promise<void> {
+    if (startAtTime != null && stopAtTime != null && startAtTime > stopAtTime) {
+      throw new Error(`Start (${startAtTime}) must be before stop (${stopAtTime}) when both are defined`)
+    }
     const mixer = new THREE.AnimationMixer(root)
     const clipAction = mixer.clipAction(clip)
-    clipAction.loop = THREE.LoopOnce
+    clipAction.loop = loop ?? THREE.LoopOnce
     clipAction.clampWhenFinished = true
     clipAction.play()
+    if (startAtTime != null) {
+      mixer.setTime(startAtTime)
+      clipAction.time = startAtTime
+    }
+
     return new Promise(resolve => {
-      this._runningAnimations.push({ mixer, clipAction, audios, resolve, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable })
-      mixer.addEventListener('finished', () => {
+      const removeMe = () => {
         this._runningAnimations = this._runningAnimations.filter(a => a.mixer !== mixer)
         resolve()
-      })
+      }
+
+      this._runningAnimations.push({ mixer, clipAction, audios, resolve: removeMe, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, stopAtTime })
+      mixer.addEventListener('finished', removeMe)
     })
   }
 
@@ -469,8 +492,13 @@ export abstract class World {
   }
 
   public update(delta: number): void {
-    for (const { mixer, lookAtKeys, faceAnimations, pointAtCameraObjects } of this._runningAnimations) {
-      mixer.update(delta)
+    for (const { mixer, resolve, lookAtKeys, faceAnimations, pointAtCameraObjects, stopAtTime } of this._runningAnimations) {
+      const finishedByStopAtTime = stopAtTime != null && mixer.time + delta > stopAtTime
+      if (finishedByStopAtTime) {
+        mixer.update(stopAtTime - mixer.time)
+      } else {
+        mixer.update(delta)
+      }
 
       if (lookAtKeys != null) {
         const { before, after } = getBeforeAndAfter(lookAtKeys, mixer.time * 1_000)
@@ -514,6 +542,10 @@ export abstract class World {
         const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
         const targetYaw = Math.atan2(dir.x, -dir.z)
         object.quaternion.setFromEuler(new THREE.Euler(-euler.x, -targetYaw, -euler.z, 'YXZ'))
+      }
+
+      if (finishedByStopAtTime) {
+        resolve()
       }
     }
   }
@@ -574,7 +606,7 @@ export abstract class World {
         continue
       }
 
-      runningAnimation.clipAction.time = runningAnimation.clipAction.getClip().duration
+      runningAnimation.clipAction.time = runningAnimation.stopAtTime ?? runningAnimation.clipAction.getClip().duration
       for (const audio of runningAnimation.audios) {
         audio.stop()
       }
