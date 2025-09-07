@@ -137,33 +137,7 @@ export class Carbuild {
       this._parts.push({ wired: wiredPart, shelf: shelfPart, placed })
     }
 
-    // TODO: Get "VIEW" transformation from the model's animation
-    const viewPosition = new THREE.Vector3(1.31, -0.49, 2.5)
-    // this.debugDrawSphere(viewPosition, 'white')
     console.log(animation.animation.tree)
-
-    const centerPointLight = new THREE.PointLight(0xffffff, 200, 0, 5)
-    centerPointLight.position.copy(viewPosition.clone().add(new THREE.Vector3(0, 1, 0)))
-    world.scene.add(centerPointLight)
-
-    const platformLight = new THREE.SpotLight(0xffffff, 5)
-    platformLight.position.copy(viewPosition.clone().add(new THREE.Vector3(0, 2, 0)))
-    platformLight.target = this._buildPlatform
-    world.scene.add(platformLight)
-
-    const shelfLight = new THREE.SpotLight(0xffffff, 5)
-    shelfLight.position.copy(viewPosition.clone().add(new THREE.Vector3(0, 2, 0)))
-    for (const child of this._world.worldGroup.children) {
-      if (child.name.endsWith('_shelf02')) {
-        shelfLight.target = child
-      }
-    }
-    // const cover = this._world.getObjectByNameRecursive('dunebld_shelf02')
-    // if (cover == null) {
-    //   throw new Error(`Could not find cover`)
-    // }
-    // shelfLight.target = cover
-    world.scene.add(shelfLight)
 
     const clip = new THREE.AnimationClip(animation.animation.tree.name, -1, animation.tracks)
     const mixer = new THREE.AnimationMixer(world.scene)
