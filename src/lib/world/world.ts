@@ -33,6 +33,7 @@ export type BuiltAnimation = {
   faceAnimations: FaceAnimation[]
   pointAtCameraObjects: THREE.Object3D[]
   location: THREE.Vector3
+  loop: THREE.AnimationActionLoopStyles
 }
 
 export abstract class World {
@@ -286,9 +287,9 @@ export abstract class World {
 
   public async buildAnimation(action: RunAnimationAction | AnimationAction, { location, extraTracks }: { location?: THREE.Vector3; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<BuiltAnimation> {
     const children = action.type === Action.Type.ParallelAction ? action.children : []
-    const animationActions = action.type === Action.Type.ParallelAction ? children.filter(c => c.presenter === 'LegoAnimPresenter' || c.presenter === 'LegoLocomotionAnimPresenter') : [action]
+    const animationActions = action.type === Action.Type.ParallelAction ? children.filter(c => c.presenter === 'LegoAnimPresenter' || c.presenter === 'LegoLocomotionAnimPresenter' || c.presenter === 'LegoLoopingAnimPresenter') : [action]
     if (animationActions.length !== 1) {
-      throw new Error('Expected one animation')
+      throw new Error(`Expected exactly one animation, got ${animationActions.length}`)
     }
 
     const animation = parse3DAnimation(await getAction(animationActions[0]))
@@ -345,7 +346,8 @@ export abstract class World {
         }
         case WDB.ActorType.SceneRoi1:
         case WDB.ActorType.SceneRoi2: {
-          const node = (this.worldGroup.getObjectByName(actor.name) ?? (await getGlobalPart(actor.name, null, null)))?.clone()
+          const name = actor.name.replace(/[0-9_]*$/, '')
+          const node = (this.worldGroup.getObjectByName(name) ?? (await getGlobalPart(name, null, null)))?.clone()
           if (node == null) {
             throw new Error(`ROI not found: ${actor.name} (SceneRoi)`)
           }
@@ -439,11 +441,11 @@ export abstract class World {
     }
     const lookAtKeys = animation.cameraAnimation?.lookAtKeys?.map(key => ({ ...key, vertex: new THREE.Vector3(...key.vertex).add(location).toArray() }))
 
-    return { animation, animationActors, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, location }
+    return { animation, animationActors, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, location, loop: animationActions[0].presenter === 'LegoLoopingAnimPresenter' ? THREE.LoopRepeat : THREE.LoopOnce }
   }
 
   public async playAnimation(action: RunAnimationAction | AnimationAction, { location, unskippable, lockCamera, extraTracks }: { location?: THREE.Vector3; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<void> {
-    const { animation, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects } = await this.buildAnimation(action, { location, extraTracks })
+    const { animation, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, loop } = await this.buildAnimation(action, { location, extraTracks })
 
     this.setupCameraForAnimation(animation.tree)
 
@@ -462,21 +464,23 @@ export abstract class World {
     )
 
     const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
-    return this.playAnimationClip(this.scene, clip, audios, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable)
+    return this.playAnimationClip(this.scene, clip, { audios, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, startAtTime: 0, loop })
   }
 
   public async playAnimationClip(
     root: THREE.Object3D,
     clip: THREE.AnimationClip,
-    audios: THREE.PositionalAudio[] = [],
-    lookAtKeys?: WDB.Animation.VertexKey[],
-    faceAnimations: FaceAnimation[] = [],
-    pointAtCameraObjects: THREE.Object3D[] = [],
-    lockCamera?: boolean,
-    unskippable?: boolean,
-    startAtTime?: number,
-    stopAtTime?: number,
-    loop?: THREE.AnimationActionLoopStyles,
+    {
+      audios = [],
+      lookAtKeys,
+      faceAnimations = [],
+      pointAtCameraObjects = [],
+      lockCamera,
+      unskippable,
+      startAtTime,
+      stopAtTime,
+      loop,
+    }: { audios?: THREE.PositionalAudio[]; lookAtKeys?: WDB.Animation.VertexKey[]; faceAnimations?: FaceAnimation[]; pointAtCameraObjects?: THREE.Object3D[]; lockCamera?: boolean; unskippable?: boolean; startAtTime?: number; stopAtTime?: number; loop?: THREE.AnimationActionLoopStyles } = {},
   ): Promise<void> {
     if (startAtTime != null && stopAtTime != null && startAtTime > stopAtTime) {
       throw new Error(`Start (${startAtTime}) must be before stop (${stopAtTime}) when both are defined`)

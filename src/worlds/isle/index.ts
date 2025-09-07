@@ -385,7 +385,7 @@ import { engine } from '../../lib/engine'
 import { type Location, locations } from '../../lib/locations'
 import { getSettings } from '../../lib/settings'
 import { switchWorld } from '../../lib/switch-world'
-import type { Vehicle } from '../../lib/world/dashboard'
+import type { Vehicle, VehicleType } from '../../lib/world/dashboard'
 import type { WorldName } from '../../lib/world/world'
 import { IsleBase } from '../isle-base'
 import { PizzaMission } from './missions/pizza-mission'
@@ -794,6 +794,7 @@ export class Isle extends IsleBase {
   private _currentVehicle: Vehicle | null = null
   private _animationInfos: DTA.AnimationInfo[] = []
   private readonly _pizzaMission = new PizzaMission(this)
+  public cameraAnimationTriggerEnabled = true
 
   public get animationInfos(): DTA.AnimationInfo[] {
     return this._animationInfos
@@ -803,10 +804,10 @@ export class Isle extends IsleBase {
     return this._cameraAnimationPlaying
   }
 
-  private get _currentVehicleMesh(): THREE.Object3D[] {
+  public getVehicleMesh(vehicle: VehicleType): THREE.Object3D[] {
     let result: THREE.Object3D[] | THREE.Object3D | null = null
 
-    switch (this._currentVehicle?.type) {
+    switch (vehicle) {
       case 'bike':
         result = this._bikeMesh
         break
@@ -825,10 +826,22 @@ export class Isle extends IsleBase {
     }
 
     if (result == null) {
-      throw new Error(`Vehicle mesh not found for ${this._currentVehicle}`)
+      throw new Error(`Vehicle mesh not found for ${vehicle}`)
     }
 
     return Array.isArray(result) ? result : [result]
+  }
+
+  public placeVehicle(vehicle: VehicleType, boundaryName: string, src: number, srcScale: number, dst: number, _dstScale: number): void {
+    const { position, quaternion } = this._boundaryManager.getObjectPlacement(boundaryName, src, srcScale, dst, _dstScale)
+    this.moveObjectTo(this.getVehicleMesh(vehicle), position, quaternion)
+  }
+
+  private get _currentVehicleMesh(): THREE.Object3D[] {
+    if (this._currentVehicle == null) {
+      throw new Error('No vehicle set')
+    }
+    return this.getVehicleMesh(this._currentVehicle.type)
   }
 
   constructor() {
@@ -882,7 +895,7 @@ export class Isle extends IsleBase {
       } else if (name[2] === 'C') {
         const location = locations.at(data)
 
-        if (location == null || !location.animationPlayedAtLocation || location.frequency < Math.floor(Math.random() * 101)) {
+        if (this.cameraAnimationTriggerEnabled && (location == null || !location.animationPlayedAtLocation || location.frequency < Math.floor(Math.random() * 101))) {
           const indices = (() => {
             let firstIndex = -1
             for (let n = 0; n < this._animationInfos.length; ++n) {
@@ -987,9 +1000,9 @@ export class Isle extends IsleBase {
       throw new Error('Vehicle meshes not found')
     }
 
-    this._boundaryManager.placeObject(this._bikeMesh, 'INT44', 2, 0.5, 0, 0.5)
-    this._boundaryManager.placeObject(this._motobkMesh, 'INT43', 4, 0.5, 1, 0.5)
-    this._boundaryManager.placeObject(this._skateMesh, 'EDG02_84', 4, 0.5, 0, 0.5)
+    this.placeVehicle('bike', 'INT44', 2, 0.5, 0, 0.5)
+    this.placeVehicle('moto', 'INT43', 4, 0.5, 1, 0.5)
+    this.placeVehicle('skate', 'EDG02_84', 4, 0.5, 0, 0.5)
 
     await this._pizzaMission.init()
 
@@ -1067,7 +1080,9 @@ export class Isle extends IsleBase {
     super.activate(composer, param)
     this._dashboard.activate(composer)
     if (param != null) {
-      this._boundaryManager.placeObject(this.camera, param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
+      const { position, quaternion } = this._boundaryManager.getObjectPlacement(param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
+      this.camera.position.copy(position)
+      this.camera.quaternion.copy(quaternion)
     }
   }
 

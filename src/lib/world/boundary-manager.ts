@@ -50,13 +50,29 @@ export class BoundaryManager {
     return this._wallGroup
   }
 
-  public placeObject(object: THREE.Object3D, boundaryName: string, src: number, srcScale: number, dst: number, _dstScale: number): void {
+  public getObjectPlacement(
+    boundaryName: string,
+    src: number,
+    srcScale: number,
+    dst: number,
+    _dstScale: number,
+  ): {
+    position: THREE.Vector3
+    quaternion: THREE.Quaternion
+  } {
     const boundary = this._boundaries.find(b => b.name === boundaryName)
     if (boundary == null) {
       throw new Error(`Boundary ${boundaryName} not found`)
     }
     const matrix = boundary.getActorPlacement(src, srcScale, dst, _dstScale)
-    matrix.decompose(object.position, object.quaternion, object.scale)
+    const position = new THREE.Vector3()
+    const quaternion = new THREE.Quaternion()
+    const scale = new THREE.Vector3()
+    matrix.decompose(position, quaternion, scale)
+    if (scale.x > 1.001 || scale.x < 0.9999 || scale.y > 1.001 || scale.y < 0.9999 || scale.z > 1.001 || scale.z < 0.9999) {
+      throw new Error('Object scale must be 1')
+    }
+    return { position, quaternion }
   }
 
   public update(fromPos: THREE.Vector3, toPos: THREE.Vector3): void {

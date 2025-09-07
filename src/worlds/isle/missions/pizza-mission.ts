@@ -116,7 +116,6 @@ export class PizzaMission {
 
   async init(): Promise<void> {
     this.isle.addClickListener(this.isle.getObjectsByPrefix('pizza'), async () => {
-      console.log('pizzeria clicked')
       if (this.isle.cameraAnimationPlaying || this._missionState !== MissionState.NotStarted) {
         return false
       }
@@ -146,20 +145,13 @@ export class PizzaMission {
     })
 
     this.isle.addClickListener(this.isle.getObjectsByPrefix('pizpie'), async () => {
-      console.log('pizza pie clicked')
-
       if (this._timeoutTimer != null) {
         clearTimeout(this._timeoutTimer)
         this._timeoutTimer = null
       }
 
       if (this._missionState === MissionState.Introduction || this._missionState === MissionState.WaitAcceptQuest) {
-        const currentPlayerCharacter = engine.currentPlayerCharacter
-        if (currentPlayerCharacter == null) {
-          throw new Error('Current player character is null')
-        }
-
-        const action = missionAnimations[currentPlayerCharacter][7 + this.playerState[currentPlayerCharacter]]
+        const action = missionAnimations[engine.currentPlayerCharacterSafe][7 + this.playerState[engine.currentPlayerCharacterSafe]]
         if (action == null) {
           throw new Error('Action is null')
         }
@@ -172,7 +164,16 @@ export class PizzaMission {
         engine.switchBackgroundMusic(PizzaMission_Music)
         void this.isle.playCameraAnimation(action).then(() => {
           this._missionState = MissionState.Delivering
+          this.isle.cameraAnimationTriggerEnabled = false
+          this.isle.placeVehicle('skate', 'INT37', 2, 0.5, 3, 0.5)
           this.isle.enterVehicle({ type: 'skate', showPizza: true })
+          for (let n = 0; n < 4; ++n) {
+            const action = missionAnimations[engine.currentPlayerCharacterSafe][n]
+            if (action == null) {
+              throw new Error('Action is null')
+            }
+            this.isle.playAnimation(action)
+          }
         })
       }
 
@@ -183,5 +184,6 @@ export class PizzaMission {
   public abort(): void {
     this._missionState = MissionState.NotStarted
     this.isle.hidePizzaIfOnSkateboard()
+    this.isle.cameraAnimationTriggerEnabled = true
   }
 }

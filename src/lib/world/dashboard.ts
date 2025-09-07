@@ -16,7 +16,7 @@ export type Vehicle =
       showPizza: boolean
     }
 
-type VehicleType = Vehicle['type']
+export type VehicleType = Vehicle['type']
 
 const vehicleToDashboard: {
   [key in VehicleType]: ParallelAction<ImageAction | AudioAction | ControlAction>
