@@ -83,13 +83,13 @@ export class Building {
     if (worldName != null) {
       world.worldGroup = await getWorld(worldName as Parameters<typeof getWorld>[0])
       if (!getSettings().graphics.pbrMaterials) {
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
         world.scene.add(ambientLight)
       }
 
       if (noLights !== true) {
         const sunLight = new THREE.PointLight(0xffffff, 1, 1000, 0)
-        this.scene.add(sunLight)
+        world.scene.add(sunLight)
         const directionalLight = new THREE.DirectionalLight(0xffffff)
         if (getSettings().graphics.shadows) {
           directionalLight.castShadow = true
@@ -101,7 +101,7 @@ export class Building {
           directionalLight.shadow.camera.top = 200
           directionalLight.shadow.camera.bottom = -200
         }
-        this.scene.add(directionalLight)
+        world.scene.add(directionalLight)
       }
     }
 
