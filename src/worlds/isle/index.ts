@@ -795,6 +795,7 @@ export class Isle extends IsleBase {
   private _animationInfos: DTA.AnimationInfo[] = []
   private readonly _pizzaMission = new PizzaMission(this)
   public cameraAnimationTriggerEnabled = true
+  public backgroundMusicTriggerEnabled = true
 
   public get animationInfos(): DTA.AnimationInfo[] {
     return this._animationInfos
@@ -886,12 +887,14 @@ export class Isle extends IsleBase {
         [14, 2],
       ]
 
-      if (name[2] === 'M') {
+      if (name[2] === 'M' && this.backgroundMusicTriggerEnabled) {
         if (direction === 'inbound') {
           engine.switchBackgroundMusic(music[triggers[data - 1][0] - 1])
         } else {
           engine.switchBackgroundMusic(music[triggers[data - 1][1] - 1])
         }
+      } else if (name[2] === 'W') {
+        this._pizzaMission.handleWTrigger(data)
       } else if (name[2] === 'C') {
         const location = locations.at(data)
 

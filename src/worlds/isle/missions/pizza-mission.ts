@@ -20,6 +20,7 @@ import {
   pns043en_RunAnim,
   pns045p1_RunAnim,
   pns048pr_RunAnim,
+  pns050p1_RunAnim,
   pns065rd_RunAnim,
   pns066db_RunAnim,
   pns067gd_RunAnim,
@@ -72,6 +73,7 @@ import {
   prt072sl_RunAnim,
   prt073sl_RunAnim,
   prt074sl_RunAnim,
+  wns050p1_RunAnim,
 } from '../../../actions/isle'
 import { PizzaMission_Music } from '../../../actions/jukebox'
 import { Action } from '../../../actions/types'
@@ -119,6 +121,7 @@ export class PizzaMission {
   private _timeoutTimer: number | null = null
   private _missionStartedTime: number = 0
   private _helpAudioPlayed: boolean = false
+  private _playedLocationAnimation: boolean = false
 
   constructor(private readonly isle: Isle) {}
 
@@ -173,6 +176,7 @@ export class PizzaMission {
         void this.isle.playCameraAnimation(action).then(() => {
           this._missionState = MissionState.Delivering
           this.isle.cameraAnimationTriggerEnabled = false
+          this.isle.backgroundMusicTriggerEnabled = false
           this.isle.placeVehicle('skate', 'INT37', 2, 0.5, 3, 0.5)
           this.isle.enterVehicle({ type: 'skate', showPizza: true })
           this._missionStartedTime = engine.clock.getElapsedTime()
@@ -196,7 +200,9 @@ export class PizzaMission {
     this.isle.hidePizzaIfOnSkateboard()
     this.isle.skipAllRunningAnimations(true)
     this.isle.cameraAnimationTriggerEnabled = true
+    this.isle.backgroundMusicTriggerEnabled = true
     this._missionStartedTime = 0
+    this._playedLocationAnimation = false
   }
 
   public update(): void {
@@ -226,6 +232,20 @@ export class PizzaMission {
         engine.playAudio(Avo917In_PlayWav)
         this.abort()
       }
+    }
+  }
+
+  public handleWTrigger(data: number) {
+    if (this._missionState !== MissionState.Delivering) {
+      return
+    }
+
+    if (data === 0x15e && engine.currentPlayerCharacter === 'pepper' && !this._playedLocationAnimation) {
+      this._playedLocationAnimation = true
+      this.isle.playAnimation(pns050p1_RunAnim)
+    } else if (data === 0x15f && engine.currentPlayerCharacter === 'papa' && !this._playedLocationAnimation) {
+      this._playedLocationAnimation = true
+      this.isle.playAnimation(wns050p1_RunAnim)
     }
   }
 }
