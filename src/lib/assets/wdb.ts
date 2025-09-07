@@ -93,6 +93,9 @@ export namespace WDB {
       for (let n = 0; n < numTranslationKeys; ++n) {
         const timeAndFlags = readTimeAndFlags(reader)
         const vertex = reader.readVector3()
+        if (vertex[0] > 1e-5 || vertex[0] < -1e-5 || vertex[1] > 1e-5 || vertex[1] < -1e-5 || vertex[2] > 1e-5 || vertex[2] < -1e-5) {
+          timeAndFlags.flags |= 0x01
+        }
         result.push({ timeAndFlags, vertex })
       }
       return result
@@ -109,6 +112,9 @@ export namespace WDB {
         const x = -reader.readFloat32()
         const y = reader.readFloat32()
         const z = reader.readFloat32()
+        if (w !== 1) {
+          timeAndFlags.flags |= 0x01
+        }
         rotations.push({ timeAndFlags, quaternion: [x, y, z, w] })
       }
       const scales: Animation.VertexKey[] = []
@@ -118,6 +124,10 @@ export namespace WDB {
         const vertex = reader.readVector3()
         // readVector3 is mirroring the x axis
         vertex[0] = -vertex[0]
+        // this is done in the original code, but the flag is never used, so we skip it here
+        // if (vertex[0] > 1.00001 || vertex[0] < 0.99999 || vertex[1] > 1.00001 || vertex[1] < 0.99999 || vertex[2] > 1.00001 || vertex[2] < 0.99999) {
+        //   timeAndFlags.flags |= 0x01;
+        // }
         scales.push({ timeAndFlags, vertex })
       }
       const morphs: Animation.MorphKey[] = []

@@ -176,6 +176,13 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
 
     if (uuid != null) {
       mat.decompose(position, quaternion, scale)
+      // if the scale is close to zero, the quaternion is not valid, so we set it to the identity
+      if (Math.abs(scale.x) < 1e-8 || Math.abs(scale.y) < 1e-8 || Math.abs(scale.z) < 1e-8) {
+        quaternion.copy(new THREE.Quaternion())
+      }
+      if (Number.isNaN(position.x) || Number.isNaN(position.y) || Number.isNaN(position.z) || Number.isNaN(quaternion.x) || Number.isNaN(quaternion.y) || Number.isNaN(quaternion.z) || Number.isNaN(quaternion.w) || Number.isNaN(scale.x) || Number.isNaN(scale.y) || Number.isNaN(scale.z)) {
+        throw new Error('NaN in transform')
+      }
       push(`${uuid}.position`, position.add(offset).toArray())
       push(`${uuid}.quaternion`, quaternion.toArray())
       push(`${uuid}.scale`, scale.toArray())
