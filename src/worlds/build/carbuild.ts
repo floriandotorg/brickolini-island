@@ -3,7 +3,7 @@ import type { AnimationAction } from '../../lib/action-types'
 import { type Animation3DNode, findRecursively } from '../../lib/assets/animation'
 import type { BuiltAnimation, World } from '../../lib/world/world'
 
-type Part = { readonly wired: THREE.Object3D; readonly shelf: THREE.Object3D; readonly placed: THREE.Object3D }
+type Part = { readonly wired: THREE.Object3D; readonly shelfPart: THREE.Object3D; readonly shelfGroup: THREE.Group; readonly placed: THREE.Object3D }
 
 enum ObjectType {
   Shelf,
@@ -40,23 +40,41 @@ const saveAt = (text: string, index: number): string => {
   return result
 }
 
+type PartSelected = {
+  state: 'displaying'
+  part: Part
+  originalPosition: THREE.Vector3
+}
+
+type Idle = {
+  state: 'idle'
+}
+
+type ShelfMoving = {
+  state: 'moving'
+}
+
+const IdleState: Idle = { state: 'idle' }
+const ShelfMovingState: ShelfMoving = { state: 'moving' }
+
 export class Carbuild {
   private readonly _world: World
   private readonly _parts: Part[] = []
   private _part = 0
   private readonly _buildPlatform = new THREE.Group()
-  private _movingShelf = false
+  private readonly _displayGroup = new THREE.Group()
+  private _state: PartSelected | Idle | ShelfMoving = IdleState
   private _animation: { duration: number; interval: number; clip: THREE.AnimationClip } | null = null
   private shelfAnimationTime: number = 0
 
   public rotating = false
 
-  public static async create(world: World, ...animations: AnimationAction[]): Promise<Carbuild> {
+  public static async create(world: World, displayPosition: THREE.Vector3, ...animations: AnimationAction[]): Promise<Carbuild> {
     const animation = await world.buildAnimation(animations[Math.floor(Math.random() * animations.length)])
-    return new Carbuild(world, animation)
+    return new Carbuild(world, displayPosition, animation)
   }
 
-  private constructor(world: World, animation: BuiltAnimation) {
+  private constructor(world: World, displayPosition: THREE.Vector3, animation: BuiltAnimation) {
     this._world = world
     world.setupCameraForAnimation(animation.animation.tree)
     // In theory the "number of shelves" is determined by using the translation keys of the "first" shelf it encounters and subtracting one
@@ -71,7 +89,11 @@ export class Carbuild {
     this._buildPlatform.updateMatrix()
     console.log(animation.tracks)
 
-    const shelfParts = new Map<string, THREE.Object3D>()
+    this._displayGroup.position.copy(displayPosition)
+    this._displayGroup.updateMatrix()
+    this._world.scene.add(this._displayGroup)
+
+    const shelfParts = new Map<string, { child: THREE.Object3D; childGroup: THREE.Group }>()
     const wiredParts: THREE.Object3D[] = []
     for (const child of [...world.worldGroup.children]) {
       console.log(`${child.name} => ${ObjectType[determineObjectType(child.name)]}`)
@@ -113,7 +135,7 @@ export class Carbuild {
           if (shelfParts.has(matchName)) {
             throw new Error(`Shelf part for ${child.name} is already defined`)
           }
-          shelfParts.set(matchName, child)
+          shelfParts.set(matchName, { child, childGroup })
           break
         }
       }
@@ -126,15 +148,21 @@ export class Carbuild {
 
     for (const wiredPart of wiredParts) {
       const matchName = wiredPart.name.slice(0, -2).toLowerCase()
-      const shelfPart = shelfParts.get(matchName)
-      if (shelfPart == null) {
+      const shelfItem = shelfParts.get(matchName)
+      if (shelfItem == null) {
         throw new Error(`No shelf part for ${wiredPart.name} found`)
       }
+      const { child: shelfPart, childGroup: shelfGroup } = shelfItem
       const placed = shelfPart.clone()
       placed.visible = false
       wiredPart.matrix.decompose(placed.position, placed.quaternion, placed.scale)
       this._buildPlatform.add(placed)
-      this._parts.push({ wired: wiredPart, shelf: shelfPart, placed })
+      const part = { wired: wiredPart, shelfPart, shelfGroup, placed }
+      this._parts.push(part)
+      this._world.addClickListener(shelfPart, async () => {
+        this._displayPart(part)
+        return true
+      })
     }
 
     console.log(animation.animation.tree)
@@ -147,37 +175,30 @@ export class Carbuild {
     mixer.update(0)
 
     this._animation = { duration: animation.animation.duration, interval: animation.animation.duration / numberOfShelves, clip }
-    console.log(this._animation)
-    // const mixer = new THREE.AnimationMixer(this.scene)
-    // const clipAction = mixer.clipAction(clip)
-    // clipAction.loop = THREE.LoopRepeat
-    // clipAction.clampWhenFinished = true
-    // clipAction.paused = true
-    // clipAction.play()
-    // mixer.update(0)
-    // mixer.setTime(1)
-    // this.playAnimationClip(this.scene, clip, [], animation.lookAtKeys, animation.faceAnimations, animation.pointAtCameraObjects)
-    // setTimeout(() => this.playAnimationClip(this.scene, clip, animation.audios, animation.lookAtKeys, animation.faceAnimations, animation.pointAtCameraObjects), 2000)
-    // const action = await getAction(builds[Math.floor(Math.random() * builds.length)])
-    // const animation = parse3DAnimation(action)
-    // if (animation.actors.length !== 1) {
-    //   throw new Error('Only one actor is supported')
-    // }
-    // const supportedActorType = WDB.ActorType.Unknown
-    // const actor = animation.actors[0]
-    // if (actor.type !== supportedActorType) {
-    //   throw new Error(`Only actor type "${WDB.ActorType[supportedActorType]}" is supported`)
-    // }
-    // const actors = new Map<string, AnimationActor>()
-    // const object = this.worldGroup.getObjectByName(actor.name)
-    // if (object == null) {
-    //   throw new Error(`Cannot find object with name ${actor.name}`)
-    // }
-    // actors.set(actor.name, createAnimationActor(actor.type, object, this.worldGroup))
-    // this.setupCameraForAnimation(animation.tree)
-    // const tracks = animationToTracks(animation.tree, actors)
-    // console.log(tracks)
     this.updateParts()
+  }
+
+  private _removeDisplay(): void {
+    if (this._state.state === 'displaying') {
+      this._state.part.shelfPart.removeFromParent()
+      this._state.part.shelfGroup.add(this._state.part.shelfPart)
+      this._state.part.shelfPart.position.copy(this._state.originalPosition)
+      this._state = IdleState
+    }
+  }
+
+  private _displayPart(part: Part): void {
+    if (this._state.state !== 'moving') {
+      const samePart = this._state.state === 'displaying' && this._state.part === part
+      this._removeDisplay()
+      if (samePart) {
+        return
+      }
+      this._state = { state: 'displaying', part, originalPosition: part.shelfPart.position.clone() }
+      part.shelfPart.removeFromParent()
+      part.shelfPart.position.set(0, 0, 0)
+      this._displayGroup.add(part.shelfPart)
+    }
   }
 
   public addPart(): void {
@@ -195,12 +216,13 @@ export class Carbuild {
   }
 
   public async shelveUp(): Promise<void> {
-    if (!this._movingShelf && this._animation != null && this._animation.interval > 0) {
-      this._movingShelf = true
+    if (this._state.state !== 'moving' && this._animation != null && this._animation.interval > 0) {
+      this._removeDisplay()
+      this._state = ShelfMovingState
       const shelfAnimationTimeStop = this.shelfAnimationTime + this._animation.interval
       console.log(`${this.shelfAnimationTime} -> ${shelfAnimationTimeStop}`)
       this._world.playAnimationClip(this._world.scene, this._animation.clip, undefined, undefined, undefined, undefined, undefined, undefined, this.shelfAnimationTime / 1000, shelfAnimationTimeStop / 1000, THREE.LoopRepeat).then(() => {
-        this._movingShelf = false
+        this._state = IdleState
       })
       this.shelfAnimationTime = shelfAnimationTimeStop
       if (this.shelfAnimationTime > this._animation.duration) {
@@ -213,17 +235,15 @@ export class Carbuild {
   private updateParts(): void {
     for (const [index, part] of this._parts.entries()) {
       part.placed.visible = index < this._part
-      if (part.shelf.parent == null) {
-        throw new Error(`Part ${part.shelf.name} has no parent`)
-      }
-      part.shelf.parent.visible = !part.placed.visible
+      part.shelfGroup.visible = !part.placed.visible
       part.wired.visible = index === this._part
     }
   }
 
   public update(delta: number): void {
     if (this.rotating) {
-      this._buildPlatform.rotateY(delta * 0.7)
+      this._buildPlatform.rotateY(delta * -0.7)
     }
+    this._displayGroup.rotateY(delta * 1)
   }
 }

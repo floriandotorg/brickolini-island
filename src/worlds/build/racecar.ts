@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { RaceCarBuild_Flic, RaceCarBuild_Music } from '../../actions/jukebox'
 import { _StartUp, Build_Anim0, Build_Anim1, Build_Anim2 } from '../../actions/racecar'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
@@ -37,7 +38,9 @@ export class Racecar extends World {
     sprite.loop = true
     sprite.play(this._building.scene)
 
-    this._carbuild = await Carbuild.create(this, Build_Anim0, Build_Anim1, Build_Anim2)
+    // TODO: Get "VIEW" transformation from the model's animation
+    const displayPosition = new THREE.Vector3(0, 2.25, 2.62)
+    this._carbuild = await Carbuild.create(this, displayPosition, Build_Anim0, Build_Anim1, Build_Anim2)
 
     this._building.onButtonClicked = (buttonName, _) => {
       if (this._carbuild == null) {

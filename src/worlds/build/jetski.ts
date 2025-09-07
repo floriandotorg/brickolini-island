@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { _StartUp, Build_Anim0, Build_Anim1, Build_Anim2 } from '../../actions/jetski'
 import { JetskiBuild_Flic, JetskiBuild_Music } from '../../actions/jukebox'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
@@ -37,7 +38,9 @@ export class Jetski extends World {
     sprite.loop = true
     sprite.play(this._building.scene)
 
-    this._carbuild = await Carbuild.create(this, Build_Anim0, Build_Anim1, Build_Anim2)
+    // TODO: Get "VIEW" transformation from the model's animation
+    const displayPosition = new THREE.Vector3(1.44, -0.13, 3.1)
+    this._carbuild = await Carbuild.create(this, displayPosition, Build_Anim0, Build_Anim1, Build_Anim2)
 
     this._building.onButtonClicked = (buttonName, _) => {
       if (this._carbuild == null) {
