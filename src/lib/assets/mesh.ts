@@ -93,6 +93,19 @@ export const colorFromName = (name: string): WDB.Color | null => {
   return null
 }
 
+export const toThreeColor = (color: WDB.Color): THREE.Color => {
+  return new THREE.Color(color.red / 255, color.green / 255, color.blue / 255).convertSRGBToLinear()
+}
+
+export const colorMesh = (object: THREE.Object3D, color: THREE.Color): void => {
+  if (object instanceof THREE.Mesh && (object.material instanceof THREE.MeshBasicMaterial || object.material instanceof THREE.MeshLambertMaterial)) {
+    object.material.color = color
+  }
+  for (const child of object.children) {
+    colorMesh(child, color)
+  }
+}
+
 const createTexture = (name: string, source: 'model' | 'part' | 'image'): THREE.Texture => {
   const sourceToPath = {
     model: 'model_textures',
@@ -160,7 +173,7 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
     geometry.setAttribute('uv2', new THREE.BufferAttribute(new Float32Array(uvs), 2))
   } else {
     const color = customColor ?? colorFromName(modelMesh.materialName) ?? modelMesh.color ?? modelMesh.color
-    material.color = new THREE.Color(color.red / 255, color.green / 255, color.blue / 255).convertSRGBToLinear()
+    material.color = toThreeColor(color)
     if (color.alpha < 0.99) {
       material.transparent = true
       material.opacity = color.alpha

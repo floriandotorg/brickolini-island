@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import type { AnimationAction } from '../../lib/action-types'
 import { type Animation3DNode, findRecursively } from '../../lib/assets/animation'
+import { colorAliases, colorMesh, toThreeColor } from '../../lib/assets/mesh'
+import { engine } from '../../lib/engine'
 import type { BuiltAnimation, World } from '../../lib/world/world'
 
 type Part = { readonly wired: THREE.Object3D; readonly shelfPart: THREE.Object3D; readonly shelfGroup: THREE.Group; readonly placed: THREE.Object3D }
@@ -57,11 +59,14 @@ type ShelfMoving = {
 const IdleState: Idle = { state: 'idle' }
 const ShelfMovingState: ShelfMoving = { state: 'moving' }
 
+const highlightColor = toThreeColor(colorAliases['lego red'])
+
 export class Carbuild {
   private readonly _world: World
   private readonly _parts: Part[] = []
   private _part = 0
   private readonly _buildPlatform = new THREE.Group()
+  private readonly _hightlightPlatform = new THREE.Group()
   private readonly _displayGroup = new THREE.Group()
   private _state: PartSelected | Idle | ShelfMoving = IdleState
   private _animation: { duration: number; interval: number; clip: THREE.AnimationClip } | null = null
@@ -87,6 +92,7 @@ export class Carbuild {
     world.debugDrawSphere(platformPosition, 'red')
     this._buildPlatform.position.copy(platformPosition)
     this._buildPlatform.updateMatrix()
+    this._buildPlatform.add(this._hightlightPlatform)
     console.log(animation.tracks)
 
     this._displayGroup.position.copy(displayPosition)
@@ -109,17 +115,10 @@ export class Carbuild {
           }
           animation.tracks = animation.tracks.filter(track => !track.name.startsWith(child.uuid))
           child.removeFromParent()
-          this._buildPlatform.add(child)
+          this._hightlightPlatform.add(child)
           child.position.copy(getPosition(wiredNode))
           child.updateMatrix()
-          // for (const track of animation.tracks) {
-          //   if (track.name === `${child.uuid}.position` && track instanceof THREE.VectorKeyframeTrack) {
-          //     const [x, y, z] = track.values.slice(0, 3)
-          //     child.position.set(x, y, z)
-          //     child.updateMatrix()
-          //     break
-          //   }
-          // }
+          colorMesh(child, highlightColor)
           wiredParts.push(child)
           break
         }
@@ -245,5 +244,8 @@ export class Carbuild {
       this._buildPlatform.rotateY(delta * -0.7)
     }
     this._displayGroup.rotateY(delta * 1)
+    // 200 ms off, 400 ms on
+    const highlightTime = (engine.clock.elapsedTime * 10) % 6
+    this._hightlightPlatform.visible = highlightTime < 4
   }
 }
