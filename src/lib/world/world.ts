@@ -368,7 +368,7 @@ export abstract class World {
       for (const name of splitExtraValue(extra)) {
         const object = Array.from(animationActors.entries())
           .flatMap(([_, obj]) => Array.from(obj.children.values()))
-          .find(c => c.name.toLowerCase() === name)
+          .find(c => c.name.toLowerCase() === name.toLowerCase())
         if (object == null) {
           throw new Error(`Object not found: ${name}`)
         }
