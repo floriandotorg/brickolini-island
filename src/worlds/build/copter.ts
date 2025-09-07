@@ -1,11 +1,11 @@
 import * as THREE from 'three'
-import { _StartUp, Build_Anim0, Build_Anim1, Build_Anim2 } from '../../actions/copter'
+import { _StartUp, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap } from '../../actions/copter'
 import { HelicopterBuild_Flic, HelicopterBuild_Music } from '../../actions/jukebox'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
 import { Building } from '../../lib/world/building'
 import { World } from '../../lib/world/world'
-import { Carbuild } from './carbuild'
+import { buildDecalMap, Carbuild } from './carbuild'
 
 export class Copter extends World {
   private _building = new Building()
@@ -13,6 +13,10 @@ export class Copter extends World {
 
   constructor() {
     super('copter')
+  }
+
+  public get building(): Building {
+    return this._building
   }
 
   public override async init(): Promise<void> {
@@ -31,7 +35,8 @@ export class Copter extends World {
 
     // TODO: Get "VIEW" transformation from the model's animation
     const displayPosition = new THREE.Vector3(1.31, 1.7, 5.11)
-    this._carbuild = await Carbuild.create(this, displayPosition, Build_Anim0, Build_Anim1, Build_Anim2)
+    const decalMap = buildDecalMap(this._building, [['chljety', ['Decals_Ctl1']], ['chrjety', ['Decals_Ctl2']], 'chwindy'])
+    this._carbuild = await Carbuild.create(this, this._building, displayPosition, ColorBook_Bitmap, null, decalMap, Build_Anim0, Build_Anim1, Build_Anim2)
 
     this._building.onButtonClicked = (buttonName, _) => {
       if (this._carbuild == null) {

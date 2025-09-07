@@ -1,8 +1,11 @@
 import * as THREE from 'three'
-import type { AnimationAction } from '../../lib/action-types'
+import type { AnimationAction, ImageAction } from '../../lib/action-types'
 import { type Animation3DNode, findRecursively } from '../../lib/assets/animation'
+import { createImageSprite } from '../../lib/assets/canvas-sprite'
+import type { Control } from '../../lib/assets/control'
 import { colorAliases, colorMesh, toThreeColor } from '../../lib/assets/mesh'
 import { engine } from '../../lib/engine'
+import type { Building } from '../../lib/world/building'
 import type { BuiltAnimation, World } from '../../lib/world/world'
 
 type Part = { readonly wired: THREE.Object3D; readonly shelfPart: THREE.Object3D; readonly shelfGroup: THREE.Group; readonly placed: THREE.Object3D }
@@ -10,7 +13,8 @@ type Part = { readonly wired: THREE.Object3D; readonly shelfPart: THREE.Object3D
 enum ObjectType {
   Shelf,
   Wired,
-  NorY,
+  Normal,
+  Colored,
   Other,
 }
 
@@ -23,8 +27,9 @@ const determineObjectType = (name: string): ObjectType => {
     case 'w':
       return ObjectType.Wired
     case 'n':
+      return ObjectType.Normal
     case 'y':
-      return ObjectType.NorY
+      return ObjectType.Colored
     default:
       return ObjectType.Other
   }
@@ -40,6 +45,28 @@ const saveAt = (text: string, index: number): string => {
     throw new Error(`Index ${index} is not valid for ${text}`)
   }
   return result
+}
+
+export const buildDecalMap = (building: Building, partControlMap: ([string, string[]] | string)[]): Map<string, Control[]> => {
+  const decalMap = new Map<string, Control[]>()
+  for (const item of partControlMap) {
+    const [partName, controlNames] = (() => {
+      if (typeof item === 'string') {
+        return [item, ['Decals_Ctl']]
+      } else {
+        return item
+      }
+    })()
+    const controls = controlNames.map(controlName => {
+      const control = building.getControl(controlName)
+      if (control == null) {
+        throw new Error(`Cannot find control ${controlName} for ${partName}`)
+      }
+      return control
+    })
+    decalMap.set(partName.toLowerCase(), controls)
+  }
+  return decalMap
 }
 
 type PartSelected = {
@@ -65,6 +92,9 @@ export class Carbuild {
   private readonly _world: World
   private readonly _parts: Part[] = []
   private _part = 0
+  private readonly _colorBackground: THREE.Sprite
+  private readonly _decalBackground: THREE.Sprite | null
+  private readonly _decals: Map<string, Control[]>
   private readonly _buildPlatform = new THREE.Group()
   private readonly _hightlightPlatform = new THREE.Group()
   private readonly _displayGroup = new THREE.Group()
@@ -74,12 +104,12 @@ export class Carbuild {
 
   public rotating = false
 
-  public static async create(world: World, displayPosition: THREE.Vector3, ...animations: AnimationAction[]): Promise<Carbuild> {
+  public static async create(world: World, building: Building, displayPosition: THREE.Vector3, colorBackground: ImageAction, decalBackground: ImageAction | null, decals: Map<string, Control[]>, ...animations: AnimationAction[]): Promise<Carbuild> {
     const animation = await world.buildAnimation(animations[Math.floor(Math.random() * animations.length)])
-    return new Carbuild(world, displayPosition, animation)
+    return new Carbuild(world, building, displayPosition, colorBackground, decalBackground, decals, animation)
   }
 
-  private constructor(world: World, displayPosition: THREE.Vector3, animation: BuiltAnimation) {
+  private constructor(world: World, building: Building, displayPosition: THREE.Vector3, colorBackground: ImageAction, decalBackground: ImageAction | null, decals: Map<string, Control[]>, animation: BuiltAnimation) {
     this._world = world
     world.setupCameraForAnimation(animation.animation.tree)
     // In theory the "number of shelves" is determined by using the translation keys of the "first" shelf it encounters and subtracting one
@@ -98,6 +128,25 @@ export class Carbuild {
     this._displayGroup.position.copy(displayPosition)
     this._displayGroup.updateMatrix()
     this._world.scene.add(this._displayGroup)
+
+    this._colorBackground = createImageSprite(colorBackground, -0.75)
+    this._colorBackground.visible = false
+    building.scene.add(this._colorBackground)
+
+    if (decalBackground != null) {
+      this._decalBackground = createImageSprite(decalBackground, -0.75)
+      this._decalBackground.visible = false
+      building.scene.add(this._decalBackground)
+    } else {
+      this._decalBackground = null
+    }
+
+    this._decals = decals
+    for (const controls of this._decals.values()) {
+      for (const control of controls) {
+        control.visible = false
+      }
+    }
 
     const shelfParts = new Map<string, { child: THREE.Object3D; childGroup: THREE.Group }>()
     const wiredParts: THREE.Object3D[] = []
@@ -125,7 +174,8 @@ export class Carbuild {
           wiredParts.push(child)
           break
         }
-        case ObjectType.NorY: {
+        case ObjectType.Colored:
+        case ObjectType.Normal: {
           // Wrap this object in another group to make it invisible without the animation interfering
           child.removeFromParent()
           const childGroup = new THREE.Group()
@@ -186,6 +236,15 @@ export class Carbuild {
       this._state.part.shelfGroup.add(this._state.part.shelfPart)
       this._state.part.shelfPart.position.copy(this._state.originalPosition)
       this._state = IdleState
+      this._colorBackground.visible = false
+      if (this._decalBackground != null) {
+        this._decalBackground.visible = false
+      }
+      for (const controls of this._decals.values()) {
+        for (const control of controls) {
+          control.visible = false
+        }
+      }
     }
   }
 
@@ -200,6 +259,19 @@ export class Carbuild {
       part.shelfPart.removeFromParent()
       part.shelfPart.position.set(0, 0, 0)
       this._displayGroup.add(part.shelfPart)
+      this._colorBackground.visible = determineObjectType(part.shelfPart.name) === ObjectType.Colored
+      if (this._decalBackground != null) {
+        this._decalBackground.visible = false
+      }
+      for (const [partName, controls] of this._decals) {
+        const validDecal = part.shelfPart.name.slice(0, -2).toLowerCase().endsWith(partName.toLowerCase())
+        for (const control of controls) {
+          control.visible = validDecal
+        }
+        if (validDecal && this._decalBackground != null) {
+          this._decalBackground.visible = true
+        }
+      }
     }
   }
 
