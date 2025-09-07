@@ -34,13 +34,17 @@ export abstract class IsleBase extends World {
   protected _plantGroup: THREE.Group = new THREE.Group()
   protected _boundaryManager = new BoundaryManager([], this)
   protected _dashboard = new Dashboard()
-  protected _vehicleMesh: THREE.Object3D[] | null = null
   protected _sky: Sky | null = null
   protected _ambientLight: THREE.AmbientLight | null = null
   protected _sunLight: THREE.DirectionalLight | null = null
   protected _dayTime = 0
   protected _water: Water | null = null
-  protected _isleMesh: THREE.Mesh | null = null
+  protected _isleMesh: THREE.Object3D | null = null
+  protected _bikeMesh: THREE.Object3D | null = null
+  protected _motobkMesh: THREE.Object3D | null = null
+  protected _skateMesh: THREE.Object3D | null = null
+  protected _ambulanceMesh: THREE.Object3D[] = []
+  protected _towtruckMesh: THREE.Object3D[] = []
 
   public set water(water: Water) {
     this._water = water

@@ -7,7 +7,7 @@ type Boundary = {
   unk0x10: boolean
 }
 
-type LegoLocation = {
+export type Location = {
   index: number
   name: string
   position: [number, number, number]
@@ -19,7 +19,7 @@ type LegoLocation = {
   frequency: number
 }
 
-export const locations: LegoLocation[] = [
+export const locations: Location[] = [
   {
     index: 0,
     name: 'look at origin from z=-8',

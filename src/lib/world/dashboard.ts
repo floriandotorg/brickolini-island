@@ -1,10 +1,33 @@
 import type * as THREE from 'three'
+import { AmbulanceDashboard, BikeDashboard, JetskiDashboard, MotoBikeDashboard, SkateDashboard, SkatePizza_Bitmap, TowTrackDashboard } from '../../actions/isle'
 import { type AudioAction, type ControlAction, getExtraValue, type ImageAction, isAudioAction, isControlAction, isImageAction, isMeterAction, type MeterAction, type ParallelAction } from '../action-types'
 import { CanvasSprite, createImageSprite } from '../assets/canvas-sprite'
 import { Control } from '../assets/control'
 import { getImage } from '../assets/image'
 import { type Composer, Render2D } from '../effect/composer'
 import { engine } from '../engine'
+
+export type Vehicle =
+  | {
+      type: 'bike' | 'moto' | 'ambul' | 'towtk' | 'jetski'
+    }
+  | {
+      type: 'skate'
+      showPizza: boolean
+    }
+
+type VehicleType = Vehicle['type']
+
+const vehicleToDashboard: {
+  [key in VehicleType]: ParallelAction<ImageAction | AudioAction | ControlAction>
+} = {
+  bike: BikeDashboard,
+  moto: MotoBikeDashboard,
+  skate: SkateDashboard,
+  ambul: AmbulanceDashboard,
+  towtk: TowTrackDashboard,
+  jetski: JetskiDashboard,
+}
 
 const leftToRight = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => {
   return {
@@ -119,15 +142,15 @@ export class Dashboard {
   public onInfoButtonClicked: () => void = () => {}
 
   public pointerDown(normalizedX: number, normalizedY: number): void {
-    if (this._armsMask?.pointerDown(normalizedX, normalizedY)) {
+    if (this._armsMask?.pointerDown(normalizedX, normalizedY) != null) {
       this.onExit()
     }
 
-    if (this._hornControl?.pointerDown(normalizedX, normalizedY) && this._hornSound != null) {
+    if (this._hornControl?.pointerDown(normalizedX, normalizedY) != null && this._hornSound != null) {
       engine.playAudio(this._hornSound)
     }
 
-    if (this._infoControl?.pointerDown(normalizedX, normalizedY)) {
+    if (this._infoControl?.pointerDown(normalizedX, normalizedY) != null) {
       this.onInfoButtonClicked()
     }
   }
@@ -142,8 +165,13 @@ export class Dashboard {
     }
   }
 
-  public async show(action: ParallelAction<ImageAction | AudioAction | ControlAction>): Promise<void> {
+  public async show(vehicle: Vehicle): Promise<void> {
     this.clear()
+
+    const action = vehicleToDashboard[vehicle.type]
+    if (action == null) {
+      throw new Error(`Unknown vehicle: ${vehicle}`)
+    }
 
     for (const child of action.children) {
       if (isMeterAction(child)) {
@@ -162,7 +190,7 @@ export class Dashboard {
       }
     }
 
-    const dashboardAction = action.children.find(child => child.name.endsWith('Dashboard_Bitmap'))
+    const dashboardAction = vehicle.type === 'skate' && vehicle.showPizza ? SkatePizza_Bitmap : action.children.find(child => child.name.endsWith('Dashboard_Bitmap'))
     if (dashboardAction != null && isImageAction(dashboardAction)) {
       this._background = createImageSprite(dashboardAction, -1)
       this._render.scene.add(this._background)

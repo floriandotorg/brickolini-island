@@ -1,9 +1,7 @@
 import * as THREE from 'three'
 // import { CNs001Pe, tns030bd_RunAnim } from '../actions/act2main'
 import {
-  AmbulanceDashboard,
   Beach,
-  BikeDashboard,
   bho142en_RunAnim,
   bic143sy_RunAnim,
   bjs009gd_RunAnim,
@@ -78,9 +76,7 @@ import {
   irtx01sl_RunAnim,
   ivo918in_RunAnim,
   MedCtr,
-  MotoBikeDashboard,
   nca001ca_RunAnim,
-  nca002sk_RunAnim,
   nca003gh_RunAnim,
   nic002pr_RunAnim,
   nic003pr_RunAnim,
@@ -209,7 +205,6 @@ import {
   prt073sl_RunAnim,
   prt074sl_RunAnim,
   Racej,
-  SkateDashboard,
   sba001bu_RunAnim,
   sba002bu_RunAnim,
   sba003bu_RunAnim,
@@ -354,7 +349,6 @@ import {
   srt004in_RunAnim,
   srt005pg_RunAnim,
   sst001mg_RunAnim,
-  TowTrackDashboard,
   wgs083nu_RunAnim,
   wgs085nu_RunAnim,
   wgs086nu_RunAnim,
@@ -381,18 +375,20 @@ import {
   wrt076df_RunAnim,
   wrt078ni_RunAnim,
   wrt079bm_RunAnim,
-} from '../actions/isle'
-import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../actions/jukebox'
-import { type AnimationAction, type AudioAction, getExtraValue, type ParallelAction, type PhonemeAction, type PositionalAudioAction } from '../lib/action-types'
-import { type DTA, loadAnimationInfoFromDTA } from '../lib/assets/dta'
-import { calculateTransformationMatrix } from '../lib/assets/model'
-import type { Composer } from '../lib/effect/composer'
-import { engine } from '../lib/engine'
-import { locations } from '../lib/locations'
-import { getSettings } from '../lib/settings'
-import { switchWorld } from '../lib/switch-world'
-import type { WorldName } from '../lib/world/world'
-import { IsleBase } from './isle-base'
+} from '../../actions/isle'
+import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../../actions/jukebox'
+import { type AnimationAction, type AudioAction, getExtraValue, type ParallelAction, type PhonemeAction, type PositionalAudioAction, type RunAnimationAction } from '../../lib/action-types'
+import { type DTA, loadAnimationInfoFromDTA } from '../../lib/assets/dta'
+import { calculateTransformationMatrix } from '../../lib/assets/model'
+import type { Composer } from '../../lib/effect/composer'
+import { engine } from '../../lib/engine'
+import { type Location, locations } from '../../lib/locations'
+import { getSettings } from '../../lib/settings'
+import { switchWorld } from '../../lib/switch-world'
+import type { Vehicle } from '../../lib/world/dashboard'
+import type { WorldName } from '../../lib/world/world'
+import { IsleBase } from '../isle-base'
+import { PizzaMission } from './missions/pizza-mission'
 
 // import { tns002br_RunAnim } from '../actions/act2main'
 
@@ -698,7 +694,6 @@ const ANIMATIONS = [
   npz006bd_RunAnim,
   npz007bd_RunAnim,
   nca001ca_RunAnim,
-  nca002sk_RunAnim,
   nca003gh_RunAnim,
   nla001ha_RunAnim,
   nla002sd_RunAnim,
@@ -788,13 +783,53 @@ export type IsleParam = {
 }
 
 export class Isle extends IsleBase {
-  private _animationPlaying = false
+  private _cameraAnimationPlaying = false
 
   private _animationTrigger: Array<{
     center: THREE.Vector3
     radius: number
     animation: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction>
   }> = []
+
+  private _currentVehicle: Vehicle | null = null
+  private _animationInfos: DTA.AnimationInfo[] = []
+  private readonly _pizzaMission = new PizzaMission(this)
+
+  public get animationInfos(): DTA.AnimationInfo[] {
+    return this._animationInfos
+  }
+
+  public get cameraAnimationPlaying(): boolean {
+    return this._cameraAnimationPlaying
+  }
+
+  private get _currentVehicleMesh(): THREE.Object3D[] {
+    let result: THREE.Object3D[] | THREE.Object3D | null = null
+
+    switch (this._currentVehicle?.type) {
+      case 'bike':
+        result = this._bikeMesh
+        break
+      case 'moto':
+        result = this._motobkMesh
+        break
+      case 'skate':
+        result = this._skateMesh
+        break
+      case 'ambul':
+        result = this._ambulanceMesh
+        break
+      case 'towtk':
+        result = this._towtruckMesh
+        break
+    }
+
+    if (result == null) {
+      throw new Error(`Vehicle mesh not found for ${this._currentVehicle}`)
+    }
+
+    return Array.isArray(result) ? result : [result]
+  }
 
   constructor() {
     super('isle')
@@ -803,8 +838,8 @@ export class Isle extends IsleBase {
   override async init(): Promise<void> {
     await super.init()
 
-    const animationInfos = await loadAnimationInfoFromDTA('ACT1')
-    for (const animationInfo of animationInfos) {
+    this._animationInfos = await loadAnimationInfoFromDTA('ACT1')
+    for (const animationInfo of this._animationInfos) {
       animationInfo.active = true
     }
 
@@ -850,11 +885,11 @@ export class Isle extends IsleBase {
         if (location == null || !location.animationPlayedAtLocation || location.frequency < Math.floor(Math.random() * 101)) {
           const indices = (() => {
             let firstIndex = -1
-            for (let n = 0; n < animationInfos.length; ++n) {
-              if (animationInfos[n].location === -1) {
+            for (let n = 0; n < this._animationInfos.length; ++n) {
+              if (this._animationInfos[n].location === -1) {
                 return null
               }
-              if (animationInfos[n].location === data) {
+              if (this._animationInfos[n].location === data) {
                 firstIndex = n
                 break
               }
@@ -863,8 +898,8 @@ export class Isle extends IsleBase {
               return null
             }
             let lastIndex = firstIndex
-            for (let n = firstIndex + 1; n < animationInfos.length; ++n) {
-              if (animationInfos[n].location !== data) {
+            for (let n = firstIndex + 1; n < this._animationInfos.length; ++n) {
+              if (this._animationInfos[n].location !== data) {
                 lastIndex = n
                 break
               }
@@ -874,11 +909,11 @@ export class Isle extends IsleBase {
           })()
 
           if (indices != null) {
-            const animationInfosAtLocation = animationInfos.slice(indices.firstIndex, indices.lastIndex)
+            const animationInfosAtLocation = this._animationInfos.slice(indices.firstIndex, indices.lastIndex)
             let lastAnimationNumPlayed = Number.MAX_SAFE_INTEGER
             let animationToPlay: DTA.AnimationInfo | undefined
             for (const animationInfo of animationInfosAtLocation) {
-              if (!this._animationPlaying && !(animationInfo.actorMask & engine.currentPlayerMask) && animationInfo.active && animationInfo.numPlayed < lastAnimationNumPlayed && (animationInfo.numPlayed === 0 || animationInfo.name[0] !== 'i') && animationInfo.name[0] !== 'I') {
+              if (!this._cameraAnimationPlaying && !(animationInfo.actorMask & engine.currentPlayerMask) && animationInfo.active && animationInfo.numPlayed < lastAnimationNumPlayed && (animationInfo.numPlayed === 0 || animationInfo.name[0] !== 'i') && animationInfo.name[0] !== 'I') {
                 lastAnimationNumPlayed = animationInfo.numPlayed
                 animationToPlay = animationInfo
               }
@@ -888,47 +923,7 @@ export class Isle extends IsleBase {
               if (animationAction == null) {
                 throw new Error(`Animation action not found for animation info ${animationToPlay.name}`)
               }
-              if (animationAction.presenter === 'LegoAnimMMPresenter') {
-                ++animationToPlay.numPlayed
-                if (location != null) {
-                  location.animationPlayedAtLocation = true
-                }
-                this._animationPlaying = true
-                const extraTracks = (() => {
-                  if (location == null || !animationToPlay.hasCameraAnimation) {
-                    return undefined
-                  }
-                  const matrix = calculateTransformationMatrix(location.position, location.direction, location.up)
-                  const position = new THREE.Vector3()
-                  const quaternion = new THREE.Quaternion()
-                  matrix.decompose(position, quaternion, new THREE.Vector3())
-                  const rotationQuaternion = new THREE.Quaternion()
-                  rotationQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
-                  quaternion.premultiply(rotationQuaternion)
-                  quaternion.normalize()
-                  const cameraQuaternion = new THREE.Quaternion()
-                  cameraQuaternion.copy(this.camera.quaternion)
-                  cameraQuaternion.normalize()
-                  // ensure shortest path
-                  if (cameraQuaternion.dot(quaternion) < 0) {
-                    quaternion.x *= -1
-                    quaternion.y *= -1
-                    quaternion.z *= -1
-                    quaternion.w *= -1
-                  }
-                  return [
-                    new THREE.VectorKeyframeTrack('camera.position', [0, 1], [this.camera.position.x, this.camera.position.y, this.camera.position.z, position.x, position.y, position.z]),
-                    new THREE.QuaternionKeyframeTrack('camera.quaternion', [0, 1], [this.camera.quaternion.x, this.camera.quaternion.y, this.camera.quaternion.z, this.camera.quaternion.w, quaternion.x, quaternion.y, quaternion.z, quaternion.w]),
-                  ]
-                })()
-                this.playAnimation(animationAction, {
-                  extraTracks,
-                  unskippable: extraTracks != null,
-                  lockCamera: extraTracks != null,
-                }).then(() => {
-                  this._animationPlaying = false
-                })
-              }
+              this.playCameraAnimation(animationAction, animationToPlay, location)
             }
           }
         }
@@ -982,36 +977,24 @@ export class Isle extends IsleBase {
     }
     this._isleMesh = isle
 
-    const bikeMesh = this.scene.getObjectByName('bike')
-    const motobkMesh = this.scene.getObjectByName('motobk')
-    const skateMesh = this.scene.getObjectByName('skate')
-    const ambulanceMesh = this.getObjectsByPrefix('ambul')
-    const towtruckMesh = this.getObjectsByPrefix('towtk')
+    this._bikeMesh = this.scene.getObjectByName('bike') ?? null
+    this._motobkMesh = this.scene.getObjectByName('motobk') ?? null
+    this._skateMesh = this.scene.getObjectByName('skate') ?? null
+    this._ambulanceMesh = this.getObjectsByPrefix('ambul') ?? []
+    this._towtruckMesh = this.getObjectsByPrefix('towtk') ?? []
 
-    if (bikeMesh == null || motobkMesh == null || skateMesh == null || ambulanceMesh.length < 1 || towtruckMesh.length < 1) {
+    if (this._bikeMesh == null || this._motobkMesh == null || this._skateMesh == null || this._ambulanceMesh.length < 1 || this._towtruckMesh.length < 1) {
       throw new Error('Vehicle meshes not found')
     }
 
-    this._boundaryManager.placeObject(bikeMesh, 'INT44', 2, 0.5, 0, 0.5)
-    this._boundaryManager.placeObject(motobkMesh, 'INT43', 4, 0.5, 1, 0.5)
-    this._boundaryManager.placeObject(skateMesh, 'EDG02_84', 4, 0.5, 0, 0.5)
+    this._boundaryManager.placeObject(this._bikeMesh, 'INT44', 2, 0.5, 0, 0.5)
+    this._boundaryManager.placeObject(this._motobkMesh, 'INT43', 4, 0.5, 1, 0.5)
+    this._boundaryManager.placeObject(this._skateMesh, 'EDG02_84', 4, 0.5, 0, 0.5)
 
-    const enterVehicle = async (vehicle: THREE.Object3D[]): Promise<void> => {
-      await engine.transition()
-
-      this._vehicleMesh = vehicle
-      for (const mesh of vehicle) {
-        mesh.visible = false
-      }
-      this.camera.position.set(vehicle[0].position.x, vehicle[0].position.y, vehicle[0].position.z)
-      this.camera.quaternion.copy(vehicle[0].quaternion)
-      this._placeObjectOnGround(this.camera)
-
-      this._showDashboard()
-    }
+    await this._pizzaMission.init()
 
     if (import.meta.hot) {
-      import.meta.hot.accept('../lib/world/dashboard', newModule => {
+      import.meta.hot.accept('../../lib/world/dashboard', newModule => {
         if (newModule == null) {
           return
         }
@@ -1023,24 +1006,24 @@ export class Isle extends IsleBase {
       })
     }
 
-    this.addClickListener(bikeMesh, async () => {
-      await enterVehicle([bikeMesh])
+    this.addClickListener(this._bikeMesh, async () => {
+      await this.enterVehicle({ type: 'bike' })
       return true
     })
-    this.addClickListener(motobkMesh, async () => {
-      await enterVehicle([motobkMesh])
+    this.addClickListener(this._motobkMesh, async () => {
+      await this.enterVehicle({ type: 'moto' })
       return true
     })
-    this.addClickListener(skateMesh, async () => {
-      await enterVehicle([skateMesh])
+    this.addClickListener(this._skateMesh, async () => {
+      await this.enterVehicle({ type: 'skate', showPizza: false })
       return true
     })
-    this.addClickListener(ambulanceMesh, async () => {
-      await enterVehicle(ambulanceMesh)
+    this.addClickListener(this._ambulanceMesh, async () => {
+      await this.enterVehicle({ type: 'ambul' })
       return true
     })
-    this.addClickListener(towtruckMesh, async () => {
-      await enterVehicle(towtruckMesh)
+    this.addClickListener(this._towtruckMesh, async () => {
+      await this.enterVehicle({ type: 'towtk' })
       return true
     })
 
@@ -1048,8 +1031,8 @@ export class Isle extends IsleBase {
       this._exitVehicle()
     }
 
-    this.camera.position.set(20, CAM_HEIGHT, 30)
-    this.camera.lookAt(60, 0, 25)
+    this.camera.position.set(9, CAM_HEIGHT, -47)
+    this.camera.lookAt(19, 1, -43)
     this._placeObjectOnGround(this.camera)
 
     // extra
@@ -1065,6 +1048,21 @@ export class Isle extends IsleBase {
     // this.playAnimation(tns002br_RunAnim)
   }
 
+  public enterVehicle = async (vehicle: Vehicle): Promise<void> => {
+    await engine.transition()
+
+    this._currentVehicle = vehicle
+
+    for (const mesh of this._currentVehicleMesh) {
+      mesh.visible = false
+    }
+    this.camera.position.set(this._currentVehicleMesh[0].position.x, this._currentVehicleMesh[0].position.y, this._currentVehicleMesh[0].position.z)
+    this.camera.quaternion.copy(this._currentVehicleMesh[0].quaternion)
+    this._placeObjectOnGround(this.camera)
+
+    this._showDashboard()
+  }
+
   public override activate(composer: Composer, param?: IsleParam): void {
     super.activate(composer, param)
     this._dashboard.activate(composer)
@@ -1073,40 +1071,83 @@ export class Isle extends IsleBase {
     }
   }
 
+  public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location): Promise<void> {
+    if (animationInfo == null) {
+      animationInfo = this.animationInfos.find(a => a.objectId === action.id)
+      if (animationInfo == null) {
+        throw new Error(`Animation info not found for action ${action.name}`)
+      }
+      location = locations.at(animationInfo.location)
+    }
+
+    this._cameraAnimationPlaying = true
+    ++animationInfo.numPlayed
+    if (location != null) {
+      location.animationPlayedAtLocation = true
+    }
+    const extraTracks = (() => {
+      if (location == null || !animationInfo.hasCameraAnimation) {
+        return undefined
+      }
+      const matrix = calculateTransformationMatrix(location.position, location.direction, location.up)
+      const position = new THREE.Vector3()
+      const quaternion = new THREE.Quaternion()
+      matrix.decompose(position, quaternion, new THREE.Vector3())
+      // for some reason we need to rotate yaw by 180 degrees
+      const rotationQuaternion = new THREE.Quaternion()
+      rotationQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
+      quaternion.premultiply(rotationQuaternion)
+      quaternion.normalize()
+      const cameraQuaternion = new THREE.Quaternion()
+      cameraQuaternion.copy(this.camera.quaternion)
+      cameraQuaternion.normalize()
+      // ensure shortest path
+      if (cameraQuaternion.dot(quaternion) < 0) {
+        quaternion.x *= -1
+        quaternion.y *= -1
+        quaternion.z *= -1
+        quaternion.w *= -1
+      }
+      return [
+        new THREE.VectorKeyframeTrack('camera.position', [0, 1], [this.camera.position.x, this.camera.position.y, this.camera.position.z, position.x, position.y, position.z]),
+        new THREE.QuaternionKeyframeTrack('camera.quaternion', [0, 1], [this.camera.quaternion.x, this.camera.quaternion.y, this.camera.quaternion.z, this.camera.quaternion.w, quaternion.x, quaternion.y, quaternion.z, quaternion.w]),
+      ]
+    })()
+    return this.playAnimation(action, {
+      extraTracks,
+      unskippable: extraTracks != null,
+      lockCamera: extraTracks != null,
+    }).then(() => {
+      this._cameraAnimationPlaying = false
+    })
+  }
+
   private _showDashboard(): void {
-    if (this._vehicleMesh == null) {
+    if (this._currentVehicle == null) {
       return
     }
 
-    switch (this._vehicleMesh[0].name) {
-      case 'bike':
-        this._dashboard.show(BikeDashboard)
-        break
-      case 'motobk':
-        this._dashboard.show(MotoBikeDashboard)
-        break
-      case 'skate':
-        this._dashboard.show(SkateDashboard)
-        break
-      case 'ambul':
-        this._dashboard.show(AmbulanceDashboard)
-        break
-      case 'towtk':
-        this._dashboard.show(TowTrackDashboard)
-        break
-      default:
-        throw new Error(`Unknown vehicle: ${this._vehicleMesh[0].name}`)
+    this._dashboard.show(this._currentVehicle)
+  }
+
+  public hidePizzaIfOnSkateboard(): void {
+    if (this._currentVehicle == null) {
+      return
     }
+    this._dashboard.clear()
+    this._dashboard.show({ type: 'skate', showPizza: false })
   }
 
   private _exitVehicle(): void {
-    if (this._vehicleMesh == null) {
+    if (this._currentVehicle == null) {
       return
     }
 
+    this._pizzaMission.abort()
+
     const groundPosition = this._getGroundPosition(this.camera.position, new THREE.Vector3(0, 0, 0))
-    this.moveObjectTo(this._vehicleMesh, groundPosition, this.camera.quaternion)
-    for (const mesh of this._vehicleMesh) {
+    this.moveObjectTo(this._currentVehicleMesh, groundPosition, this.camera.quaternion)
+    for (const mesh of this._currentVehicleMesh) {
       mesh.visible = true
     }
 
@@ -1114,7 +1155,7 @@ export class Isle extends IsleBase {
     this._placeObjectOnGround(this.camera)
 
     this._dashboard.clear()
-    this._vehicleMesh = null
+    this._currentVehicle = null
   }
 
   public override resize(width: number, height: number): void {

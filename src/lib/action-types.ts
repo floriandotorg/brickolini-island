@@ -2,7 +2,7 @@ import { Action } from '../actions/types'
 
 type Override<T, U> = Omit<T, keyof U> & U
 
-export const animationPresenters = ['LegoAnimPresenter', 'LegoLocomotionAnimPresenter', 'LegoCarBuildAnimPresenter'] as const
+export const animationPresenters = ['LegoAnimPresenter', 'LegoLocomotionAnimPresenter', 'LegoCarBuildAnimPresenter', 'LegoAnimMMPresenter', 'LegoLoopingAnimPresenter'] as const
 
 export type ActionBase = { id: number; siFile: string; type: Action.Type; presenter: string | null; extra: string | null; name: string; location: readonly [number, number, number] }
 
@@ -21,6 +21,8 @@ export type ParallelActionTuple<T, P extends string | null = string | null> = Ov
 export type SerialAction<T, P extends string | null = string | null> = Override<ActionBase, { type: Action.Type.SerialAction; fileType?: Action.FileType; children: readonly T[]; presenter: P }>
 
 export type AnimationAction = Override<FileActionBase, { type: Action.Type.ObjectAction; presenter: (typeof animationPresenters)[number]; location: readonly [number, number, number] }>
+
+export type RunAnimationAction = ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction>
 
 export type BoundaryAction = Override<ActionBase, { presenter: 'LegoPathPresenter'; fileType: Action.FileType; location: readonly [number, number, number] }>
 

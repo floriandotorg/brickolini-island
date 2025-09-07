@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
-import { type AnimationAction, type AudioAction, getExtraValue, type ParallelAction, type PhonemeAction, type PositionalAudioAction, splitExtraValue } from '../action-types'
+import { type AnimationAction, type AudioAction, getExtraValue, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
 import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, createAnimationActor, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
@@ -284,7 +284,7 @@ export abstract class World {
     }
   }
 
-  public async buildAnimation(action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction> | AnimationAction, { location, extraTracks }: { location?: THREE.Vector3; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<BuiltAnimation> {
+  public async buildAnimation(action: RunAnimationAction | AnimationAction, { location, extraTracks }: { location?: THREE.Vector3; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<BuiltAnimation> {
     const children = action.type === Action.Type.ParallelAction ? action.children : []
     const animationActions = action.type === Action.Type.ParallelAction ? children.filter(c => c.presenter === 'LegoAnimPresenter' || c.presenter === 'LegoLocomotionAnimPresenter') : [action]
     if (animationActions.length !== 1) {
@@ -442,10 +442,7 @@ export abstract class World {
     return { animation, animationActors, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, location }
   }
 
-  public async playAnimation(
-    action: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction> | AnimationAction,
-    { location, unskippable, lockCamera, extraTracks }: { location?: THREE.Vector3; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[] } = {},
-  ): Promise<void> {
+  public async playAnimation(action: RunAnimationAction | AnimationAction, { location, unskippable, lockCamera, extraTracks }: { location?: THREE.Vector3; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<void> {
     const { animation, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects } = await this.buildAnimation(action, { location, extraTracks })
 
     this.setupCameraForAnimation(animation.tree)
@@ -654,7 +651,7 @@ export abstract class World {
         case 'nick':
           engine.currentPlayerCharacter = 'laura'
           break
-        case 'laura':
+        default:
           engine.currentPlayerCharacter = 'pepper'
           break
       }
@@ -666,9 +663,9 @@ export abstract class World {
     }
   }
 
-  public skipAllRunningAnimations(): void {
+  public skipAllRunningAnimations(force = false): void {
     for (const runningAnimation of this._runningAnimations) {
-      if (runningAnimation.unskippable) {
+      if (runningAnimation.unskippable && !force) {
         runningAnimation.lockCamera = false
         continue
       }

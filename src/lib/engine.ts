@@ -31,6 +31,8 @@ export const normalizeRect = (x: number, y: number, w: number, h: number, totalS
 const SAVE_GAME_STORAGE_KEY = 'saves'
 type SaveGame = { readonly name: string }
 
+export type PlayerCharacter = 'pepper' | 'papa' | 'mama' | 'nick' | 'laura'
+
 class Engine {
   private _state: 'cutscene' | 'transition' | 'game' = 'game'
   private _clock: THREE.Clock = new THREE.Clock()
@@ -52,9 +54,24 @@ class Engine {
   private _currentSaveGame: SaveGame = { name: '' }
   private _saveGames: SaveGame[]
 
-  public currentPlayerCharacter: 'pepper' | 'papa' | 'mama' | 'nick' | 'laura' | null = null
+  public currentPlayerCharacter: PlayerCharacter | null = new URLSearchParams(window.location.search).get('player') as PlayerCharacter | null
+
+  public get currentPlayerCharacterSafe(): PlayerCharacter {
+    if (this.currentPlayerCharacter == null) {
+      throw new Error('Current player character is null')
+    }
+    return this.currentPlayerCharacter
+  }
 
   public get currentPlayerMask(): number {
+    if (this.currentPlayerCharacter == null) {
+      return 0
+    }
+
+    return 1 << (this.currentPlayerId - 1)
+  }
+
+  public get currentPlayerId(): number {
     switch (this.currentPlayerCharacter) {
       case null:
         return 0
@@ -63,11 +80,11 @@ class Engine {
       case 'mama':
         return 2
       case 'papa':
-        return 4
+        return 3
       case 'nick':
-        return 8
+        return 4
       case 'laura':
-        return 16
+        return 5
     }
 
     throw new Error('Invalid player character')

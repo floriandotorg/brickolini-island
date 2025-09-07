@@ -5,7 +5,7 @@ const worlds = new Map<WorldName, World>()
 
 export const switchWorld = async (worldName: WorldName, param?: unknown) => {
   if (engine.hasWorld) {
-    engine.currentWorld.skipAllRunningAnimations()
+    engine.currentWorld.skipAllRunningAnimations(true)
   }
 
   const transition = engine.hasWorld ? engine.transition() : Promise.resolve()
