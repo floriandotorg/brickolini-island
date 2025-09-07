@@ -1290,6 +1290,8 @@ export class Isle extends IsleBase {
     this._dayTime = (this._dayTime + delta * (1 / (24 * 60))) % 1
     this._updateSun()
 
+    this._pizzaMission.update()
+
     if (this._water != null) {
       this._water.material.uniforms.time.value += delta * 0.1
     }

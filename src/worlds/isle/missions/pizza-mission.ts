@@ -1,4 +1,10 @@
 import {
+  Avo910In_PlayWav,
+  Avo911In_PlayWav,
+  Avo912In_PlayWav,
+  Avo913In_PlayWav,
+  Avo914In_PlayWav,
+  Avo917In_PlayWav,
   nja001pr_RunAnim,
   pgs050nu_RunAnim,
   pgs051nu_RunAnim,
@@ -111,6 +117,8 @@ export class PizzaMission {
 
   private _missionState: MissionState = MissionState.NotStarted
   private _timeoutTimer: number | null = null
+  private _missionStartedTime: number = 0
+  private _helpAudioPlayed: boolean = false
 
   constructor(private readonly isle: Isle) {}
 
@@ -167,6 +175,8 @@ export class PizzaMission {
           this.isle.cameraAnimationTriggerEnabled = false
           this.isle.placeVehicle('skate', 'INT37', 2, 0.5, 3, 0.5)
           this.isle.enterVehicle({ type: 'skate', showPizza: true })
+          this._missionStartedTime = engine.clock.getElapsedTime()
+          this._helpAudioPlayed = false
           for (let n = 0; n < 4; ++n) {
             const action = missionAnimations[engine.currentPlayerCharacterSafe][n]
             if (action == null) {
@@ -184,6 +194,38 @@ export class PizzaMission {
   public abort(): void {
     this._missionState = MissionState.NotStarted
     this.isle.hidePizzaIfOnSkateboard()
+    this.isle.skipAllRunningAnimations(true)
     this.isle.cameraAnimationTriggerEnabled = true
+    this._missionStartedTime = 0
+  }
+
+  public update(): void {
+    if (this._missionState === MissionState.Delivering) {
+      if (!this._helpAudioPlayed && engine.clock.getElapsedTime() - this._missionStartedTime > 35) {
+        this._helpAudioPlayed = true
+        switch (engine.currentPlayerCharacterSafe) {
+          case 'pepper':
+            engine.playAudio(Avo914In_PlayWav)
+            break
+          case 'mama':
+            engine.playAudio(Avo910In_PlayWav)
+            break
+          case 'papa':
+            engine.playAudio(Avo912In_PlayWav)
+            break
+          case 'nick':
+            engine.playAudio(Avo911In_PlayWav)
+            break
+          case 'laura':
+            engine.playAudio(Avo913In_PlayWav)
+            break
+        }
+      }
+
+      if (engine.clock.getElapsedTime() - this._missionStartedTime > 350) {
+        engine.playAudio(Avo917In_PlayWav)
+        this.abort()
+      }
+    }
   }
 }

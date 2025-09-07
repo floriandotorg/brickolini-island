@@ -665,6 +665,10 @@ export abstract class World {
     if (key === ' ') {
       this.skipAllRunningAnimations()
     }
+
+    if (key === 'p') {
+      this.skipAllRunningAnimations(true)
+    }
   }
 
   public skipAllRunningAnimations(force = false): void {
@@ -674,7 +678,12 @@ export abstract class World {
         continue
       }
 
-      runningAnimation.clipAction.time = runningAnimation.stopAtTime ?? runningAnimation.clipAction.getClip().duration
+      if (runningAnimation.clipAction.loop === THREE.LoopOnce) {
+        runningAnimation.clipAction.time = runningAnimation.stopAtTime ?? runningAnimation.clipAction.getClip().duration
+      } else {
+        this._runningAnimations = this._runningAnimations.filter(a => a !== runningAnimation)
+      }
+
       for (const audio of runningAnimation.audios) {
         audio.stop()
       }
