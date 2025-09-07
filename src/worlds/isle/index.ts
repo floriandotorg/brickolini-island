@@ -913,7 +913,7 @@ export class Isle extends IsleBase {
             let lastAnimationNumPlayed = Number.MAX_SAFE_INTEGER
             let animationToPlay: DTA.AnimationInfo | undefined
             for (const animationInfo of animationInfosAtLocation) {
-              if (!this._cameraAnimationPlaying && !(animationInfo.actorMask & engine.currentPlayerMask) && animationInfo.active && animationInfo.numPlayed < lastAnimationNumPlayed && (animationInfo.numPlayed === 0 || animationInfo.name[0] !== 'i') && animationInfo.name[0] !== 'I') {
+              if (!this._cameraAnimationPlaying && animationInfo.actorMask & engine.currentPlayerMask && animationInfo.active && animationInfo.numPlayed < lastAnimationNumPlayed && (animationInfo.numPlayed === 0 || animationInfo.name[0] !== 'i') && animationInfo.name[0] !== 'I') {
                 lastAnimationNumPlayed = animationInfo.numPlayed
                 animationToPlay = animationInfo
               }
