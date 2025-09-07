@@ -117,6 +117,9 @@ export class Carbuild {
           child.removeFromParent()
           this._hightlightPlatform.add(child)
           child.position.copy(getPosition(wiredNode))
+          if (wiredNode.rotationKeys.length > 0) {
+            child.quaternion.copy(wiredNode.rotationKeys[0].quaternion)
+          }
           child.updateMatrix()
           colorMesh(child, highlightColor)
           wiredParts.push(child)
