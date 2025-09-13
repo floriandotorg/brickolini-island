@@ -150,7 +150,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
           distortionScale: 5,
         })
         mesh.material.uniforms.size.value = 7
-        mesh.name = `${path.join('_')}-${++n}`.toLowerCase()
+        mesh.name = `${parent.name}-${++n}`.toLowerCase()
         parent.add(mesh)
         if (engine.currentWorld instanceof Isle) {
           engine.currentWorld.water = mesh
@@ -159,7 +159,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
       }
 
       const mesh = new THREE.Mesh(geometry, material)
-      mesh.name = `${path.join('_')}-${++n}`.toLowerCase()
+      mesh.name = `${parent.name}-${++n}`.toLowerCase()
       if (getSettings().graphics.shadows) {
         mesh.castShadow = true
         mesh.receiveShadow = true

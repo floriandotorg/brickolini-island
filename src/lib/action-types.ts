@@ -28,6 +28,8 @@ export type BoundaryAction = Override<ActionBase, { presenter: 'LegoPathPresente
 
 export type ImageAction = Override<FileActionBase, { type: Action.Type.Still; fileType: Action.FileType.STL; presenter: string | null; dimensions: { width: number; height: number } }>
 
+export type TextureAction = Override<FileActionBase, { type: Action.Type.ObjectAction; fileType: Action.FileType.OBJ; presenter: 'LegoTexturePresenter' }>
+
 export type PhonemeAction = Override<ActionBase, { type: Action.Type.Anim; fileType: Action.FileType.FLC; presenter: 'LegoPhonemePresenter'; startTime: number; duration: number }>
 
 export type VideoAction = Override<FileActionBase, { presenter: null; dimensions: { width: number; height: number } }>

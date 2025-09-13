@@ -76,6 +76,8 @@ import {
   irtx01sl_RunAnim,
   ivo918in_RunAnim,
   MedCtr,
+  NoPizaz_Texture,
+  NoPizza_Texture,
   nca001ca_RunAnim,
   nca003gh_RunAnim,
   nic002pr_RunAnim,
@@ -380,6 +382,7 @@ import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, Centr
 import { type AnimationAction, type AudioAction, getExtraValue, type ParallelAction, type PhonemeAction, type PositionalAudioAction, type RunAnimationAction } from '../../lib/action-types'
 import { type DTA, loadAnimationInfoFromDTA } from '../../lib/assets/dta'
 import { calculateTransformationMatrix } from '../../lib/assets/model'
+import { createTexture } from '../../lib/assets/texture'
 import type { Composer } from '../../lib/effect/composer'
 import { engine } from '../../lib/engine'
 import { type Location, locations } from '../../lib/locations'
@@ -1087,6 +1090,11 @@ export class Isle extends IsleBase {
       this.camera.position.copy(position)
       this.camera.quaternion.copy(quaternion)
     }
+    const noPizzaSign = this.scene.getObjectByName('nopizza')?.children[0]
+    if (noPizzaSign == null || !(noPizzaSign instanceof THREE.Mesh)) {
+      throw new Error('No pizza sign found')
+    }
+    noPizzaSign.material.map = engine.currentPlayerCharacter === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
   }
 
   public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location): Promise<void> {

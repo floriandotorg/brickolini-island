@@ -1,9 +1,9 @@
 import * as THREE from 'three'
-import type { ImageAction } from '../action-types'
+import type { ImageAction, TextureAction } from '../action-types'
 import { getActionFileUrl } from './load'
 import { textureLoader } from './mesh'
 
-export const createTexture = (action: ImageAction): THREE.Texture =>
+export const createTexture = (action: ImageAction | TextureAction): THREE.Texture =>
   textureLoader.load(getActionFileUrl(action), texture => {
     texture.colorSpace = THREE.SRGBColorSpace
     texture.wrapS = THREE.RepeatWrapping
@@ -12,7 +12,7 @@ export const createTexture = (action: ImageAction): THREE.Texture =>
     texture.minFilter = THREE.NearestFilter
   })
 
-export const createTextureAsync = async (action: ImageAction): Promise<THREE.Texture> => {
+export const createTextureAsync = async (action: ImageAction | TextureAction): Promise<THREE.Texture> => {
   const texture = await textureLoader.loadAsync(getActionFileUrl(action))
   texture.colorSpace = THREE.SRGBColorSpace
   return texture

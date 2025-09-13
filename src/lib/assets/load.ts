@@ -7,6 +7,10 @@ THREE.Cache.enabled = !import.meta.env.DEV
 
 const hdFiles = new Set<string>([
   // spellchecker: disable
+  'isle/250.avif',
+  'isle/250.png',
+  'isle/251.avif',
+  'isle/251.png',
   'jukebox/0.m4a',
   'jukebox/1.m4a',
   'jukebox/11.m4a',
@@ -296,6 +300,7 @@ const hdFiles = new Set<string>([
   'world/part_textures/rockx.gif.png',
   'world/part_textures/smileshd.gif.avif',
   'world/part_textures/smileshd.gif.png',
+
   // spellchecker: enable
 ])
 
@@ -327,7 +332,7 @@ export const getFile = async (path: string): Promise<ArrayBuffer> => {
 }
 
 const getExtension = (fileType: Action.FileType, presenter: string | null, extra: string | null) => {
-  switch (fileType) {
+  switch (presenter === 'LegoTexturePresenter' ? Action.FileType.STL : fileType) {
     case Action.FileType.SMK:
       return 'mp4'
     case Action.FileType.WAV:
