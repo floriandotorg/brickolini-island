@@ -320,7 +320,7 @@ export class Carbuild {
     }
     this._displayGroup.rotateY(delta * 1)
     // 200 ms off, 400 ms on
-    const highlightTime = (engine.clock.elapsedTime * 10) % 6
+    const highlightTime = (engine.elapsedTimeSeconds * 10) % 6
     this._highlightPlatform.visible = highlightTime < 4
   }
 }

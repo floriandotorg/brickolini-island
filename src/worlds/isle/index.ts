@@ -890,14 +890,16 @@ export class Isle extends IsleBase {
         [14, 2],
       ]
 
+      if (this._pizzaMission.handleTrigger(name[2], data)) {
+        return
+      }
+
       if (name[2] === 'M' && this.backgroundMusicTriggerEnabled) {
         if (direction === 'inbound') {
           engine.switchBackgroundMusic(music[triggers[data - 1][0] - 1])
         } else {
           engine.switchBackgroundMusic(music[triggers[data - 1][1] - 1])
         }
-      } else if (name[2] === 'W') {
-        this._pizzaMission.handleWTrigger(data)
       } else if (name[2] === 'C') {
         const location = locations.at(data)
 
@@ -984,6 +986,9 @@ export class Isle extends IsleBase {
         throw new Error(`Mesh ${meshName} not found`)
       }
       this.addClickListener(buildingMeshes, async () => {
+        if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
+          return false
+        }
         console.log(`switched to ${meshName}, ${worldName}`)
         void switchWorld(worldName)
         return true
@@ -1026,22 +1031,37 @@ export class Isle extends IsleBase {
     }
 
     this.addClickListener(this._bikeMesh, async () => {
+      if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
+        return false
+      }
       await this.enterVehicle({ type: 'bike' })
       return true
     })
     this.addClickListener(this._motobkMesh, async () => {
+      if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
+        return false
+      }
       await this.enterVehicle({ type: 'moto' })
       return true
     })
     this.addClickListener(this._skateMesh, async () => {
+      if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
+        return false
+      }
       await this.enterVehicle({ type: 'skate', showPizza: false })
       return true
     })
     this.addClickListener(this._ambulanceMesh, async () => {
+      if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
+        return false
+      }
       await this.enterVehicle({ type: 'ambul' })
       return true
     })
     this.addClickListener(this._towtruckMesh, async () => {
+      if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
+        return false
+      }
       await this.enterVehicle({ type: 'towtk' })
       return true
     })

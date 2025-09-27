@@ -12,6 +12,12 @@ import {
   pho104re_RunAnim,
   pho105re_RunAnim,
   pho106re_RunAnim,
+  pja126br_RunAnim,
+  pja127br_RunAnim,
+  pja129br_RunAnim,
+  pja130br_RunAnim,
+  pja131br_RunAnim,
+  pja132br_RunAnim,
   pns018rd_RunAnim,
   pns019pr_RunAnim,
   pns021dl_RunAnim,
@@ -76,9 +82,10 @@ import {
   wns050p1_RunAnim,
 } from '../../../actions/isle'
 import { PizzaMission_Music } from '../../../actions/jukebox'
+import { TRS302_OpenJailDoor } from '../../../actions/sndanim'
 import { Action } from '../../../actions/types'
 import type { AnimationAction, RunAnimationAction } from '../../../lib/action-types'
-import { engine, type PlayerCharacter } from '../../../lib/engine'
+import { engine, type PlayerCharacter, type Timeout } from '../../../lib/engine'
 import type { Isle } from '../index'
 
 const introAnimations: {
@@ -101,12 +108,8 @@ const missionAnimations: {
   laura: [pnsx69pr_RunAnim, pns097pr_RunAnim, pns098pr_RunAnim, pns099pr_RunAnim, null, ppz086bs_RunAnim, ppz090ma_RunAnim, ppz088ma_RunAnim, ppz089ma_RunAnim, ppz095pe_RunAnim, pho104re_RunAnim, pho105re_RunAnim, pho106re_RunAnim],
 }
 
-enum MissionState {
-  NotStarted,
-  Introduction,
-  WaitAcceptQuest,
-  Delivering,
-}
+const redFinishTime = 100_000
+const blueFinishTime = 200_000
 
 export class PizzaMission {
   private readonly playerState: { [key in PlayerCharacter]: number } = {
@@ -117,51 +120,60 @@ export class PizzaMission {
     laura: 0,
   }
 
-  private _missionState: MissionState = MissionState.NotStarted
-  private _timeoutTimer: number | null = null
-  private _missionStartedTime: number = 0
+  private _missionState:
+    | {
+        state: 'not-started' | 'introduction' | 'timeout-accept-quest'
+      }
+    | {
+        state: 'waiting-for-accept-quest'
+        timeout: Timeout
+      }
+    | {
+        state: 'delivering'
+        helpAudioTimeout: Timeout
+        missionTimeout: Timeout
+      }
+    | {
+        state: 'arrived-at-destination'
+        removePizzaTimeout: Timeout
+      } = {
+    state: 'not-started',
+  }
   private _helpAudioPlayed: boolean = false
   private _playedLocationAnimation: boolean = false
+  private _pepperBroughtPizzaWithoutHelicopterCount: number = 0
+
+  public get isActive(): boolean {
+    return this._missionState.state !== 'not-started'
+  }
 
   constructor(private readonly isle: Isle) {}
 
   async init(): Promise<void> {
     this.isle.addClickListener(this.isle.getObjectsByPrefix('pizza'), async () => {
-      if (this.isle.cameraAnimationPlaying || this._missionState !== MissionState.NotStarted) {
+      if (this._missionState.state !== 'not-started') {
         return false
       }
 
-      this._missionState = MissionState.Introduction
+      this.isle.skipAllRunningAnimations(true)
+
+      this._missionState = { state: 'introduction' }
 
       const actions = introAnimations[engine.currentPlayerCharacterSafe]
       const action = actions[this.playerState[engine.currentPlayerCharacterSafe]]
       this.playerState[engine.currentPlayerCharacterSafe] = Math.min(this.playerState[engine.currentPlayerCharacterSafe] + 1, actions.length - 1)
 
       this.isle.playCameraAnimation(action).then(() => {
-        this._missionState = MissionState.WaitAcceptQuest
-        this._timeoutTimer = setTimeout(() => {
-          const action = missionAnimations[engine.currentPlayerCharacterSafe][4 + 2]
-          if (action == null) {
-            throw new Error('Action is null')
-          }
-          if (action.type === Action.Type.ObjectAction) {
-            throw new Error('Action is not a run animation action')
-          }
-          this.isle.playCameraAnimation(action)
-          this.abort()
-        }, 5_000)
+        this._missionState = { state: 'waiting-for-accept-quest', timeout: engine.createTimeout(5_000) }
       })
 
       return true
     })
 
     this.isle.addClickListener(this.isle.getObjectsByPrefix('pizpie'), async () => {
-      if (this._timeoutTimer != null) {
-        clearTimeout(this._timeoutTimer)
-        this._timeoutTimer = null
-      }
+      if (this._missionState.state === 'introduction' || this._missionState.state === 'waiting-for-accept-quest') {
+        this._missionState = { state: 'delivering', helpAudioTimeout: engine.createTimeout(35_000), missionTimeout: engine.createTimeout(350_000) }
 
-      if (this._missionState === MissionState.Introduction || this._missionState === MissionState.WaitAcceptQuest) {
         const action = missionAnimations[engine.currentPlayerCharacterSafe][7 + this.playerState[engine.currentPlayerCharacterSafe]]
         if (action == null) {
           throw new Error('Action is null')
@@ -174,12 +186,10 @@ export class PizzaMission {
         this.isle.skipAllRunningAnimations(true)
         engine.switchBackgroundMusic(PizzaMission_Music)
         void this.isle.playCameraAnimation(action).then(() => {
-          this._missionState = MissionState.Delivering
           this.isle.cameraAnimationTriggerEnabled = false
           this.isle.backgroundMusicTriggerEnabled = false
           this.isle.placeVehicle('skate', 'INT37', 2, 0.5, 3, 0.5)
           this.isle.enterVehicle({ type: 'skate', showPizza: true })
-          this._missionStartedTime = engine.clock.getElapsedTime()
           this._helpAudioPlayed = false
           for (let n = 0; n < 4; ++n) {
             const action = missionAnimations[engine.currentPlayerCharacterSafe][n]
@@ -195,19 +205,36 @@ export class PizzaMission {
     })
   }
 
-  public abort(): void {
-    this._missionState = MissionState.NotStarted
+  private _reset(): void {
+    this._missionState = { state: 'not-started' }
     this.isle.hidePizzaIfOnSkateboard()
-    this.isle.skipAllRunningAnimations(true)
     this.isle.cameraAnimationTriggerEnabled = true
     this.isle.backgroundMusicTriggerEnabled = true
-    this._missionStartedTime = 0
     this._playedLocationAnimation = false
   }
 
+  public abort(): void {
+    this.isle.skipAllRunningAnimations(true)
+    this._reset()
+  }
+
   public update(): void {
-    if (this._missionState === MissionState.Delivering) {
-      if (!this._helpAudioPlayed && engine.clock.getElapsedTime() - this._missionStartedTime > 35) {
+    if (this._missionState.state === 'waiting-for-accept-quest' && this._missionState.timeout.isExpired) {
+      this._missionState = { state: 'timeout-accept-quest' }
+      const action = missionAnimations[engine.currentPlayerCharacterSafe][4 + 2]
+      if (action == null) {
+        throw new Error('Action is null')
+      }
+      if (action.type === Action.Type.ObjectAction) {
+        throw new Error('Action is not a run animation action')
+      }
+      void this.isle.playCameraAnimation(action).then(() => {
+        this.abort()
+      })
+    }
+
+    if (this._missionState.state === 'delivering') {
+      if (!this._helpAudioPlayed && this._missionState.helpAudioTimeout.isExpired) {
         this._helpAudioPlayed = true
         switch (engine.currentPlayerCharacterSafe) {
           case 'pepper':
@@ -228,24 +255,115 @@ export class PizzaMission {
         }
       }
 
-      if (engine.clock.getElapsedTime() - this._missionStartedTime > 350) {
+      if (this._missionState.missionTimeout.isExpired) {
         engine.playAudio(Avo917In_PlayWav)
         this.abort()
       }
     }
+
+    if (this._missionState.state === 'arrived-at-destination' && this._missionState.removePizzaTimeout.isExpired) {
+      this._reset()
+    }
   }
 
-  public handleWTrigger(data: number) {
-    if (this._missionState !== MissionState.Delivering) {
-      return
+  public handleTrigger(name: string, data: number): boolean {
+    if (this._missionState.state !== 'delivering') {
+      return false
     }
 
-    if (data === 0x15e && engine.currentPlayerCharacter === 'pepper' && !this._playedLocationAnimation) {
+    if (name === 'W' && data === 0x15e && engine.currentPlayerCharacter === 'pepper' && !this._playedLocationAnimation) {
       this._playedLocationAnimation = true
       this.isle.playAnimation(pns050p1_RunAnim)
-    } else if (data === 0x15f && engine.currentPlayerCharacter === 'papa' && !this._playedLocationAnimation) {
+      return true
+    } else if (name === 'W' && data === 0x15f && engine.currentPlayerCharacter === 'papa' && !this._playedLocationAnimation) {
       this._playedLocationAnimation = true
       this.isle.playAnimation(wns050p1_RunAnim)
+      return true
+    } else if (
+      (name === 'S' && data === 0x12e && engine.currentPlayerCharacter === 'pepper') ||
+      (name === 'C' && (((data === 0x24 || data === 0x22) && engine.currentPlayerCharacter === 'mama') || (data === 0x33 && engine.currentPlayerCharacter === 'papa') || ((data === 0x08 || data === 0x09) && engine.currentPlayerCharacter === 'nick') || (data === 0x0b && engine.currentPlayerCharacter === 'laura'))) ||
+      (name === 'W' && data === 0x169 && engine.currentPlayerCharacter === 'nick')
+    ) {
+      const finish = this._missionState.missionTimeout.millisecondsSinceStart < redFinishTime ? 'red' : this._missionState.missionTimeout.millisecondsSinceStart < blueFinishTime ? 'blue' : 'yellow'
+
+      if (engine.currentPlayerCharacter !== 'pepper') {
+        const animation = missionAnimations[engine.currentPlayerCharacterSafe][4 + (finish === 'red' ? 6 : finish === 'blue' ? 7 : 8)]
+        if (animation == null) {
+          throw new Error('Animation is null')
+        }
+
+        const millisecondsUntilRemovePizza = (() => {
+          switch (animation.id) {
+            case pps025ni_RunAnim.id:
+            case pps026ni_RunAnim.id:
+            case pps027ni_RunAnim.id:
+              return 3_800
+            case pgs050nu_RunAnim.id:
+            case pgs051nu_RunAnim.id:
+            case pgs052nu_RunAnim.id:
+              return 6_400
+            case prt072sl_RunAnim.id:
+            case prt073sl_RunAnim.id:
+            case prt074sl_RunAnim.id:
+              return 7_000
+            case pho104re_RunAnim.id:
+            case pho105re_RunAnim.id:
+            case pho106re_RunAnim.id:
+              return 6_500
+          }
+
+          throw new Error('Invalid animation id')
+        })()
+
+        if (animation.type === Action.Type.ObjectAction) {
+          throw new Error('Action is not a run animation action')
+        }
+        void this.isle.playCameraAnimation(animation).then(() => {
+          this.isle.skipAllRunningAnimations(true)
+        })
+
+        this._missionState = { state: 'arrived-at-destination', removePizzaTimeout: engine.createTimeout(millisecondsUntilRemovePizza) }
+      } else {
+        void this.isle.playAnimation(TRS302_OpenJailDoor).then(() => {
+          if (!engine.hasBuiltHelicopter) {
+            switch (this._pepperBroughtPizzaWithoutHelicopterCount) {
+              case 0:
+                ++this._pepperBroughtPizzaWithoutHelicopterCount
+                void this.isle.playCameraAnimation(pja126br_RunAnim).then(() => {
+                  this._missionState = { state: 'arrived-at-destination', removePizzaTimeout: engine.createTimeout(700) }
+                  void this.isle.playAnimation(pja127br_RunAnim).then(() => {
+                    this.isle.skipAllRunningAnimations(true)
+                  })
+                })
+                break
+              case 1:
+                ++this._pepperBroughtPizzaWithoutHelicopterCount
+                this._missionState = { state: 'arrived-at-destination', removePizzaTimeout: engine.createTimeout(500) }
+                void this.isle.playCameraAnimation(pja129br_RunAnim).then(() => {
+                  void this.isle.playAnimation(pja130br_RunAnim).then(() => {
+                    this.isle.skipAllRunningAnimations(true)
+                  })
+                })
+                break
+              case 2:
+                this._missionState = { state: 'arrived-at-destination', removePizzaTimeout: engine.createTimeout(500) }
+                void this.isle.playCameraAnimation(pja131br_RunAnim).then(() => {
+                  this.isle.skipAllRunningAnimations(true)
+                })
+                break
+            }
+          } else {
+            this._missionState = { state: 'arrived-at-destination', removePizzaTimeout: engine.createTimeout(2_300) }
+            void this.isle.playCameraAnimation(pja132br_RunAnim).then(() => {
+              this.isle.skipAllRunningAnimations(true)
+            })
+          }
+        })
+      }
+
+      return true
     }
+
+    return false
   }
 }

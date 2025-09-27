@@ -33,6 +33,11 @@ type SaveGame = { readonly name: string }
 
 export type PlayerCharacter = 'pepper' | 'papa' | 'mama' | 'nick' | 'laura'
 
+export type Timeout = {
+  get isExpired(): boolean
+  get millisecondsSinceStart(): number
+}
+
 class Engine {
   private _state: 'cutscene' | 'transition' | 'game' = 'game'
   private _clock: THREE.Clock = new THREE.Clock()
@@ -88,6 +93,10 @@ class Engine {
     }
 
     throw new Error('Invalid player character')
+  }
+
+  public get hasBuiltHelicopter(): boolean {
+    return false
   }
 
   public get saveGameNames(): string[] {
@@ -190,8 +199,24 @@ class Engine {
     return this._canvas.height
   }
 
-  public get clock(): THREE.Clock {
-    return this._clock
+  public get elapsedTimeSeconds(): number {
+    return this._clock.elapsedTime
+  }
+
+  public get elapsedTimeMilliseconds(): number {
+    return this.elapsedTimeSeconds * 1_000
+  }
+
+  public createTimeout(ms: number): Timeout {
+    const startTime = this.elapsedTimeMilliseconds
+    return {
+      get isExpired(): boolean {
+        return engine.elapsedTimeMilliseconds - startTime >= ms
+      },
+      get millisecondsSinceStart(): number {
+        return engine.elapsedTimeMilliseconds - startTime
+      },
+    }
   }
 
   constructor() {
