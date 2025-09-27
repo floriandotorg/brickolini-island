@@ -96,7 +96,7 @@ export class Carbuild {
   private readonly _decalBackground: THREE.Sprite | null
   private readonly _decals: Map<string, Control[]>
   private readonly _buildPlatform = new THREE.Group()
-  private readonly _hightlightPlatform = new THREE.Group()
+  private readonly _highlightPlatform = new THREE.Group()
   private readonly _displayGroup = new THREE.Group()
   private _state: PartSelected | Idle | ShelfMoving = IdleState
   private _animation: { duration: number; interval: number; clip: THREE.AnimationClip } | null = null
@@ -122,7 +122,7 @@ export class Carbuild {
     world.debugDrawSphere(platformPosition, 'red')
     this._buildPlatform.position.copy(platformPosition)
     this._buildPlatform.updateMatrix()
-    this._buildPlatform.add(this._hightlightPlatform)
+    this._buildPlatform.add(this._highlightPlatform)
     console.log(animation.tracks)
 
     this._displayGroup.position.copy(displayPosition)
@@ -164,7 +164,7 @@ export class Carbuild {
           }
           animation.tracks = animation.tracks.filter(track => !track.name.startsWith(child.uuid))
           child.removeFromParent()
-          this._hightlightPlatform.add(child)
+          this._highlightPlatform.add(child)
           child.position.copy(getPosition(wiredNode))
           if (wiredNode.rotationKeys.length > 0) {
             child.quaternion.copy(wiredNode.rotationKeys[0].quaternion)
@@ -321,6 +321,6 @@ export class Carbuild {
     this._displayGroup.rotateY(delta * 1)
     // 200 ms off, 400 ms on
     const highlightTime = (engine.clock.elapsedTime * 10) % 6
-    this._hightlightPlatform.visible = highlightTime < 4
+    this._highlightPlatform.visible = highlightTime < 4
   }
 }

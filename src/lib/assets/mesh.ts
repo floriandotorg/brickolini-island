@@ -98,8 +98,14 @@ export const toThreeColor = (color: WDB.Color): THREE.Color => {
 }
 
 export const colorMesh = (object: THREE.Object3D, color: THREE.Color): void => {
-  if (object instanceof THREE.Mesh && (object.material instanceof THREE.MeshBasicMaterial || object.material instanceof THREE.MeshLambertMaterial)) {
+  if (object instanceof THREE.Mesh) {
+    if (getSettings().graphics.pbrMaterials) {
+      object.material = new THREE.MeshLambertMaterial({ flatShading: object.material.flatShading })
+      object.material.transparent = true
+      object.material.opacity = 0.95
+    }
     object.material.color = color
+    object.castShadow = false
   }
   for (const child of object.children) {
     colorMesh(child, color)
