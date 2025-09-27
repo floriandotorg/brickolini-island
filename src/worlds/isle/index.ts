@@ -1209,8 +1209,6 @@ export class Isle extends IsleBase {
       return
     }
 
-    this._pizzaMission.abort()
-
     const groundPosition = this._getGroundPosition(this.camera.position, new THREE.Vector3(0, 0, 0))
     this.moveObjectTo(this._currentVehicleMesh, groundPosition, this.camera.quaternion)
     for (const mesh of this._currentVehicleMesh) {
@@ -1222,6 +1220,8 @@ export class Isle extends IsleBase {
 
     this._dashboard.clear()
     this._currentVehicle = null
+
+    this._pizzaMission.abort()
   }
 
   public override resize(width: number, height: number): void {
