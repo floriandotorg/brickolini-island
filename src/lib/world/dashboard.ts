@@ -1,5 +1,6 @@
 import type * as THREE from 'three'
-import { AmbulanceDashboard, BikeDashboard, JetskiDashboard, MotoBikeDashboard, SkateDashboard, SkatePizza_Bitmap, TowTrackDashboard } from '../../actions/isle'
+import { RaceCarDashboard } from '../../actions/carrace'
+import { AmbulanceDashboard, BikeDashboard, DuneCarDashboard, HelicopterDashboard, JetskiDashboard, MotoBikeDashboard, SkateDashboard, SkatePizza_Bitmap, TowTrackDashboard } from '../../actions/isle'
 import { type AudioAction, type ControlAction, getExtraValue, type ImageAction, isAudioAction, isControlAction, isImageAction, isMeterAction, type MeterAction, type ParallelAction } from '../action-types'
 import { CanvasSprite, createImageSprite } from '../assets/canvas-sprite'
 import { Control } from '../assets/control'
@@ -9,7 +10,7 @@ import { engine } from '../engine'
 
 export type Vehicle =
   | {
-      type: 'bike' | 'moto' | 'ambul' | 'towtk' | 'jetski'
+      type: 'bike' | 'moto' | 'ambul' | 'towtk' | 'jetski' | 'racecar' | 'helicopter' | 'dunecar'
     }
   | {
       type: 'skate'
@@ -27,6 +28,9 @@ const vehicleToDashboard: {
   ambul: AmbulanceDashboard,
   towtk: TowTrackDashboard,
   jetski: JetskiDashboard,
+  racecar: RaceCarDashboard,
+  helicopter: HelicopterDashboard,
+  dunecar: DuneCarDashboard,
 }
 
 const leftToRight = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => {
