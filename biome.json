@@ -31,11 +31,13 @@
       },
       "style": {
         "useCollapsedIf": "error",
-        "useTrimStartEnd": "error"
+        "useTrimStartEnd": "error",
+        "noNonNullAssertion": "error"
       },
       "correctness": {
         "noUnusedImports": "error",
-        "useParseIntRadix": "error"
+        "useParseIntRadix": "error",
+        "noUnusedFunctionParameters": "error"
       }
     }
   },
