@@ -43,12 +43,6 @@ export class Copter extends World {
         return false
       }
       switch (buttonName) {
-        case 'Yellow_Ctl':
-          this._carbuild.addPart()
-          return true
-        case 'Blue_Ctl':
-          this._carbuild.removePart()
-          return true
         case 'Platform_Ctl':
           this._carbuild.rotating = true
           return true
@@ -68,13 +62,19 @@ export class Copter extends World {
 
   public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
     this._building.pointerDown(normalizedX, normalizedY)
+    this._carbuild?.pointerDown(normalizedX, normalizedY)
   }
 
   public override pointerUp(_event: MouseEvent): void {
     this._building.pointerUp()
     if (this._carbuild != null) {
+      this._carbuild.pointerUp()
       this._carbuild.rotating = false
     }
+  }
+
+  public override pointerMove(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
+    this._carbuild?.pointerMove(normalizedX, normalizedY)
   }
 
   public override update(delta: number): void {

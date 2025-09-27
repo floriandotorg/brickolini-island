@@ -105,7 +105,7 @@ export abstract class World {
     this.scene.add(this._worldGroup)
   }
 
-  protected get camera(): THREE.PerspectiveCamera {
+  public get camera(): THREE.PerspectiveCamera {
     return this._render.camera
   }
 
@@ -544,6 +544,7 @@ export abstract class World {
 
   public pointerDown(_event: MouseEvent, _normalizedX: number, _normalizedY: number): void {}
   public pointerUp(_event: MouseEvent): void {}
+  public pointerMove(_event: MouseEvent, _normalizedX: number, _normalizedY: number): void {}
 
   public keyDown(_event: KeyboardEvent): void {}
   public keyUp(_event: KeyboardEvent): void {}

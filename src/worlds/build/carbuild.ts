@@ -4,11 +4,12 @@ import { type Animation3DNode, findRecursively } from '../../lib/assets/animatio
 import { createImageSprite } from '../../lib/assets/canvas-sprite'
 import type { Control } from '../../lib/assets/control'
 import { colorAliases, colorMesh, toThreeColor } from '../../lib/assets/mesh'
+import { Roi3D } from '../../lib/assets/model'
 import { engine } from '../../lib/engine'
 import type { Building } from '../../lib/world/building'
 import type { BuiltAnimation, World } from '../../lib/world/world'
 
-type Part = { readonly wired: THREE.Object3D; readonly shelfPart: THREE.Object3D; readonly shelfGroup: THREE.Group; readonly placed: THREE.Object3D }
+type Part = { readonly wired: Roi3D; readonly shelfPart: Roi3D; readonly shelfGroup: THREE.Group; readonly placed: THREE.Object3D }
 
 enum ObjectType {
   Shelf,
@@ -69,10 +70,14 @@ export const buildDecalMap = (building: Building, partControlMap: ([string, stri
   return decalMap
 }
 
-type PartSelected = {
-  state: 'displaying'
+type PartState = {
   part: Part
   originalPosition: THREE.Vector3
+}
+
+type PartDisplayed = {
+  state: 'displaying'
+  partState: PartState
 }
 
 type Idle = {
@@ -80,11 +85,26 @@ type Idle = {
 }
 
 type ShelfMoving = {
-  state: 'moving'
+  state: 'shelfMoving'
 }
 
+type PartSelected = {
+  state: 'selected'
+  selectedPartState: PartState
+  displayedPartState: PartState | null
+}
+
+type PartDragging = {
+  state: 'dragging'
+  selectedPartState: PartState
+  startQuarternion: THREE.Quaternion
+  endQuarternion: THREE.Quaternion
+}
+
+type States = PartDisplayed | Idle | ShelfMoving | PartSelected | PartDragging
+
 const IdleState: Idle = { state: 'idle' }
-const ShelfMovingState: ShelfMoving = { state: 'moving' }
+const ShelfMovingState: ShelfMoving = { state: 'shelfMoving' }
 
 const highlightColor = toThreeColor(colorAliases['lego red'])
 
@@ -97,8 +117,10 @@ export class Carbuild {
   private readonly _decals: Map<string, Control[]>
   private readonly _buildPlatform = new THREE.Group()
   private readonly _highlightPlatform = new THREE.Group()
+  private readonly _displayPosition
   private readonly _displayGroup = new THREE.Group()
-  private _state: PartSelected | Idle | ShelfMoving = IdleState
+  private readonly _raycaster = new THREE.Raycaster()
+  private _state: States = IdleState
   private _animation: { duration: number; interval: number; clip: THREE.AnimationClip } | null = null
   private shelfAnimationTime: number = 0
 
@@ -125,6 +147,7 @@ export class Carbuild {
     this._buildPlatform.add(this._highlightPlatform)
     console.log(animation.tracks)
 
+    this._displayPosition = displayPosition
     this._displayGroup.position.copy(displayPosition)
     this._displayGroup.updateMatrix()
     this._world.scene.add(this._displayGroup)
@@ -148,8 +171,8 @@ export class Carbuild {
       }
     }
 
-    const shelfParts = new Map<string, { child: THREE.Object3D; childGroup: THREE.Group }>()
-    const wiredParts: THREE.Object3D[] = []
+    const shelfParts = new Map<string, { child: Roi3D; childGroup: THREE.Group }>()
+    const wiredParts: Roi3D[] = []
     for (const child of [...world.worldGroup.children]) {
       console.log(`${child.name} => ${ObjectType[determineObjectType(child.name)]}`)
       switch (determineObjectType(child.name)) {
@@ -158,6 +181,9 @@ export class Carbuild {
           console.log(`Shelf ${numberOfShelves}'s uuid: ${child.uuid}`)
           break
         case ObjectType.Wired: {
+          if (!(child instanceof Roi3D)) {
+            throw new Error(`Object3D named '${child.name}' is not an instance of Roi3D`)
+          }
           const wiredNode = findRecursively(platformNode, node => child.name.endsWith(node.name))?.at(-1)
           if (wiredNode == null) {
             throw new Error(`Could not find animation node for ${child.name}`)
@@ -176,6 +202,9 @@ export class Carbuild {
         }
         case ObjectType.Colored:
         case ObjectType.Normal: {
+          if (!(child instanceof Roi3D)) {
+            throw new Error(`Object3D named '${child.name}' is not an instance of Roi3D`)
+          }
           // Wrap this object in another group to make it invisible without the animation interfering
           child.removeFromParent()
           const childGroup = new THREE.Group()
@@ -211,10 +240,6 @@ export class Carbuild {
       this._buildPlatform.add(placed)
       const part = { wired: wiredPart, shelfPart, shelfGroup, placed }
       this._parts.push(part)
-      this._world.addClickListener(shelfPart, async () => {
-        this._displayPart(part)
-        return true
-      })
     }
 
     console.log(animation.animation.tree)
@@ -230,11 +255,8 @@ export class Carbuild {
     this.updateParts()
   }
 
-  private _removeDisplay(): void {
-    if (this._state.state === 'displaying') {
-      this._state.part.shelfPart.removeFromParent()
-      this._state.part.shelfGroup.add(this._state.part.shelfPart)
-      this._state.part.shelfPart.position.copy(this._state.originalPosition)
+  private _returnToShelf(): void {
+    if (this._returnPartToShelf()) {
       this._state = IdleState
       this._colorBackground.visible = false
       if (this._decalBackground != null) {
@@ -248,50 +270,57 @@ export class Carbuild {
     }
   }
 
-  private _displayPart(part: Part): void {
-    if (this._state.state !== 'moving') {
-      const samePart = this._state.state === 'displaying' && this._state.part === part
-      this._removeDisplay()
-      if (samePart) {
-        return
-      }
-      this._state = { state: 'displaying', part, originalPosition: part.shelfPart.position.clone() }
-      part.shelfPart.removeFromParent()
-      part.shelfPart.position.set(0, 0, 0)
-      this._displayGroup.add(part.shelfPart)
-      this._colorBackground.visible = determineObjectType(part.shelfPart.name) === ObjectType.Colored
-      if (this._decalBackground != null) {
-        this._decalBackground.visible = false
-      }
-      for (const [partName, controls] of this._decals) {
-        const validDecal = part.shelfPart.name.slice(0, -2).toLowerCase().endsWith(partName.toLowerCase())
-        for (const control of controls) {
-          control.visible = validDecal
+  private _returnPartToShelf(): boolean {
+    const returnPartToShelf = (partState: PartState): void => {
+      partState.part.shelfPart.removeFromParent()
+      partState.part.shelfGroup.add(partState.part.shelfPart)
+      partState.part.shelfPart.position.copy(partState.originalPosition)
+    }
+
+    switch (this._state.state) {
+      case 'dragging':
+        returnPartToShelf(this._state.selectedPartState)
+        return true
+      case 'selected':
+        if (this._state.displayedPartState != null) {
+          returnPartToShelf(this._state.displayedPartState)
         }
-        if (validDecal && this._decalBackground != null) {
-          this._decalBackground.visible = true
-        }
-      }
+        return true
+      default:
+        return false
     }
   }
 
-  public addPart(): void {
+  private _takePartFromShelf(part: Part): void {
+    part.shelfPart.removeFromParent()
+    part.shelfPart.position.set(0, 0, 0)
+    this._displayGroup.add(part.shelfPart)
+    this._displayGroup.position.copy(this._displayPosition)
+    this._displayGroup.quaternion.identity()
+  }
+
+  private _displayPart(): void {
+    if (this._state.state === 'selected' || this._state.state === 'dragging') {
+      if (this._state.state === 'selected' && this._state.displayedPartState?.part === this._state.selectedPartState.part) {
+        this._returnToShelf()
+        return
+      }
+      const partState = this._state.selectedPartState
+      this._state = { state: 'displaying', partState }
+      this._takePartFromShelf(partState.part)
+    }
+  }
+
+  private addPart(): void {
     if (this._part < this._parts.length) {
       this._part++
       this.updateParts()
     }
   }
 
-  public removePart(): void {
-    if (this._part > 0) {
-      this._part--
-      this.updateParts()
-    }
-  }
-
   public async shelveUp(): Promise<void> {
-    if (this._state.state !== 'moving' && this._animation != null && this._animation.interval > 0) {
-      this._removeDisplay()
+    if (this._state.state !== 'shelfMoving' && this._animation != null && this._animation.interval > 0) {
+      this._returnToShelf()
       this._state = ShelfMovingState
       const shelfAnimationTimeStop = this.shelfAnimationTime + this._animation.interval
       console.log(`${this.shelfAnimationTime} -> ${shelfAnimationTimeStop}`)
@@ -318,9 +347,112 @@ export class Carbuild {
     if (this.rotating) {
       this._buildPlatform.rotateY(delta * -0.7)
     }
-    this._displayGroup.rotateY(delta * 1)
+    if (this._state.state === 'displaying') {
+      this._displayGroup.rotateY(delta * 1)
+    }
     // 200 ms off, 400 ms on
     const highlightTime = (engine.elapsedTimeSeconds * 10) % 6
     this._highlightPlatform.visible = highlightTime < 4
+  }
+
+  public pointerDown(normalizedX: number, normalizedY: number): void {
+    this._raycaster.setFromCamera(new THREE.Vector2(normalizedX, normalizedY), this._world.camera)
+    let hit: THREE.Object3D | null = this._raycaster.intersectObjects(this._parts.map(part => part.shelfPart))[0]?.object
+    while (hit != null) {
+      const part = this._parts.find(part => part.shelfPart === hit)
+      if (hit.visible && part != null) {
+        // when a part is displayed, also store it information
+        const displayedPart = this._state.state === 'displaying' ? this._state.partState : null
+        // when a part is displayed and clicked, it needs to use that information
+        const partState = displayedPart?.part === part ? displayedPart : { part, originalPosition: part.shelfPart.position.clone() }
+        this._state = { state: 'selected', selectedPartState: partState, displayedPartState: displayedPart }
+        this._colorBackground.visible = determineObjectType(part.shelfPart.name) === ObjectType.Colored
+        if (this._decalBackground != null) {
+          this._decalBackground.visible = false
+        }
+        for (const [partName, controls] of this._decals) {
+          const validDecal = part.shelfPart.name.slice(0, -2).toLowerCase().endsWith(partName.toLowerCase())
+          for (const control of controls) {
+            control.visible = validDecal
+          }
+          if (validDecal && this._decalBackground != null) {
+            this._decalBackground.visible = true
+          }
+        }
+        return
+      }
+      hit = hit.parent
+    }
+  }
+
+  public pointerUp(): void {
+    switch (this._state.state) {
+      case 'selected':
+        this._displayPart()
+        break
+      case 'dragging': {
+        const part = this._state.selectedPartState.part
+        if (this._parts[this._part] === part && part.wired.getWorldBoundingSphere().intersect(part.shelfPart.getWorldBoundingSphere())) {
+          this._returnToShelf()
+          this.addPart()
+          break
+        }
+        this._displayPart()
+        break
+      }
+    }
+  }
+
+  public pointerMove(normalizedX: number, normalizedY: number): void {
+    if (this._state.state === 'selected') {
+      // selection from shelf
+      if (this._state.displayedPartState == null || this._state.displayedPartState.part !== this._state.selectedPartState.part) {
+        // return the displayed part
+        this._returnPartToShelf()
+        this._takePartFromShelf(this._state.selectedPartState.part)
+      }
+      const partQuarternion = this._state.selectedPartState.part.shelfPart.quaternion.clone().invert()
+      const startQuarternion = this._state.selectedPartState.part.shelfPart.getWorldQuaternion(new THREE.Quaternion()).multiply(partQuarternion)
+      const endQuarternion = this._state.selectedPartState.part.wired.getWorldQuaternion(new THREE.Quaternion()).multiply(partQuarternion)
+      this._state = { state: 'dragging', selectedPartState: this._state.selectedPartState, startQuarternion, endQuarternion }
+    }
+    if (this._state.state === 'dragging') {
+      const targetScreenCoords = this._state.selectedPartState.part.wired.getWorldPosition(new THREE.Vector3()).clone().project(this._world.camera)
+      const sourceScreenCoords = this._displayPosition.clone().project(this._world.camera)
+      targetScreenCoords.z = 0
+      sourceScreenCoords.z = 0
+
+      const distanceY = sourceScreenCoords.y - targetScreenCoords.y
+      const ratioY = (normalizedY - targetScreenCoords.y) / distanceY
+
+      const plane = (() => {
+        if (ratioY >= 0) {
+          const alpha = Math.min(ratioY, 1)
+          const normal = this._world.camera.getWorldDirection(new THREE.Vector3())
+          const targetPoint = this._state.selectedPartState.part.wired.getWorldPosition(new THREE.Vector3())
+          const planePoint = targetPoint.clone().lerp(this._displayPosition, alpha)
+          return new THREE.Plane().setFromNormalAndCoplanarPoint(normal, planePoint)
+        } else {
+          const normal = this._world.camera.up
+          const planePoint = this._state.selectedPartState.part.wired.getWorldPosition(new THREE.Vector3())
+          return new THREE.Plane().setFromNormalAndCoplanarPoint(normal, planePoint)
+        }
+      })()
+
+      const ndc = new THREE.Vector3(normalizedX, normalizedY, 0.5).unproject(this._world.camera)
+      const origin = this._world.camera.position.clone()
+      const direction = ndc.sub(origin).normalize()
+      const ray = new THREE.Ray(origin, direction)
+
+      const targetPoint = new THREE.Vector3()
+      ray.intersectPlane(plane, targetPoint)
+
+      const screenDistance = targetScreenCoords.distanceTo(sourceScreenCoords)
+      const pointerDistance = new THREE.Vector3(normalizedX, normalizedY, 0).distanceTo(sourceScreenCoords)
+
+      const quaternion = new THREE.Quaternion().slerpQuaternions(this._state.startQuarternion, this._state.endQuarternion, pointerDistance / screenDistance)
+      this._displayGroup.position.copy(targetPoint)
+      this._displayGroup.quaternion.copy(quaternion)
+    }
   }
 }

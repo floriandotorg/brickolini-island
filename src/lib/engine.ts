@@ -291,6 +291,18 @@ class Engine {
       }
     })
 
+    canvas.addEventListener('pointermove', event => {
+      event.preventDefault()
+      event.stopPropagation()
+
+      if (this._state === 'game') {
+        const rect = canvas.getBoundingClientRect()
+        const [normalizedX, normalizedY] = normalizePoint(event.clientX - rect.left, event.clientY - rect.top, [rect.width, rect.height])
+
+        this._world?.pointerMove(event, normalizedX, normalizedY)
+      }
+    })
+
     document.addEventListener('keydown', event => {
       this._keyStates.add(event.key)
 
