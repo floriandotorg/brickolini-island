@@ -1341,6 +1341,7 @@ export const ACTORS: {
 export class Actor extends THREE.Group {
   private _headMaterial: THREE.MeshBasicMaterial | null = null
   private _head: THREE.Object3D | null = null
+  private _originalHeadTexture: THREE.Texture | null = null
 
   public onClicked: () => boolean = () => false
 
@@ -1360,6 +1361,14 @@ export class Actor extends THREE.Group {
 
   private constructor(private _info: (typeof ACTORS)[keyof typeof ACTORS]) {
     super()
+  }
+
+  public resetHeadTexture(): void {
+    if (this._originalHeadTexture == null) {
+      throw new Error('Original head texture not found')
+    }
+    this.headMaterial.map = this._originalHeadTexture
+    this.headMaterial.needsUpdate = true
   }
 
   public static async create(world: World, name: string): Promise<Actor> {
@@ -1391,6 +1400,7 @@ export class Actor extends THREE.Group {
               throw new Error('Head material not found')
             }
             actor._headMaterial = faceMesh.material
+            actor._originalHeadTexture = faceMesh.material.map
             return actor._head
           }
           case 'arm-lft':

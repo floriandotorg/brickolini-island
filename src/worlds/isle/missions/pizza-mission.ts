@@ -331,7 +331,7 @@ export class PizzaMission {
                 ++this._pepperBroughtPizzaWithoutHelicopterCount
                 void this.isle.playCameraAnimation(pja126br_RunAnim).then(() => {
                   this._missionState = { state: 'arrived-at-destination', removePizzaTimeout: engine.createTimeout(700) }
-                  void this.isle.playAnimation(pja127br_RunAnim).then(() => {
+                  void this.isle.playCameraAnimation(pja127br_RunAnim).then(() => {
                     this.isle.skipAllRunningAnimations(true)
                   })
                 })
@@ -340,7 +340,7 @@ export class PizzaMission {
                 ++this._pepperBroughtPizzaWithoutHelicopterCount
                 this._missionState = { state: 'arrived-at-destination', removePizzaTimeout: engine.createTimeout(500) }
                 void this.isle.playCameraAnimation(pja129br_RunAnim).then(() => {
-                  void this.isle.playAnimation(pja130br_RunAnim).then(() => {
+                  void this.isle.playCameraAnimation(pja130br_RunAnim).then(() => {
                     this.isle.skipAllRunningAnimations(true)
                   })
                 })

@@ -498,6 +498,9 @@ export abstract class World {
 
     return new Promise(resolve => {
       const removeMe = () => {
+        for (const faceAnimation of faceAnimations) {
+          faceAnimation.actor.resetHeadTexture()
+        }
         this._runningAnimations = this._runningAnimations.filter(a => a.mixer !== mixer)
         resolve()
       }
