@@ -1126,6 +1126,11 @@ export class Isle extends IsleBase {
       location = locations.at(animationInfo.location)
     }
 
+    this._verticalVel = 0
+    this._pitchVel = 0
+    this._rotVel = 0
+    this._linearVel = 0
+
     this._cameraAnimationPlaying = true
     ++animationInfo.numPlayed
     if (location != null) {
