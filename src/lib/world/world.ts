@@ -479,7 +479,7 @@ export abstract class World {
     )
 
     const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
-    return this.playAnimationClip(this.scene, clip, { audios, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, startAtTime: 0, loop })
+    return this.playAnimationClip(this.scene, clip, { audios, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, loop })
   }
 
   public async playAnimationClip(
@@ -492,12 +492,12 @@ export abstract class World {
       pointAtCameraObjects = [],
       lockCamera,
       unskippable,
-      startAtTime,
+      startAtTime = 0,
       stopAtTime,
       loop,
     }: { audios?: THREE.PositionalAudio[]; lookAtKeys?: WDB.Animation.VertexKey[]; faceAnimations?: FaceAnimation[]; pointAtCameraObjects?: THREE.Object3D[]; lockCamera?: boolean; unskippable?: boolean; startAtTime?: number; stopAtTime?: number; loop?: THREE.AnimationActionLoopStyles } = {},
   ): Promise<void> {
-    if (startAtTime != null && stopAtTime != null && startAtTime > stopAtTime) {
+    if (stopAtTime != null && startAtTime > stopAtTime) {
       throw new Error(`Start (${startAtTime}) must be before stop (${stopAtTime}) when both are defined`)
     }
     const mixer = new THREE.AnimationMixer(root)
@@ -505,7 +505,7 @@ export abstract class World {
     clipAction.loop = loop ?? THREE.LoopOnce
     clipAction.clampWhenFinished = true
     clipAction.play()
-    if (startAtTime != null) {
+    if (startAtTime > 0) {
       mixer.setTime(startAtTime)
       clipAction.time = startAtTime
     }
