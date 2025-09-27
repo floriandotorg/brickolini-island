@@ -767,13 +767,26 @@ const ANIMATIONS = [
 ]
 
 const CAM_HEIGHT = 1.25
-const MAX_LINEAR_VEL = 10
 const MAX_ROT_VEL = 80
-const MAX_LINEAR_ACCEL = 15
+const MAX_LINEAR_ACCEL = 10
 const MAX_ROT_ACCEL = 30
 const MAX_LINEAR_DECEL = 50
 const MAX_ROT_DECEL = 50
 const EPSILON = 0.0001
+
+const TRANSPORTATION_MAX_LINEAR_VEL: {
+  [key in VehicleType]: number
+} = {
+  ambul: 40,
+  bike: 20,
+  dunecar: 25,
+  helicopter: 60,
+  jetski: 25,
+  moto: 40,
+  racecar: 40,
+  skate: 15,
+  towtk: 40,
+}
 
 export type IsleParam = {
   position: {
@@ -797,6 +810,8 @@ export class Isle extends IsleBase {
   private _currentVehicle: Vehicle | null = null
   private _animationInfos: DTA.AnimationInfo[] = []
   private readonly _pizzaMission = new PizzaMission(this)
+  private _maxLinearVel = 6
+
   public cameraAnimationTriggerEnabled = true
   public backgroundMusicTriggerEnabled = true
 
@@ -1338,11 +1353,13 @@ export class Isle extends IsleBase {
 
     const speedMultiplier = this._slewMode ? 4 : 1
 
-    const targetLinearVel = (engine.isKeyDown('ArrowUp') ? MAX_LINEAR_VEL : engine.isKeyDown('ArrowDown') ? -MAX_LINEAR_VEL : 0) * speedMultiplier
+    const maxLinearVel = TRANSPORTATION_MAX_LINEAR_VEL[this._currentVehicle?.type as VehicleType] ?? 6
+
+    const targetLinearVel = (engine.isKeyDown('ArrowUp') ? maxLinearVel : engine.isKeyDown('ArrowDown') ? -maxLinearVel : 0) * speedMultiplier
 
     const targetRotVel = engine.isKeyDown('ArrowLeft') ? MAX_ROT_VEL : engine.isKeyDown('ArrowRight') ? -MAX_ROT_VEL : 0
 
-    const targetVerticalVel = this._slewMode ? (engine.isKeyDown('q') ? MAX_LINEAR_VEL * speedMultiplier : engine.isKeyDown('e') ? -MAX_LINEAR_VEL * speedMultiplier : 0) : 0
+    const targetVerticalVel = this._slewMode ? (engine.isKeyDown('q') ? maxLinearVel * speedMultiplier : engine.isKeyDown('e') ? -maxLinearVel * speedMultiplier : 0) : 0
 
     const targetPitchVel = this._slewMode ? (engine.isKeyDown('w') ? MAX_ROT_VEL : engine.isKeyDown('s') ? -MAX_ROT_VEL : 0) : 0
 
@@ -1364,7 +1381,7 @@ export class Isle extends IsleBase {
     }
 
     const vel = this._linearVel < 0 ? -this._linearVel : this._linearVel
-    const maxVelCurrent = MAX_LINEAR_VEL * (this._slewMode ? 4 : 1)
+    const maxVelCurrent = maxLinearVel * (this._slewMode ? 4 : 1)
     this._dashboard.update(vel / maxVelCurrent)
 
     this.camera.rotation.y += THREE.MathUtils.degToRad(this._rotVel * delta)
