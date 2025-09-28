@@ -37,7 +37,8 @@
       "correctness": {
         "noUnusedImports": "error",
         "useParseIntRadix": "error",
-        "noUnusedFunctionParameters": "error"
+        "noUnusedFunctionParameters": "error",
+        "noUnusedPrivateClassMembers": "error"
       }
     }
   },

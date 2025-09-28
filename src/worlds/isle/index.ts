@@ -810,7 +810,6 @@ export class Isle extends IsleBase {
   private _currentVehicle: Vehicle | null = null
   private _animationInfos: DTA.AnimationInfo[] = []
   private readonly _pizzaMission = new PizzaMission(this)
-  private _maxLinearVel = 6
 
   public cameraAnimationTriggerEnabled = true
   public backgroundMusicTriggerEnabled = true
