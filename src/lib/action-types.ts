@@ -20,7 +20,7 @@ export type ParallelActionTuple<T, P extends string | null = string | null> = Ov
 
 export type SerialAction<T, P extends string | null = string | null> = Override<ActionBase, { type: Action.Type.SerialAction; fileType?: Action.FileType; children: readonly T[]; presenter: P }>
 
-export type AnimationAction = Override<FileActionBase, { type: Action.Type.ObjectAction; presenter: (typeof animationPresenters)[number]; location: readonly [number, number, number] }>
+export type AnimationAction = Override<FileActionBase, { type: Action.Type.ObjectAction; presenter: (typeof animationPresenters)[number]; location: readonly [number, number, number]; direction: readonly [number, number, number]; up: readonly [number, number, number] }>
 
 export type RunAnimationAction = ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction>
 

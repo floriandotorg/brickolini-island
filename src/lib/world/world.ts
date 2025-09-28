@@ -1,10 +1,10 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
-import { type AnimationAction, type AudioAction, getExtraValue, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
+import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
 import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, createAnimationActor, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
-import { getGlobalPart } from '../assets/model'
+import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
 import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
 import { engine } from '../engine'
@@ -292,7 +292,12 @@ export abstract class World {
       throw new Error(`Expected exactly one animation, got ${animationActions.length}`)
     }
 
-    const animation = parse3DAnimation(await getAction(animationActions[0]))
+    const animationAction = animationActions[0]
+    if (!isAnimationAction(animationAction)) {
+      throw new Error(`Expected animation action, got ${animationAction.type}`)
+    }
+
+    const animation = parse3DAnimation(await getAction(animationAction))
 
     const animationActors = new Map<string, AnimationActor>()
 
@@ -365,7 +370,7 @@ export abstract class World {
     const audioActions = children.filter(c => c.fileType === Action.FileType.WAV && c.presenter === null)
 
     const pointAtCameraObjects: THREE.Object3D[] = []
-    const extra = getExtraValue(animationActions[0], 'ptatcam')
+    const extra = getExtraValue(animationAction, 'ptatcam')
     if (extra != null) {
       for (const name of splitExtraValue(extra)) {
         const object = Array.from(animationActors.entries())
@@ -412,8 +417,14 @@ export abstract class World {
       }, [] as FaceAnimation[])
       .map(a => ({ ...a, animations: a.animations.sort((a, b) => b.start - a.start) }))
 
-    location ??= new THREE.Vector3(-animationActions[0].location[0], animationActions[0].location[1], animationActions[0].location[2])
-    const tracks = [...animationToTracks(animation.tree, animationActors, location), ...(extraTracks ?? [])]
+    const animationTransform = new THREE.Matrix4()
+    calculateTransformationMatrix([-animationAction.location[0], animationAction.location[1], animationAction.location[2]], [-animationAction.direction[0], animationAction.direction[1], animationAction.direction[2]], [-animationAction.up[0], animationAction.up[1], animationAction.up[2]], animationTransform)
+
+    if (location != null) {
+      animationTransform.setPosition(location)
+    }
+
+    const tracks = [...animationToTracks(animation.tree, animationActors, animationTransform), ...(extraTracks ?? [])]
 
     if (animation.cameraAnimation != null) {
       const cameraTranslationValues: number[] = []
@@ -423,7 +434,7 @@ export abstract class World {
           throw new Error('Camera translation key has unsupported flags')
         }
 
-        cameraTranslationValues.push(...new THREE.Vector3(...key.vertex).add(location).toArray())
+        cameraTranslationValues.push(...new THREE.Vector3(...key.vertex).applyMatrix4(animationTransform).toArray())
         cameraTranslationTimes.push(key.timeAndFlags.time)
       }
       if (cameraTranslationTimes.length > 0) {
@@ -440,9 +451,12 @@ export abstract class World {
         tracks.push(new THREE.NumberKeyframeTrack('camera.rotation.z', cameraZRotationTimes, cameraZRotationValues))
       }
     }
-    const lookAtKeys = animation.cameraAnimation?.lookAtKeys?.map(key => ({ ...key, vertex: new THREE.Vector3(...key.vertex).add(location).toArray() }))
+    const lookAtKeys = animation.cameraAnimation?.lookAtKeys?.map(key => ({ ...key, vertex: new THREE.Vector3(...key.vertex).applyMatrix4(animationTransform).toArray() }))
 
-    return { animation, animationActors, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, location, loop: animationActions[0].presenter === 'LegoLoopingAnimPresenter' ? THREE.LoopRepeat : THREE.LoopOnce }
+    location = new THREE.Vector3()
+    animationTransform.decompose(location, new THREE.Quaternion(), new THREE.Vector3())
+
+    return { animation, animationActors, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, location, loop: animationAction.presenter === 'LegoLoopingAnimPresenter' ? THREE.LoopRepeat : THREE.LoopOnce }
   }
 
   public async playAnimation(action: RunAnimationAction | AnimationAction, { location, unskippable, lockCamera, extraTracks }: { location?: THREE.Vector3; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<void> {

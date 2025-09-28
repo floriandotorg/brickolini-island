@@ -46,7 +46,7 @@ const getWdb = async (): Promise<WDB.File> => {
   return wdb
 }
 
-export const calculateTransformationMatrix = (location: [number, number, number], direction: [number, number, number], up: [number, number, number], matrix?: THREE.Matrix4): THREE.Matrix4 => {
+export const calculateTransformationMatrix = (location: readonly [number, number, number], direction: readonly [number, number, number], up: readonly [number, number, number], matrix?: THREE.Matrix4): THREE.Matrix4 => {
   const locationVector = new THREE.Vector3(...location)
   const dir = new THREE.Vector3(...direction)
   if (dir.lengthSq() === 0) {

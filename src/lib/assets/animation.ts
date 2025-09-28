@@ -74,7 +74,7 @@ export const createAnimationActor = (type: WDB.ActorType, actor: THREE.Object3D,
   }
 }
 
-export const animationToTracks = (animation: Animation3DNode, actors: Map<string, AnimationActor>, offset: THREE.Vector3 = new THREE.Vector3()): THREE.KeyframeTrack[] => {
+export const animationToTracks = (animation: Animation3DNode, actors: Map<string, AnimationActor>, baseTransform = new THREE.Matrix4()): THREE.KeyframeTrack[] => {
   const position = new THREE.Vector3()
   const quaternion = new THREE.Quaternion()
   const scale = new THREE.Vector3()
@@ -105,7 +105,7 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
     return uuid
   }
 
-  const getTransform = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name: string, parent: THREE.Matrix4 = new THREE.Matrix4(), path: string[] = []): void => {
+  const getTransform = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name: string, parent: THREE.Matrix4, path: string[] = []): void => {
     const push = (key: string, values: number[]) => {
       const existing = valueMap.get(key)
       if (existing == null) {
@@ -180,10 +180,10 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
       if (Math.abs(scale.x) < 1e-8 || Math.abs(scale.y) < 1e-8 || Math.abs(scale.z) < 1e-8) {
         quaternion.copy(new THREE.Quaternion())
       }
-      if (Number.isNaN(position.x) || Number.isNaN(position.y) || Number.isNaN(position.z) || Number.isNaN(quaternion.x) || Number.isNaN(quaternion.y) || Number.isNaN(quaternion.z) || Number.isNaN(quaternion.w) || Number.isNaN(scale.x) || Number.isNaN(scale.y) || Number.isNaN(scale.z)) {
+      if (import.meta.env.DEV && (Number.isNaN(position.x) || Number.isNaN(position.y) || Number.isNaN(position.z) || Number.isNaN(quaternion.x) || Number.isNaN(quaternion.y) || Number.isNaN(quaternion.z) || Number.isNaN(quaternion.w) || Number.isNaN(scale.x) || Number.isNaN(scale.y) || Number.isNaN(scale.z))) {
         throw new Error('NaN in transform')
       }
-      push(`${uuid}.position`, position.add(offset).toArray())
+      push(`${uuid}.position`, position.toArray())
       push(`${uuid}.quaternion`, quaternion.toArray())
       push(`${uuid}.scale`, scale.toArray())
     }
@@ -210,7 +210,7 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
   }
   const valueMap = new Map<string, number[]>()
   for (const time of times) {
-    getTransform(animation, time, valueMap, animation.name)
+    getTransform(animation, time, valueMap, animation.name, baseTransform)
   }
 
   const timesSec = times.map(t => t / 1_000)
