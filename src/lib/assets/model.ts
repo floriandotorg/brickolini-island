@@ -74,10 +74,33 @@ export const calculateTransformationMatrix = (location: readonly [number, number
   return transformationMatrix
 }
 
-const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animation.Node | undefined, path: string[] = []): Promise<THREE.Object3D[]> => {
-  const result: THREE.Object3D[] = []
+export class BoundingSphere {
+  public constructor(
+    public readonly radius: number,
+    public readonly center: THREE.Vector3,
+  ) {}
 
-  const parent = new THREE.Mesh()
+  public intersect(other: BoundingSphere): boolean {
+    const distanceSquared = other.center.distanceToSquared(this.center)
+    return distanceSquared < this.radius * this.radius
+  }
+}
+
+export class Roi3D extends THREE.Mesh {
+  public boundingSphere = new BoundingSphere(0, new THREE.Vector3(0, 0, 0))
+
+  public getWorldBoundingSphere(): BoundingSphere {
+    const worldCenter = this.getWorldPosition(new THREE.Vector3())
+    worldCenter.add(this.boundingSphere.center)
+    return new BoundingSphere(this.boundingSphere.radius, worldCenter)
+  }
+}
+
+const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animation.Node | undefined, path: string[] = []): Promise<Roi3D[]> => {
+  const result: Roi3D[] = []
+
+  const parent = new Roi3D()
+  parent.boundingSphere = new BoundingSphere(roi.boundingSphere.radius, new THREE.Vector3(...roi.boundingSphere.center))
   parent.name = [...path, roi.name.toLowerCase()].join('_')
   result.push(parent)
 
