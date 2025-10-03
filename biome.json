@@ -27,7 +27,8 @@
         "noGlobalIsNan": "error"
       },
       "complexity": {
-        "noUselessEscapeInRegex": "error"
+        "noUselessEscapeInRegex": "error",
+        "useOptionalChain": "error"
       },
       "style": {
         "useCollapsedIf": "error",
