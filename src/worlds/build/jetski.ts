@@ -1,11 +1,11 @@
 import * as THREE from 'three'
-import { _StartUp, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Bitmap } from '../../actions/jetski'
+import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Bitmap, Gray_Ctl, Green_Ctl, Red_Ctl, Yellow_Ctl } from '../../actions/jetski'
 import { JetskiBuild_Flic, JetskiBuild_Music } from '../../actions/jukebox'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
 import { Building } from '../../lib/world/building'
 import { World } from '../../lib/world/world'
-import { buildDecalMap, Carbuild } from './carbuild'
+import { buildColorControls, buildDecalMap, Carbuild } from './carbuild'
 
 export class Jetski extends World {
   private _building = new Building()
@@ -48,7 +48,8 @@ export class Jetski extends World {
       ['JSFRNT', ['Decals_Ctl', 'Decals_Ctl1', 'Decals_Ctl2', 'Decals_Ctl3']],
       ['JSWNSH', ['Decals_Ctl4', 'Decals_Ctl5', 'Decals_Ctl6', 'Decals_Ctl7']],
     ])
-    this._carbuild = await Carbuild.create(this, this._building, displayPosition, ColorBook_Bitmap, Decal_Bitmap, decalMap, Build_Anim0, Build_Anim1, Build_Anim2)
+    const colorControls = buildColorControls(this._building, Yellow_Ctl, Red_Ctl, Blue_Ctl, Green_Ctl, Gray_Ctl, Black_Ctl)
+    this._carbuild = await Carbuild.create(this, this._building, displayPosition, { background: ColorBook_Bitmap, colors: colorControls }, Decal_Bitmap, decalMap, Build_Anim0, Build_Anim1, Build_Anim2)
 
     this._building.onButtonClicked = (buttonName, _) => {
       if (this._carbuild == null) {
