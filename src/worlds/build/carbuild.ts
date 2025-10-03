@@ -316,9 +316,12 @@ export class Carbuild {
 
   private _displayPart(): void {
     if (this._state.state === 'selected' || this._state.state === 'dragging') {
-      if (this._state.state === 'selected' && this._state.displayedPartState?.part === this._state.selectedPartState.part) {
-        this._returnToShelf()
-        return
+      if (this._state.state === 'selected' && this._state.displayedPartState != null) {
+        if (this._state.displayedPartState.part === this._state.selectedPartState.part) {
+          this._returnToShelf()
+          return
+        }
+        this._returnPartToShelf()
       }
       const partState = this._state.selectedPartState
       this._state = { state: 'displaying', partState }
