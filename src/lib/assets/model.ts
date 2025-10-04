@@ -86,8 +86,9 @@ export class BoundingSphere {
   }
 }
 
-export class Roi3D extends THREE.Mesh {
+export class Roi3D extends THREE.Group {
   public boundingSphere = new BoundingSphere(0, new THREE.Vector3(0, 0, 0))
+  public offsetIndex = 0
 
   public getWorldBoundingSphere(): BoundingSphere {
     const worldCenter = this.getWorldPosition(new THREE.Vector3())
@@ -99,6 +100,7 @@ export class Roi3D extends THREE.Mesh {
     super.copy(object, recursive)
     if (object instanceof Roi3D) {
       this.boundingSphere = object.boundingSphere
+      this.offsetIndex = object.offsetIndex
     }
     return this
   }
@@ -167,6 +169,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
   })()
   const lod = lods?.at(-1)
   if (lod != null) {
+    parent.offsetIndex = lod.meshesBeforeOffset.length
     const customColor: WDB.Color | null = colorFromName(roi.textureName)
     const meshes: THREE.Mesh[] = []
     let n = 0

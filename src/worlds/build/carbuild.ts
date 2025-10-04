@@ -228,6 +228,7 @@ export class Carbuild {
             child.quaternion.copy(wiredNode.rotationKeys[0].quaternion)
           }
           child.updateMatrix()
+          child.offsetIndex = 0
           colorMesh(child, highlightColor)
           wiredParts.push(child)
           break

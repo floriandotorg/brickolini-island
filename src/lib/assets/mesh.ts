@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { engine } from '../engine'
 import { getSettings } from '../settings'
 import { getFileUrl, manager } from './load'
+import { Roi3D } from './model'
 import { WDB } from './wdb'
 
 export const textureLoader = new THREE.TextureLoader(manager)
@@ -107,7 +108,8 @@ export const colorMesh = (object: THREE.Object3D, color: THREE.Color): void => {
     object.material.color = color
     object.castShadow = false
   }
-  for (const child of object.children) {
+  const children = object instanceof Roi3D ? object.children.slice(object.offsetIndex) : object.children
+  for (const child of children) {
     colorMesh(child, color)
   }
 }
