@@ -94,6 +94,14 @@ export class Roi3D extends THREE.Mesh {
     worldCenter.add(this.boundingSphere.center)
     return new BoundingSphere(this.boundingSphere.radius, worldCenter)
   }
+
+  public override copy(object: THREE.Object3D, recursive?: boolean): this {
+    super.copy(object, recursive)
+    if (object instanceof Roi3D) {
+      this.boundingSphere = object.boundingSphere
+    }
+    return this
+  }
 }
 
 const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animation.Node | undefined, path: string[] = []): Promise<Roi3D[]> => {
