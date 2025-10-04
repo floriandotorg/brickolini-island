@@ -9,7 +9,7 @@ import { engine } from '../../lib/engine'
 import type { Building } from '../../lib/world/building'
 import type { BuiltAnimation, World } from '../../lib/world/world'
 
-type Part = { readonly wired: Roi3D; readonly shelfPart: Roi3D; readonly shelfGroup: THREE.Group; readonly placed: THREE.Object3D }
+type Part = { readonly wired: Roi3D; readonly shelfPart: Roi3D; readonly shelfGroup: THREE.Group; readonly placed: THREE.Object3D; readonly objectType: ObjectType; readonly basename: string }
 
 enum ObjectType {
   Shelf,
@@ -84,34 +84,34 @@ export const buildColorControls = (building: Building, ...actions: ControlAction
 export type ColorControls = { background: ImageAction; colors: Control[] }
 
 type PartState = {
-  part: Part
-  originalPosition: THREE.Vector3
+  readonly part: Part
+  readonly originalPosition: THREE.Vector3
 }
 
 type PartDisplayed = {
-  state: 'displaying'
-  partState: PartState
+  readonly state: 'displaying'
+  readonly partState: PartState
 }
 
 type Idle = {
-  state: 'idle'
+  readonly state: 'idle'
 }
 
 type ShelfMoving = {
-  state: 'shelfMoving'
+  readonly state: 'shelfMoving'
 }
 
 type PartSelected = {
-  state: 'selected'
-  selectedPartState: PartState
-  displayedPartState: PartState | null
+  readonly state: 'selected'
+  readonly selectedPartState: PartState
+  readonly displayedPartState: PartState | null
 }
 
 type PartDragging = {
-  state: 'dragging'
-  selectedPartState: PartState
-  startQuarternion: THREE.Quaternion
-  endQuarternion: THREE.Quaternion
+  readonly state: 'dragging'
+  readonly selectedPartState: PartState
+  readonly startQuarternion: THREE.Quaternion
+  readonly endQuarternion: THREE.Quaternion
 }
 
 type States = PartDisplayed | Idle | ShelfMoving | PartSelected | PartDragging
@@ -186,11 +186,11 @@ export class Carbuild {
       }
     }
 
-    const shelfParts = new Map<string, { child: Roi3D; childGroup: THREE.Group }>()
+    const shelfParts = new Map<string, { readonly shelfPart: Roi3D; readonly shelfGroup: THREE.Group; readonly objectType: ObjectType }>()
     const wiredParts: Roi3D[] = []
     for (const child of [...world.worldGroup.children]) {
-      console.log(`${child.name} => ${ObjectType[determineObjectType(child.name)]}`)
-      switch (determineObjectType(child.name)) {
+      const objectType = determineObjectType(child.name)
+      switch (objectType) {
         case ObjectType.Shelf:
           numberOfShelves++
           console.log(`Shelf ${numberOfShelves}'s uuid: ${child.uuid}`)
@@ -204,7 +204,6 @@ export class Carbuild {
             throw new Error(`Could not find animation node for ${child.name}`)
           }
           animation.tracks = animation.tracks.filter(track => !track.name.startsWith(child.uuid))
-          child.removeFromParent()
           this._highlightPlatform.add(child)
           child.position.copy(getPosition(wiredNode))
           if (wiredNode.rotationKeys.length > 0) {
@@ -221,17 +220,16 @@ export class Carbuild {
             throw new Error(`Object3D named '${child.name}' is not an instance of Roi3D`)
           }
           // Wrap this object in another group to make it invisible without the animation interfering
-          child.removeFromParent()
-          const childGroup = new THREE.Group()
-          childGroup.add(child)
-          childGroup.visible = true
-          world.worldGroup.add(childGroup)
+          const shelfGroup = new THREE.Group()
+          shelfGroup.add(child)
+          shelfGroup.visible = true
+          world.worldGroup.add(shelfGroup)
 
-          const matchName = child.name.slice(0, -2).toLowerCase()
-          if (shelfParts.has(matchName)) {
+          const basename = child.name.slice(0, -2).toLowerCase()
+          if (shelfParts.has(basename)) {
             throw new Error(`Shelf part for ${child.name} is already defined`)
           }
-          shelfParts.set(matchName, { child, childGroup })
+          shelfParts.set(basename, { shelfPart: child, shelfGroup, objectType })
           break
         }
       }
@@ -242,18 +240,18 @@ export class Carbuild {
 
     wiredParts.sort((a, b) => saveAt(a.name, -1).localeCompare(saveAt(b.name, -1)))
 
-    for (const wiredPart of wiredParts) {
-      const matchName = wiredPart.name.slice(0, -2).toLowerCase()
-      const shelfItem = shelfParts.get(matchName)
+    for (const wired of wiredParts) {
+      const basename = wired.name.slice(0, -2).toLowerCase()
+      const shelfItem = shelfParts.get(basename)
       if (shelfItem == null) {
-        throw new Error(`No shelf part for ${wiredPart.name} found`)
+        throw new Error(`No shelf part for ${wired.name} found`)
       }
-      const { child: shelfPart, childGroup: shelfGroup } = shelfItem
+      const { shelfPart, shelfGroup, objectType } = shelfItem
       const placed = shelfPart.clone()
       placed.visible = false
-      wiredPart.matrix.decompose(placed.position, placed.quaternion, placed.scale)
+      wired.matrix.decompose(placed.position, placed.quaternion, placed.scale)
       this._buildPlatform.add(placed)
-      const part = { wired: wiredPart, shelfPart, shelfGroup, placed }
+      const part = { wired, shelfPart, shelfGroup, placed, objectType, basename }
       this._parts.push(part)
     }
 
@@ -384,12 +382,12 @@ export class Carbuild {
         // when a part is displayed and clicked, it needs to use that information
         const partState = displayedPart?.part === part ? displayedPart : { part, originalPosition: part.shelfPart.position.clone() }
         this._state = { state: 'selected', selectedPartState: partState, displayedPartState: displayedPart }
-        this._setColorVisibility(determineObjectType(part.shelfPart.name) === ObjectType.Colored)
+        this._setColorVisibility(part.objectType === ObjectType.Colored)
         if (this._decalBackground != null) {
           this._decalBackground.visible = false
         }
         for (const [partName, controls] of this._decals) {
-          const validDecal = part.shelfPart.name.slice(0, -2).toLowerCase().endsWith(partName.toLowerCase())
+          const validDecal = part.basename.endsWith(partName.toLowerCase())
           for (const control of controls) {
             control.visible = validDecal
           }
