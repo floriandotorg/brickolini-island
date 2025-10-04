@@ -35,7 +35,7 @@ export class Copter extends World {
 
     // TODO: Get "VIEW" transformation from the model's animation
     const displayPosition = new THREE.Vector3(1.31, 1.7, 5.11)
-    const decalMap = buildDecalMap(this._building, [['chljety', ['Decals_Ctl1']], ['chrjety', ['Decals_Ctl2']], 'chwindy'])
+    const decalMap = buildDecalMap(this._building, [['chljet', ['Decals_Ctl1']], ['chrjet', ['Decals_Ctl2']], 'chwind'])
     const colorControls = buildColorControls(this._building, Yellow_Ctl, Red_Ctl, Blue_Ctl, Green_Ctl, Gray_Ctl, Black_Ctl)
     this._carbuild = await Carbuild.create(this, this._building, displayPosition, { background: ColorBook_Bitmap, colors: colorControls }, null, decalMap, Build_Anim0, Build_Anim1, Build_Anim2)
 
