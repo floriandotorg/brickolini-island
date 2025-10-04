@@ -9,7 +9,7 @@ import { engine } from '../../lib/engine'
 import type { Building } from '../../lib/world/building'
 import type { BuiltAnimation, World } from '../../lib/world/world'
 
-type Part = { readonly wired: Roi3D; readonly shelfPart: Roi3D; readonly shelfGroup: THREE.Group; readonly placed: THREE.Object3D; readonly objectType: ObjectType; readonly basename: string }
+type Part = { readonly wired: Roi3D; readonly shelfPart: Roi3D; readonly shelfGroup: THREE.Group; readonly clone: Roi3D; readonly objectType: ObjectType; readonly basename: string }
 
 enum ObjectType {
   Shelf,
@@ -48,6 +48,27 @@ const saveAt = (text: string, index: number): string => {
   return result
 }
 
+export class RayClick {
+  private readonly _raycaster = new THREE.Raycaster()
+
+  public constructor(public camera: THREE.Camera) {}
+
+  public pointerDown<T>(normalizedX: number, normalizedY: number, objects: T[], map: (t: T) => THREE.Object3D): T | undefined {
+    this._raycaster.setFromCamera(new THREE.Vector2(normalizedX, normalizedY), this.camera)
+    for (const intersection of this._raycaster.intersectObjects(objects.map(map))) {
+      let hit: THREE.Object3D | null = intersection.object
+      while (hit != null) {
+        const matchedObject = objects.find(object => map(object) === hit)
+        if (hit.visible && matchedObject != null) {
+          return matchedObject
+        }
+        hit = hit.parent
+      }
+    }
+    return undefined
+  }
+}
+
 export const buildDecalMap = (building: Building, partControlMap: ([string, string[]] | string)[]): Map<string, Control[]> => {
   const decalMap = new Map<string, Control[]>()
   for (const item of partControlMap) {
@@ -83,14 +104,9 @@ export const buildColorControls = (building: Building, ...actions: ControlAction
 
 export type ColorControls = { background: ImageAction; colors: Control[] }
 
-type PartState = {
-  readonly part: Part
-  readonly originalPosition: THREE.Vector3
-}
-
 type PartDisplayed = {
   readonly state: 'displaying'
-  readonly partState: PartState
+  readonly part: Part
 }
 
 type Idle = {
@@ -103,13 +119,13 @@ type ShelfMoving = {
 
 type PartSelected = {
   readonly state: 'selected'
-  readonly selectedPartState: PartState
-  readonly displayedPartState: PartState | null
+  readonly selectedPart: Part
+  readonly displayedPart: Part | null
 }
 
 type PartDragging = {
   readonly state: 'dragging'
-  readonly selectedPartState: PartState
+  readonly selectedPart: Part
   readonly startQuarternion: THREE.Quaternion
   readonly endQuarternion: THREE.Quaternion
 }
@@ -133,7 +149,7 @@ export class Carbuild {
   private readonly _highlightPlatform = new THREE.Group()
   private readonly _displayPosition
   private readonly _displayGroup = new THREE.Group()
-  private readonly _raycaster = new THREE.Raycaster()
+  private readonly _rayclick: RayClick
   private _state: States = IdleState
   private _animation: { duration: number; interval: number; clip: THREE.AnimationClip } | null = null
   private shelfAnimationTime: number = 0
@@ -185,6 +201,8 @@ export class Carbuild {
         control.visible = false
       }
     }
+
+    this._rayclick = new RayClick(this._world.camera)
 
     const shelfParts = new Map<string, { readonly shelfPart: Roi3D; readonly shelfGroup: THREE.Group; readonly objectType: ObjectType }>()
     const wiredParts: Roi3D[] = []
@@ -247,12 +265,11 @@ export class Carbuild {
         throw new Error(`No shelf part for ${wired.name} found`)
       }
       const { shelfPart, shelfGroup, objectType } = shelfItem
-      const placed = shelfPart.clone()
-      placed.visible = false
-      wired.matrix.decompose(placed.position, placed.quaternion, placed.scale)
-      this._buildPlatform.add(placed)
-      const part = { wired, shelfPart, shelfGroup, placed, objectType, basename }
-      this._parts.push(part)
+      const clone = shelfPart.clone()
+      clone.visible = false
+      shelfGroup.add(clone)
+      const partObjects = { wired, shelfPart, shelfGroup, clone, objectType, basename }
+      this._parts.push(partObjects)
     }
 
     console.log(animation.animation.tree)
@@ -284,20 +301,23 @@ export class Carbuild {
   }
 
   private _returnPartToShelf(): boolean {
-    const returnPartToShelf = (partState: PartState): void => {
-      partState.part.shelfPart.removeFromParent()
-      partState.part.shelfGroup.add(partState.part.shelfPart)
-      partState.part.shelfPart.position.copy(partState.originalPosition)
+    const returnPartToShelf = (part: Part): void => {
+      const index = this._parts.indexOf(part)
+      part.shelfGroup.visible = index >= this._part
+      part.clone.visible = false
     }
 
     switch (this._state.state) {
       case 'dragging':
-        returnPartToShelf(this._state.selectedPartState)
+        returnPartToShelf(this._state.selectedPart)
         return true
       case 'selected':
-        if (this._state.displayedPartState != null) {
-          returnPartToShelf(this._state.displayedPartState)
+        if (this._state.displayedPart != null) {
+          returnPartToShelf(this._state.displayedPart)
         }
+        return true
+      case 'displaying':
+        returnPartToShelf(this._state.part)
         return true
       default:
         return false
@@ -305,25 +325,25 @@ export class Carbuild {
   }
 
   private _takePartFromShelf(part: Part): void {
-    part.shelfPart.removeFromParent()
-    part.shelfPart.position.set(0, 0, 0)
-    this._displayGroup.add(part.shelfPart)
+    part.shelfGroup.visible = false
+    part.clone.visible = true
+    part.clone.quaternion.copy(part.shelfPart.quaternion)
     this._displayGroup.position.copy(this._displayPosition)
     this._displayGroup.quaternion.identity()
   }
 
   private _displayPart(): void {
     if (this._state.state === 'selected' || this._state.state === 'dragging') {
-      if (this._state.state === 'selected' && this._state.displayedPartState != null) {
-        if (this._state.displayedPartState.part === this._state.selectedPartState.part) {
+      if (this._state.state === 'selected' && this._state.displayedPart != null) {
+        if (this._state.displayedPart === this._state.selectedPart) {
           this._returnToShelf()
           return
         }
         this._returnPartToShelf()
       }
-      const partState = this._state.selectedPartState
-      this._state = { state: 'displaying', partState }
-      this._takePartFromShelf(partState.part)
+      const part = this._state.selectedPart
+      this._state = { state: 'displaying', part }
+      this._takePartFromShelf(part)
     }
   }
 
@@ -353,9 +373,15 @@ export class Carbuild {
 
   private updateParts(): void {
     for (const [index, part] of this._parts.entries()) {
-      part.placed.visible = index < this._part
-      part.shelfGroup.visible = !part.placed.visible
+      part.clone.visible = index < this._part
+      part.shelfGroup.visible = !part.clone.visible
       part.wired.visible = index === this._part
+      if (part.clone.visible) {
+        part.wired.matrix.decompose(part.clone.position, part.clone.quaternion, part.clone.scale)
+        this._buildPlatform.add(part.clone)
+      } else {
+        this._displayGroup.add(part.clone)
+      }
     }
   }
 
@@ -372,32 +398,35 @@ export class Carbuild {
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): void {
-    this._raycaster.setFromCamera(new THREE.Vector2(normalizedX, normalizedY), this._world.camera)
-    let hit: THREE.Object3D | null = this._raycaster.intersectObjects(this._parts.map(part => part.shelfPart))[0]?.object
-    while (hit != null) {
-      const part = this._parts.find(part => part.shelfPart === hit)
-      if (hit.visible && part != null) {
-        // when a part is displayed, also store it information
-        const displayedPart = this._state.state === 'displaying' ? this._state.partState : null
-        // when a part is displayed and clicked, it needs to use that information
-        const partState = displayedPart?.part === part ? displayedPart : { part, originalPosition: part.shelfPart.position.clone() }
-        this._state = { state: 'selected', selectedPartState: partState, displayedPartState: displayedPart }
-        this._setColorVisibility(part.objectType === ObjectType.Colored)
-        if (this._decalBackground != null) {
-          this._decalBackground.visible = false
-        }
-        for (const [partName, controls] of this._decals) {
-          const validDecal = part.basename.endsWith(partName.toLowerCase())
-          for (const control of controls) {
-            control.visible = validDecal
-          }
-          if (validDecal && this._decalBackground != null) {
-            this._decalBackground.visible = true
-          }
-        }
+    let part = this._rayclick.pointerDown(normalizedX, normalizedY, this._parts, part => part.clone)
+    if (part == null) {
+      part = this._rayclick.pointerDown(normalizedX, normalizedY, this._parts, part => part.shelfPart)
+      // The shelf part may be visible, but not the group
+      if (part != null && !part.shelfGroup.visible) {
         return
       }
-      hit = hit.parent
+    } else if (this._parts.indexOf(part) < this._part) {
+      // TODO: Handle clicking on placed parts (clones)
+      return
+    }
+    if (part != null) {
+      // when a part is displayed, also store it information
+      const displayedPart = this._state.state === 'displaying' ? this._state.part : null
+      // when a part is displayed and clicked, it needs to use that information
+      this._state = { state: 'selected', selectedPart: part, displayedPart }
+      this._setColorVisibility(part.objectType === ObjectType.Colored)
+      if (this._decalBackground != null) {
+        this._decalBackground.visible = false
+      }
+      for (const [partName, controls] of this._decals) {
+        const validDecal = part.basename.endsWith(partName.toLowerCase())
+        for (const control of controls) {
+          control.visible = validDecal
+        }
+        if (validDecal && this._decalBackground != null) {
+          this._decalBackground.visible = true
+        }
+      }
     }
   }
 
@@ -414,8 +443,8 @@ export class Carbuild {
         this._displayPart()
         break
       case 'dragging': {
-        const part = this._state.selectedPartState.part
-        if (this._parts[this._part] === part && part.wired.getWorldBoundingSphere().intersect(part.shelfPart.getWorldBoundingSphere())) {
+        const part = this._state.selectedPart
+        if (this._parts[this._part] === part && part.wired.getWorldBoundingSphere().intersect(part.clone.getWorldBoundingSphere())) {
           this._returnToShelf()
           this.addPart()
           break
@@ -429,18 +458,18 @@ export class Carbuild {
   public pointerMove(normalizedX: number, normalizedY: number): void {
     if (this._state.state === 'selected') {
       // selection from shelf
-      if (this._state.displayedPartState == null || this._state.displayedPartState.part !== this._state.selectedPartState.part) {
+      if (this._state.displayedPart == null || this._state.displayedPart !== this._state.selectedPart) {
         // return the displayed part
         this._returnPartToShelf()
-        this._takePartFromShelf(this._state.selectedPartState.part)
+        this._takePartFromShelf(this._state.selectedPart)
       }
-      const partQuarternion = this._state.selectedPartState.part.shelfPart.quaternion.clone().invert()
-      const startQuarternion = this._state.selectedPartState.part.shelfPart.getWorldQuaternion(new THREE.Quaternion()).multiply(partQuarternion)
-      const endQuarternion = this._state.selectedPartState.part.wired.getWorldQuaternion(new THREE.Quaternion()).multiply(partQuarternion)
-      this._state = { state: 'dragging', selectedPartState: this._state.selectedPartState, startQuarternion, endQuarternion }
+      const partQuarternion = this._state.selectedPart.clone.quaternion.clone().invert()
+      const startQuarternion = this._state.selectedPart.clone.getWorldQuaternion(new THREE.Quaternion()).multiply(partQuarternion)
+      const endQuarternion = this._state.selectedPart.wired.getWorldQuaternion(new THREE.Quaternion()).multiply(partQuarternion)
+      this._state = { state: 'dragging', selectedPart: this._state.selectedPart, startQuarternion, endQuarternion }
     }
     if (this._state.state === 'dragging') {
-      const targetScreenCoords = this._state.selectedPartState.part.wired.getWorldPosition(new THREE.Vector3()).clone().project(this._world.camera)
+      const targetScreenCoords = this._state.selectedPart.wired.getWorldPosition(new THREE.Vector3()).clone().project(this._world.camera)
       const sourceScreenCoords = this._displayPosition.clone().project(this._world.camera)
       targetScreenCoords.z = 0
       sourceScreenCoords.z = 0
@@ -452,12 +481,12 @@ export class Carbuild {
         if (ratioY >= 0) {
           const alpha = Math.min(ratioY, 1)
           const normal = this._world.camera.getWorldDirection(new THREE.Vector3())
-          const targetPoint = this._state.selectedPartState.part.wired.getWorldPosition(new THREE.Vector3())
+          const targetPoint = this._state.selectedPart.wired.getWorldPosition(new THREE.Vector3())
           const planePoint = targetPoint.clone().lerp(this._displayPosition, alpha)
           return new THREE.Plane().setFromNormalAndCoplanarPoint(normal, planePoint)
         } else {
           const normal = this._world.camera.up
-          const planePoint = this._state.selectedPartState.part.wired.getWorldPosition(new THREE.Vector3())
+          const planePoint = this._state.selectedPart.wired.getWorldPosition(new THREE.Vector3())
           return new THREE.Plane().setFromNormalAndCoplanarPoint(normal, planePoint)
         }
       })()
