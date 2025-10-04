@@ -53,6 +53,10 @@ export class RayClick {
 
   public constructor(public camera: THREE.Camera) {}
 
+  public pointerDown1(normalizedX: number, normalizedY: number, objects: THREE.Object3D[]): THREE.Object3D | undefined {
+    return this.pointerDown(normalizedX, normalizedY, objects, obj => obj)
+  }
+
   public pointerDown<T>(normalizedX: number, normalizedY: number, objects: T[], map: (t: T) => THREE.Object3D): T | undefined {
     this._raycaster.setFromCamera(new THREE.Vector2(normalizedX, normalizedY), this.camera)
     for (const intersection of this._raycaster.intersectObjects(objects.map(map))) {
@@ -91,18 +95,52 @@ export const buildDecalMap = (building: Building, partControlMap: ([string, stri
   return decalMap
 }
 
-// TODO: Maybe these two can be combined with another type which actually handles these controls and colors the parts
-export const buildColorControls = (building: Building, ...actions: ControlAction[]): Control[] => {
-  return actions.map(action => {
-    const control = building.getControl(action.name)
+export const buildColorControls = (background: ImageAction, building: Building, ...colors: { readonly action: ControlAction; readonly color: CustomColor }[]): CustomColorControls => {
+  const colorControls = colors.map(color => {
+    const control = building.getControl(color.action.name)
     if (control == null) {
-      throw new Error(`Cannot find color control ${action.name}`)
+      throw new Error(`Cannot find color control ${color.action.name}`)
     }
-    return control
+    return { control, color: color.color }
   })
+  return new CustomColorControls(background, colorControls)
 }
 
-export type ColorControls = { background: ImageAction; colors: Control[] }
+export type CustomColorControl = { readonly control: Control; readonly color: CustomColor }
+export type CustomColor = 'lego yellow' | 'lego red' | 'lego blue' | 'lego green' | 'lego white' | 'lego black'
+
+export class CustomColorControls {
+  public readonly background: THREE.Sprite
+  private readonly _colors: CustomColorControl[]
+  private _visible: boolean = false
+
+  public constructor(background: ImageAction, colors: CustomColorControl[]) {
+    this.background = createImageSprite(background, -0.75)
+    this._colors = colors
+    this.visible = false
+  }
+
+  public get visible(): boolean {
+    return this._visible
+  }
+
+  public set visible(value: boolean) {
+    this._visible = value
+    this.background.visible = value
+    for (const { control } of this._colors) {
+      control.visible = value
+    }
+  }
+
+  public getColor(buttonName: string): CustomColor | undefined {
+    for (const { control, color } of this._colors) {
+      if (control.name.toLowerCase() === buttonName.toLowerCase()) {
+        return color
+      }
+    }
+    return undefined
+  }
+}
 
 type PartDisplayed = {
   readonly state: 'displaying'
@@ -141,8 +179,7 @@ export class Carbuild {
   private readonly _world: World
   private readonly _parts: Part[] = []
   private _part = 0
-  private readonly _colorBackground: THREE.Sprite
-  private readonly _colorControls: Control[]
+  private readonly _colorControls: CustomColorControls
   private readonly _decalBackground: THREE.Sprite | null
   private readonly _decals: Map<string, Control[]>
   private readonly _buildPlatform = new THREE.Group()
@@ -156,12 +193,12 @@ export class Carbuild {
 
   public rotating = false
 
-  public static async create(world: World, building: Building, displayPosition: THREE.Vector3, colorControls: ColorControls, decalBackground: ImageAction | null, decals: Map<string, Control[]>, ...animations: AnimationAction[]): Promise<Carbuild> {
+  public static async create(world: World, building: Building, displayPosition: THREE.Vector3, colorControls: CustomColorControls, decalBackground: ImageAction | null, decals: Map<string, Control[]>, ...animations: AnimationAction[]): Promise<Carbuild> {
     const animation = await world.buildAnimation(animations[Math.floor(Math.random() * animations.length)])
     return new Carbuild(world, building, displayPosition, colorControls, decalBackground, decals, animation)
   }
 
-  private constructor(world: World, building: Building, displayPosition: THREE.Vector3, colorControls: ColorControls, decalBackground: ImageAction | null, decals: Map<string, Control[]>, animation: BuiltAnimation) {
+  private constructor(world: World, building: Building, displayPosition: THREE.Vector3, colorControls: CustomColorControls, decalBackground: ImageAction | null, decals: Map<string, Control[]>, animation: BuiltAnimation) {
     this._world = world
     world.setupCameraForAnimation(animation.animation.tree)
     // In theory the "number of shelves" is determined by using the translation keys of the "first" shelf it encounters and subtracting one
@@ -182,10 +219,8 @@ export class Carbuild {
     this._displayGroup.updateMatrix()
     this._world.scene.add(this._displayGroup)
 
-    this._colorBackground = createImageSprite(colorControls.background, -0.75)
-    this._colorBackground.visible = false
-    building.scene.add(this._colorBackground)
-    this._colorControls = colorControls.colors
+    this._colorControls = colorControls
+    building.scene.add(this._colorControls.background)
 
     if (decalBackground != null) {
       this._decalBackground = createImageSprite(decalBackground, -0.75)
@@ -289,7 +324,7 @@ export class Carbuild {
   private _returnToShelf(): void {
     if (this._returnPartToShelf()) {
       this._state = IdleState
-      this._setColorVisibility(false)
+      this._colorControls.visible = false
       if (this._decalBackground != null) {
         this._decalBackground.visible = false
       }
@@ -355,6 +390,25 @@ export class Carbuild {
     }
   }
 
+  private _colorCurrentPart(color: CustomColor): void {
+    const part: Part | undefined = (() => {
+      switch (this._state.state) {
+        case 'displaying':
+          return this._state.part
+        case 'dragging':
+        case 'selected':
+          return this._state.selectedPart
+        default:
+          return undefined
+      }
+    })()
+    if (part != null) {
+      const threeColor = toThreeColor(colorAliases[color])
+      colorMesh(part.shelfPart, threeColor)
+      colorMesh(part.clone, threeColor)
+    }
+  }
+
   public async shelveUp(): Promise<void> {
     if (this._state.state !== 'shelfMoving' && this._animation != null && this._animation.interval > 0) {
       this._returnToShelf()
@@ -415,7 +469,7 @@ export class Carbuild {
       const displayedPart = this._state.state === 'displaying' ? this._state.part : null
       // when a part is displayed and clicked, it needs to use that information
       this._state = { state: 'selected', selectedPart: part, displayedPart }
-      this._setColorVisibility(part.objectType === ObjectType.Colored)
+      this._colorControls.visible = part.objectType === ObjectType.Colored
       if (this._decalBackground != null) {
         this._decalBackground.visible = false
       }
@@ -428,13 +482,6 @@ export class Carbuild {
           this._decalBackground.visible = true
         }
       }
-    }
-  }
-
-  private _setColorVisibility(visible: boolean): void {
-    this._colorBackground.visible = visible
-    for (const control of this._colorControls) {
-      control.visible = visible
     }
   }
 
@@ -517,8 +564,14 @@ export class Carbuild {
       case 'ShelfUp_Ctl':
         this.shelveUp()
         return true
-      default:
+      default: {
+        const customColor = this._colorControls.getColor(buttonName)
+        if (customColor != null) {
+          this._colorCurrentPart(customColor)
+          return true
+        }
         return false
+      }
     }
   }
 }

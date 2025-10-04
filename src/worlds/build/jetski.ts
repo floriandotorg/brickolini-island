@@ -48,8 +48,17 @@ export class Jetski extends World {
       ['JSFRNT', ['Decals_Ctl', 'Decals_Ctl1', 'Decals_Ctl2', 'Decals_Ctl3']],
       ['JSWNSH', ['Decals_Ctl4', 'Decals_Ctl5', 'Decals_Ctl6', 'Decals_Ctl7']],
     ])
-    const colorControls = buildColorControls(this._building, Yellow_Ctl, Red_Ctl, Blue_Ctl, Green_Ctl, Gray_Ctl, Black_Ctl)
-    this._carbuild = await Carbuild.create(this, this._building, displayPosition, { background: ColorBook_Bitmap, colors: colorControls }, Decal_Bitmap, decalMap, Build_Anim0, Build_Anim1, Build_Anim2)
+    const colorControls = buildColorControls(
+      ColorBook_Bitmap,
+      this._building,
+      { action: Yellow_Ctl, color: 'lego yellow' },
+      { action: Red_Ctl, color: 'lego red' },
+      { action: Blue_Ctl, color: 'lego blue' },
+      { action: Green_Ctl, color: 'lego green' },
+      { action: Gray_Ctl, color: 'lego white' },
+      { action: Black_Ctl, color: 'lego black' },
+    )
+    this._carbuild = await Carbuild.create(this, this._building, displayPosition, colorControls, Decal_Bitmap, decalMap, Build_Anim0, Build_Anim1, Build_Anim2)
 
     this._building.onButtonClicked = (buttonName, _) => {
       if (this._carbuild == null) {
