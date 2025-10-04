@@ -43,16 +43,7 @@ export class Dunecar extends World {
       if (this._carbuild == null) {
         return false
       }
-      switch (buttonName) {
-        case 'Platform_Ctl':
-          this._carbuild.rotating = true
-          return true
-        case 'ShelfUp_Ctl': {
-          this._carbuild.shelveUp()
-          return true
-        }
-      }
-      return false
+      return this._carbuild.handleControl(buttonName)
     }
   }
 

@@ -507,4 +507,17 @@ export class Carbuild {
       this._displayGroup.quaternion.copy(quaternion)
     }
   }
+
+  public handleControl(buttonName: string): boolean {
+    switch (buttonName) {
+      case 'Platform_Ctl':
+        this.rotating = true
+        return true
+      case 'ShelfUp_Ctl':
+        this.shelveUp()
+        return true
+      default:
+        return false
+    }
+  }
 }
