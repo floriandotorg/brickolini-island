@@ -279,7 +279,7 @@ export class Carbuild {
           shelfGroup.visible = true
           world.worldGroup.add(shelfGroup)
 
-          const basename = child.name.slice(0, -2).toLowerCase()
+          const basename = child.ownName.slice(0, -2).toLowerCase()
           if (shelfParts.has(basename)) {
             throw new Error(`Shelf part for ${child.name} is already defined`)
           }
@@ -295,7 +295,7 @@ export class Carbuild {
     wiredParts.sort((a, b) => saveAt(a.name, -1).localeCompare(saveAt(b.name, -1)))
 
     for (const wired of wiredParts) {
-      const basename = wired.name.slice(0, -2).toLowerCase()
+      const basename = wired.ownName.slice(0, -2).toLowerCase()
       const shelfItem = shelfParts.get(basename)
       if (shelfItem == null) {
         throw new Error(`No shelf part for ${wired.name} found`)

@@ -89,6 +89,7 @@ export class BoundingSphere {
 export class Roi3D extends THREE.Group {
   public boundingSphere = new BoundingSphere(0, new THREE.Vector3(0, 0, 0))
   public offsetIndex = 0
+  public ownName = ''
 
   public getWorldBoundingSphere(): BoundingSphere {
     const worldCenter = this.getWorldPosition(new THREE.Vector3())
@@ -101,6 +102,7 @@ export class Roi3D extends THREE.Group {
     if (object instanceof Roi3D) {
       this.boundingSphere = object.boundingSphere
       this.offsetIndex = object.offsetIndex
+      this.ownName = object.ownName
     }
     return this
   }
@@ -111,7 +113,8 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
 
   const parent = new Roi3D()
   parent.boundingSphere = new BoundingSphere(roi.boundingSphere.radius, new THREE.Vector3(...roi.boundingSphere.center))
-  parent.name = [...path, roi.name.toLowerCase()].join('_')
+  parent.ownName = roi.name.toLowerCase()
+  parent.name = [...path, parent.ownName].join('_')
   result.push(parent)
 
   if (animation) {
