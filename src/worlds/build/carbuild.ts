@@ -1,10 +1,11 @@
 import * as THREE from 'three'
-import type { AnimationAction, ControlAction, ImageAction } from '../../lib/action-types'
+import { type AnimationAction, type ControlAction, type ImageAction, isTextureAction } from '../../lib/action-types'
 import { type Animation3DNode, findRecursively } from '../../lib/assets/animation'
 import { createImageSprite } from '../../lib/assets/canvas-sprite'
 import type { Control, ControlEvent } from '../../lib/assets/control'
 import { colorAliases, colorMesh, toThreeColor } from '../../lib/assets/mesh'
 import { Roi3D } from '../../lib/assets/model'
+import { createTexture } from '../../lib/assets/texture'
 import { engine } from '../../lib/engine'
 import { getSettings } from '../../lib/settings'
 import type { Building } from '../../lib/world/building'
@@ -401,22 +402,15 @@ export class Carbuild {
     }
   }
 
-  private _colorCurrentPart(color: CustomColor): void {
-    const part: Part | undefined = (() => {
-      switch (this._state.state) {
-        case 'displaying':
-          return this._state.part
-        case 'dragging':
-        case 'selected':
-          return this._state.selectedPart
-        default:
-          return undefined
-      }
-    })()
-    if (part != null) {
-      const threeColor = toThreeColor(colorAliases[color])
-      colorMesh(part.shelfPart, threeColor)
-      colorMesh(part.clone, threeColor)
+  private get _currentPart(): Part | undefined {
+    switch (this._state.state) {
+      case 'displaying':
+        return this._state.part
+      case 'dragging':
+      case 'selected':
+        return this._state.selectedPart
+      default:
+        return undefined
     }
   }
 
@@ -567,7 +561,22 @@ export class Carbuild {
     }
   }
 
-  public handleControl(buttonName: string, _: ControlEvent): boolean {
+  private _replaceTexture(event: ControlEvent, object: Roi3D): void {
+    if (!isTextureAction(event.otherAction)) {
+      return
+    }
+    const textureAction = event.otherAction
+    object.traverse(object => {
+      if (object instanceof THREE.Mesh) {
+        const material = object.material
+        if (material.map != null) {
+          material.map = createTexture(textureAction)
+        }
+      }
+    })
+  }
+
+  public handleControl(buttonName: string, event: ControlEvent): boolean {
     switch (buttonName) {
       case 'Platform_Ctl':
         this.rotating = true
@@ -576,10 +585,25 @@ export class Carbuild {
         this.shelveUp()
         return true
       default: {
-        const customColor = this._colorControls.getColor(buttonName)
-        if (customColor != null) {
-          this._colorCurrentPart(customColor)
-          return true
+        const part: Part | undefined = this._currentPart
+        if (part != null) {
+          const decalControls = this._decals.get(part.basename)
+          if (decalControls != null) {
+            for (const decalControl of decalControls) {
+              if (decalControl.name === buttonName) {
+                this._replaceTexture(event, part.shelfPart)
+                this._replaceTexture(event, part.clone)
+                return true
+              }
+            }
+          }
+          const customColor = this._colorControls.getColor(buttonName)
+          if (customColor != null) {
+            const threeColor = toThreeColor(colorAliases[customColor])
+            colorMesh(part.shelfPart, threeColor)
+            colorMesh(part.clone, threeColor)
+            return true
+          }
         }
         return false
       }

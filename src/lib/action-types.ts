@@ -64,6 +64,8 @@ export const isControlAction = (action: unknown): action is ControlAction => isA
 
 export const isMeterAction = (action: unknown): action is MeterAction => isImageAction(action) && action.presenter === 'LegoMeterPresenter'
 
+export const isTextureAction = (action: unknown): action is TextureAction => isFileAction(action) && action.type === Action.Type.ObjectAction && action.presenter === 'LegoTexturePresenter'
+
 export const getExtraValue = (action: { extra: string | null }, key: string): string | undefined => {
   if (action.extra != null) {
     for (const part of action.extra.split(/[, \t\r\n]+/)) {
