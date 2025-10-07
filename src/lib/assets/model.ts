@@ -106,6 +106,18 @@ export class Roi3D extends THREE.Group {
     }
     return this
   }
+
+  public static traverseWithOffset(object: THREE.Object3D, callback: (object: THREE.Object3D) => void): void {
+    callback(object)
+    const children = object instanceof Roi3D ? object.children.slice(object.offsetIndex) : object.children
+    for (const child of children) {
+      Roi3D.traverseWithOffset(child, callback)
+    }
+  }
+
+  public traverseWithOffset(callback: (object: THREE.Object3D) => void): void {
+    Roi3D.traverseWithOffset(this, callback)
+  }
 }
 
 const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animation.Node | undefined, path: string[] = []): Promise<Roi3D[]> => {

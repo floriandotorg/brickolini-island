@@ -6,6 +6,7 @@ import type { Control } from '../../lib/assets/control'
 import { colorAliases, colorMesh, toThreeColor } from '../../lib/assets/mesh'
 import { Roi3D } from '../../lib/assets/model'
 import { engine } from '../../lib/engine'
+import { getSettings } from '../../lib/settings'
 import type { Building } from '../../lib/world/building'
 import type { BuiltAnimation, World } from '../../lib/world/world'
 
@@ -264,6 +265,16 @@ export class Carbuild {
           }
           child.updateMatrix()
           child.offsetIndex = 0
+          Roi3D.traverseWithOffset(child, object => {
+            if (object instanceof THREE.Mesh) {
+              if (getSettings().graphics.pbrMaterials) {
+                object.material = new THREE.MeshLambertMaterial({ flatShading: object.material.flatShading })
+                object.material.transparent = true
+                object.material.opacity = 0.95
+              }
+              object.castShadow = false
+            }
+          })
           colorMesh(child, highlightColor)
           wiredParts.push(child)
           break

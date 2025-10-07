@@ -98,21 +98,12 @@ export const toThreeColor = (color: WDB.Color): THREE.Color => {
   return new THREE.Color(color.red / 255, color.green / 255, color.blue / 255).convertSRGBToLinear()
 }
 
-export const colorMesh = (object: THREE.Object3D, color: THREE.Color): void => {
-  if (object instanceof THREE.Mesh) {
-    if (getSettings().graphics.pbrMaterials) {
-      object.material = new THREE.MeshLambertMaterial({ flatShading: object.material.flatShading })
-      object.material.transparent = true
-      object.material.opacity = 0.95
+export const colorMesh = (object: THREE.Object3D, color: THREE.Color): void =>
+  Roi3D.traverseWithOffset(object, object => {
+    if (object instanceof THREE.Mesh) {
+      object.material.color = color
     }
-    object.material.color = color
-    object.castShadow = false
-  }
-  const children = object instanceof Roi3D ? object.children.slice(object.offsetIndex) : object.children
-  for (const child of children) {
-    colorMesh(child, color)
-  }
-}
+  })
 
 const createTexture = (name: string, source: 'model' | 'part' | 'image'): THREE.Texture => {
   const sourceToPath = {
