@@ -5,28 +5,42 @@ import { setScaleAndPosition } from './canvas-sprite'
 import { getImage } from './image'
 import { createTexture } from './texture'
 
-type PlacedImage = { context: CanvasRenderingContext2D; action: ImageAction; normalizedX: number; normalizedY: number; normalizedWidth: number; normalizedHeight: number }
+type PlacedImage = { context: CanvasRenderingContext2D; action: ImageAndOtherAction; normalizedX: number; normalizedY: number; normalizedWidth: number; normalizedHeight: number }
 
 type ControlChild = ImageAction | ParallelActionTuple<readonly [ImageAction, ActionBase?]>
+type ImageAndOtherAction = { image: ImageAction; other?: ActionBase }
 
-const getImageAction = (action: ControlChild | undefined): ImageAction => {
+const getImageAction = (action: ControlChild | undefined): ImageAndOtherAction => {
   if (action == null) {
     throw new Error('Action is not defined')
   }
   if (isImageAction(action)) {
-    return action
+    return { image: action }
   }
+  let image: ImageAction | undefined
+  let other: ActionBase | undefined
   for (const child of action.children) {
     if (isImageAction(child)) {
-      return child
+      if (image != null) {
+        throw new Error(`Multiple image actions found as children of ${action.id}`)
+      }
+      image = child
+    } else if (child != null) {
+      if (other != null) {
+        throw new Error(`Multiple other actions found as children of ${action.id}`)
+      }
+      other = child
     }
   }
-  throw new Error('Action and children are no image action')
+  if (image == null) {
+    throw new Error('Action and children are no image action')
+  }
+  return { image, other }
 }
 
-const createPlacedImage = async (action: ImageAction, willReadFrequently: boolean = false): Promise<PlacedImage> => {
-  const image = await getImage(action)
-  const [normalizedX, normalizedY, normalizedWidth, normalizedHeight] = normalizeRect(action.location[0], action.location[1], image.width, image.height)
+const createPlacedImage = async (action: ImageAndOtherAction, willReadFrequently: boolean = false): Promise<PlacedImage> => {
+  const image = await getImage(action.image)
+  const [normalizedX, normalizedY, normalizedWidth, normalizedHeight] = normalizeRect(action.image.location[0], action.image.location[1], image.width, image.height)
   const canvas = document.createElement('canvas')
   const context = canvas.getContext('2d', { willReadFrequently })
   if (context == null) {
@@ -51,7 +65,7 @@ const getPixel = (image: PlacedImage, normalizedX: number, normalizedY: number):
 }
 
 interface Handler {
-  pointerDown(normalizedX: number, normalizedY: number): number | null
+  pointerDown(normalizedX: number, normalizedY: number): ControlEvent | null
 
   pointerUp(): boolean
 
@@ -61,10 +75,10 @@ interface Handler {
 class MapControl implements Handler {
   private _state: number
   private readonly _mask: PlacedImage
-  private readonly _images: ImageAction[]
+  private readonly _images: ImageAndOtherAction[]
   private readonly _states: [number, number, number][]
 
-  public constructor(mask: PlacedImage, images: ImageAction[], states: [number, number, number][]) {
+  public constructor(mask: PlacedImage, images: ImageAndOtherAction[], states: [number, number, number][]) {
     if (images.length !== 0 && states.length !== 0 && images.length !== states.length) {
       throw new Error('Number of states and images does not match')
     }
@@ -74,19 +88,19 @@ class MapControl implements Handler {
     this._states = states
   }
 
-  public pointerDown(normalizedX: number, normalizedY: number): number | null {
+  public pointerDown(normalizedX: number, normalizedY: number): ControlEvent | null {
     const pixel = getPixel(this._mask, normalizedX, normalizedY)
     if (pixel == null || pixel[3] === 0) {
       return null
     }
     if (this._states.length === 0) {
       this._state = 1
-      return this._state
+      return { state: this._state }
     }
     for (const [index, state] of this._states.entries()) {
       if (state[0] === pixel[0] && state[1] === pixel[1] && state[2] === pixel[2]) {
         this._state = index + 1
-        return this._state
+        return { state: this._state, otherAction: this._images[index].other }
       }
     }
     return null
@@ -99,17 +113,17 @@ class MapControl implements Handler {
   }
 
   public get image(): ImageAction | null {
-    return this._state === 0 || this._images.length === 0 ? null : this._images[this._state - 1]
+    return this._state === 0 || this._images.length === 0 ? null : this._images[this._state - 1].image
   }
 }
 
 class GridControl implements Handler {
   private _state: number
   private readonly _idleImage: PlacedImage
-  private readonly _stateImages: ImageAction[]
+  private readonly _stateImages: ImageAndOtherAction[]
   public readonly numberOfColumns: number
 
-  public constructor(idleImage: PlacedImage, stateImages: ImageAction[], numberOfColumns: number) {
+  public constructor(idleImage: PlacedImage, stateImages: ImageAndOtherAction[], numberOfColumns: number) {
     if (stateImages.length === 0) {
       throw new Error('No images defined for Grid')
     }
@@ -122,7 +136,7 @@ class GridControl implements Handler {
     this.numberOfColumns = numberOfColumns
   }
 
-  public pointerDown(normalizedX: number, normalizedY: number): number | null {
+  public pointerDown(normalizedX: number, normalizedY: number): ControlEvent | null {
     const pixel = getPixel(this._idleImage, normalizedX, normalizedY)
     if (pixel == null || pixel[3] === 0) {
       return null
@@ -131,8 +145,9 @@ class GridControl implements Handler {
     const offsetY = -(normalizedY - this._idleImage.normalizedY)
     const col = Math.floor(offsetX / (this._idleImage.normalizedWidth / this.numberOfColumns))
     const row = Math.floor(offsetY / (this._idleImage.normalizedHeight / this.numberOfRows))
-    this._state = row * this.numberOfColumns + col + 1
-    return this._state
+    const index = row * this.numberOfColumns + col
+    this._state = index + 1
+    return { state: this._state, otherAction: this._stateImages[index].other }
   }
 
   public get numberOfRows(): number {
@@ -146,7 +161,7 @@ class GridControl implements Handler {
   }
 
   public get image(): ImageAction | null {
-    return this._state === 0 ? this._idleImage.action : this._stateImages[this._state - 1]
+    return this._state === 0 ? this._idleImage.action.image : this._stateImages[this._state - 1].image
   }
 }
 
@@ -171,14 +186,14 @@ class ToggleControl implements Handler {
     return pixel[3] > 0
   }
 
-  public pointerDown(normalizedX: number, normalizedY: number): number | null {
+  public pointerDown(normalizedX: number, normalizedY: number): ControlEvent | null {
     if (this.test(normalizedX, normalizedY)) {
       if (!this._toggle) {
         this._pressedState = true
       } else {
         this._pressedState = !this._pressedState
       }
-      return this._pressedState ? 0 : 1
+      return this._pressedState ? { state: 1, otherAction: this._pressedImage.action.other } : { state: 0, otherAction: this._idleImage.action.other }
     }
     return null
   }
@@ -197,13 +212,15 @@ class ToggleControl implements Handler {
   }
 
   public get image(): ImageAction {
-    return this._placedImage.action
+    return this._placedImage.action.image
   }
 }
 
 type WithColorPalette = { colorPalette: string[] }
 
 const isWithColorPalette = (action: unknown): action is WithColorPalette => action != null && typeof action === 'object' && 'colorPalette' in action && Array.isArray(action.colorPalette)
+
+export type ControlEvent = { state: number; otherAction?: ActionBase }
 
 export class Control {
   private readonly _action: ControlAction
@@ -217,7 +234,7 @@ export class Control {
       const [style, ...styleParams] = styleValue == null ? [''] : splitExtraValue(styleValue)
       switch (style.toLowerCase()) {
         case 'map': {
-          const maskAction = getImageAction(action.children[0])
+          const maskAction = getImageAction(action.children[0]).image
           if (maskAction.extra?.toLowerCase() !== 'bmp_ismap') {
             throw new Error(`Unknown mask extra string`)
           }
@@ -249,7 +266,7 @@ export class Control {
               colorState.push([r, g, b])
             }
           }
-          const mask = await createPlacedImage(maskAction, true)
+          const mask = await createPlacedImage({ image: maskAction }, true)
           const stateImages = []
           for (const child of action.children.slice(1)) {
             const image = getImageAction(child)
@@ -265,13 +282,13 @@ export class Control {
               throw new Error(`Number of columns or rows is not exactly 2 but '${param}'`)
             }
           }
-          const maskAction = getImageAction(action.children[0])
+          const idleAction = getImageAction(action.children[0])
           const rows = 2
           const columns = 2
           if (action.children.length !== rows * columns + 1) {
             throw new Error(`Invalid number of state images for ${rows} rows and ${columns} columns`)
           }
-          const idleImage = await createPlacedImage(maskAction, true)
+          const idleImage = await createPlacedImage(idleAction, true)
           const stateImages = []
           for (const child of action.children.slice(1)) {
             const image = getImageAction(child)
@@ -322,7 +339,7 @@ export class Control {
     this._sprite.visible = value
   }
 
-  public pointerDown(normalizedX: number, normalizedY: number): number | null {
+  public pointerDown(normalizedX: number, normalizedY: number): ControlEvent | null {
     if (!this.visible) {
       return null
     }

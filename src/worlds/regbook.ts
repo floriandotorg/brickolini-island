@@ -164,7 +164,8 @@ export class RegBook extends World {
       this._names.push(new NameWithCheck(new Name(this._building.scene, X_OFFSET, Y_OFFSET + ROW_HEIGHT * row, CHAR_WIDTH), button))
     }
 
-    this._building.onButtonClicked = (buttonName, state) => {
+    this._building.onButtonClicked = (buttonName, event) => {
+      const state = event.state
       switch (buttonName) {
         case 'Alphabet_Ctl':
           if (state >= 1 && state <= 26) {

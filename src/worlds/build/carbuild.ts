@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import type { AnimationAction, ControlAction, ImageAction } from '../../lib/action-types'
 import { type Animation3DNode, findRecursively } from '../../lib/assets/animation'
 import { createImageSprite } from '../../lib/assets/canvas-sprite'
-import type { Control } from '../../lib/assets/control'
+import type { Control, ControlEvent } from '../../lib/assets/control'
 import { colorAliases, colorMesh, toThreeColor } from '../../lib/assets/mesh'
 import { Roi3D } from '../../lib/assets/model'
 import { engine } from '../../lib/engine'
@@ -567,7 +567,7 @@ export class Carbuild {
     }
   }
 
-  public handleControl(buttonName: string): boolean {
+  public handleControl(buttonName: string, _: ControlEvent): boolean {
     switch (buttonName) {
       case 'Platform_Ctl':
         this.rotating = true

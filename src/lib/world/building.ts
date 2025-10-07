@@ -3,7 +3,7 @@ import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerat
 import type { IsleParam } from '../../worlds/isle'
 import { type ActionBase, type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
-import { Control } from '../assets/control'
+import { Control, type ControlEvent } from '../assets/control'
 import { getAction } from '../assets/load'
 import { getWorld } from '../assets/model'
 import { createTexture, createTextureAsync } from '../assets/texture'
@@ -34,7 +34,7 @@ export class Building {
     this._render.addEffect(new TransparentEdgeBlurEffect())
   }
 
-  public onButtonClicked: (buttonName: string, state: number) => boolean = _buttonName => false
+  public onButtonClicked: (buttonName: string, event: ControlEvent) => boolean = _buttonName => false
 
   public getControl(name: string): Control | null {
     for (const control of this._controls) {
@@ -176,7 +176,7 @@ export class Building {
         }
 
         if (control.name.endsWith('Radio_Ctl')) {
-          if (result === 1) {
+          if (result.state === 1) {
             engine.resumeBackgroundMusic()
           } else {
             engine.pauseBackgroundMusic()

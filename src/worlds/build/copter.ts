@@ -48,11 +48,11 @@ export class Copter extends World {
     )
     this._carbuild = await Carbuild.create(this, this._building, displayPosition, colorControls, null, decalMap, Build_Anim0, Build_Anim1, Build_Anim2)
 
-    this._building.onButtonClicked = (buttonName, _) => {
+    this._building.onButtonClicked = (buttonName, event) => {
       if (this._carbuild == null) {
         return false
       }
-      return this._carbuild.handleControl(buttonName)
+      return this._carbuild.handleControl(buttonName, event)
     }
   }
 
