@@ -32,6 +32,11 @@ export class Audio {
     this._audio.play(this._action.startTime / 1000)
   }
 
+  public playAgain(): void {
+    this.stop()
+    this.play()
+  }
+
   public stop(delay?: number): void {
     this._audio.stop(delay)
   }

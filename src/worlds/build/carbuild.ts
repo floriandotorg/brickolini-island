@@ -1,6 +1,7 @@
 import * as THREE from 'three'
-import { type AnimationAction, type ControlAction, type ImageAction, isTextureAction } from '../../lib/action-types'
+import { type AnimationAction, type AudioAction, type ControlAction, type ImageAction, isTextureAction } from '../../lib/action-types'
 import { type Animation3DNode, findRecursively } from '../../lib/assets/animation'
+import type { Audio } from '../../lib/assets/audio'
 import { createImageSprite } from '../../lib/assets/canvas-sprite'
 import type { Control, ControlEvent } from '../../lib/assets/control'
 import { colorAliases, colorMesh, toThreeColor } from '../../lib/assets/mesh'
@@ -75,7 +76,7 @@ export class RayClick {
   }
 }
 
-export const buildDecalMap = (building: Building, partControlMap: ([string, string[]] | string)[]): Map<string, Control[]> => {
+export const buildDecalControls = async (background: ImageAction | null, sound: AudioAction, building: Building, partControlMap: ([string, string[]] | string)[]): Promise<CustomDecalControls> => {
   const decalMap = new Map<string, Control[]>()
   for (const item of partControlMap) {
     const [partName, controlNames] = (() => {
@@ -94,10 +95,10 @@ export const buildDecalMap = (building: Building, partControlMap: ([string, stri
     })
     decalMap.set(partName.toLowerCase(), controls)
   }
-  return decalMap
+  return new CustomDecalControls(background, await engine.getAudio(sound, 'effects'), decalMap)
 }
 
-export const buildColorControls = (background: ImageAction, building: Building, ...colors: { readonly action: ControlAction; readonly color: CustomColor }[]): CustomColorControls => {
+export const buildColorControls = async (background: ImageAction, sound: AudioAction, building: Building, ...colors: { readonly action: ControlAction; readonly color: CustomColor }[]): Promise<CustomColorControls> => {
   const colorControls = colors.map(color => {
     const control = building.getControl(color.action.name)
     if (control == null) {
@@ -105,7 +106,7 @@ export const buildColorControls = (background: ImageAction, building: Building, 
     }
     return { control, color: color.color }
   })
-  return new CustomColorControls(background, colorControls)
+  return new CustomColorControls(background, await engine.getAudio(sound, 'effects'), colorControls)
 }
 
 export type CustomColorControl = { readonly control: Control; readonly color: CustomColor }
@@ -113,11 +114,13 @@ export type CustomColor = 'lego yellow' | 'lego red' | 'lego blue' | 'lego green
 
 export class CustomColorControls {
   public readonly background: THREE.Sprite
+  public readonly sound: Audio
   private readonly _colors: CustomColorControl[]
   private _visible: boolean = false
 
-  public constructor(background: ImageAction, colors: CustomColorControl[]) {
+  public constructor(background: ImageAction, sound: Audio, colors: CustomColorControl[]) {
     this.background = createImageSprite(background, -0.75)
+    this.sound = sound
     this._colors = colors
     this.visible = false
   }
@@ -141,6 +144,55 @@ export class CustomColorControls {
       }
     }
     return undefined
+  }
+}
+
+export class CustomDecalControls {
+  public readonly background: THREE.Sprite | null
+  public readonly sound: Audio
+  private readonly _decals: Map<string, Control[]>
+  private _partName: string = ''
+
+  public constructor(background: ImageAction | null, sound: Audio, decals: Map<string, Control[]>) {
+    this.background = background != null ? createImageSprite(background, -0.75) : null
+    this.sound = sound
+    this._decals = decals
+    this.hide()
+  }
+
+  public get partName(): string {
+    return this._partName
+  }
+
+  public set partName(value: string) {
+    this._partName = value
+    let anyControlVisible = false
+    for (const [partName, controls] of this._decals) {
+      const validDecal = value.length > 0 && value.endsWith(partName.toLowerCase())
+      for (const control of controls) {
+        control.visible = validDecal
+      }
+      anyControlVisible ||= validDecal
+    }
+    if (this.background != null) {
+      this.background.visible = anyControlVisible
+    }
+  }
+
+  public hide(): void {
+    this.partName = ''
+  }
+
+  public isButton(buttonName: string): boolean {
+    const decalControls = this._decals.get(this.partName)
+    if (decalControls != null) {
+      for (const decalControl of decalControls) {
+        if (decalControl.name === buttonName) {
+          return true
+        }
+      }
+    }
+    return false
   }
 }
 
@@ -182,25 +234,55 @@ export class Carbuild {
   private readonly _parts: Part[] = []
   private _part = 0
   private readonly _colorControls: CustomColorControls
-  private readonly _decalBackground: THREE.Sprite | null
-  private readonly _decals: Map<string, Control[]>
+  private readonly _decalControls: CustomDecalControls
   private readonly _buildPlatform = new THREE.Group()
   private readonly _highlightPlatform = new THREE.Group()
   private readonly _displayPosition
   private readonly _displayGroup = new THREE.Group()
+  private readonly _shelfUpSound: Audio
+  private readonly _selectionSound: Audio
+  private readonly _placementSound: Audio
+  private readonly _rotationSound: Audio
   private readonly _rayclick: RayClick
   private _state: States = IdleState
+  private _rotating: boolean = false
   private _animation: { duration: number; interval: number; clip: THREE.AnimationClip } | null = null
   private shelfAnimationTime: number = 0
 
-  public rotating = false
-
-  public static async create(world: World, building: Building, displayPosition: THREE.Vector3, colorControls: CustomColorControls, decalBackground: ImageAction | null, decals: Map<string, Control[]>, ...animations: AnimationAction[]): Promise<Carbuild> {
-    const animation = await world.buildAnimation(animations[Math.floor(Math.random() * animations.length)])
-    return new Carbuild(world, building, displayPosition, colorControls, decalBackground, decals, animation)
+  public get rotating(): boolean {
+    return this._rotating
   }
 
-  private constructor(world: World, building: Building, displayPosition: THREE.Vector3, colorControls: CustomColorControls, decalBackground: ImageAction | null, decals: Map<string, Control[]>, animation: BuiltAnimation) {
+  public set rotating(value: boolean) {
+    this._rotating = value
+    if (this._rotating) {
+      this._rotationSound.play()
+    } else {
+      this._rotationSound.stop()
+    }
+  }
+
+  public static async create(
+    world: World,
+    building: Building,
+    displayPosition: THREE.Vector3,
+    shelfUpSound: AudioAction,
+    selectionSound: AudioAction,
+    placementSound: AudioAction,
+    rotationSound: AudioAction,
+    colorControls: CustomColorControls,
+    decalControls: CustomDecalControls,
+    ...animations: AnimationAction[]
+  ): Promise<Carbuild> {
+    const animation = await world.buildAnimation(animations[Math.floor(Math.random() * animations.length)])
+    const shelfUpAudio = await engine.getAudio(shelfUpSound, 'effects')
+    const selectionAudio = await engine.getAudio(selectionSound, 'effects')
+    const placementAudio = await engine.getAudio(placementSound, 'effects')
+    const rotationAudio = await engine.getAudio(rotationSound, 'effects')
+    return new Carbuild(world, building, displayPosition, shelfUpAudio, selectionAudio, placementAudio, rotationAudio, colorControls, decalControls, animation)
+  }
+
+  private constructor(world: World, building: Building, displayPosition: THREE.Vector3, shelfUpSound: Audio, selectionSound: Audio, placementSound: Audio, rotationSound: Audio, colorControls: CustomColorControls, decalControls: CustomDecalControls, animation: BuiltAnimation) {
     this._world = world
     world.setupCameraForAnimation(animation.animation.tree)
     // In theory the "number of shelves" is determined by using the translation keys of the "first" shelf it encounters and subtracting one
@@ -224,20 +306,15 @@ export class Carbuild {
     this._colorControls = colorControls
     building.scene.add(this._colorControls.background)
 
-    if (decalBackground != null) {
-      this._decalBackground = createImageSprite(decalBackground, -0.75)
-      this._decalBackground.visible = false
-      building.scene.add(this._decalBackground)
-    } else {
-      this._decalBackground = null
+    this._decalControls = decalControls
+    if (this._decalControls.background != null) {
+      building.scene.add(this._decalControls.background)
     }
 
-    this._decals = decals
-    for (const controls of this._decals.values()) {
-      for (const control of controls) {
-        control.visible = false
-      }
-    }
+    this._shelfUpSound = shelfUpSound
+    this._selectionSound = selectionSound
+    this._placementSound = placementSound
+    this._rotationSound = rotationSound
 
     this._rayclick = new RayClick(this._world.camera)
 
@@ -337,14 +414,7 @@ export class Carbuild {
     if (this._returnPartToShelf()) {
       this._state = IdleState
       this._colorControls.visible = false
-      if (this._decalBackground != null) {
-        this._decalBackground.visible = false
-      }
-      for (const controls of this._decals.values()) {
-        for (const control of controls) {
-          control.visible = false
-        }
-      }
+      this._decalControls.hide()
     }
   }
 
@@ -428,6 +498,7 @@ export class Carbuild {
         this.shelfAnimationTime -= this._animation.duration
       }
       console.log(`New Start @${this.shelfAnimationTime}`)
+      this._shelfUpSound.playAgain()
     }
   }
 
@@ -475,18 +546,8 @@ export class Carbuild {
       // when a part is displayed and clicked, it needs to use that information
       this._state = { state: 'selected', selectedPart: part, displayedPart }
       this._colorControls.visible = part.objectType === ObjectType.Colored
-      if (this._decalBackground != null) {
-        this._decalBackground.visible = false
-      }
-      for (const [partName, controls] of this._decals) {
-        const validDecal = part.basename.endsWith(partName.toLowerCase())
-        for (const control of controls) {
-          control.visible = validDecal
-        }
-        if (validDecal && this._decalBackground != null) {
-          this._decalBackground.visible = true
-        }
-      }
+      this._decalControls.partName = part.basename
+      this._selectionSound.playAgain()
     }
   }
 
@@ -500,6 +561,7 @@ export class Carbuild {
         if (this._parts[this._part] === part && part.wired.getWorldBoundingSphere().intersect(part.clone.getWorldBoundingSphere())) {
           this._returnToShelf()
           this.addPart()
+          this._placementSound.playAgain()
           break
         }
         this._displayPart()
@@ -587,21 +649,18 @@ export class Carbuild {
       default: {
         const part: Part | undefined = this._currentPart
         if (part != null) {
-          const decalControls = this._decals.get(part.basename)
-          if (decalControls != null) {
-            for (const decalControl of decalControls) {
-              if (decalControl.name === buttonName) {
-                this._replaceTexture(event, part.shelfPart)
-                this._replaceTexture(event, part.clone)
-                return true
-              }
-            }
+          if (this._decalControls.isButton(buttonName)) {
+            this._replaceTexture(event, part.shelfPart)
+            this._replaceTexture(event, part.clone)
+            this._decalControls.sound.playAgain()
+            return true
           }
           const customColor = this._colorControls.getColor(buttonName)
           if (customColor != null) {
             const threeColor = toThreeColor(colorAliases[customColor])
             colorMesh(part.shelfPart, threeColor)
             colorMesh(part.clone, threeColor)
+            this._colorControls.sound.playAgain()
             return true
           }
         }

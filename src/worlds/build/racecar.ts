@@ -1,11 +1,11 @@
 import * as THREE from 'three'
 import { RaceCarBuild_Flic, RaceCarBuild_Music } from '../../actions/jukebox'
-import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Gray_Ctl, Green_Ctl, Red_Ctl, Yellow_Ctl } from '../../actions/racecar'
+import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/racecar'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
 import { Building } from '../../lib/world/building'
 import { World } from '../../lib/world/world'
-import { buildColorControls, buildDecalMap, Carbuild } from './carbuild'
+import { buildColorControls, buildDecalControls, Carbuild } from './carbuild'
 
 export class Racecar extends World {
   private _building = new Building()
@@ -44,9 +44,10 @@ export class Racecar extends World {
 
     // TODO: Get "VIEW" transformation from the model's animation
     const displayPosition = new THREE.Vector3(0, 2.25, 2.62)
-    const decalMap = buildDecalMap(this._building, [['RCBACK', ['Decals_Ctl1']], ['RCTAIL', ['Decals_Ctl2']], 'rcfrnt'])
-    const colorControls = buildColorControls(
+    const decalControls = await buildDecalControls(null, Decal_Sound, this._building, [['RCBACK', ['Decals_Ctl1']], ['RCTAIL', ['Decals_Ctl2']], 'rcfrnt'])
+    const colorControls = await buildColorControls(
       ColorBook_Bitmap,
+      Paint_Sound,
       this._building,
       { action: Yellow_Ctl, color: 'lego yellow' },
       { action: Red_Ctl, color: 'lego red' },
@@ -55,7 +56,7 @@ export class Racecar extends World {
       { action: Gray_Ctl, color: 'lego white' },
       { action: Black_Ctl, color: 'lego black' },
     )
-    this._carbuild = await Carbuild.create(this, this._building, displayPosition, colorControls, null, decalMap, Build_Anim0, Build_Anim1, Build_Anim2)
+    this._carbuild = await Carbuild.create(this, this._building, displayPosition, Shelf_Sound, GetBrick_Sound, PlaceBrick_Sound, Rotate_Sound, colorControls, decalControls, Build_Anim0, Build_Anim1, Build_Anim2)
 
     this._building.onButtonClicked = (buttonName, event) => {
       if (this._carbuild == null) {
