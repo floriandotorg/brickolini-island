@@ -1010,7 +1010,7 @@ export class Isle extends IsleBase {
     }
 
     const isle = this.scene.getObjectByName('isle_hi')
-    if (isle == null || !(isle instanceof THREE.Mesh)) {
+    if (isle == null || !(isle instanceof THREE.Object3D)) {
       throw new Error('Isle mesh not found')
     }
     this._isleMesh = isle

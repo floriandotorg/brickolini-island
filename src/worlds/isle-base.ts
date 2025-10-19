@@ -30,7 +30,7 @@ export abstract class IsleBase extends World {
   protected _rotVel = 0
   protected _verticalVel = 0
   protected _pitchVel = 0
-  protected _groundGroup: THREE.Mesh[] = []
+  protected _groundGroup: THREE.Object3D[] = []
   protected _plantGroup: THREE.Group = new THREE.Group()
   protected _boundaryManager = new BoundaryManager([], this)
   protected _dashboard = new Dashboard()
@@ -217,7 +217,7 @@ export abstract class IsleBase extends World {
     // spell-checker: ignore brdg jailbrdg racebrdg
     for (const name of ['isle_hi', 'inf-brdg', 'jailbrdg', 'racebrdg']) {
       const object = this.scene.getObjectByName(name)
-      if (object == null || !(object instanceof THREE.Mesh)) {
+      if (object == null || !(object instanceof THREE.Object3D)) {
         throw new Error(`Mesh ${name} not found`)
       }
       this._groundGroup.push(object)
