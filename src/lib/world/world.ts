@@ -32,6 +32,7 @@ export type BuiltAnimation = {
   lookAtKeys?: WDB.Animation.VertexKey[]
   faceAnimations: FaceAnimation[]
   pointAtCameraObjects: THREE.Object3D[]
+  objectsToHideOnStop: THREE.Object3D[]
   location: THREE.Vector3
   loop: THREE.AnimationActionLoopStyles
 }
@@ -456,11 +457,13 @@ export abstract class World {
     location = new THREE.Vector3()
     animationTransform.decompose(location, new THREE.Quaternion(), new THREE.Vector3())
 
-    return { animation, animationActors, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, location, loop: animationAction.presenter === 'LegoLoopingAnimPresenter' ? THREE.LoopRepeat : THREE.LoopOnce }
+    const objectsToHideOnStop = getExtraValue(action, 'hide_on_stop') != null ? Array.from(animationActors.values()).flatMap(actor => [actor.object, ...actor.children.values()]) : []
+
+    return { animation, animationActors, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, location, loop: animationAction.presenter === 'LegoLoopingAnimPresenter' ? THREE.LoopRepeat : THREE.LoopOnce }
   }
 
   public async playAnimation(action: RunAnimationAction | AnimationAction, { location, unskippable, lockCamera, extraTracks }: { location?: THREE.Vector3; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<void> {
-    const { animation, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, loop } = await this.buildAnimation(action, { location, extraTracks })
+    const { animation, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, loop } = await this.buildAnimation(action, { location, extraTracks })
 
     this.setupCameraForAnimation(animation.tree)
 
@@ -479,7 +482,7 @@ export abstract class World {
     )
 
     const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
-    return this.playAnimationClip(this.scene, clip, { audios, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, loop })
+    return this.playAnimationClip(this.scene, clip, { audios, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, lockCamera, unskippable, loop })
   }
 
   public async playAnimationClip(
@@ -490,12 +493,24 @@ export abstract class World {
       lookAtKeys,
       faceAnimations = [],
       pointAtCameraObjects = [],
+      objectsToHideOnStop = [],
       lockCamera,
       unskippable,
       startAtTime = 0,
       stopAtTime,
       loop,
-    }: { audios?: THREE.PositionalAudio[]; lookAtKeys?: WDB.Animation.VertexKey[]; faceAnimations?: FaceAnimation[]; pointAtCameraObjects?: THREE.Object3D[]; lockCamera?: boolean; unskippable?: boolean; startAtTime?: number; stopAtTime?: number; loop?: THREE.AnimationActionLoopStyles } = {},
+    }: {
+      audios?: THREE.PositionalAudio[]
+      lookAtKeys?: WDB.Animation.VertexKey[]
+      faceAnimations?: FaceAnimation[]
+      pointAtCameraObjects?: THREE.Object3D[]
+      objectsToHideOnStop?: THREE.Object3D[]
+      lockCamera?: boolean
+      unskippable?: boolean
+      startAtTime?: number
+      stopAtTime?: number
+      loop?: THREE.AnimationActionLoopStyles
+    } = {},
   ): Promise<void> {
     if (stopAtTime != null && startAtTime > stopAtTime) {
       throw new Error(`Start (${startAtTime}) must be before stop (${stopAtTime}) when both are defined`)
@@ -514,6 +529,9 @@ export abstract class World {
       const removeMe = () => {
         for (const faceAnimation of faceAnimations) {
           faceAnimation.actor.resetHeadTexture()
+        }
+        for (const actor of objectsToHideOnStop) {
+          actor.visible = false
         }
         this._runningAnimations = this._runningAnimations.filter(a => a.mixer !== mixer)
         resolve()
@@ -700,7 +718,7 @@ export abstract class World {
       if (runningAnimation.clipAction.loop === THREE.LoopOnce) {
         runningAnimation.clipAction.time = runningAnimation.stopAtTime ?? runningAnimation.clipAction.getClip().duration
       } else {
-        this._runningAnimations = this._runningAnimations.filter(a => a !== runningAnimation)
+        runningAnimation.resolve()
       }
 
       for (const audio of runningAnimation.audios) {
