@@ -4,10 +4,12 @@ import { getActionFileUrl, manager } from './load'
 
 const audioLoader = new THREE.AudioLoader(manager)
 
-export const getAudio = async (listener: THREE.AudioListener, action: AudioAction): Promise<THREE.Audio> => {
+export const getAudio = async (listener: THREE.AudioListener, action: AudioAction, gain: GainNode): Promise<THREE.Audio> => {
   const audio = new THREE.Audio(listener)
   audio.setBuffer(await audioLoader.loadAsync(getActionFileUrl(action)))
+  audio.setFilter(gain)
   audio.gain.gain.value = action.volume / 100
+  audio.loop = action.loops > 1
   return audio
 }
 

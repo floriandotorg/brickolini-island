@@ -7,7 +7,7 @@ import { getAction, getActionFileUrl } from '../assets/load'
 import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
 import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
-import { engine } from '../engine'
+import { type AudioType, engine } from '../engine'
 import { Actor } from './actor'
 
 export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar'
@@ -207,8 +207,8 @@ export abstract class World {
     return found
   }
 
-  public async playAudio(action: AudioAction): Promise<void> {
-    const audio = await engine.playAudio(action)
+  public async playAudio(action: AudioAction, audioType: AudioType): Promise<void> {
+    const audio = await engine.playAudio(action, audioType)
     this._runningAudios.push(audio)
     audio.onEnded = () => {
       const index = this._runningAudios.indexOf(audio)
@@ -468,7 +468,7 @@ export abstract class World {
     this.setupCameraForAnimation(animation.tree)
 
     for (const audio of audioActions) {
-      engine.playAudio(audio)
+      engine.playAudio(audio, 'animations')
     }
 
     const audios: THREE.PositionalAudio[] = await Promise.all(

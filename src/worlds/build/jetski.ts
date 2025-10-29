@@ -48,7 +48,7 @@ export class Jetski extends World {
       ['JSFRNT', ['Decals_Ctl', 'Decals_Ctl1', 'Decals_Ctl2', 'Decals_Ctl3']],
       ['JSWNSH', ['Decals_Ctl4', 'Decals_Ctl5', 'Decals_Ctl6', 'Decals_Ctl7']],
     ])
-    const colorControls = buildColorControls(
+    const colorControls = await buildColorControls(
       ColorBook_Bitmap,
       this._building,
       { action: Yellow_Ctl, color: 'lego yellow' },

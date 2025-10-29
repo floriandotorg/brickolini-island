@@ -1,3 +1,5 @@
+import type { AudioType } from './engine'
+
 export type Preset = 'original' | 'hd' | 'next-gen' | 'custom'
 
 export interface Settings {
@@ -11,7 +13,7 @@ export interface Settings {
     postProcessing: boolean
     toneMapping: 'none' | 'filmic'
   }
-  musicVolume: number
+  volume: Record<AudioType, number>
   freeRoam: boolean
 }
 
@@ -26,8 +28,10 @@ export const setSettings = (settings: Partial<Settings>) => {
     localStorage.setItem('settings.graphics.postProcessing', settings.graphics.postProcessing ? 'true' : 'false')
     localStorage.setItem('settings.graphics.toneMapping', settings.graphics.toneMapping)
   }
-  if (settings.musicVolume != null) {
-    localStorage.setItem('settings.musicVolume', settings.musicVolume.toString())
+  if (settings.volume != null) {
+    for (const [audioType, volume] of Object.entries(settings.volume)) {
+      localStorage.setItem(`settings.volume.${audioType}`, volume.toString())
+    }
   }
   if (settings.freeRoam != null) {
     localStorage.setItem('settings.freeRoam', settings.freeRoam ? 'true' : 'false')
@@ -58,7 +62,11 @@ export const getSettings = (): Settings => {
     setPreset('hd')
   }
 
-  const musicVolume = localStorage.getItem('settings.musicVolume')
+  const parseVolume = (audioType: AudioType): number => {
+    const volumeString = localStorage.getItem(`settings.volume.${audioType}`)
+    const volume = volumeString != null ? Number.parseFloat(volumeString) : 1
+    return Number.isNaN(volume) ? 1 : volume
+  }
 
   return {
     graphics: {
@@ -71,7 +79,13 @@ export const getSettings = (): Settings => {
       toneMapping: localStorage.getItem('settings.graphics.toneMapping') as 'none' | 'filmic',
       postProcessing: localStorage.getItem('settings.graphics.postProcessing') === 'true',
     },
-    musicVolume: musicVolume != null ? Number.parseFloat(musicVolume) : 1,
+    volume: {
+      music: parseVolume('music'),
+      effects: parseVolume('effects'),
+      speech: parseVolume('speech'),
+      animations: parseVolume('animations'),
+      cutscene: parseVolume('cutscene'),
+    },
     freeRoam: localStorage.getItem('settings.freeRoam') === 'true',
   }
 }

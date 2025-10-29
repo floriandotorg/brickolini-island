@@ -238,25 +238,25 @@ export class PizzaMission {
         this._helpAudioPlayed = true
         switch (engine.currentPlayerCharacterSafe) {
           case 'pepper':
-            engine.playAudio(Avo914In_PlayWav)
+            engine.playAudio(Avo914In_PlayWav, 'speech')
             break
           case 'mama':
-            engine.playAudio(Avo910In_PlayWav)
+            engine.playAudio(Avo910In_PlayWav, 'speech')
             break
           case 'papa':
-            engine.playAudio(Avo912In_PlayWav)
+            engine.playAudio(Avo912In_PlayWav, 'speech')
             break
           case 'nick':
-            engine.playAudio(Avo911In_PlayWav)
+            engine.playAudio(Avo911In_PlayWav, 'speech')
             break
           case 'laura':
-            engine.playAudio(Avo913In_PlayWav)
+            engine.playAudio(Avo913In_PlayWav, 'speech')
             break
         }
       }
 
       if (this._missionState.missionTimeout.isExpired) {
-        engine.playAudio(Avo917In_PlayWav)
+        engine.playAudio(Avo917In_PlayWav, 'speech')
         this.abort()
       }
     }

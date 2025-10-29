@@ -33,6 +33,10 @@ type SaveGame = { readonly name: string }
 
 export type PlayerCharacter = 'pepper' | 'papa' | 'mama' | 'nick' | 'laura'
 
+// Keep both entries "in sync"!
+export type AudioType = 'music' | 'effects' | 'speech' | 'animations' | 'cutscene'
+export const AudioTypes: AudioType[] = ['music', 'effects', 'speech', 'animations', 'cutscene']
+
 export type Timeout = {
   get isExpired(): boolean
   get millisecondsSinceStart(): number
@@ -53,11 +57,12 @@ class Engine {
   private _cutsceneMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
   private _world: World | null = null
   private _keyStates: Set<string> = new Set()
-  private _backgroundAudio: { actionId: number; audio: THREE.Audio; sourceVolume: number } | null = null
+  private _backgroundAudio: { actionId: number; audio: THREE.Audio } | null = null
   private _transitionStart: number = 0
   private _transitionPromiseResolve: (() => void) | null = null
   private _currentSaveGame: SaveGame = { name: '' }
   private _saveGames: SaveGame[]
+  private readonly _gains: Record<AudioType, GainNode>
 
   public currentPlayerCharacter: PlayerCharacter | null = new URLSearchParams(window.location.search).get('player') as PlayerCharacter | null
 
@@ -132,14 +137,14 @@ class Engine {
       return
     }
 
-    const audio = await getAudio(this._audioListener, action)
+    const audio = await this.getAudio(action, 'music')
+    // not every track has looping enabled from the action unfortunately
     audio.loop = true
     const sourceVolume = action.volume / 100
-    const targetVolume = sourceVolume * getSettings().musicVolume
 
     if (this._backgroundAudio == null) {
-      this._backgroundAudio = { actionId: action.id, audio, sourceVolume }
-      this._backgroundAudio.audio.gain.gain.value = targetVolume
+      this._backgroundAudio = { actionId: action.id, audio }
+      this._backgroundAudio.audio.gain.gain.value = sourceVolume
       this._backgroundAudio.audio.play()
       return
     }
@@ -147,9 +152,9 @@ class Engine {
     this._backgroundAudio.audio.gain.gain.setTargetAtTime(0, audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
     this._backgroundAudio.audio.stop(audio.context.currentTime + BACKGROUND_MUSIC_FADE_TIME)
 
-    this._backgroundAudio = { actionId: action.id, audio, sourceVolume }
+    this._backgroundAudio = { actionId: action.id, audio }
     this._backgroundAudio.audio.gain.gain.value = 0
-    this._backgroundAudio.audio.gain.gain.setTargetAtTime(targetVolume, audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
+    this._backgroundAudio.audio.gain.gain.setTargetAtTime(sourceVolume, audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
     this._backgroundAudio.audio.play()
   }
 
@@ -165,10 +170,16 @@ class Engine {
     }
   }
 
-  public updateBackgroundVolume() {
-    if (this._backgroundAudio != null) {
-      const targetVolume = this._backgroundAudio.sourceVolume * getSettings().musicVolume
-      this._backgroundAudio.audio.gain.gain.setTargetAtTime(targetVolume, this._backgroundAudio.audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME_SETTINGS / 3)
+  public updateVolumes(fadeMusic: boolean = true): void {
+    const volumes = getSettings().volume
+    for (const audioType of AudioTypes) {
+      const volume = volumes[audioType]
+      const gain = this._gains[audioType].gain
+      if (audioType === 'music' && fadeMusic) {
+        gain.setTargetAtTime(volume, this._audioListener.context.currentTime, BACKGROUND_MUSIC_FADE_TIME_SETTINGS / 3)
+      } else {
+        gain.value = volume
+      }
     }
   }
 
@@ -333,6 +344,16 @@ class Engine {
 
     const savesJson = localStorage.getItem(SAVE_GAME_STORAGE_KEY)
     this._saveGames = savesJson == null ? [] : JSON.parse(savesJson)
+
+    this._gains = {
+      music: new GainNode(this._audioListener.context),
+      effects: new GainNode(this._audioListener.context),
+      speech: new GainNode(this._audioListener.context),
+      animations: new GainNode(this._audioListener.context),
+      cutscene: new GainNode(this._audioListener.context),
+    }
+
+    this.updateVolumes(false)
   }
 
   public isKeyDown(key: string): boolean {
@@ -362,15 +383,19 @@ class Engine {
     })
   }
 
-  public async playAudio(action: AudioAction): Promise<THREE.Audio<GainNode>> {
-    const audio = await getAudio(this._audioListener, action)
+  public getAudio(action: AudioAction, type: AudioType): Promise<THREE.Audio<GainNode>> {
+    return getAudio(this._audioListener, action, this._gains[type])
+  }
+
+  public async playAudio(action: AudioAction, type: AudioType): Promise<THREE.Audio<GainNode>> {
+    const audio = await this.getAudio(action, type)
     audio.play(action.startTime / 1_000)
     return audio
   }
 
   public async playCutscene(action: CompositeMediaAction): Promise<void> {
     this._state = 'cutscene'
-    this._cutsceneAudio = await getAudio(this._audioListener, action.children[1])
+    this._cutsceneAudio = await this.getAudio(action.children[1], 'cutscene')
     this._cutsceneVideo.src = getActionFileUrl(action.children[0])
     const map = new THREE.VideoTexture(this._cutsceneVideo)
     map.colorSpace = THREE.SRGBColorSpace

@@ -1,4 +1,4 @@
-import { engine } from './engine'
+import { type AudioType, AudioTypes, engine } from './engine'
 import type { Preset } from './settings'
 import { getSettings, setPreset, setSettings } from './settings'
 
@@ -62,9 +62,20 @@ if (freeRoamCheckbox == null || !(freeRoamCheckbox instanceof HTMLInputElement))
   throw new Error('Free roam checkbox not found')
 }
 
-const musicVolumeSlider = document.getElementById('music-volume-slider')
-if (musicVolumeSlider == null || !(musicVolumeSlider instanceof HTMLInputElement)) {
-  throw new Error('Music volume slider not found')
+const volumeSlider = (audioType: AudioType): HTMLInputElement => {
+  const slider = document.getElementById(`${audioType}-volume-slider`)
+  if (slider == null || !(slider instanceof HTMLInputElement)) {
+    throw new Error(`Volume slider ${audioType} not found`)
+  }
+  return slider
+}
+
+const volumeSliders: Record<AudioType, HTMLInputElement> = {
+  music: volumeSlider('music'),
+  effects: volumeSlider('effects'),
+  speech: volumeSlider('speech'),
+  animations: volumeSlider('animations'),
+  cutscene: volumeSlider('cutscene'),
 }
 
 const updateControlsFromSettings = () => {
@@ -78,7 +89,9 @@ const updateControlsFromSettings = () => {
   postProcessingCheckbox.checked = settings.graphics.postProcessing
   toneMappingCheckbox.checked = settings.graphics.toneMapping === 'filmic'
   freeRoamCheckbox.checked = settings.freeRoam
-  musicVolumeSlider.value = settings.musicVolume.toString()
+  for (const audioType of AudioTypes) {
+    volumeSliders[audioType].value = settings.volume[audioType].toString()
+  }
 }
 
 const updateSettingsFromCheckboxes = () => {
@@ -93,10 +106,16 @@ const updateSettingsFromCheckboxes = () => {
       postProcessing: postProcessingCheckbox.checked,
       toneMapping: toneMappingCheckbox.checked ? 'filmic' : 'none',
     },
-    musicVolume: Number.parseFloat(musicVolumeSlider.value),
+    volume: {
+      music: Number.parseFloat(volumeSliders.music.value),
+      effects: Number.parseFloat(volumeSliders.effects.value),
+      speech: Number.parseFloat(volumeSliders.speech.value),
+      animations: Number.parseFloat(volumeSliders.animations.value),
+      cutscene: Number.parseFloat(volumeSliders.cutscene.value),
+    },
     freeRoam: freeRoamCheckbox.checked,
   })
-  engine.updateBackgroundVolume()
+  engine.updateVolumes()
 }
 
 settingsButton.addEventListener('click', () => {

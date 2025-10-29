@@ -237,7 +237,7 @@ export class RegBook extends World {
     }
 
     if (engine.currentSaveGame.name.length > 0) {
-      void this.playAudio(iic008in_PlayWav)
+      void this.playAudio(iic008in_PlayWav, 'speech')
     } else {
       this.playAnimation(iic006in_RunAnim)
     }

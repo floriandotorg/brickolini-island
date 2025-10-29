@@ -10,7 +10,7 @@ export type FileActionBase = Override<ActionBase, { fileType: Action.FileType }>
 
 export type AudioActionBase = Override<FileActionBase, { fileType: Action.FileType.WAV; volume: number; startTime: number }>
 
-export type AudioAction = Override<AudioActionBase, { presenter: null }>
+export type AudioAction = Override<AudioActionBase, { presenter: null; loops: number }>
 
 export type PositionalAudioAction = Override<AudioActionBase, { presenter: 'Lego3DWavePresenter'; extra: string }>
 

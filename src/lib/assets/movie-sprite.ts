@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import type { AudioAction, CharacterMovieAction, VideoAction } from '../action-types'
 import { engine } from '../engine'
-import { getAudio } from './audio'
 import { createNormalizedSprite } from './canvas-sprite'
 import { getActionFileUrl } from './load'
 
@@ -17,7 +16,7 @@ export class MovieSprite {
   }
 
   public static async create(video: VideoAction, z: number, audioAction?: AudioAction): Promise<MovieSprite> {
-    const audioPromise = audioAction != null ? await getAudio(engine.audioListener, audioAction) : undefined
+    const audioPromise = audioAction != null ? await engine.getAudio(audioAction, 'cutscene') : undefined
     const videoElement = document.createElement('video')
     const loadPromise = new Promise<void>(resolve => {
       videoElement.oncanplaythrough = () => {

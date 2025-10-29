@@ -151,7 +151,7 @@ export class Dashboard {
     }
 
     if (this._hornControl?.pointerDown(normalizedX, normalizedY) != null && this._hornSound != null) {
-      engine.playAudio(this._hornSound)
+      engine.playAudio(this._hornSound, 'effects')
     }
 
     if (this._infoControl?.pointerDown(normalizedX, normalizedY) != null) {
