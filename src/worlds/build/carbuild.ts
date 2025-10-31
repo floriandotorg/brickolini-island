@@ -410,42 +410,44 @@ export class Carbuild {
     this.updateParts()
   }
 
-  private _returnToShelf(): void {
-    if (this._returnPartToShelf()) {
+  private _returnState(): void {
+    if (this._returnPart()) {
       this._state = IdleState
       this._colorControls.visible = false
       this._decalControls.hide()
     }
   }
 
-  private _returnPartToShelf(): boolean {
-    const returnPartToShelf = (part: Part): void => {
+  private _returnPart(): boolean {
+    const returnPart = (part: Part): void => {
       const index = this._parts.indexOf(part)
-      part.shelfGroup.visible = index >= this._part
-      part.clone.visible = false
+      this.updatePart(index)
     }
 
     switch (this._state.state) {
       case 'dragging':
-        returnPartToShelf(this._state.selectedPart)
+        returnPart(this._state.selectedPart)
         return true
       case 'selected':
         if (this._state.displayedPart != null) {
-          returnPartToShelf(this._state.displayedPart)
+          returnPart(this._state.displayedPart)
         }
         return true
       case 'displaying':
-        returnPartToShelf(this._state.part)
+        returnPart(this._state.part)
         return true
       default:
         return false
     }
   }
 
-  private _takePartFromShelf(part: Part): void {
+  private _displayPartModel(part: Part): void {
     part.shelfGroup.visible = false
     part.clone.visible = true
     part.clone.quaternion.copy(part.shelfPart.quaternion)
+    part.clone.scale.copy(part.shelfPart.scale)
+    part.clone.position.set(0, 0, 0)
+    this._displayGroup.add(part.clone)
     this._displayGroup.position.copy(this._displayPosition)
     this._displayGroup.quaternion.identity()
   }
@@ -454,14 +456,14 @@ export class Carbuild {
     if (this._state.state === 'selected' || this._state.state === 'dragging') {
       if (this._state.state === 'selected' && this._state.displayedPart != null) {
         if (this._state.displayedPart === this._state.selectedPart) {
-          this._returnToShelf()
+          this._returnState()
           return
         }
-        this._returnPartToShelf()
+        this._returnPart()
       }
       const part = this._state.selectedPart
       this._state = { state: 'displaying', part }
-      this._takePartFromShelf(part)
+      this._displayPartModel(part)
     }
   }
 
@@ -486,7 +488,7 @@ export class Carbuild {
 
   public async shelveUp(): Promise<void> {
     if (this._state.state !== 'shelfMoving' && this._animation != null && this._animation.interval > 0) {
-      this._returnToShelf()
+      this._returnState()
       this._state = ShelfMovingState
       const shelfAnimationTimeStop = this.shelfAnimationTime + this._animation.interval
       console.log(`${this.shelfAnimationTime} -> ${shelfAnimationTimeStop}`)
@@ -503,16 +505,24 @@ export class Carbuild {
   }
 
   private updateParts(): void {
-    for (const [index, part] of this._parts.entries()) {
-      part.clone.visible = index < this._part
-      part.shelfGroup.visible = !part.clone.visible
-      part.wired.visible = index === this._part
-      if (part.clone.visible) {
-        part.wired.matrix.decompose(part.clone.position, part.clone.quaternion, part.clone.scale)
-        this._buildPlatform.add(part.clone)
-      } else {
-        this._displayGroup.add(part.clone)
-      }
+    for (const index of this._parts.keys()) {
+      this.updatePart(index)
+    }
+  }
+
+  private updatePart(index: number): void {
+    if (index < 0 || index >= this._parts.length) {
+      throw new Error('Index out of range')
+    }
+    const part = this._parts[index]
+    part.clone.visible = index < this._part
+    part.shelfGroup.visible = !part.clone.visible
+    part.wired.visible = index === this._part
+    if (part.clone.visible) {
+      part.wired.matrix.decompose(part.clone.position, part.clone.quaternion, part.clone.scale)
+      this._buildPlatform.add(part.clone)
+    } else {
+      this._displayGroup.add(part.clone)
     }
   }
 
@@ -536,9 +546,6 @@ export class Carbuild {
       if (part != null && !part.shelfGroup.visible) {
         return
       }
-    } else if (this._parts.indexOf(part) < this._part) {
-      // TODO: Handle clicking on placed parts (clones)
-      return
     }
     if (part != null) {
       // when a part is displayed, also store it information
@@ -558,9 +565,12 @@ export class Carbuild {
         break
       case 'dragging': {
         const part = this._state.selectedPart
-        if (this._parts[this._part] === part && part.wired.getWorldBoundingSphere().intersect(part.clone.getWorldBoundingSphere())) {
-          this._returnToShelf()
-          this.addPart()
+        const index = this._parts.indexOf(part)
+        if (index <= this._part && part.wired.getWorldBoundingSphere().intersect(part.clone.getWorldBoundingSphere())) {
+          this._returnState()
+          if (index === this._part) {
+            this.addPart()
+          }
           this._placementSound.playAgain()
           break
         }
@@ -575,8 +585,8 @@ export class Carbuild {
       // selection from shelf
       if (this._state.displayedPart == null || this._state.displayedPart !== this._state.selectedPart) {
         // return the displayed part
-        this._returnPartToShelf()
-        this._takePartFromShelf(this._state.selectedPart)
+        this._returnPart()
+        this._displayPartModel(this._state.selectedPart)
       }
       const partQuarternion = this._state.selectedPart.clone.quaternion.clone().invert()
       const startQuarternion = this._state.selectedPart.clone.getWorldQuaternion(new THREE.Quaternion()).multiply(partQuarternion)
