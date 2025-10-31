@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { Action } from '../../actions/types'
 import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
 import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, createAnimationActor, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
-import { getPositionalAudio } from '../assets/audio'
+import { type Audio, getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
 import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
 import { WDB } from '../assets/wdb'
@@ -60,7 +60,7 @@ export abstract class World {
     pointAtCameraObjects: THREE.Object3D[]
     stopAtTime?: number
   }[] = []
-  private _runningAudios: THREE.Audio<GainNode>[] = []
+  private _runningAudios: Audio[] = []
   private _actors = new Map<string, Actor>()
   private _worldGroup: THREE.Group | null = null
 

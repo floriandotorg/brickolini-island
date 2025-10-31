@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import type { AudioAction, CharacterMovieAction, VideoAction } from '../action-types'
 import { engine } from '../engine'
+import type { Audio } from './audio'
 import { createNormalizedSprite } from './canvas-sprite'
 import { getActionFileUrl } from './load'
 
@@ -8,7 +9,7 @@ export class MovieSprite {
   private constructor(
     private readonly _videoElement: HTMLVideoElement,
     private readonly _sprite: THREE.Sprite,
-    private readonly _audio?: THREE.Audio<GainNode>,
+    private readonly _audio?: Audio,
   ) {}
 
   public static async createCharacterMovie(movie: CharacterMovieAction, z: number): Promise<MovieSprite> {

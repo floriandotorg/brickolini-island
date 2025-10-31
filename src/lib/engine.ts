@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import type { AudioAction, CompositeMediaAction } from './action-types'
-import { getAudio } from './assets/audio'
+import { type Audio, getAudio } from './assets/audio'
 import { getActionFileUrl } from './assets/load'
 import { Composer, Render2D } from './effect/composer'
 import { FilmGrainEffect } from './effect/film-grain'
@@ -46,7 +46,7 @@ class Engine {
   private _state: 'cutscene' | 'transition' | 'game' = 'game'
   private _clock: THREE.Clock = new THREE.Clock()
   private _cutsceneVideo: HTMLVideoElement
-  private _cutsceneAudio: THREE.Audio | null = null
+  private _cutsceneAudio: Audio | null = null
   private _canvas: HTMLCanvasElement
   private _audioListener = new THREE.AudioListener()
   private _renderer: THREE.WebGLRenderer
@@ -57,7 +57,7 @@ class Engine {
   private _cutsceneMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
   private _world: World | null = null
   private _keyStates: Set<string> = new Set()
-  private _backgroundAudio: { actionId: number; audio: THREE.Audio } | null = null
+  private _backgroundAudio: { actionId: number; audio: Audio } | null = null
   private _transitionStart: number = 0
   private _transitionPromiseResolve: (() => void) | null = null
   private _currentSaveGame: SaveGame = { name: '' }
@@ -144,17 +144,17 @@ class Engine {
 
     if (this._backgroundAudio == null) {
       this._backgroundAudio = { actionId: action.id, audio }
-      this._backgroundAudio.audio.gain.gain.value = sourceVolume
+      this._backgroundAudio.audio.gain.value = sourceVolume
       this._backgroundAudio.audio.play()
       return
     }
 
-    this._backgroundAudio.audio.gain.gain.setTargetAtTime(0, audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
-    this._backgroundAudio.audio.stop(audio.context.currentTime + BACKGROUND_MUSIC_FADE_TIME)
+    this._backgroundAudio.audio.gain.setTargetAtTime(0, this._audioListener.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
+    this._backgroundAudio.audio.stop(this._audioListener.context.currentTime + BACKGROUND_MUSIC_FADE_TIME)
 
     this._backgroundAudio = { actionId: action.id, audio }
-    this._backgroundAudio.audio.gain.gain.value = 0
-    this._backgroundAudio.audio.gain.gain.setTargetAtTime(sourceVolume, audio.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
+    this._backgroundAudio.audio.gain.value = 0
+    this._backgroundAudio.audio.gain.setTargetAtTime(sourceVolume, this._audioListener.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
     this._backgroundAudio.audio.play()
   }
 
@@ -383,13 +383,13 @@ class Engine {
     })
   }
 
-  public getAudio(action: AudioAction, type: AudioType): Promise<THREE.Audio<GainNode>> {
+  public getAudio(action: AudioAction, type: AudioType): Promise<Audio> {
     return getAudio(this._audioListener, action, this._gains[type])
   }
 
-  public async playAudio(action: AudioAction, type: AudioType): Promise<THREE.Audio<GainNode>> {
+  public async playAudio(action: AudioAction, type: AudioType): Promise<Audio> {
     const audio = await this.getAudio(action, type)
-    audio.play(action.startTime / 1_000)
+    audio.play()
     return audio
   }
 
