@@ -39,9 +39,9 @@ export class Police extends World {
     this._building.activate(composer)
     super.activate(composer)
 
-    if (engine.currentPlayerCharacter === 'nick') {
+    if (engine.currentSaveGame.player === 'nick') {
       void this.playAnimation(nps002la_RunAnim)
-    } else if (engine.currentPlayerCharacter === 'laura') {
+    } else if (engine.currentSaveGame.player === 'laura') {
       void this.playAnimation(nps001ni_RunAnim)
     } else {
       if (this._numVisits % 2 === 0) {

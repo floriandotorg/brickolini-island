@@ -252,7 +252,7 @@ export namespace Plants {
       animationRoot.add(await getGlobalPart(plantName, null, null))
       group.add(mesh)
       world.addClickListener(mesh, async () => {
-        switch (engine.currentPlayerCharacter) {
+        switch (engine.currentSaveGame.player) {
           case 'pepper':
             plantState.variant = nextVariant(plantState.variant)
             break
@@ -282,7 +282,7 @@ export namespace Plants {
             ['palm', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map() }],
           ]),
         )
-        if (engine.currentPlayerCharacter === 'laura') {
+        if (engine.currentSaveGame.player === 'laura') {
           void world.playPositionalAudio(Sound17, mesh)
         }
         void world.playPositionalAudio(sounds[plantState.soundIndex], mesh)

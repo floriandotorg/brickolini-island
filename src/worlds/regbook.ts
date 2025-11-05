@@ -236,7 +236,7 @@ export class RegBook extends World {
       this._names[row].name = row > 0 && row <= saveGameNames.length ? saveGameNames[row - 1] : ''
     }
 
-    if (engine.currentSaveGame.name.length > 0) {
+    if (!engine.currentSaveGame.isUnloaded) {
       void this.playAudio(iic008in_PlayWav, 'speech')
     } else {
       this.playAnimation(iic006in_RunAnim)

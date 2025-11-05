@@ -5,6 +5,7 @@ import { getActionFileUrl } from './assets/load'
 import { Composer, Render2D } from './effect/composer'
 import { FilmGrainEffect } from './effect/film-grain'
 import { MosaicEffect } from './effect/mosaic'
+import { SAVE_GAME_STORAGE_KEY, SaveGame } from './save-game'
 import { getSettings } from './settings'
 import type { World } from './world/world'
 
@@ -28,14 +29,11 @@ export const normalizeRect = (x: number, y: number, w: number, h: number, totalS
   return [normalizedX, normalizedY, normalizedWidth, normalizedHeight]
 }
 
-const SAVE_GAME_STORAGE_KEY = 'saves'
-type SaveGame = { readonly name: string }
+export const PlayerCharacters = ['pepper', 'papa', 'mama', 'nick', 'laura'] as const
+export type PlayerCharacter = (typeof PlayerCharacters)[number]
 
-export type PlayerCharacter = 'pepper' | 'papa' | 'mama' | 'nick' | 'laura'
-
-// Keep both entries "in sync"!
-export type AudioType = 'music' | 'effects' | 'speech' | 'animations' | 'cutscene'
-export const AudioTypes: AudioType[] = ['music', 'effects', 'speech', 'animations', 'cutscene']
+export const AudioTypes = ['music', 'effects', 'speech', 'animations', 'cutscene'] as const
+export type AudioType = (typeof AudioTypes)[number]
 
 export type Timeout = {
   get isExpired(): boolean
@@ -60,29 +58,22 @@ class Engine {
   private _backgroundAudio: { actionId: number; audio: Audio } | null = null
   private _transitionStart: number = 0
   private _transitionPromiseResolve: (() => void) | null = null
-  private _currentSaveGame: SaveGame = { name: '' }
-  private _saveGames: SaveGame[]
+  private _currentSaveGame = SaveGame.UnloadedSave
   private readonly _gains: Record<AudioType, GainNode>
 
-  public currentPlayerCharacter: PlayerCharacter | null = new URLSearchParams(window.location.search).get('player') as PlayerCharacter | null
-
-  public get currentPlayerCharacterSafe(): PlayerCharacter {
-    if (this.currentPlayerCharacter == null) {
-      throw new Error('Current player character is null')
-    }
-    return this.currentPlayerCharacter
-  }
+  public readonly saveGameNames: string[]
 
   public get currentPlayerMask(): number {
-    if (this.currentPlayerCharacter == null) {
+    const currentPlayerId = this.currentPlayerId
+    if (currentPlayerId < 1) {
       return 0
     }
 
-    return 1 << (this.currentPlayerId - 1)
+    return 1 << (currentPlayerId - 1)
   }
 
   public get currentPlayerId(): number {
-    switch (this.currentPlayerCharacter) {
+    switch (this.currentSaveGame.playerUnsafe) {
       case null:
         return 0
       case 'pepper':
@@ -97,6 +88,7 @@ class Engine {
         return 5
     }
 
+    const _exhaustiveCheck: never = this.currentSaveGame.playerUnsafe
     throw new Error('Invalid player character')
   }
 
@@ -104,32 +96,27 @@ class Engine {
     return false
   }
 
-  public get saveGameNames(): string[] {
-    return this._saveGames.map(save => save.name)
-  }
-
   public get currentSaveGame(): SaveGame {
     return this._currentSaveGame
   }
 
   private set currentSaveGame(saveGame: SaveGame) {
-    this._saveGames.splice(0, 0, saveGame)
+    this.saveGameNames.splice(0, 0, saveGame.name)
     this._currentSaveGame = saveGame
   }
 
   public loadSaveGame(name: string): void {
-    for (const [index, saveGame] of this._saveGames.entries()) {
-      if (saveGame.name.toUpperCase() === name.toUpperCase()) {
-        this._saveGames.splice(index, 1)
-        this.currentSaveGame = saveGame
-        return
+    for (const [index, saveGameName] of this.saveGameNames.entries()) {
+      if (saveGameName.toUpperCase() === name.toUpperCase()) {
+        this.saveGameNames.splice(index, 1)
+        break
       }
     }
-    this.currentSaveGame = { name }
+    this.currentSaveGame = SaveGame.create(name)
   }
 
   public storeSaveGames(): void {
-    localStorage.setItem(SAVE_GAME_STORAGE_KEY, JSON.stringify(this._saveGames))
+    localStorage.setItem(SAVE_GAME_STORAGE_KEY, JSON.stringify(this.saveGameNames))
   }
 
   public async switchBackgroundMusic(action: AudioAction): Promise<void> {
@@ -343,7 +330,16 @@ class Engine {
     this._setRendererSize()
 
     const savesJson = localStorage.getItem(SAVE_GAME_STORAGE_KEY)
-    this._saveGames = savesJson == null ? [] : JSON.parse(savesJson)
+    this.saveGameNames =
+      savesJson == null
+        ? []
+        : (() => {
+            const jsonResult = JSON.parse(savesJson)
+            if (Array.isArray(jsonResult) && jsonResult.every(name => typeof name === 'string' && SaveGame.validName(name))) {
+              return jsonResult
+            }
+            return []
+          })()
 
     this._gains = {
       music: new GainNode(this._audioListener.context),

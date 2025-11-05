@@ -679,24 +679,24 @@ export abstract class World {
     }
 
     if (key === 'c') {
-      switch (engine.currentPlayerCharacter) {
+      switch (engine.currentSaveGame.player) {
         case 'pepper':
-          engine.currentPlayerCharacter = 'papa'
+          engine.currentSaveGame.player = 'papa'
           break
         case 'papa':
-          engine.currentPlayerCharacter = 'mama'
+          engine.currentSaveGame.player = 'mama'
           break
         case 'mama':
-          engine.currentPlayerCharacter = 'nick'
+          engine.currentSaveGame.player = 'nick'
           break
         case 'nick':
-          engine.currentPlayerCharacter = 'laura'
+          engine.currentSaveGame.player = 'laura'
           break
         default:
-          engine.currentPlayerCharacter = 'pepper'
+          engine.currentSaveGame.player = 'pepper'
           break
       }
-      console.info(`Current actor: ${engine.currentPlayerCharacter}`)
+      console.info(`Current actor: ${engine.currentSaveGame.player}`)
     }
 
     if (key === ' ') {

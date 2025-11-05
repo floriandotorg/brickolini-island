@@ -1128,7 +1128,7 @@ export class Isle extends IsleBase {
     if (noPizzaSign == null || !(noPizzaSign instanceof THREE.Mesh)) {
       throw new Error('No pizza sign found')
     }
-    noPizzaSign.material.map = engine.currentPlayerCharacter === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
+    noPizzaSign.material.map = engine.currentSaveGame.player === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
   }
 
   public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location): Promise<void> {

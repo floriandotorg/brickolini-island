@@ -36,7 +36,7 @@ import {
 } from '../actions/infomain'
 import { InformationCenter_Music } from '../actions/jukebox'
 import { BookWig_Flic } from '../actions/sndanim'
-import type { CharacterMovieAction, ImageAction, RunAnimationAction } from '../lib/action-types'
+import type { CharacterMovieAction, RunAnimationAction } from '../lib/action-types'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { MovieSprite } from '../lib/assets/movie-sprite'
 import type { Composer } from '../lib/effect/composer'
@@ -100,7 +100,26 @@ export class InfoMain extends World {
     this.playAnimation(selectionAnimation)
   }
 
-  private placeCharacterFrame(control: ImageAction): void {
+  private placeCharacterFrame(): void {
+    const character = engine.currentSaveGame.playerUnsafe
+    if (character == null) {
+      this._characterFrame.visible = false
+      return
+    }
+    const control = (() => {
+      switch (character) {
+        case 'mama':
+          return Mama_Up_Bitmap
+        case 'papa':
+          return Papa_Up_Bitmap
+        case 'pepper':
+          return Pepper_Up_Bitmap
+        case 'nick':
+          return Nick_Up_Bitmap
+        case 'laura':
+          return Laura_Up_Bitmap
+      }
+    })()
     const [normalizedX, normalizedY] = normalizePoint(control.location[0], control.location[1])
     this._characterFrame.position.x = normalizedX + this._characterFrame.scale.x / 2
     this._characterFrame.position.y = normalizedY - this._characterFrame.scale.y / 2
@@ -128,28 +147,28 @@ export class InfoMain extends World {
           void switchWorld('regbook')
           return true
         case 'Mama_Ctl':
-          engine.currentPlayerCharacter = 'mama'
-          this.placeCharacterFrame(Mama_Up_Bitmap)
+          engine.currentSaveGame.player = 'mama'
+          this.placeCharacterFrame()
           void this.playCharacterMovie(Mama_All_Movie, avo902in_RunAnim)
           return true
         case 'Papa_Ctl':
-          engine.currentPlayerCharacter = 'papa'
-          this.placeCharacterFrame(Papa_Up_Bitmap)
+          engine.currentSaveGame.player = 'papa'
+          this.placeCharacterFrame()
           void this.playCharacterMovie(Papa_All_Movie, avo903in_RunAnim)
           return true
         case 'Pepper_Ctl':
-          engine.currentPlayerCharacter = 'pepper'
-          this.placeCharacterFrame(Pepper_Up_Bitmap)
+          engine.currentSaveGame.player = 'pepper'
+          this.placeCharacterFrame()
           void this.playCharacterMovie(Pepper_All_Movie, avo901in_RunAnim)
           return true
         case 'Nick_Ctl':
-          engine.currentPlayerCharacter = 'nick'
-          this.placeCharacterFrame(Nick_Up_Bitmap)
+          engine.currentSaveGame.player = 'nick'
+          this.placeCharacterFrame()
           void this.playCharacterMovie(Nick_All_Movie, avo904in_RunAnim)
           return true
         case 'Laura_Ctl':
-          engine.currentPlayerCharacter = 'laura'
-          this.placeCharacterFrame(Laura_Up_Bitmap)
+          engine.currentSaveGame.player = 'laura'
+          this.placeCharacterFrame()
           void this.playCharacterMovie(Laura_All_Movie, avo905in_RunAnim)
           return true
       }
@@ -208,6 +227,7 @@ export class InfoMain extends World {
     super.activate(composer)
     const pad = Math.floor((7 - engine.currentSaveGame.name.length) / 2)
     this._name.name = engine.currentSaveGame.name.padStart(pad + engine.currentSaveGame.name.length, ' ')
+    this.placeCharacterFrame()
   }
 
   public override deactivate(): void {

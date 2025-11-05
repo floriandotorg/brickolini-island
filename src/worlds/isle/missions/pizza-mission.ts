@@ -159,9 +159,9 @@ export class PizzaMission {
 
       this._missionState = { state: 'introduction' }
 
-      const actions = introAnimations[engine.currentPlayerCharacterSafe]
-      const action = actions[this.playerState[engine.currentPlayerCharacterSafe]]
-      this.playerState[engine.currentPlayerCharacterSafe] = Math.min(this.playerState[engine.currentPlayerCharacterSafe] + 1, actions.length - 1)
+      const actions = introAnimations[engine.currentSaveGame.player]
+      const action = actions[this.playerState[engine.currentSaveGame.player]]
+      this.playerState[engine.currentSaveGame.player] = Math.min(this.playerState[engine.currentSaveGame.player] + 1, actions.length - 1)
 
       this.isle.playCameraAnimation(action).then(() => {
         this._missionState = { state: 'waiting-for-accept-quest', timeout: engine.createTimeout(5_000) }
@@ -174,7 +174,7 @@ export class PizzaMission {
       if (this._missionState.state === 'introduction' || this._missionState.state === 'waiting-for-accept-quest') {
         this._missionState = { state: 'delivering', helpAudioTimeout: engine.createTimeout(35_000), missionTimeout: engine.createTimeout(350_000) }
 
-        const action = missionAnimations[engine.currentPlayerCharacterSafe][7 + this.playerState[engine.currentPlayerCharacterSafe]]
+        const action = missionAnimations[engine.currentSaveGame.player][7 + this.playerState[engine.currentSaveGame.player]]
         if (action == null) {
           throw new Error('Action is null')
         }
@@ -192,7 +192,7 @@ export class PizzaMission {
           this.isle.enterVehicle({ type: 'skate', showPizza: true })
           this._helpAudioPlayed = false
           for (let n = 0; n < 4; ++n) {
-            const action = missionAnimations[engine.currentPlayerCharacterSafe][n]
+            const action = missionAnimations[engine.currentSaveGame.player][n]
             if (action == null) {
               throw new Error('Action is null')
             }
@@ -221,7 +221,7 @@ export class PizzaMission {
   public update(): void {
     if (this._missionState.state === 'waiting-for-accept-quest' && this._missionState.timeout.isExpired) {
       this._missionState = { state: 'timeout-accept-quest' }
-      const action = missionAnimations[engine.currentPlayerCharacterSafe][4 + 2]
+      const action = missionAnimations[engine.currentSaveGame.player][4 + 2]
       if (action == null) {
         throw new Error('Action is null')
       }
@@ -236,7 +236,7 @@ export class PizzaMission {
     if (this._missionState.state === 'delivering') {
       if (!this._helpAudioPlayed && this._missionState.helpAudioTimeout.isExpired) {
         this._helpAudioPlayed = true
-        switch (engine.currentPlayerCharacterSafe) {
+        switch (engine.currentSaveGame.player) {
           case 'pepper':
             engine.playAudio(Avo914In_PlayWav, 'speech')
             break
@@ -271,23 +271,27 @@ export class PizzaMission {
       return false
     }
 
-    if (name === 'W' && data === 0x15e && engine.currentPlayerCharacter === 'pepper' && !this._playedLocationAnimation) {
+    if (name === 'W' && data === 0x15e && engine.currentSaveGame.playerUnsafe === 'pepper' && !this._playedLocationAnimation) {
       this._playedLocationAnimation = true
       this.isle.playAnimation(pns050p1_RunAnim)
       return true
-    } else if (name === 'W' && data === 0x15f && engine.currentPlayerCharacter === 'papa' && !this._playedLocationAnimation) {
+    } else if (name === 'W' && data === 0x15f && engine.currentSaveGame.playerUnsafe === 'papa' && !this._playedLocationAnimation) {
       this._playedLocationAnimation = true
       this.isle.playAnimation(wns050p1_RunAnim)
       return true
     } else if (
-      (name === 'S' && data === 0x12e && engine.currentPlayerCharacter === 'pepper') ||
-      (name === 'C' && (((data === 0x24 || data === 0x22) && engine.currentPlayerCharacter === 'mama') || (data === 0x33 && engine.currentPlayerCharacter === 'papa') || ((data === 0x08 || data === 0x09) && engine.currentPlayerCharacter === 'nick') || (data === 0x0b && engine.currentPlayerCharacter === 'laura'))) ||
-      (name === 'W' && data === 0x169 && engine.currentPlayerCharacter === 'nick')
+      (name === 'S' && data === 0x12e && engine.currentSaveGame.playerUnsafe === 'pepper') ||
+      (name === 'C' &&
+        (((data === 0x24 || data === 0x22) && engine.currentSaveGame.playerUnsafe === 'mama') ||
+          (data === 0x33 && engine.currentSaveGame.playerUnsafe === 'papa') ||
+          ((data === 0x08 || data === 0x09) && engine.currentSaveGame.playerUnsafe === 'nick') ||
+          (data === 0x0b && engine.currentSaveGame.playerUnsafe === 'laura'))) ||
+      (name === 'W' && data === 0x169 && engine.currentSaveGame.playerUnsafe === 'nick')
     ) {
       const finish = this._missionState.missionTimeout.millisecondsSinceStart < redFinishTime ? 'red' : this._missionState.missionTimeout.millisecondsSinceStart < blueFinishTime ? 'blue' : 'yellow'
 
-      if (engine.currentPlayerCharacter !== 'pepper') {
-        const animation = missionAnimations[engine.currentPlayerCharacterSafe][4 + (finish === 'red' ? 6 : finish === 'blue' ? 7 : 8)]
+      if (engine.currentSaveGame.playerUnsafe !== 'pepper') {
+        const animation = missionAnimations[engine.currentSaveGame.player][4 + (finish === 'red' ? 6 : finish === 'blue' ? 7 : 8)]
         if (animation == null) {
           throw new Error('Animation is null')
         }

@@ -1426,7 +1426,7 @@ export class Actor extends THREE.Group {
       actor.add(parentMesh)
 
       world.addClickListener(parentMesh, async () => {
-        if (engine.currentPlayerCharacter === 'nick') {
+        if (engine.currentSaveGame.player === 'nick') {
           switch (bodyPartName) {
             case 'head':
             case 'infohat':
@@ -1491,7 +1491,7 @@ export class Actor extends THREE.Group {
     }
 
     world.addClickListener(actor, async (): Promise<boolean> => {
-      if (engine.currentPlayerCharacter === 'pepper') {
+      if (engine.currentSaveGame.player === 'pepper') {
         const hatParentMesh = actor.children.find(child => child.name === 'infohat')
         if (hatParentMesh == null) {
           return false

@@ -25,9 +25,9 @@ export class InfoDoor extends World {
     this._building.onButtonClicked = buttonName => {
       switch (buttonName) {
         case 'Door_Ctl':
-          if (engine.currentPlayerCharacter == null) {
+          if (engine.currentSaveGame.playerUnsafe == null) {
             void this.playAudio(iic037in_PlayWav, 'speech')
-          } else if (engine.currentSaveGame.name.length === 0) {
+          } else if (engine.currentSaveGame.isUnloaded) {
             void this.playAudio(iic007in_PlayWav, 'speech')
           } else {
             void switchWorld('isle', {
