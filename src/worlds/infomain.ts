@@ -1,6 +1,11 @@
 import * as THREE from 'three'
 import {
   _InfoMain,
+  avo901in_RunAnim,
+  avo902in_RunAnim,
+  avo903in_RunAnim,
+  avo904in_RunAnim,
+  avo905in_RunAnim,
   FrameHot_Bitmap,
   iic001in_RunAnim,
   iic019in_RunAnim,
@@ -31,7 +36,7 @@ import {
 } from '../actions/infomain'
 import { InformationCenter_Music } from '../actions/jukebox'
 import { BookWig_Flic } from '../actions/sndanim'
-import type { CharacterMovieAction, ImageAction } from '../lib/action-types'
+import type { CharacterMovieAction, ImageAction, RunAnimationAction } from '../lib/action-types'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { MovieSprite } from '../lib/assets/movie-sprite'
 import type { Composer } from '../lib/effect/composer'
@@ -70,7 +75,7 @@ export class InfoMain extends World {
     this._name = new Name(this._building.scene, 223, 45, 29)
   }
 
-  private async playCharacterMovie(characterMovie: { children: readonly [CharacterMovieAction, CharacterMovieAction, CharacterMovieAction] }): Promise<void> {
+  private async playCharacterMovie(characterMovie: { children: readonly [CharacterMovieAction, CharacterMovieAction, CharacterMovieAction] }, selectionAnimation: RunAnimationAction): Promise<void> {
     const play = async (movie: MovieSprite): Promise<void> => {
       if (this._characterMovieState !== CharacterMovieState.cancelled) {
         await movie.play(this._building.scene)
@@ -92,6 +97,7 @@ export class InfoMain extends World {
     end.removeFromParent()
     this._characterMovieState = CharacterMovieState.idle
     this._characterMovie = null
+    this.playAnimation(selectionAnimation)
   }
 
   private placeCharacterFrame(control: ImageAction): void {
@@ -124,27 +130,27 @@ export class InfoMain extends World {
         case 'Mama_Ctl':
           engine.currentPlayerCharacter = 'mama'
           this.placeCharacterFrame(Mama_Up_Bitmap)
-          void this.playCharacterMovie(Mama_All_Movie)
+          void this.playCharacterMovie(Mama_All_Movie, avo902in_RunAnim)
           return true
         case 'Papa_Ctl':
           engine.currentPlayerCharacter = 'papa'
           this.placeCharacterFrame(Papa_Up_Bitmap)
-          void this.playCharacterMovie(Papa_All_Movie)
+          void this.playCharacterMovie(Papa_All_Movie, avo903in_RunAnim)
           return true
         case 'Pepper_Ctl':
           engine.currentPlayerCharacter = 'pepper'
           this.placeCharacterFrame(Pepper_Up_Bitmap)
-          void this.playCharacterMovie(Pepper_All_Movie)
+          void this.playCharacterMovie(Pepper_All_Movie, avo901in_RunAnim)
           return true
         case 'Nick_Ctl':
           engine.currentPlayerCharacter = 'nick'
           this.placeCharacterFrame(Nick_Up_Bitmap)
-          void this.playCharacterMovie(Nick_All_Movie)
+          void this.playCharacterMovie(Nick_All_Movie, avo904in_RunAnim)
           return true
         case 'Laura_Ctl':
           engine.currentPlayerCharacter = 'laura'
           this.placeCharacterFrame(Laura_Up_Bitmap)
-          void this.playCharacterMovie(Laura_All_Movie)
+          void this.playCharacterMovie(Laura_All_Movie, avo905in_RunAnim)
           return true
       }
       return false
