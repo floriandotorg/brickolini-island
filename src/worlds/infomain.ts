@@ -6,7 +6,11 @@ import {
   avo903in_RunAnim,
   avo904in_RunAnim,
   avo905in_RunAnim,
+  Boat_A_Bitmap,
+  Cop_A_Bitmap,
   FrameHot_Bitmap,
+  Gas_A_Bitmap,
+  Info_A_Bitmap,
   iic001in_RunAnim,
   iic019in_RunAnim,
   iic020in_RunAnim,
@@ -27,20 +31,23 @@ import {
   Laura_Up_Bitmap,
   Mama_All_Movie,
   Mama_Up_Bitmap,
+  Med_A_Bitmap,
   Nick_All_Movie,
   Nick_Up_Bitmap,
   Papa_All_Movie,
   Papa_Up_Bitmap,
   Pepper_All_Movie,
   Pepper_Up_Bitmap,
+  Pizza_A_Bitmap,
+  Race_A_Bitmap,
 } from '../actions/infomain'
 import { InformationCenter_Music } from '../actions/jukebox'
 import { BookWig_Flic } from '../actions/sndanim'
-import type { CharacterMovieAction, RunAnimationAction } from '../lib/action-types'
+import type { CharacterMovieAction, ImageAction, RunAnimationAction } from '../lib/action-types'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { MovieSprite } from '../lib/assets/movie-sprite'
 import type { Composer } from '../lib/effect/composer'
-import { engine, normalizePoint } from '../lib/engine'
+import { engine, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
 import { getSettings } from '../lib/settings'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
@@ -56,6 +63,19 @@ enum CharacterMovieState {
   cancelled,
 }
 
+type Destination = {
+  sprite: THREE.Sprite
+  normalizedRect: NormalizedRect
+}
+
+const createDestination = (image: ImageAction, parent: THREE.Scene): Destination => {
+  const sprite = createImageSprite(image, -0.45)
+  sprite.visible = false
+  parent.add(sprite)
+  const normalizedRect = normalizeRect(image.location[0], image.location[1], image.dimensions.width, image.dimensions.height)
+  return { sprite, normalizedRect }
+}
+
 export class InfoMain extends World {
   private _building = new Building()
 
@@ -66,6 +86,7 @@ export class InfoMain extends World {
   private _infomanHasBeenClicked = false
   private _characterMovieState: CharacterMovieState = CharacterMovieState.idle
   private _characterMovie: [MovieSprite, MovieSprite, MovieSprite] | null = null
+  private readonly _destinations: Destination[]
 
   constructor() {
     super('infomain')
@@ -73,6 +94,15 @@ export class InfoMain extends World {
     this._building.scene.add(this._characterFrame)
     this._characterFrame.visible = false
     this._name = new Name(this._building.scene, 223, 45, 29)
+    this._destinations = [
+      createDestination(Info_A_Bitmap, this._building.scene),
+      createDestination(Boat_A_Bitmap, this._building.scene),
+      createDestination(Race_A_Bitmap, this._building.scene),
+      createDestination(Pizza_A_Bitmap, this._building.scene),
+      createDestination(Gas_A_Bitmap, this._building.scene),
+      createDestination(Med_A_Bitmap, this._building.scene),
+      createDestination(Cop_A_Bitmap, this._building.scene),
+    ]
   }
 
   private async playCharacterMovie(characterMovie: { children: readonly [CharacterMovieAction, CharacterMovieAction, CharacterMovieAction] }, selectionAnimation: RunAnimationAction): Promise<void> {
@@ -245,6 +275,12 @@ export class InfoMain extends World {
 
   public override pointerUp(_event: MouseEvent): void {
     this._building.pointerUp()
+  }
+
+  public override pointerMove(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
+    for (const dest of this._destinations) {
+      dest.sprite.visible = dest.normalizedRect.inside(normalizedX, normalizedY)
+    }
   }
 
   public override skipAllRunningAnimations(): void {
