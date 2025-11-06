@@ -1,11 +1,11 @@
 import * as THREE from 'three'
 import { type ActionBase, type ControlAction, getExtraValue, type ImageAction, isImageAction, type ParallelActionTuple, splitExtraValue } from '../action-types'
-import { normalizeRect } from '../engine'
+import { type NormalizedRect, normalizeRect } from '../engine'
 import { setScaleAndPosition } from './canvas-sprite'
 import { getImage } from './image'
 import { createTexture } from './texture'
 
-type PlacedImage = { context: CanvasRenderingContext2D; action: ImageAndOtherAction; normalizedX: number; normalizedY: number; normalizedWidth: number; normalizedHeight: number }
+type PlacedImage = { context: CanvasRenderingContext2D; action: ImageAndOtherAction; normalizedRect: NormalizedRect }
 
 type ControlChild = ImageAction | ParallelActionTuple<readonly [ImageAction, ActionBase?]>
 type ImageAndOtherAction = { image: ImageAction; other?: ActionBase }
@@ -40,7 +40,7 @@ const getImageAction = (action: ControlChild | undefined): ImageAndOtherAction =
 
 const createPlacedImage = async (action: ImageAndOtherAction, willReadFrequently: boolean = false): Promise<PlacedImage> => {
   const image = await getImage(action.image)
-  const [normalizedX, normalizedY, normalizedWidth, normalizedHeight] = normalizeRect(action.image.location[0], action.image.location[1], image.width, image.height)
+  const normalizedRect = normalizeRect(action.image.location[0], action.image.location[1], image.width, image.height)
   const canvas = document.createElement('canvas')
   const context = canvas.getContext('2d', { willReadFrequently })
   if (context == null) {
@@ -49,17 +49,16 @@ const createPlacedImage = async (action: ImageAndOtherAction, willReadFrequently
   canvas.width = image.width
   canvas.height = image.height
   context.drawImage(image, 0, 0)
-  return { context, action, normalizedX, normalizedY, normalizedWidth, normalizedHeight }
+  return { context, action, normalizedRect }
 }
 
 const getPixel = (image: PlacedImage, normalizedX: number, normalizedY: number): [number, number, number, number] | null => {
-  const rectX = normalizedX - image.normalizedX
-  const rectY = normalizedY - image.normalizedY
-  if (rectX < 0 || rectY > 0 || rectX > image.normalizedWidth || rectY < -image.normalizedHeight) {
+  const normalizedInRect = image.normalizedRect.renormalize(normalizedX, normalizedY)
+  if (normalizedInRect == null) {
     return null
   }
-  const x = (rectX / image.normalizedWidth) * image.context.canvas.width
-  const y = (-rectY / image.normalizedHeight) * image.context.canvas.height
+  const x = normalizedInRect[0] * image.context.canvas.width
+  const y = normalizedInRect[1] * image.context.canvas.height
   const [r, g, b, a] = image.context.getImageData(x, y, 1, 1).data
   return [r, g, b, a]
 }
@@ -141,10 +140,12 @@ class GridControl implements Handler {
     if (pixel == null || pixel[3] === 0) {
       return null
     }
-    const offsetX = normalizedX - this._idleImage.normalizedX
-    const offsetY = -(normalizedY - this._idleImage.normalizedY)
-    const col = Math.floor(offsetX / (this._idleImage.normalizedWidth / this.numberOfColumns))
-    const row = Math.floor(offsetY / (this._idleImage.normalizedHeight / this.numberOfRows))
+    const renormalized = this._idleImage.normalizedRect.renormalize(normalizedX, normalizedY)
+    if (renormalized == null) {
+      return null
+    }
+    const col = Math.floor(renormalized[0] * this.numberOfColumns)
+    const row = Math.floor(-renormalized[1] * this.numberOfRows)
     const index = row * this.numberOfColumns + col
     this._state = index + 1
     return { state: this._state, otherAction: this._stateImages[index].other }

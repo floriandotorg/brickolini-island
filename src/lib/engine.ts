@@ -22,11 +22,41 @@ export const normalizePoint = (x: number, y: number, totalSize: [number, number]
   return [normalizedX, normalizedY]
 }
 
-export const normalizeRect = (x: number, y: number, w: number, h: number, totalSize: [number, number] = [ORIGINAL_TOTAL_WIDTH, ORIGINAL_TOTAL_HEIGHT]): [number, number, number, number] => {
+export class NormalizedRect {
+  public constructor(
+    public readonly normalizedX: number,
+    public readonly normalizedY: number,
+    public readonly normalizedWidth: number,
+    public readonly normalizedHeight: number,
+  ) {}
+
+  public inside(normalizedX: number, normalizedY: number): boolean {
+    const [rectX, rectY] = this.relative(normalizedX, normalizedY)
+    return rectX >= 0 && rectY <= 0 && rectX <= this.normalizedWidth && rectY >= -this.normalizedHeight
+  }
+
+  public relative(normalizedX: number, normalizedY: number): [number, number] {
+    const rectX = normalizedX - this.normalizedX
+    const rectY = normalizedY - this.normalizedY
+    return [rectX, rectY]
+  }
+
+  public renormalize(normalizedX: number, normalizedY: number): [number, number] | null {
+    if (!this.inside(normalizedX, normalizedY)) {
+      return null
+    }
+    const [rectX, rectY] = this.relative(normalizedX, normalizedY)
+    const x = rectX / this.normalizedWidth
+    const y = -rectY / this.normalizedHeight
+    return [x, y]
+  }
+}
+
+export const normalizeRect = (x: number, y: number, w: number, h: number, totalSize: [number, number] = [ORIGINAL_TOTAL_WIDTH, ORIGINAL_TOTAL_HEIGHT]): NormalizedRect => {
   const [normalizedX, normalizedY] = normalizePoint(x, y, totalSize)
   const normalizedWidth = (w / totalSize[0]) * 2
   const normalizedHeight = (h / totalSize[1]) * 2
-  return [normalizedX, normalizedY, normalizedWidth, normalizedHeight]
+  return new NormalizedRect(normalizedX, normalizedY, normalizedWidth, normalizedHeight)
 }
 
 export const AudioTypes = ['music', 'effects', 'speech', 'animations', 'cutscene'] as const

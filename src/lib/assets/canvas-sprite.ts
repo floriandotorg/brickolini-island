@@ -4,7 +4,7 @@ import { normalizeRect } from '../engine'
 import { createTexture } from './texture'
 
 export const setScaleAndPosition = (sprite: THREE.Sprite, originalActionWidth: number, originalActionHeight: number, x: number, y: number, z?: number) => {
-  const [normalizedX, normalizedY, normalizedWidth, normalizedHeight] = normalizeRect(x, y, originalActionWidth, originalActionHeight)
+  const { normalizedX, normalizedY, normalizedWidth, normalizedHeight } = normalizeRect(x, y, originalActionWidth, originalActionHeight)
   sprite.scale.set(normalizedWidth, normalizedHeight, 1)
   sprite.position.set(normalizedX + normalizedWidth / 2, normalizedY - normalizedHeight / 2, z ?? sprite.position.z)
 }
