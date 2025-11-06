@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator.js'
-import type { IsleParam } from '../../worlds/isle'
+import type { IsleParam } from '../../worlds/isle-base'
 import { type ActionBase, type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
 import { Control, type ControlEvent } from '../assets/control'

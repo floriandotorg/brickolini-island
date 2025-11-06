@@ -390,7 +390,7 @@ import { getSettings } from '../../lib/settings'
 import { switchWorld } from '../../lib/switch-world'
 import type { Vehicle, VehicleType } from '../../lib/world/dashboard'
 import type { WorldName } from '../../lib/world/world'
-import { IsleBase } from '../isle-base'
+import { IsleBase, type IsleParam } from '../isle-base'
 import { PizzaMission } from './missions/pizza-mission'
 
 // import { tns002br_RunAnim } from '../actions/act2main'
@@ -786,16 +786,6 @@ const TRANSPORTATION_MAX_LINEAR_VEL: {
   racecar: 40,
   skate: 15,
   towtk: 40,
-}
-
-export type IsleParam = {
-  position: {
-    boundaryName: string
-    source: number
-    sourceScale: number
-    destination: number
-    destinationScale: number
-  }
 }
 
 export class Isle extends IsleBase {
