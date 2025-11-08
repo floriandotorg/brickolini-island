@@ -148,6 +148,10 @@ class Engine {
     }
   }
 
+  public stopBackgroundMusic(): void {
+    this._backgroundAudio?.audio.stop()
+  }
+
   public resumeBackgroundMusic(): void {
     if (this._backgroundAudio != null) {
       this._backgroundAudio.audio.play()

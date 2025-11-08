@@ -89,12 +89,14 @@ export class InfoMain extends World {
     const promises = [MovieSprite.createCharacterMovie(characterMovie.children[0], -0.252), MovieSprite.createCharacterMovie(characterMovie.children[1], -0.251), MovieSprite.createCharacterMovie(characterMovie.children[2], -0.25)]
     const [start, movie, end] = await Promise.all(promises)
     this._characterMovie = [start, movie, end]
+    engine.stopBackgroundMusic()
     await play(start)
     await play(movie)
     start.removeFromParent()
     movie.removeFromParent()
     await play(end)
     end.removeFromParent()
+    engine.resumeBackgroundMusic()
     this._characterMovieState = CharacterMovieState.idle
     this._characterMovie = null
     this.playAnimation(selectionAnimation)
