@@ -1,4 +1,5 @@
-import { type PlayerCharacter, PlayerCharacters } from './engine'
+export const PlayerCharacters = ['pepper', 'papa', 'mama', 'nick', 'laura'] as const
+export type PlayerCharacter = (typeof PlayerCharacters)[number]
 
 export const SAVE_GAME_STORAGE_KEY = 'saves'
 

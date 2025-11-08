@@ -85,7 +85,8 @@ import { PizzaMission_Music } from '../../../actions/jukebox'
 import { TRS302_OpenJailDoor } from '../../../actions/sndanim'
 import { Action } from '../../../actions/types'
 import type { AnimationAction, RunAnimationAction } from '../../../lib/action-types'
-import { engine, type PlayerCharacter, type Timeout } from '../../../lib/engine'
+import { engine, type Timeout } from '../../../lib/engine'
+import type { PlayerCharacter } from '../../../lib/save-game'
 import type { Isle } from '../index'
 
 const introAnimations: {

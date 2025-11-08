@@ -29,9 +29,6 @@ export const normalizeRect = (x: number, y: number, w: number, h: number, totalS
   return [normalizedX, normalizedY, normalizedWidth, normalizedHeight]
 }
 
-export const PlayerCharacters = ['pepper', 'papa', 'mama', 'nick', 'laura'] as const
-export type PlayerCharacter = (typeof PlayerCharacters)[number]
-
 export const AudioTypes = ['music', 'effects', 'speech', 'animations', 'cutscene'] as const
 export type AudioType = (typeof AudioTypes)[number]
 
