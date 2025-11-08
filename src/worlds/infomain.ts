@@ -28,16 +28,26 @@ import {
   iicc28in_RunAnim,
   iicx17in_RunAnim,
   Laura_All_Movie,
+  Laura_Ctl,
   Laura_Up_Bitmap,
+  LauraHot_Bitmap,
   Mama_All_Movie,
+  Mama_Ctl,
   Mama_Up_Bitmap,
+  MamaHot_Bitmap,
   Med_A_Bitmap,
   Nick_All_Movie,
+  Nick_Ctl,
   Nick_Up_Bitmap,
+  NickHot_Bitmap,
   Papa_All_Movie,
+  Papa_Ctl,
   Papa_Up_Bitmap,
+  PapaHot_Bitmap,
   Pepper_All_Movie,
+  Pepper_Ctl,
   Pepper_Up_Bitmap,
+  PepperHot_Bitmap,
   Pizza_A_Bitmap,
   Race_A_Bitmap,
 } from '../actions/infomain'
@@ -48,6 +58,7 @@ import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { MovieSprite } from '../lib/assets/movie-sprite'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
+import { type PlayerCharacter, PlayerCharacters } from '../lib/save-game'
 import { getSettings } from '../lib/settings'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
@@ -76,6 +87,24 @@ const createDestination = (image: ImageAction, parent: THREE.Scene): Destination
   return { sprite, normalizedRect }
 }
 
+type NoSelectedCharacter = {
+  readonly state: 'idle'
+}
+const IdleState: NoSelectedCharacter = { state: 'idle' }
+
+type SelectedCharacter = {
+  readonly state: 'selected'
+  readonly character: PlayerCharacter
+}
+
+type DraggingCharacter = {
+  readonly state: 'dragging'
+  readonly character: PlayerCharacter
+  readonly sprite: THREE.Sprite
+}
+
+type SelectedCharacterStates = NoSelectedCharacter | SelectedCharacter | DraggingCharacter
+
 export class InfoMain extends World {
   private _building = new Building()
 
@@ -87,6 +116,8 @@ export class InfoMain extends World {
   private _characterMovieState: CharacterMovieState = CharacterMovieState.idle
   private _characterMovie: [MovieSprite, MovieSprite, MovieSprite] | null = null
   private readonly _destinations: Destination[]
+  private readonly _characterControls: Record<PlayerCharacter, string>
+  private _selectedCharacter: SelectedCharacterStates = IdleState
 
   constructor() {
     super('infomain')
@@ -103,6 +134,13 @@ export class InfoMain extends World {
       createDestination(Med_A_Bitmap, this._building.scene),
       createDestination(Cop_A_Bitmap, this._building.scene),
     ]
+    this._characterControls = {
+      mama: Mama_Ctl.name,
+      papa: Papa_Ctl.name,
+      pepper: Pepper_Ctl.name,
+      nick: Nick_Ctl.name,
+      laura: Laura_Ctl.name,
+    }
   }
 
   private async playCharacterMovie(characterMovie: { children: readonly [CharacterMovieAction, CharacterMovieAction, CharacterMovieAction] }, selectionAnimation: RunAnimationAction): Promise<void> {
@@ -178,31 +216,14 @@ export class InfoMain extends World {
         case 'Book_Ctl':
           void switchWorld('regbook')
           return true
-        case 'Mama_Ctl':
-          engine.currentSaveGame.player = 'mama'
-          this.placeCharacterFrame()
-          void this.playCharacterMovie(Mama_All_Movie, avo902in_RunAnim)
-          return true
-        case 'Papa_Ctl':
-          engine.currentSaveGame.player = 'papa'
-          this.placeCharacterFrame()
-          void this.playCharacterMovie(Papa_All_Movie, avo903in_RunAnim)
-          return true
-        case 'Pepper_Ctl':
-          engine.currentSaveGame.player = 'pepper'
-          this.placeCharacterFrame()
-          void this.playCharacterMovie(Pepper_All_Movie, avo901in_RunAnim)
-          return true
-        case 'Nick_Ctl':
-          engine.currentSaveGame.player = 'nick'
-          this.placeCharacterFrame()
-          void this.playCharacterMovie(Nick_All_Movie, avo904in_RunAnim)
-          return true
-        case 'Laura_Ctl':
-          engine.currentSaveGame.player = 'laura'
-          this.placeCharacterFrame()
-          void this.playCharacterMovie(Laura_All_Movie, avo905in_RunAnim)
-          return true
+        default:
+          for (const character of PlayerCharacters) {
+            const control = this._characterControls[character]
+            if (control === buttonName) {
+              this._selectedCharacter = { state: 'selected', character }
+              return true
+            }
+          }
       }
       return false
     }
@@ -275,11 +296,62 @@ export class InfoMain extends World {
 
   public override pointerUp(_event: MouseEvent): void {
     this._building.pointerUp()
+    if (this._selectedCharacter.state === 'selected' || this._selectedCharacter.state === 'dragging') {
+      const character = this._selectedCharacter.character
+      engine.currentSaveGame.player = character
+      this.placeCharacterFrame()
+      switch (character) {
+        case 'mama':
+          void this.playCharacterMovie(Mama_All_Movie, avo902in_RunAnim)
+          break
+        case 'papa':
+          void this.playCharacterMovie(Papa_All_Movie, avo903in_RunAnim)
+          break
+        case 'pepper':
+          void this.playCharacterMovie(Pepper_All_Movie, avo901in_RunAnim)
+          break
+        case 'nick':
+          void this.playCharacterMovie(Nick_All_Movie, avo904in_RunAnim)
+          break
+        case 'laura':
+          void this.playCharacterMovie(Laura_All_Movie, avo905in_RunAnim)
+          break
+      }
+      for (const dest of this._destinations) {
+        dest.sprite.visible = false
+      }
+    }
+    if (this._selectedCharacter.state === 'dragging') {
+      this._selectedCharacter.sprite.removeFromParent()
+    }
+    this._selectedCharacter = IdleState
   }
 
   public override pointerMove(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
-    for (const dest of this._destinations) {
-      dest.sprite.visible = dest.normalizedRect.inside(normalizedX, normalizedY)
+    if (this._selectedCharacter.state === 'selected') {
+      const image = (() => {
+        switch (this._selectedCharacter.character) {
+          case 'mama':
+            return MamaHot_Bitmap
+          case 'papa':
+            return PapaHot_Bitmap
+          case 'pepper':
+            return PepperHot_Bitmap
+          case 'nick':
+            return NickHot_Bitmap
+          case 'laura':
+            return LauraHot_Bitmap
+        }
+      })()
+      const sprite = createImageSprite(image, -0.4)
+      this._building.scene.add(sprite)
+      this._selectedCharacter = { state: 'dragging', character: this._selectedCharacter.character, sprite }
+    }
+    if (this._selectedCharacter.state === 'dragging') {
+      this._selectedCharacter.sprite.position.set(normalizedX + this._selectedCharacter.sprite.scale.x / 2, normalizedY - this._selectedCharacter.sprite.scale.y / 2, -0.4)
+      for (const dest of this._destinations) {
+        dest.sprite.visible = dest.normalizedRect.inside(normalizedX, normalizedY)
+      }
     }
   }
 
