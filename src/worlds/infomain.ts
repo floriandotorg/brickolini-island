@@ -348,7 +348,7 @@ export class InfoMain extends World {
       this._selectedCharacter = { state: 'dragging', character: this._selectedCharacter.character, sprite }
     }
     if (this._selectedCharacter.state === 'dragging') {
-      this._selectedCharacter.sprite.position.set(event.normalizedX + this._selectedCharacter.sprite.scale.x / 2, event.normalizedY - this._selectedCharacter.sprite.scale.y / 2, -0.4)
+      this._selectedCharacter.sprite.position.set(event.normalizedX + this._selectedCharacter.sprite.scale.x / 2, event.normalizedY - this._selectedCharacter.sprite.scale.y / 2, -0.2)
       for (const dest of this._destinations) {
         dest.sprite.visible = dest.normalizedRect.inside(event.normalizedX, event.normalizedY)
       }
