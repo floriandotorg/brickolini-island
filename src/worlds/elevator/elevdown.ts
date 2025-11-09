@@ -6,6 +6,7 @@ import type { NormalizedMouseEvent } from '../../lib/engine'
 import { switchWorld } from '../../lib/switch-world'
 import { Building } from '../../lib/world/building'
 import { IsleBase } from '../isle-base'
+import { ElevatorEntrance } from '.'
 
 export class ElevDown extends IsleBase {
   public _building = new Building()
@@ -27,7 +28,7 @@ export class ElevDown extends IsleBase {
       switch (buttonName) {
         case 'ElevDown_Elevator_Ctl':
           // TODO: Actually enter elevator and not just jump into the infocenter
-          void switchWorld('infomain')
+          void switchWorld('elevride', ElevatorEntrance.Third)
           return true
         case 'ElevDown_RightArrow_Ctl':
           void switchWorld('seaview')

@@ -9,6 +9,12 @@ export const setScaleAndPosition = (sprite: THREE.Sprite, originalActionWidth: n
   sprite.position.set(normalizedX + normalizedWidth / 2, normalizedY - normalizedHeight / 2, z ?? sprite.position.z)
 }
 
+export const setImageSprite = (sprite: THREE.Sprite, bitmap: ImageAction, z?: number): void => {
+  sprite.material.map?.dispose()
+  setScaleAndPosition(sprite, bitmap.dimensions.width, bitmap.dimensions.height, bitmap.location[0], bitmap.location[1], z)
+  sprite.material.map = createTexture(bitmap)
+}
+
 export const createNormalizedSprite = (x: number, y: number, z: number, originalActionWidth: number, originalActionHeight: number): THREE.Sprite => {
   const sprite = new THREE.Sprite()
   setScaleAndPosition(sprite, originalActionWidth, originalActionHeight, x, y, z)
@@ -16,8 +22,8 @@ export const createNormalizedSprite = (x: number, y: number, z: number, original
 }
 
 export const createImageSprite = (bitmap: ImageAction, z: number): THREE.Sprite => {
-  const sprite = createNormalizedSprite(bitmap.location[0], bitmap.location[1], z, bitmap.dimensions.width, bitmap.dimensions.height)
-  sprite.material.map = createTexture(bitmap)
+  const sprite = new THREE.Sprite()
+  setImageSprite(sprite, bitmap, z)
   return sprite
 }
 

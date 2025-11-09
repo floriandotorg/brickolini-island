@@ -43,6 +43,8 @@ export const switchWorld = async (worldName: WorldName, param?: unknown) => {
           return import('../worlds/build/jetski').then(m => new m.Jetski())
         case 'racecar':
           return import('../worlds/build/racecar').then(m => new m.Racecar())
+        case 'elevride':
+          return import('../worlds/elevator/index').then(m => new m.Elevator())
         case 'elevopen':
           return import('../worlds/elevator/elevopen').then(m => new m.ElevOpen())
         case 'seaview':
