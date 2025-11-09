@@ -3,10 +3,15 @@ import type { NormalWorld, World, WorldName, WorldSpawn } from './world/world'
 
 const worlds = new Map<WorldName, World>()
 
+let lastWorld: WorldSpawn | null = null
+let currentWorld: WorldSpawn | null = null
+
 export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
   if (engine.hasWorld) {
     engine.currentWorld.skipAllRunningAnimations(true)
   }
+
+  lastWorld = currentWorld
 
   const transition = engine.hasWorld ? engine.transition() : Promise.resolve()
   const normalizedSpawn: WorldSpawn = typeof spawn === 'string' ? { name: spawn } : spawn
@@ -68,6 +73,8 @@ export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
     throw new Error(`World ${normalizedSpawn.name} not found`)
   }
 
+  currentWorld = normalizedSpawn
+
   if (!world.initialized) {
     await world.init()
   }
@@ -86,4 +93,13 @@ export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
   })()
 
   await engine.setWorld(world, param)
+}
+
+const invalidPreviousWorlds: WorldName[] = ['elevbott', 'elevride', 'elevopen', 'seaview', 'observe', 'elevdown'] as const
+
+export const switchToPreviousWorld = (): Promise<void> => {
+  if (lastWorld != null && !invalidPreviousWorlds.includes(lastWorld.name)) {
+    return switchWorld(lastWorld)
+  }
+  return Promise.resolve()
 }

@@ -62,7 +62,7 @@ import type { Composer } from '../lib/effect/composer'
 import { engine, NeverTimeout, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect, type Timeout } from '../lib/engine'
 import { type PlayerCharacter, PlayerCharacters } from '../lib/save-game'
 import { getSettings } from '../lib/settings'
-import { switchWorld } from '../lib/switch-world'
+import { switchToPreviousWorld, switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
 import { World } from '../lib/world/world'
@@ -236,6 +236,9 @@ export class InfoMain extends World {
           return true
         case 'Book_Ctl':
           void switchWorld('regbook')
+          return true
+        case 'BigInfo_Ctl':
+          void switchToPreviousWorld()
           return true
         default:
           for (const character of PlayerCharacters) {
