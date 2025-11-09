@@ -11,57 +11,45 @@ export const switchWorld = async (worldName: WorldName, param?: unknown) => {
   const transition = engine.hasWorld ? engine.transition() : Promise.resolve()
 
   if (!worlds.has(worldName)) {
-    switch (worldName) {
-      case 'isle':
-        worlds.set('isle', await import('../worlds/isle').then(m => new m.Isle()))
-        break
-      case 'hospital':
-        worlds.set('hospital', await import('../worlds/hospital').then(m => new m.Hospital()))
-        break
-      case 'garage':
-        worlds.set('garage', await import('../worlds/garage').then(m => new m.Garage()))
-        break
-      case 'infomain':
-        worlds.set('infomain', await import('../worlds/infomain').then(m => new m.InfoMain()))
-        break
-      case 'regbook':
-        worlds.set('regbook', await import('../worlds/regbook').then(m => new m.RegBook()))
-        break
-      case 'police':
-        worlds.set('police', await import('../worlds/police').then(m => new m.Police()))
-        break
-      case 'elevbott':
-        worlds.set('elevbott', await import('../worlds/elevbott').then(m => new m.ElevBott()))
-        break
-      case 'infodoor':
-        worlds.set('infodoor', await import('../worlds/infodoor').then(m => new m.InfoDoor()))
-        break
-      case 'infoscor':
-        worlds.set('infoscor', await import('../worlds/infoscor').then(m => new m.InfoScor()))
-        break
-      case 'polidoor':
-        worlds.set('polidoor', await import('../worlds/polidoor').then(m => new m.PoliDoor()))
-        break
-      case 'garadoor':
-        worlds.set('garadoor', await import('../worlds/garadoor').then(m => new m.GarDoor()))
-        break
-      case 'copter':
-        worlds.set('copter', await import('../worlds/build/copter').then(m => new m.Copter()))
-        break
-      case 'dunecar':
-        worlds.set('dunecar', await import('../worlds/build/dunecar').then(m => new m.Dunecar()))
-        break
-      case 'jetski':
-        worlds.set('jetski', await import('../worlds/build/jetski').then(m => new m.Jetski()))
-        break
-      case 'racecar':
-        worlds.set('racecar', await import('../worlds/build/racecar').then(m => new m.Racecar()))
-        break
-      default: {
-        const _exhaustiveCheck: never = worldName
-        throw new Error(`Unhandled world: ${worldName}`)
+    const newWorld = await (() => {
+      switch (worldName) {
+        case 'isle':
+          return import('../worlds/isle').then(m => new m.Isle())
+        case 'hospital':
+          return import('../worlds/hospital').then(m => new m.Hospital())
+        case 'garage':
+          return import('../worlds/garage').then(m => new m.Garage())
+        case 'infomain':
+          return import('../worlds/infomain').then(m => new m.InfoMain())
+        case 'regbook':
+          return import('../worlds/regbook').then(m => new m.RegBook())
+        case 'police':
+          return import('../worlds/police').then(m => new m.Police())
+        case 'elevbott':
+          return import('../worlds/elevbott').then(m => new m.ElevBott())
+        case 'infodoor':
+          return import('../worlds/infodoor').then(m => new m.InfoDoor())
+        case 'infoscor':
+          return import('../worlds/infoscor').then(m => new m.InfoScor())
+        case 'polidoor':
+          return import('../worlds/polidoor').then(m => new m.PoliDoor())
+        case 'garadoor':
+          return import('../worlds/garadoor').then(m => new m.GarDoor())
+        case 'copter':
+          return import('../worlds/build/copter').then(m => new m.Copter())
+        case 'dunecar':
+          return import('../worlds/build/dunecar').then(m => new m.Dunecar())
+        case 'jetski':
+          return import('../worlds/build/jetski').then(m => new m.Jetski())
+        case 'racecar':
+          return import('../worlds/build/racecar').then(m => new m.Racecar())
+        default: {
+          const _exhaustiveCheck: never = worldName
+          throw new Error(`Unhandled world: ${worldName}`)
+        }
       }
-    }
+    })()
+    worlds.set(worldName, newWorld)
   }
 
   const world = worlds.get(worldName)
