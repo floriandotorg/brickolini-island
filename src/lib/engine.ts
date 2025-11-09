@@ -69,6 +69,18 @@ export type Timeout = {
 
 export type Sentinel = symbol & { __brand: 'Sentinel' }
 
+export type NormalizedMouseEvent = {
+  normalizedX: number
+  normalizedY: number
+}
+
+const createNormalizedMouseEvent = (event: MouseEvent, canvas: HTMLCanvasElement): NormalizedMouseEvent => {
+  const rect = canvas.getBoundingClientRect()
+  const [normalizedX, normalizedY] = normalizePoint(event.clientX - rect.left, event.clientY - rect.top, [rect.width, rect.height])
+
+  return { normalizedX, normalizedY }
+}
+
 class Engine {
   private _state: 'cutscene' | 'transition' | 'game' = 'game'
   private _clock: THREE.Clock = new THREE.Clock()
@@ -310,10 +322,7 @@ class Engine {
       }
 
       if (this._state === 'game') {
-        const rect = canvas.getBoundingClientRect()
-        const [normalizedX, normalizedY] = normalizePoint(event.clientX - rect.left, event.clientY - rect.top, [rect.width, rect.height])
-
-        this._world?.click(event, normalizedX, normalizedY)
+        this._world?.click(createNormalizedMouseEvent(event, this._canvas))
       }
     })
 
@@ -322,10 +331,7 @@ class Engine {
       event.stopPropagation()
 
       if (this._state === 'game') {
-        const rect = canvas.getBoundingClientRect()
-        const [normalizedX, normalizedY] = normalizePoint(event.clientX - rect.left, event.clientY - rect.top, [rect.width, rect.height])
-
-        this._world?.pointerDown(event, normalizedX, normalizedY)
+        this._world?.pointerDown(createNormalizedMouseEvent(event, this._canvas))
       }
     })
 
@@ -334,7 +340,7 @@ class Engine {
       event.stopPropagation()
 
       if (this._state === 'game') {
-        this._world?.pointerUp(event)
+        this._world?.pointerUp(createNormalizedMouseEvent(event, this._canvas))
       }
     })
 
@@ -343,10 +349,7 @@ class Engine {
       event.stopPropagation()
 
       if (this._state === 'game') {
-        const rect = canvas.getBoundingClientRect()
-        const [normalizedX, normalizedY] = normalizePoint(event.clientX - rect.left, event.clientY - rect.top, [rect.width, rect.height])
-
-        this._world?.pointerMove(event, normalizedX, normalizedY)
+        this._world?.pointerMove(createNormalizedMouseEvent(event, this._canvas))
       }
     })
 

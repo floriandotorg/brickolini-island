@@ -384,7 +384,7 @@ import { type DTA, loadAnimationInfoFromDTA } from '../../lib/assets/dta'
 import { calculateTransformationMatrix } from '../../lib/assets/model'
 import { createTexture } from '../../lib/assets/texture'
 import type { Composer } from '../../lib/effect/composer'
-import { engine } from '../../lib/engine'
+import { engine, type NormalizedMouseEvent } from '../../lib/engine'
 import { type Location, locations } from '../../lib/locations'
 import { getSettings } from '../../lib/settings'
 import { switchWorld } from '../../lib/switch-world'
@@ -1217,12 +1217,12 @@ export class Isle extends IsleBase {
     super.resize(width, height)
   }
 
-  public override pointerDown(event: MouseEvent, normalizedX: number, normalizedY: number): void {
-    super.pointerDown(event, normalizedX, normalizedY)
-    this._dashboard.pointerDown(normalizedX, normalizedY)
+  public override pointerDown(event: NormalizedMouseEvent): void {
+    super.pointerDown(event)
+    this._dashboard.pointerDown(event.normalizedX, event.normalizedY)
   }
 
-  public override pointerUp(event: MouseEvent): void {
+  public override pointerUp(event: NormalizedMouseEvent): void {
     super.pointerUp(event)
     this._dashboard.pointerUp()
   }

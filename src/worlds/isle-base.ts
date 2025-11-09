@@ -6,7 +6,7 @@ import { IslePath } from '../actions/isle'
 import { getBoundaries } from '../lib/assets/boundary'
 import { manager } from '../lib/assets/load'
 import { getWorld } from '../lib/assets/model'
-import { engine } from '../lib/engine'
+import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { getSettings } from '../lib/settings'
 import { Actor } from '../lib/world/actor'
 import { BoundaryManager } from '../lib/world/boundary-manager'
@@ -280,12 +280,12 @@ export abstract class IsleBase extends World {
     super.resize(width, height)
   }
 
-  public override pointerDown(event: MouseEvent, normalizedX: number, normalizedY: number): void {
-    super.pointerDown(event, normalizedX, normalizedY)
-    this._dashboard.pointerDown(normalizedX, normalizedY)
+  public override pointerDown(event: NormalizedMouseEvent): void {
+    super.pointerDown(event)
+    this._dashboard.pointerDown(event.normalizedX, event.normalizedY)
   }
 
-  public override pointerUp(event: MouseEvent): void {
+  public override pointerUp(event: NormalizedMouseEvent): void {
     super.pointerUp(event)
     this._dashboard.pointerUp()
   }

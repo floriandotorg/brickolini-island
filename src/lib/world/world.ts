@@ -7,7 +7,7 @@ import { getAction, getActionFileUrl } from '../assets/load'
 import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
 import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
-import { type AudioType, engine } from '../engine'
+import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
 import { Actor } from './actor'
 
 export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar'
@@ -47,7 +47,7 @@ export abstract class World {
   private _debugSlewMode: HTMLElement
 
   private _raycaster = new THREE.Raycaster()
-  private _clickListeners = new Map<THREE.Object3D, (event: MouseEvent) => Promise<boolean>>()
+  private _clickListeners = new Map<THREE.Object3D, () => Promise<boolean>>()
   private _runningAnimations: {
     mixer: THREE.AnimationMixer
     clipAction: THREE.AnimationAction
@@ -546,27 +546,27 @@ export abstract class World {
     })
   }
 
-  public addClickListener(objects: THREE.Object3D | THREE.Object3D[], onClick: (event: MouseEvent) => Promise<boolean>): void {
+  public addClickListener(objects: THREE.Object3D | THREE.Object3D[], onClick: () => Promise<boolean>): void {
     for (const object of Array.isArray(objects) ? objects : [objects]) {
       this._clickListeners.set(object, onClick)
     }
   }
 
-  public async click(event: MouseEvent, normalizedX: number, normalizedY: number): Promise<void> {
-    this._raycaster.setFromCamera(new THREE.Vector2(normalizedX, normalizedY), this._render.camera)
+  public async click(event: NormalizedMouseEvent): Promise<void> {
+    this._raycaster.setFromCamera(new THREE.Vector2(event.normalizedX, event.normalizedY), this._render.camera)
     let hit: THREE.Object3D | null = this._raycaster.intersectObjects(Array.from(this._clickListeners.keys()))[0]?.object
     while (hit != null) {
       const onClick = this._clickListeners.get(hit)
-      if (hit.visible && onClick != null && (await onClick(event))) {
+      if (hit.visible && onClick != null && (await onClick())) {
         break
       }
       hit = hit.parent
     }
   }
 
-  public pointerDown(_event: MouseEvent, _normalizedX: number, _normalizedY: number): void {}
-  public pointerUp(_event: MouseEvent): void {}
-  public pointerMove(_event: MouseEvent, _normalizedX: number, _normalizedY: number): void {}
+  public pointerDown(_event: NormalizedMouseEvent): void {}
+  public pointerUp(_event: NormalizedMouseEvent): void {}
+  public pointerMove(_event: NormalizedMouseEvent): void {}
 
   public keyDown(_event: KeyboardEvent): void {}
   public keyUp(_event: KeyboardEvent): void {}

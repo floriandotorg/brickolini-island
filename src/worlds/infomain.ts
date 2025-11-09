@@ -57,7 +57,7 @@ import type { CharacterMovieAction, ImageAction, RunAnimationAction } from '../l
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { MovieSprite } from '../lib/assets/movie-sprite'
 import type { Composer } from '../lib/effect/composer'
-import { engine, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
+import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
 import { type PlayerCharacter, PlayerCharacters } from '../lib/save-game'
 import { getSettings } from '../lib/settings'
 import { switchWorld } from '../lib/switch-world'
@@ -290,11 +290,11 @@ export class InfoMain extends World {
     super.deactivate()
   }
 
-  public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
-    this._building.pointerDown(normalizedX, normalizedY)
+  public override pointerDown(event: NormalizedMouseEvent): void {
+    this._building.pointerDown(event.normalizedX, event.normalizedY)
   }
 
-  public override pointerUp(_event: MouseEvent): void {
+  public override pointerUp(_event: NormalizedMouseEvent): void {
     this._building.pointerUp()
     if (this._selectedCharacter.state === 'selected' || this._selectedCharacter.state === 'dragging') {
       const character = this._selectedCharacter.character
@@ -327,7 +327,7 @@ export class InfoMain extends World {
     this._selectedCharacter = IdleState
   }
 
-  public override pointerMove(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
+  public override pointerMove(event: NormalizedMouseEvent): void {
     if (this._selectedCharacter.state === 'selected') {
       const image = (() => {
         switch (this._selectedCharacter.character) {
@@ -348,9 +348,9 @@ export class InfoMain extends World {
       this._selectedCharacter = { state: 'dragging', character: this._selectedCharacter.character, sprite }
     }
     if (this._selectedCharacter.state === 'dragging') {
-      this._selectedCharacter.sprite.position.set(normalizedX + this._selectedCharacter.sprite.scale.x / 2, normalizedY - this._selectedCharacter.sprite.scale.y / 2, -0.4)
+      this._selectedCharacter.sprite.position.set(event.normalizedX + this._selectedCharacter.sprite.scale.x / 2, event.normalizedY - this._selectedCharacter.sprite.scale.y / 2, -0.4)
       for (const dest of this._destinations) {
-        dest.sprite.visible = dest.normalizedRect.inside(normalizedX, normalizedY)
+        dest.sprite.visible = dest.normalizedRect.inside(event.normalizedX, event.normalizedY)
       }
     }
   }

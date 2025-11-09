@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { _StartUp, hho003cl_RunAnim } from '../actions/hospital'
 import { Hospital_Music } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
+import type { NormalizedMouseEvent } from '../lib/engine'
 import { getSettings } from '../lib/settings'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
@@ -47,11 +48,11 @@ export class Hospital extends World {
     super.activate(composer)
   }
 
-  public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
-    this._building.pointerDown(normalizedX, normalizedY)
+  public override pointerDown(event: NormalizedMouseEvent): void {
+    this._building.pointerDown(event.normalizedX, event.normalizedY)
   }
 
-  public override pointerUp(_event: MouseEvent): void {
+  public override pointerUp(_event: NormalizedMouseEvent): void {
     this._building.pointerUp()
   }
 }

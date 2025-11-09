@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { _StartUp, wgs023nu_RunAnim } from '../actions/garage'
 import { GarageArea_Music } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
+import type { NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
@@ -46,11 +47,11 @@ export class Garage extends World {
     super.activate(composer)
   }
 
-  public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
-    this._building.pointerDown(normalizedX, normalizedY)
+  public override pointerDown(event: NormalizedMouseEvent): void {
+    this._building.pointerDown(event.normalizedX, event.normalizedY)
   }
 
-  public override pointerUp(_event: MouseEvent): void {
+  public override pointerUp(_event: NormalizedMouseEvent): void {
     this._building.pointerUp()
   }
 }

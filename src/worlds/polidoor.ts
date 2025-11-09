@@ -3,6 +3,7 @@ import { PoliDoor as PoliDoor_StartUp } from '../actions/isle'
 import { PoliceStation_Music } from '../actions/jukebox'
 import { calculateTransformationMatrix } from '../lib/assets/model'
 import type { Composer } from '../lib/effect/composer'
+import type { NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { IsleBase } from './isle-base'
@@ -60,11 +61,11 @@ export class PoliDoor extends IsleBase {
     this._building.activate(composer)
   }
 
-  public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
-    this._building.pointerDown(normalizedX, normalizedY)
+  public override pointerDown(event: NormalizedMouseEvent): void {
+    this._building.pointerDown(event.normalizedX, event.normalizedY)
   }
 
-  public override pointerUp(_event: MouseEvent): void {
+  public override pointerUp(_event: NormalizedMouseEvent): void {
     this._building.pointerUp()
   }
 }

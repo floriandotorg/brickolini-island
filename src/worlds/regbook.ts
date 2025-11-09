@@ -37,7 +37,7 @@ import { createImageSprite, createNormalizedSprite } from '../lib/assets/canvas-
 import type { Control } from '../lib/assets/control'
 import { createTexture } from '../lib/assets/texture'
 import type { Composer } from '../lib/effect/composer'
-import { engine } from '../lib/engine'
+import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
@@ -243,11 +243,11 @@ export class RegBook extends World {
     }
   }
 
-  public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
-    this._building.pointerDown(normalizedX, normalizedY)
+  public override pointerDown(event: NormalizedMouseEvent): void {
+    this._building.pointerDown(event.normalizedX, event.normalizedY)
   }
 
-  public override pointerUp(_event: MouseEvent): void {
+  public override pointerUp(_event: NormalizedMouseEvent): void {
     this._building.pointerUp()
   }
 

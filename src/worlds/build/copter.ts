@@ -3,6 +3,7 @@ import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, C
 import { HelicopterBuild_Flic, HelicopterBuild_Music } from '../../actions/jukebox'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
+import type { NormalizedMouseEvent } from '../../lib/engine'
 import { Building } from '../../lib/world/building'
 import { World } from '../../lib/world/world'
 import { buildColorControls, buildDecalControls, Carbuild } from './carbuild'
@@ -62,12 +63,12 @@ export class Copter extends World {
     super.activate(composer)
   }
 
-  public override pointerDown(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
-    this._building.pointerDown(normalizedX, normalizedY)
-    this._carbuild?.pointerDown(normalizedX, normalizedY)
+  public override pointerDown(event: NormalizedMouseEvent): void {
+    this._building.pointerDown(event.normalizedX, event.normalizedY)
+    this._carbuild?.pointerDown(event.normalizedX, event.normalizedY)
   }
 
-  public override pointerUp(_event: MouseEvent): void {
+  public override pointerUp(_event: NormalizedMouseEvent): void {
     this._building.pointerUp()
     if (this._carbuild != null) {
       this._carbuild.pointerUp()
@@ -75,8 +76,8 @@ export class Copter extends World {
     }
   }
 
-  public override pointerMove(_event: MouseEvent, normalizedX: number, normalizedY: number): void {
-    this._carbuild?.pointerMove(normalizedX, normalizedY)
+  public override pointerMove(event: NormalizedMouseEvent): void {
+    this._carbuild?.pointerMove(event.normalizedX, event.normalizedY)
   }
 
   public override update(delta: number): void {
