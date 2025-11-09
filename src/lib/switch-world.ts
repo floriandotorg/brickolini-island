@@ -43,6 +43,14 @@ export const switchWorld = async (worldName: WorldName, param?: unknown) => {
           return import('../worlds/build/jetski').then(m => new m.Jetski())
         case 'racecar':
           return import('../worlds/build/racecar').then(m => new m.Racecar())
+        case 'elevopen':
+          return import('../worlds/elevator/elevopen').then(m => new m.ElevOpen())
+        case 'seaview':
+          return import('../worlds/elevator/seaview').then(m => new m.SeaView())
+        case 'observe':
+          return import('../worlds/elevator/observe').then(m => new m.Observe())
+        case 'elevdown':
+          return import('../worlds/elevator/elevdown').then(m => new m.ElevDown())
         default: {
           const _exhaustiveCheck: never = worldName
           throw new Error(`Unhandled world: ${worldName}`)

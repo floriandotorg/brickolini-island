@@ -23,6 +23,10 @@ export class ElevBott extends World {
 
     this._building.onButtonClicked = buttonName => {
       switch (buttonName) {
+        case 'ElevBott_Elevator_Ctl':
+          // TODO: Actually enter elevator and not just jump into the 3rd floor
+          void switchWorld('elevopen')
+          return true
         case 'LeftArrow_Ctl':
           void switchWorld('infodoor')
           return true

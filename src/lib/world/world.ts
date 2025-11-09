@@ -10,7 +10,7 @@ import { type Composer, Render3D } from '../effect/composer'
 import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
 import { Actor } from './actor'
 
-export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar'
+export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevopen' | 'seaview' | 'observe' | 'elevdown'
 
 type FaceAnimation = {
   actor: Actor
