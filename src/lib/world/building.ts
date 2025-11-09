@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator.js'
-import type { IsleParam } from '../../worlds/isle-base'
+import { getSpawnLocation, type IsleParam, type SpawnLocation } from '../../worlds/isle-base'
 import { type ActionBase, type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
 import { Control, type ControlEvent } from '../assets/control'
@@ -17,18 +17,15 @@ import type { World, WorldName } from './world'
 export class Building {
   private _render = new Render2D()
   private _controls: Control[] = []
-  private _exitSpawnPoint?: {
-    position:
-      | {
-          boundaryName: string
-          source: number
-          sourceScale: number
-          destination: number
-          destinationScale: number
-        }
-      | WorldName
-    control: string
-  }
+  private _exitSpawnPoint?:
+    | {
+        spawn: SpawnLocation
+        control: string
+      }
+    | {
+        world: WorldName
+        control: string
+      }
 
   constructor() {
     this._render.addEffect(new TransparentEdgeBlurEffect())
@@ -58,22 +55,28 @@ export class Building {
       | SerialAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction | AudioAction, 'LegoWorldPresenter'>
       | ParallelAction<ActorAction | EntityAction | ImageAction | AnimationAction | ControlAction | AudioAction, null>
     backgroundMusic?: AudioAction
-    exitSpawnPoint?: {
-      position:
-        | {
-            boundaryName: string
-            source: number
-            sourceScale: number
-            destination: number
-            destinationScale: number
-          }
-        | WorldName
-      control?: string
-    }
+    exitSpawnPoint?:
+      | {
+          spawn: SpawnLocation
+          control?: string
+        }
+      | {
+          world: WorldName
+          control?: string
+        }
     noLights?: boolean
   }): Promise<void> {
-    const control = exitSpawnPoint?.control ?? 'Door_Ctl'
-    this._exitSpawnPoint = exitSpawnPoint == null ? undefined : { position: exitSpawnPoint.position, control }
+    this._exitSpawnPoint =
+      exitSpawnPoint == null
+        ? undefined
+        : (() => {
+            const control = exitSpawnPoint?.control ?? 'Door_Ctl'
+            if ('world' in exitSpawnPoint) {
+              return { world: exitSpawnPoint.world, control }
+            } else {
+              return { spawn: exitSpawnPoint.spawn, control }
+            }
+          })()
 
     if (backgroundMusic != null) {
       engine.switchBackgroundMusic(backgroundMusic)
@@ -165,12 +168,10 @@ export class Building {
         }
 
         if (this._exitSpawnPoint != null && control.name.endsWith(this._exitSpawnPoint.control)) {
-          if (typeof this._exitSpawnPoint.position === 'string') {
-            void switchWorld(this._exitSpawnPoint.position)
+          if ('world' in this._exitSpawnPoint) {
+            void switchWorld(this._exitSpawnPoint.world)
           } else {
-            void switchWorld('isle', {
-              position: this._exitSpawnPoint.position,
-            } satisfies IsleParam)
+            void switchWorld('isle', getSpawnLocation(this._exitSpawnPoint.spawn) satisfies IsleParam)
           }
           return
         }

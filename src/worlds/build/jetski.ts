@@ -28,13 +28,7 @@ export class Jetski extends World {
       startUpAction: _StartUp,
       backgroundMusic: JetskiBuild_Music,
       exitSpawnPoint: {
-        position: {
-          boundaryName: 'EDG00_46',
-          source: 3,
-          sourceScale: 0.625,
-          destination: 2,
-          destinationScale: 0.03,
-        },
+        spawn: 'jetskibuildExited',
         control: 'Exit_Ctl',
       },
     })

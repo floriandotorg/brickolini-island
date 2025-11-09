@@ -5,7 +5,7 @@ import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
-import type { IsleParam } from './isle-base'
+import { getSpawnLocation, type IsleParam } from './isle-base'
 
 export class InfoDoor extends World {
   private _building = new Building()
@@ -30,15 +30,7 @@ export class InfoDoor extends World {
           } else if (engine.currentSaveGame.isUnloaded) {
             void this.playAudio(iic007in_PlayWav, 'speech')
           } else {
-            void switchWorld('isle', {
-              position: {
-                boundaryName: 'INT46',
-                source: 0,
-                sourceScale: 0.5,
-                destination: 2,
-                destinationScale: 0.5,
-              },
-            } satisfies IsleParam)
+            void switchWorld('isle', getSpawnLocation('infocenterExited') satisfies IsleParam)
           }
           return true
         case 'LeftArrow_Ctl':

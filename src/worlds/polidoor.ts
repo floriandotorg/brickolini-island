@@ -22,15 +22,7 @@ export class PoliDoor extends IsleBase {
       world: this,
       startUpAction: PoliDoor_StartUp,
       backgroundMusic: PoliceStation_Music,
-      exitSpawnPoint: {
-        position: {
-          boundaryName: 'EDG02_64',
-          source: 2,
-          sourceScale: 0.24,
-          destination: 0,
-          destinationScale: 0.84,
-        },
-      },
+      exitSpawnPoint: { spawn: 'policeExited' },
     })
 
     this._building.onButtonClicked = buttonName => {

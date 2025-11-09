@@ -27,7 +27,7 @@ export class Copter extends World {
       world: this,
       startUpAction: _StartUp,
       backgroundMusic: HelicopterBuild_Music,
-      exitSpawnPoint: { position: 'police', control: 'Exit_Ctl' },
+      exitSpawnPoint: { world: 'police', control: 'Exit_Ctl' },
     })
 
     const sprite = await MovieSprite.create(HelicopterBuild_Flic, -0.25)

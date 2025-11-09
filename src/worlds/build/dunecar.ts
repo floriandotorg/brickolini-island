@@ -27,7 +27,7 @@ export class Dunecar extends World {
       world: this,
       startUpAction: _StartUp,
       backgroundMusic: DuneCarBuild_Music,
-      exitSpawnPoint: { position: 'garage', control: 'Exit_Ctl' },
+      exitSpawnPoint: { world: 'garage', control: 'Exit_Ctl' },
     })
 
     const sprite = await MovieSprite.create(DuneCarBuild_Flic, -0.25)

@@ -28,13 +28,7 @@ export class Racecar extends World {
       startUpAction: _StartUp,
       backgroundMusic: RaceCarBuild_Music,
       exitSpawnPoint: {
-        position: {
-          boundaryName: 'INT16',
-          source: 4,
-          sourceScale: 0.1,
-          destination: 2,
-          destinationScale: 0,
-        },
+        spawn: 'racecarbuildExited',
         control: 'Exit_Ctl',
       },
     })

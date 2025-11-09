@@ -20,15 +20,7 @@ export class Hospital extends World {
       world: this,
       startUpAction: _StartUp,
       backgroundMusic: Hospital_Music,
-      exitSpawnPoint: {
-        position: {
-          boundaryName: 'EDG02_28',
-          source: 3,
-          sourceScale: 0.37,
-          destination: 1,
-          destinationScale: 0.52,
-        },
-      },
+      exitSpawnPoint: { spawn: 'hospitalExited' },
       noLights: true,
     })
 

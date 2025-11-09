@@ -22,15 +22,7 @@ export class GarDoor extends IsleBase {
       world: this,
       startUpAction: GaraDoor_StartUp,
       backgroundMusic: GarageArea_Music,
-      exitSpawnPoint: {
-        position: {
-          boundaryName: 'INT24',
-          source: 0,
-          sourceScale: 0.55,
-          destination: 2,
-          destinationScale: 0.71,
-        },
-      },
+      exitSpawnPoint: { spawn: 'garageExited' },
     })
 
     this._building.onButtonClicked = buttonName => {
