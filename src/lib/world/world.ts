@@ -436,7 +436,7 @@ export abstract class World {
         }
 
         cameraTranslationValues.push(...new THREE.Vector3(...key.vertex).applyMatrix4(animationTransform).toArray())
-        cameraTranslationTimes.push(key.timeAndFlags.time)
+        cameraTranslationTimes.push(key.timeAndFlags.time / 1000)
       }
       if (cameraTranslationTimes.length > 0) {
         tracks.push(new THREE.VectorKeyframeTrack('camera.position', cameraTranslationTimes, cameraTranslationValues))
@@ -446,7 +446,7 @@ export abstract class World {
       const cameraZRotationTimes: number[] = []
       for (const key of animation.cameraAnimation.zRotationKeys) {
         cameraZRotationValues.push(key.z)
-        cameraZRotationTimes.push(key.timeAndFlags.time)
+        cameraZRotationTimes.push(key.timeAndFlags.time / 1000)
       }
       if (cameraZRotationTimes.length > 0) {
         tracks.push(new THREE.NumberKeyframeTrack('camera.rotation.z', cameraZRotationTimes, cameraZRotationValues))
