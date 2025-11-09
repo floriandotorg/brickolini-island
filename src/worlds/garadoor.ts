@@ -36,7 +36,7 @@ export class GarDoor extends IsleBase {
     }
 
     const gas = this.scene.getObjectByName('gas')
-    if (gas == null || !(gas instanceof THREE.Mesh)) {
+    if (gas == null || !(gas instanceof THREE.Group)) {
       throw new Error('Gas mesh not found')
     }
     gas.visible = false

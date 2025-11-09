@@ -36,7 +36,7 @@ export class PoliDoor extends IsleBase {
     }
 
     const policeStation = this.scene.getObjectByName('policsta')
-    if (policeStation == null || !(policeStation instanceof THREE.Mesh)) {
+    if (policeStation == null || !(policeStation instanceof THREE.Group)) {
       throw new Error('Police station mesh not found')
     }
     policeStation.visible = false
