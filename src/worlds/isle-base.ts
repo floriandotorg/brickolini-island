@@ -5,7 +5,7 @@ import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerat
 import { IslePath } from '../actions/isle'
 import { getBoundaries } from '../lib/assets/boundary'
 import { manager } from '../lib/assets/load'
-import { getWorld } from '../lib/assets/model'
+import { calculateTransformationMatrix, getWorld } from '../lib/assets/model'
 import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { getSettings } from '../lib/settings'
 import { Actor } from '../lib/world/actor'
@@ -242,6 +242,14 @@ export abstract class IsleBase extends World {
       }
       this._groundGroup.push(object)
     }
+  }
+
+  protected _updateCameraProjection(position: [number, number, number], direction: [number, number, number], up: [number, number, number], fov: number) {
+    const mat = calculateTransformationMatrix(position, direction, up)
+    mat.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
+    this.camera.rotateY(Math.PI)
+    this.camera.fov = fov
+    this.camera.updateProjectionMatrix()
   }
 
   protected _updateSun(): void {

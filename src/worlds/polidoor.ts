@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import { PoliDoor as PoliDoor_StartUp } from '../actions/isle'
 import { PoliceStation_Music } from '../actions/jukebox'
-import { calculateTransformationMatrix } from '../lib/assets/model'
 import type { Composer } from '../lib/effect/composer'
 import type { NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
@@ -41,11 +40,7 @@ export class PoliDoor extends IsleBase {
     }
     policeStation.visible = false
 
-    const mat = calculateTransformationMatrix([-73.70144, 2.25, -88.91317], [0.911398, 0.0, 0.411526], [0.0, 1.0, 0.0])
-    mat.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
-    this.camera.rotateY(Math.PI)
-    this.camera.fov = 90
-    this.camera.updateProjectionMatrix()
+    this._updateCameraProjection([-73.70144, 2.25, -88.91317], [0.911398, 0.0, 0.411526], [0.0, 1.0, 0.0], 90)
   }
 
   public override activate(composer: Composer, _param?: unknown): void {

@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import { GaraDoor as GaraDoor_StartUp } from '../actions/isle'
 import { GarageArea_Music } from '../actions/jukebox'
-import { calculateTransformationMatrix } from '../lib/assets/model'
 import type { Composer } from '../lib/effect/composer'
 import type { NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
@@ -41,11 +40,7 @@ export class GarDoor extends IsleBase {
     }
     gas.visible = false
 
-    const mat = calculateTransformationMatrix([-31.694365, 1.25, -2.814015], [0.650445, 0.0, 0.759553], [0.0, 1.0, 0.0])
-    mat.decompose(this.camera.position, this.camera.quaternion, this.camera.scale)
-    this.camera.rotateY(Math.PI)
-    this.camera.fov = 90
-    this.camera.updateProjectionMatrix()
+    this._updateCameraProjection([-31.694365, 1.25, -2.814015], [0.650445, 0.0, 0.759553], [0.0, 1.0, 0.0], 90)
   }
 
   public override activate(composer: Composer): void {
