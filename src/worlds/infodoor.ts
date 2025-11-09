@@ -1,11 +1,12 @@
 import { _StartUp, iic007in_PlayWav, iic037in_PlayWav } from '../actions/infodoor'
 import { InformationCenter_Music } from '../actions/jukebox'
+import { getSpawnLocation } from '../lib/assets/spawn-location'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
-import { getSpawnLocation, type IsleParam } from './isle-base'
+import type { IsleParam } from './isle-base'
 
 export class InfoDoor extends World {
   private _building = new Building()
