@@ -64,6 +64,8 @@ const getPixel = (image: PlacedImage, normalizedX: number, normalizedY: number):
 }
 
 interface Handler {
+  test(normalizedX: number, normalizedY: number): boolean
+
   pointerDown(normalizedX: number, normalizedY: number): ControlEvent | null
 
   pointerUp(): boolean
@@ -87,9 +89,21 @@ class MapControl implements Handler {
     this._states = states
   }
 
-  public pointerDown(normalizedX: number, normalizedY: number): ControlEvent | null {
+  private getPixel(normalizedX: number, normalizedY: number): [number, number, number] | null {
     const pixel = getPixel(this._mask, normalizedX, normalizedY)
     if (pixel == null || pixel[3] === 0) {
+      return null
+    }
+    return [pixel[0], pixel[1], pixel[2]]
+  }
+
+  public test(normalizedX: number, normalizedY: number): boolean {
+    return this.getPixel(normalizedX, normalizedY) != null
+  }
+
+  public pointerDown(normalizedX: number, normalizedY: number): ControlEvent | null {
+    const pixel = this.getPixel(normalizedX, normalizedY)
+    if (pixel == null) {
       return null
     }
     if (this._states.length === 0) {
@@ -135,9 +149,16 @@ class GridControl implements Handler {
     this.numberOfColumns = numberOfColumns
   }
 
-  public pointerDown(normalizedX: number, normalizedY: number): ControlEvent | null {
+  public test(normalizedX: number, normalizedY: number): boolean {
     const pixel = getPixel(this._idleImage, normalizedX, normalizedY)
-    if (pixel == null || pixel[3] === 0) {
+    if (pixel == null) {
+      return false
+    }
+    return pixel[3] > 0
+  }
+
+  public pointerDown(normalizedX: number, normalizedY: number): ControlEvent | null {
+    if (!this.test(normalizedX, normalizedY)) {
       return null
     }
     const renormalized = this._idleImage.normalizedRect.renormalize(normalizedX, normalizedY)
@@ -179,7 +200,7 @@ class ToggleControl implements Handler {
     this._toggle = toggle
   }
 
-  private test(normalizedX: number, normalizedY: number): boolean {
+  public test(normalizedX: number, normalizedY: number): boolean {
     const pixel = getPixel(this._placedImage, normalizedX, normalizedY)
     if (pixel == null) {
       return false
@@ -338,6 +359,10 @@ export class Control {
 
   public set visible(value: boolean) {
     this._sprite.visible = value
+  }
+
+  public test(normalizedX: number, normalizedY: number): boolean {
+    return this._handler.test(normalizedX, normalizedY)
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): ControlEvent | null {

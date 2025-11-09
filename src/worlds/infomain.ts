@@ -12,6 +12,7 @@ import {
   Gas_A_Bitmap,
   Info_A_Bitmap,
   iic001in_RunAnim,
+  iic007in_PlayWav,
   iic019in_RunAnim,
   iic020in_RunAnim,
   iic021in_RunAnim,
@@ -56,6 +57,7 @@ import { BookWig_Flic } from '../actions/sndanim'
 import type { CharacterMovieAction, ImageAction, RunAnimationAction } from '../lib/action-types'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { MovieSprite } from '../lib/assets/movie-sprite'
+import { getSpawnLocation, type SpawnLocation } from '../lib/assets/spawn-location'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
 import { type PlayerCharacter, PlayerCharacters } from '../lib/save-game'
@@ -64,6 +66,7 @@ import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
 import { World } from '../lib/world/world'
+import type { IsleParam } from './isle-base'
 import { Name } from './regbook'
 
 const ANIMATIONS = [iic019in_RunAnim, iic020in_RunAnim, iic021in_RunAnim, iic022in_RunAnim, iic023in_RunAnim, iic024in_RunAnim, iic025in_RunAnim, iic026in_RunAnim, iic027in_RunAnim, iica28in_RunAnim, iicb28in_RunAnim, iicc28in_RunAnim, iic029in_RunAnim, iic032in_RunAnim]
@@ -77,14 +80,16 @@ enum CharacterMovieState {
 type Destination = {
   sprite: THREE.Sprite
   normalizedRect: NormalizedRect
+  destination: IsleParam | null
 }
 
-const createDestination = (image: ImageAction, parent: THREE.Scene): Destination => {
+const createDestination = (image: ImageAction, parent: THREE.Scene, location: SpawnLocation | null): Destination => {
   const sprite = createImageSprite(image, -0.45)
   sprite.visible = false
   parent.add(sprite)
   const normalizedRect = normalizeRect(image.location[0], image.location[1], image.dimensions.width, image.dimensions.height)
-  return { sprite, normalizedRect }
+  const destination = location != null ? getSpawnLocation(location) : null
+  return { sprite, normalizedRect, destination }
 }
 
 type NoSelectedCharacter = {
@@ -104,6 +109,21 @@ type DraggingCharacter = {
 }
 
 type SelectedCharacterStates = NoSelectedCharacter | SelectedCharacter | DraggingCharacter
+
+const getSelectionAnimation = (character: PlayerCharacter): RunAnimationAction => {
+  switch (character) {
+    case 'mama':
+      return avo902in_RunAnim
+    case 'papa':
+      return avo903in_RunAnim
+    case 'pepper':
+      return avo901in_RunAnim
+    case 'nick':
+      return avo904in_RunAnim
+    case 'laura':
+      return avo905in_RunAnim
+  }
+}
 
 export class InfoMain extends World {
   private _building = new Building()
@@ -126,13 +146,13 @@ export class InfoMain extends World {
     this._characterFrame.visible = false
     this._name = new Name(this._building.scene, 223, 45, 29)
     this._destinations = [
-      createDestination(Info_A_Bitmap, this._building.scene),
-      createDestination(Boat_A_Bitmap, this._building.scene),
-      createDestination(Race_A_Bitmap, this._building.scene),
-      createDestination(Pizza_A_Bitmap, this._building.scene),
-      createDestination(Gas_A_Bitmap, this._building.scene),
-      createDestination(Med_A_Bitmap, this._building.scene),
-      createDestination(Cop_A_Bitmap, this._building.scene),
+      createDestination(Info_A_Bitmap, this._building.scene, null),
+      createDestination(Boat_A_Bitmap, this._building.scene, 'jetraceExterior'),
+      createDestination(Race_A_Bitmap, this._building.scene, 'carraceExterior'),
+      createDestination(Pizza_A_Bitmap, this._building.scene, 'pizzeriaExterior'),
+      createDestination(Gas_A_Bitmap, this._building.scene, 'garageExterior'),
+      createDestination(Med_A_Bitmap, this._building.scene, 'hospitalExterior'),
+      createDestination(Cop_A_Bitmap, this._building.scene, 'policeExterior'),
     ]
     this._characterControls = {
       mama: Mama_Ctl.name,
@@ -294,31 +314,55 @@ export class InfoMain extends World {
     this._building.pointerDown(event.normalizedX, event.normalizedY)
   }
 
-  public override pointerUp(_event: NormalizedMouseEvent): void {
+  public override pointerUp(event: NormalizedMouseEvent): void {
     this._building.pointerUp()
     if (this._selectedCharacter.state === 'selected' || this._selectedCharacter.state === 'dragging') {
       const character = this._selectedCharacter.character
-      engine.currentSaveGame.player = character
-      this.placeCharacterFrame()
-      switch (character) {
-        case 'mama':
-          void this.playCharacterMovie(Mama_All_Movie, avo902in_RunAnim)
-          break
-        case 'papa':
-          void this.playCharacterMovie(Papa_All_Movie, avo903in_RunAnim)
-          break
-        case 'pepper':
-          void this.playCharacterMovie(Pepper_All_Movie, avo901in_RunAnim)
-          break
-        case 'nick':
-          void this.playCharacterMovie(Nick_All_Movie, avo904in_RunAnim)
-          break
-        case 'laura':
-          void this.playCharacterMovie(Laura_All_Movie, avo905in_RunAnim)
-          break
-      }
-      for (const dest of this._destinations) {
-        dest.sprite.visible = false
+      // -> within original control ==> set player, play movie and then animation
+      // -> within infocenter destination => set player, play animation
+      // -> within any destination ==> set player, play animation switch to destination
+      // -> otherwise ==> nothing
+      const controlName = this._characterControls[character]
+      const control = this._building.getControl(controlName)
+      if (control?.test(event.normalizedX, event.normalizedY)) {
+        engine.currentSaveGame.player = character
+        this.placeCharacterFrame()
+        const selectionAnimation = getSelectionAnimation(character)
+        switch (character) {
+          case 'mama':
+            void this.playCharacterMovie(Mama_All_Movie, selectionAnimation)
+            break
+          case 'papa':
+            void this.playCharacterMovie(Papa_All_Movie, selectionAnimation)
+            break
+          case 'pepper':
+            void this.playCharacterMovie(Pepper_All_Movie, selectionAnimation)
+            break
+          case 'nick':
+            void this.playCharacterMovie(Nick_All_Movie, selectionAnimation)
+            break
+          case 'laura':
+            void this.playCharacterMovie(Laura_All_Movie, selectionAnimation)
+            break
+        }
+      } else {
+        for (const dest of this._destinations) {
+          if (dest.normalizedRect.inside(event.normalizedX, event.normalizedY)) {
+            engine.currentSaveGame.player = character
+            this.placeCharacterFrame()
+            if (engine.currentSaveGame.isUnloaded) {
+              void this.playAudio(iic007in_PlayWav, 'speech')
+            } else {
+              const selectionAnimation = getSelectionAnimation(character)
+              this.playAnimation(selectionAnimation).then(() => {
+                if (dest.destination != null) {
+                  void switchWorld('isle', dest.destination satisfies IsleParam)
+                }
+              })
+            }
+          }
+          dest.sprite.visible = false
+        }
       }
     }
     if (this._selectedCharacter.state === 'dragging') {
