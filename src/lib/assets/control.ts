@@ -1,9 +1,8 @@
 import * as THREE from 'three'
 import { type ActionBase, type ControlAction, getExtraValue, type ImageAction, isImageAction, type ParallelActionTuple, splitExtraValue } from '../action-types'
 import { type NormalizedRect, normalizeRect } from '../engine'
-import { setScaleAndPosition } from './canvas-sprite'
+import { setImageSprite } from './canvas-sprite'
 import { getImage } from './image'
-import { createTexture } from './texture'
 
 type PlacedImage = { context: CanvasRenderingContext2D; action: ImageAndOtherAction; normalizedRect: NormalizedRect }
 
@@ -388,8 +387,7 @@ export class Control {
       this._sprite.material.map = null
       this._sprite.scale.set(0, 0, 0)
     } else {
-      setScaleAndPosition(this._sprite, image.dimensions.width, image.dimensions.height, image.location[0], image.location[1])
-      this._sprite.material.map = createTexture(image)
+      setImageSprite(this._sprite, image)
     }
     this._sprite.material.needsUpdate = true
   }
