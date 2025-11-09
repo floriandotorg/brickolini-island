@@ -156,6 +156,7 @@ export class Building {
   }
 
   public activate(composer: Composer): void {
+    this.pointerUp() // Reset control state
     composer.add(this._render)
   }
 
