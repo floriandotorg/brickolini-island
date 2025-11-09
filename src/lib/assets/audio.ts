@@ -48,10 +48,10 @@ export class Audio {
   public onEnded: () => void = () => {}
 }
 
-export const getAudio = async (listener: THREE.AudioListener, action: AudioAction, gain: GainNode): Promise<Audio> => {
+export const getAudio = async (listener: THREE.AudioListener, action: AudioAction, gains: GainNode[]): Promise<Audio> => {
   const audio = new THREE.Audio(listener)
   audio.setBuffer(await audioLoader.loadAsync(getActionFileUrl(action)))
-  audio.setFilter(gain)
+  audio.setFilters(gains)
   return new Audio(action, audio)
 }
 

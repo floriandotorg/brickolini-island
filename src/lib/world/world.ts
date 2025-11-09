@@ -480,9 +480,13 @@ export abstract class World {
         return this.playPositionalAudio(audio, actor instanceof Actor ? actor.head : actor, audio.startTime / 1_000)
       }),
     )
+    const sentinel = audioActions.length > 0 || audios.length > 0 ? engine.lowerBackgroundMusic() : null
 
     const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
-    return this.playAnimationClip(this.scene, clip, { audios, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, lockCamera, unskippable, loop })
+    await this.playAnimationClip(this.scene, clip, { audios, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, lockCamera, unskippable, loop })
+    if (sentinel != null) {
+      engine.raiseBackgroundMusic(sentinel)
+    }
   }
 
   public async playAnimationClip(

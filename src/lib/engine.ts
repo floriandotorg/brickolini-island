@@ -37,6 +37,8 @@ export type Timeout = {
   get millisecondsSinceStart(): number
 }
 
+export type Sentinel = symbol & { __brand: 'Sentinel' }
+
 class Engine {
   private _state: 'cutscene' | 'transition' | 'game' = 'game'
   private _clock: THREE.Clock = new THREE.Clock()
@@ -57,6 +59,8 @@ class Engine {
   private _transitionPromiseResolve: (() => void) | null = null
   private _currentSaveGame = SaveGame.UnloadedSave
   private readonly _gains: Record<AudioType, GainNode>
+  private readonly _backgroundLowerGain: GainNode
+  private readonly _backgroundLowerSentinels = new Set<Sentinel>()
 
   public readonly saveGameNames: string[]
 
@@ -155,6 +159,20 @@ class Engine {
   public resumeBackgroundMusic(): void {
     if (this._backgroundAudio != null) {
       this._backgroundAudio.audio.play()
+    }
+  }
+
+  public lowerBackgroundMusic(): Sentinel {
+    this._backgroundLowerGain.gain.value = 0.5
+    const sentinel = Symbol('music') as Sentinel
+    this._backgroundLowerSentinels.add(sentinel)
+    return sentinel
+  }
+
+  public raiseBackgroundMusic(sentinel: Sentinel): void {
+    this._backgroundLowerSentinels.delete(sentinel)
+    if (this._backgroundLowerSentinels.size === 0) {
+      this._backgroundLowerGain.gain.value = 1
     }
   }
 
@@ -349,6 +367,7 @@ class Engine {
       animations: new GainNode(this._audioListener.context),
       cutscene: new GainNode(this._audioListener.context),
     }
+    this._backgroundLowerGain = new GainNode(this._audioListener.context)
 
     this.updateVolumes(false)
   }
@@ -381,7 +400,9 @@ class Engine {
   }
 
   public getAudio(action: AudioAction, type: AudioType): Promise<Audio> {
-    return getAudio(this._audioListener, action, this._gains[type])
+    const gains = type === 'music' ? [this._backgroundLowerGain] : []
+    gains.push(this._gains[type])
+    return getAudio(this._audioListener, action, gains)
   }
 
   public async playAudio(action: AudioAction, type: AudioType): Promise<Audio> {
