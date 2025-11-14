@@ -312,7 +312,7 @@ class Engine {
     this._cutsceneVideo = document.createElement('video')
     this._cutsceneRender.scene.add(this._cutsceneMesh)
 
-    canvas.addEventListener('click', event => {
+    canvas.addEventListener('pointerdown', event => {
       event.preventDefault()
       event.stopPropagation()
 
@@ -320,15 +320,6 @@ class Engine {
         this._cutsceneVideo.pause()
         return
       }
-
-      if (this._state === 'game') {
-        this._world?.click(createNormalizedMouseEvent(event, this._canvas))
-      }
-    })
-
-    canvas.addEventListener('pointerdown', event => {
-      event.preventDefault()
-      event.stopPropagation()
 
       if (this._state === 'game') {
         this._world?.pointerDown(createNormalizedMouseEvent(event, this._canvas))

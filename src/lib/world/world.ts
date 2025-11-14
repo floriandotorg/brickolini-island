@@ -552,7 +552,7 @@ export abstract class World {
     }
   }
 
-  public async click(event: NormalizedMouseEvent): Promise<void> {
+  public async pointerDown(event: NormalizedMouseEvent): Promise<void> {
     this._raycaster.setFromCamera(new THREE.Vector2(event.normalizedX, event.normalizedY), this._render.camera)
     let hit: THREE.Object3D | null = this._raycaster.intersectObjects(Array.from(this._clickListeners.keys()))[0]?.object
     while (hit != null) {
@@ -563,8 +563,6 @@ export abstract class World {
       hit = hit.parent
     }
   }
-
-  public pointerDown(_event: NormalizedMouseEvent): void {}
   public pointerUp(_event: NormalizedMouseEvent): void {}
   public pointerMove(_event: NormalizedMouseEvent): void {}
 

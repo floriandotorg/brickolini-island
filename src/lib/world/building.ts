@@ -160,13 +160,13 @@ export class Building {
     composer.add(this._render)
   }
 
-  public pointerDown(normalizedX: number, normalizedY: number): void {
+  public pointerDown(normalizedX: number, normalizedY: number): boolean {
     for (const control of this._controls.toSorted((a, b) => a.z - b.z)) {
       const result = control.pointerDown(normalizedX, normalizedY)
       if (result != null) {
         if (engine.currentWorld.name !== 'infomain' && control.name === 'Info_Ctl') {
           void switchWorld('infomain')
-          return
+          return true
         }
 
         if (this._exitSpawnPoint != null && control.name.endsWith(this._exitSpawnPoint.control)) {
@@ -175,7 +175,7 @@ export class Building {
           } else {
             void switchWorld('isle', getSpawnLocation(this._exitSpawnPoint.spawn) satisfies IsleParam)
           }
-          return
+          return true
         }
 
         if (control.name.endsWith('Radio_Ctl')) {
@@ -184,16 +184,18 @@ export class Building {
           } else {
             engine.pauseBackgroundMusic()
           }
-          return
+          return true
         }
 
-        if (!this.onButtonClicked(control.name, result)) {
+        const controlHandled = this.onButtonClicked(control.name, result)
+        if (!controlHandled) {
           console.warn(`Button ${control.name} not handled`)
         }
 
-        return
+        return controlHandled
       }
     }
+    return false
   }
 
   public pointerUp(): void {

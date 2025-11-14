@@ -288,7 +288,7 @@ export abstract class IsleBase extends World {
     super.resize(width, height)
   }
 
-  public override pointerDown(event: NormalizedMouseEvent): void {
+  public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
     super.pointerDown(event)
     this._dashboard.pointerDown(event.normalizedX, event.normalizedY)
   }

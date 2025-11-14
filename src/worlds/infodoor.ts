@@ -50,8 +50,11 @@ export class InfoDoor extends World {
     this._building.activate(composer)
   }
 
-  public override pointerDown(event: NormalizedMouseEvent): void {
-    this._building.pointerDown(event.normalizedX, event.normalizedY)
+  public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
+    if (this._building.pointerDown(event.normalizedX, event.normalizedY)) {
+      return
+    }
+    super.pointerDown(event)
   }
 
   public override pointerUp(_event: NormalizedMouseEvent): void {
