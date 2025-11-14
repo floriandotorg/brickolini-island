@@ -59,7 +59,7 @@ import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { MovieSprite } from '../lib/assets/movie-sprite'
 import { getSpawnLocation, type SpawnLocation } from '../lib/assets/spawn-location'
 import type { Composer } from '../lib/effect/composer'
-import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
+import { engine, NeverTimeout, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect, type Timeout } from '../lib/engine'
 import { type PlayerCharacter, PlayerCharacters } from '../lib/save-game'
 import { getSettings } from '../lib/settings'
 import { switchWorld } from '../lib/switch-world'
@@ -130,9 +130,8 @@ export class InfoMain extends World {
 
   private readonly _characterFrame: THREE.Sprite
   private readonly _name: Name
-  private _welcomeTimeout: number | null = null
+  private _welcomeTimeout: Timeout = NeverTimeout
   private _currentAnimationIndex = 0
-  private _infomanHasBeenClicked = false
   private _characterMovieState: CharacterMovieState = CharacterMovieState.idle
   private _characterMovie: [MovieSprite, MovieSprite, MovieSprite] | null = null
   private readonly _destinations: Destination[]
@@ -269,11 +268,8 @@ export class InfoMain extends World {
     this.scene.add(await Plants.place(this, Plants.World.IMAIN))
 
     ;(await this.getActor('infoman')).onClicked = () => {
-      this._infomanHasBeenClicked = true
       this.skipAllRunningAnimations()
-      if (this._welcomeTimeout != null) {
-        clearTimeout(this._welcomeTimeout)
-      }
+      this._welcomeTimeout = NeverTimeout
       void this.playAnimation(ANIMATIONS[this._currentAnimationIndex])
       this._currentAnimationIndex = (this._currentAnimationIndex + 1) % ANIMATIONS.length
       return true
@@ -281,11 +277,7 @@ export class InfoMain extends World {
 
     this.playAnimation(iic001in_RunAnim).then(async () => {
       engine.switchBackgroundMusic(InformationCenter_Music)
-      this._welcomeTimeout = setTimeout(() => {
-        if (!this._infomanHasBeenClicked) {
-          void this.playAnimation(iicx17in_RunAnim)
-        }
-      }, 25_000)
+      this._welcomeTimeout = engine.createTimeout(25_000)
     })
 
     setInterval(async () => {
@@ -304,14 +296,13 @@ export class InfoMain extends World {
   }
 
   public override deactivate(): void {
-    if (this._welcomeTimeout != null) {
-      clearTimeout(this._welcomeTimeout)
-    }
+    this._welcomeTimeout = NeverTimeout
     super.deactivate()
   }
 
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
     if (this._building.pointerDown(event.normalizedX, event.normalizedY)) {
+      this._welcomeTimeout = NeverTimeout
       return
     }
     super.pointerDown(event)
@@ -409,6 +400,14 @@ export class InfoMain extends World {
       this._characterMovie[0].stop()
       this._characterMovie[1].stop()
       this._characterMovie[2].stop()
+    }
+  }
+
+  public override update(delta: number): void {
+    super.update(delta)
+    if (this._welcomeTimeout.isExpired) {
+      this._welcomeTimeout = NeverTimeout
+      void this.playAnimation(iicx17in_RunAnim)
     }
   }
 }

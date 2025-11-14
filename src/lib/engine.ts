@@ -67,6 +67,15 @@ export type Timeout = {
   get millisecondsSinceStart(): number
 }
 
+export const NeverTimeout: Timeout = {
+  get isExpired(): boolean {
+    return false
+  },
+  get millisecondsSinceStart(): number {
+    return 0
+  },
+}
+
 export type Sentinel = symbol & { __brand: 'Sentinel' }
 
 export type NormalizedMouseEvent = {
