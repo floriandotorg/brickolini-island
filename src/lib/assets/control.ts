@@ -243,10 +243,15 @@ const isWithColorPalette = (action: unknown): action is WithColorPalette => acti
 
 export type ControlEvent = { state: number; otherAction?: ActionBase }
 
+function sigmoid(z: number): number {
+  return 1 / (1 + Math.exp(-z))
+}
+
 export class Control {
   private readonly _action: ControlAction
   private readonly _sprite: THREE.Sprite
   private readonly _handler: Handler
+  private _z = 0
 
   public static async create(action: ControlAction): Promise<Control> {
     try {
@@ -340,7 +345,6 @@ export class Control {
     this._action = action
     this._handler = handler
     this._sprite = new THREE.Sprite()
-    this._sprite.position.z = -0.5
     this.draw()
   }
 
@@ -358,6 +362,10 @@ export class Control {
 
   public set visible(value: boolean) {
     this._sprite.visible = value
+  }
+
+  public get z(): number {
+    return this._z
   }
 
   public test(normalizedX: number, normalizedY: number): boolean {
@@ -386,8 +394,11 @@ export class Control {
     if (image == null) {
       this._sprite.material.map = null
       this._sprite.scale.set(0, 0, 0)
+      this._z = 0
     } else {
       setImageSprite(this._sprite, image)
+      this._z = image.location[2]
+      this._sprite.position.z = -0.5 - (sigmoid(this._z) - 0.5) / 20
     }
     this._sprite.material.needsUpdate = true
   }

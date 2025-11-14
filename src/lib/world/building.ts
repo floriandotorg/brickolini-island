@@ -161,7 +161,7 @@ export class Building {
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): void {
-    for (const control of this._controls) {
+    for (const control of this._controls.toSorted((a, b) => a.z - b.z)) {
       const result = control.pointerDown(normalizedX, normalizedY)
       if (result != null) {
         if (engine.currentWorld.name !== 'infomain' && control.name === 'Info_Ctl') {
