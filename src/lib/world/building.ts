@@ -3,11 +3,12 @@ import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerat
 import type { IsleParam } from '../../worlds/isle-base'
 import { type ActionBase, type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
+import { createImageSprite } from '../assets/canvas-sprite'
 import { Control, type ControlEvent } from '../assets/control'
 import { getAction } from '../assets/load'
 import { getWorld } from '../assets/model'
 import { getSpawnLocation, type SpawnLocation } from '../assets/spawn-location'
-import { createTexture, createTextureAsync } from '../assets/texture'
+import { createTextureAsync } from '../assets/texture'
 import { type Composer, Render2D } from '../effect/composer'
 import { TransparentEdgeBlurEffect } from '../effect/transparent-edge-blur'
 import { engine } from '../engine'
@@ -112,9 +113,9 @@ export class Building {
     const initPromises: Promise<void>[] = []
     for (const child of startUpAction.children) {
       if (isImageAction(child) && (child.name.endsWith('Background_Bitmap') || child.name.endsWith('Background'))) {
-        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: createTexture(child), transparent: true }))
-        mesh.position.z = -1
-        this._render.scene.add(mesh)
+        const background = createImageSprite(child, -1)
+        background.material.transparent = true
+        this._render.scene.add(background)
 
         if (getSettings().graphics.pbrMaterials) {
           createTextureAsync(child).then(async texture => {
