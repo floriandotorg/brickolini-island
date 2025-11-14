@@ -594,6 +594,13 @@ export abstract class World {
     })
   }
 
+  public removeFromParents(objects: THREE.Object3D | THREE.Object3D[]): void {
+    for (const object of Array.isArray(objects) ? objects : [objects]) {
+      this._clickListeners.delete(object)
+      object.removeFromParent()
+    }
+  }
+
   public addClickListener(objects: THREE.Object3D | THREE.Object3D[], onClick: () => Promise<boolean>): void {
     for (const object of Array.isArray(objects) ? objects : [objects]) {
       this._clickListeners.set(object, onClick)

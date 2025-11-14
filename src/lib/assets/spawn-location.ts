@@ -1,6 +1,23 @@
 import type { IsleParam } from '../../worlds/isle-base'
 
-export const SpawnLocations = ['pizzeriaExterior', 'infocenterExited', 'jetraceExterior', 'jetskibuildExited', 'carraceExterior', 'racecarbuildExited', 'garageExterior', 'garageExited', 'hospitalExterior', 'hospitalExited', 'policeExterior', 'policeExited'] as const
+export const SpawnLocations = [
+  'pizzeriaExterior',
+  'infocenterExited',
+  'jetraceExterior',
+  'jetskibuildExited',
+  'carraceExterior',
+  'racecarbuildExited',
+  'garageExterior',
+  'garageExited',
+  'hospitalExterior',
+  'hospitalExited',
+  'policeExterior',
+  'policeExited',
+  'helicopterSpawn',
+  'dunebuggySpawn',
+  'racecarSpawn',
+  'jetskiSpawn',
+] as const
 export type SpawnLocation = (typeof SpawnLocations)[number]
 export const isSpawnLocation = (name: string): name is SpawnLocation => SpawnLocations.includes(name as SpawnLocation)
 
@@ -30,5 +47,13 @@ export const getSpawnLocation = (location: SpawnLocation): IsleParam => {
       return { position: { boundaryName: 'INT33', source: 0, sourceScale: 0.88, destination: 2, destinationScale: 0.74 } }
     case 'policeExited':
       return { position: { boundaryName: 'EDG02_64', source: 2, sourceScale: 0.24, destination: 0, destinationScale: 0.84 } }
+    case 'helicopterSpawn':
+      return { position: { boundaryName: 'EDG02_51', source: 2, sourceScale: 0.63, destination: 3, destinationScale: 0.01 } }
+    case 'dunebuggySpawn':
+      return { position: { boundaryName: 'EDG02_35', source: 2, sourceScale: 0.8, destination: 0, destinationScale: 0.2 } }
+    case 'racecarSpawn':
+      return { position: { boundaryName: 'EDG03_01', source: 2, sourceScale: 0.25, destination: 0, destinationScale: 0.75 } }
+    case 'jetskiSpawn':
+      return { position: { boundaryName: 'EDG10_70', source: 3, sourceScale: 0.25, destination: 0, destinationScale: 0.7 } }
   }
 }

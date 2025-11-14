@@ -390,7 +390,7 @@ import { switchWorld } from '../../lib/switch-world'
 import type { Vehicle } from '../../lib/world/dashboard'
 import { PlayerMovement } from '../../lib/world/player-movement'
 import type { WorldName } from '../../lib/world/world'
-import { IsleBase, type IsleParam } from '../isle-base'
+import { CAR_BUILD_VEHICLES, IsleBase, type IsleParam } from '../isle-base'
 import { PizzaMission } from './missions/pizza-mission'
 
 // import { tns002br_RunAnim } from '../actions/act2main'
@@ -800,7 +800,11 @@ export class Isle extends IsleBase {
     if (this._currentVehicle == null) {
       throw new Error('No vehicle set')
     }
-    return this.getVehicleMesh(this._currentVehicle.type)
+    const vehicleMeshes = this.getVehicleMesh(this._currentVehicle.type)
+    if (vehicleMeshes == null) {
+      throw new Error(`Vehicle mesh not found for ${this._currentVehicle.type}`)
+    }
+    return vehicleMeshes
   }
 
   constructor() {
@@ -999,13 +1003,15 @@ export class Isle extends IsleBase {
 
   private _addVehicleClickListener = (vehicle: Vehicle): void => {
     const mesh = this.getVehicleMesh(vehicle.type)
-    this.addClickListener(mesh, async () => {
-      if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
-        return false
-      }
-      await this.enterVehicle(vehicle)
-      return true
-    })
+    if (mesh != null) {
+      this.addClickListener(mesh, async () => {
+        if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
+          return false
+        }
+        await this.enterVehicle(vehicle)
+        return true
+      })
+    }
   }
 
   public enterVehicle = async (vehicle: Vehicle): Promise<void> => {
@@ -1069,8 +1075,8 @@ export class Isle extends IsleBase {
     }
   }
 
-  public override activate(composer: Composer, param?: IsleParam): void {
-    super.activate(composer, param)
+  public override async activate(composer: Composer, param?: IsleParam): Promise<void> {
+    await super.activate(composer, param)
     this._dashboard.activate(composer)
     if (param != null) {
       const { position, quaternion } = this._boundaryManager.getObjectPlacement(param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
@@ -1082,6 +1088,10 @@ export class Isle extends IsleBase {
       throw new Error('No pizza sign found')
     }
     noPizzaSign.material.map = engine.currentSaveGame.player === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
+
+    for (const { type } of CAR_BUILD_VEHICLES) {
+      this._addVehicleClickListener({ type })
+    }
   }
 
   public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location): Promise<void> {

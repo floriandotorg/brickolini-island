@@ -48,7 +48,7 @@ export class ElevDown extends IsleBase {
     this._updateCameraProjection([-93.37283, 19.4375, -10.382307], [0.0, -0.254006, 0.967203], [0.0, 0.967203, 0.254006], 90)
   }
 
-  public override activate(composer: Composer, _param?: unknown): void {
+  public override async activate(composer: Composer, _param?: unknown): Promise<void> {
     super.activate(composer)
     this._building.activate(composer)
   }

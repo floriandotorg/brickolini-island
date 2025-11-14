@@ -44,7 +44,7 @@ export class SeaView extends IsleBase {
     this._updateCameraProjection([-93.375, 19.4375, -10.375], [-0.967075, -0.254493, 0.0], [-0.254493, 0.967075, 0.0], 90)
   }
 
-  public override activate(composer: Composer, _param?: unknown): void {
+  public override async activate(composer: Composer, _param?: unknown): Promise<void> {
     super.activate(composer)
     this._building.activate(composer)
   }

@@ -7,6 +7,7 @@ import { FilmGrainEffect } from './effect/film-grain'
 import { MosaicEffect } from './effect/mosaic'
 import { SAVE_GAME_STORAGE_KEY, SaveGame } from './save-game'
 import { getSettings } from './settings'
+import type { VehicleType } from './world/dashboard'
 import type { World } from './world/world'
 
 export const RESOLUTION_RATIO = 4 / 3
@@ -111,6 +112,7 @@ class Engine {
   private readonly _gains: Record<AudioType, GainNode>
   private readonly _backgroundLowerGain: GainNode
   private readonly _backgroundLowerSentinels = new Set<Sentinel>()
+  private readonly _respawnVehicle = new Set<VehicleType>()
 
   public debugMode: boolean = false
   public readonly saveGameNames: string[]
@@ -421,6 +423,14 @@ class Engine {
     this.updateVolumes(false)
 
     this.debugMode = getURLParam('debug') === 'true'
+  }
+
+  public respawnVehicle(vehicleType: VehicleType): void {
+    this._respawnVehicle.add(vehicleType)
+  }
+
+  public resetVehicleRespawn(vehicleType: VehicleType): boolean {
+    return this._respawnVehicle.delete(vehicleType)
   }
 
   public isKeyDown(key: string): boolean {

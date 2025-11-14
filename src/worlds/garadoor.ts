@@ -43,7 +43,7 @@ export class GarDoor extends IsleBase {
     this._updateCameraProjection([-31.694365, 1.25, -2.814015], [0.650445, 0.0, 0.759553], [0.0, 1.0, 0.0], 90)
   }
 
-  public override activate(composer: Composer): void {
+  public override async activate(composer: Composer): Promise<void> {
     super.activate(composer)
     this._building.activate(composer)
   }

@@ -44,7 +44,7 @@ export class ElevOpen extends IsleBase {
     this._updateCameraProjection([-93.37283, 19.4375, -10.382307], [0.0, -0.254982, -0.966946], [0.0, 0.966946, -0.254982], 90)
   }
 
-  public override activate(composer: Composer, _param?: unknown): void {
+  public override async activate(composer: Composer, _param?: unknown): Promise<void> {
     super.activate(composer)
     this._building.activate(composer)
   }

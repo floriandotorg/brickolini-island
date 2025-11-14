@@ -43,7 +43,7 @@ export class PoliDoor extends IsleBase {
     this._updateCameraProjection([-73.70144, 2.25, -88.91317], [0.911398, 0.0, 0.411526], [0.0, 1.0, 0.0], 90)
   }
 
-  public override activate(composer: Composer, _param?: unknown): void {
+  public override async activate(composer: Composer, _param?: unknown): Promise<void> {
     super.activate(composer)
     this._building.activate(composer)
   }

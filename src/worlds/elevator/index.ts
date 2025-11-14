@@ -130,7 +130,7 @@ export class Elevator extends IsleBase {
     }
   }
 
-  public override activate(composer: Composer, param?: ElevatorEntrance): void {
+  public override async activate(composer: Composer, param?: ElevatorEntrance): Promise<void> {
     super.activate(composer)
     this._building.activate(composer)
 

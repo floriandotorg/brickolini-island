@@ -2,10 +2,17 @@ import * as THREE from 'three'
 import { Sky } from 'three/addons/objects/Sky.js'
 import type { Water } from 'three/addons/objects/Water.js'
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator.js'
+import { Chptr_Model } from '../actions/copter'
+import { DuneBugy_Model } from '../actions/dunecar'
 import { IslePath } from '../actions/isle'
+import { Jsuser_Model } from '../actions/jetski'
+import { Rcuser_Model } from '../actions/racecar'
+import type { ModelAction } from '../lib/action-types'
 import { getBoundaries } from '../lib/assets/boundary'
 import { manager } from '../lib/assets/load'
-import { calculateTransformationMatrix, getWorld, type WdbWorldName } from '../lib/assets/model'
+import { calculateTransformationMatrix, getModel, getWorld, type WdbWorldName } from '../lib/assets/model'
+import { getSpawnLocation, type SpawnLocation } from '../lib/assets/spawn-location'
+import type { Composer } from '../lib/effect/composer'
 import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
 import { applyLights, NUM_ORIGINAL_LIGHTS } from '../lib/original-lights'
 import { getSettings } from '../lib/settings'
@@ -24,6 +31,14 @@ export type IsleParam = {
   }
 }
 const SECONDS_PER_DAY = 24 * 60
+
+export type CarBuildVehicleType = 'dunecar' | 'helicopter' | 'jetski' | 'racecar'
+export const CAR_BUILD_VEHICLES: { readonly type: CarBuildVehicleType; readonly model: ModelAction; readonly spawn: SpawnLocation }[] = [
+  { type: 'dunecar', model: DuneBugy_Model, spawn: 'dunebuggySpawn' },
+  { type: 'helicopter', model: Chptr_Model, spawn: 'helicopterSpawn' },
+  { type: 'jetski', model: Jsuser_Model, spawn: 'jetskiSpawn' },
+  { type: 'racecar', model: Rcuser_Model, spawn: 'racecarSpawn' },
+]
 
 export abstract class IsleBase extends World {
   protected _groundGroup: THREE.Object3D[] = []
@@ -52,6 +67,7 @@ export abstract class IsleBase extends World {
   protected _skateMesh: THREE.Object3D | null = null
   protected _ambulanceMesh: THREE.Object3D[] = []
   protected _towtruckMesh: THREE.Object3D[] = []
+  private _buildMeshes = new Map<VehicleType, THREE.Object3D[]>()
 
   public set water(water: Water) {
     this._water = water
@@ -253,7 +269,34 @@ export abstract class IsleBase extends World {
     }
   }
 
-  public getVehicleMesh(vehicle: VehicleType): THREE.Object3D[] {
+  public override async activate(composer: Composer, _param?: unknown): Promise<void> {
+    super.activate(composer, _param)
+
+    for (const { type, model, spawn } of CAR_BUILD_VEHICLES) {
+      const previousMeshes = this._buildMeshes.get(type)
+      if (previousMeshes != null) {
+        this.removeFromParents(previousMeshes)
+      }
+      const placement = (() => {
+        if (engine.resetVehicleRespawn(type)) {
+          const spawnPosition = getSpawnLocation(spawn).position
+          return this._boundaryManager.getObjectPlacement(spawnPosition.boundaryName, spawnPosition.source, spawnPosition.sourceScale, spawnPosition.destination, spawnPosition.destinationScale)
+        }
+        return engine.currentSaveGame.getVehiclePlacement(type)
+      })()
+      if (placement != null) {
+        const meshes = await getModel(model)
+        for (const mesh of meshes) {
+          this.scene.add(mesh)
+        }
+        this._buildMeshes.set(type, meshes)
+        this.moveObjectTo(meshes, placement.position, placement.quaternion)
+        engine.currentSaveGame.setVehiclePlacement(type, placement)
+      }
+    }
+  }
+
+  public getVehicleMesh(vehicle: VehicleType): THREE.Object3D[] | null {
     let result: THREE.Object3D[] | THREE.Object3D | null = null
 
     switch (vehicle) {
@@ -272,16 +315,28 @@ export abstract class IsleBase extends World {
       case 'towtk':
         result = this._towtruckMesh
         break
+      default:
+        for (const [type, meshes] of this._buildMeshes) {
+          if (vehicle === type) {
+            result = meshes
+            break
+          }
+        }
+        break
     }
 
     if (result == null) {
-      throw new Error(`Vehicle mesh not found for ${vehicle}`)
+      return null
     }
 
     return Array.isArray(result) ? result : [result]
   }
 
   public placeVehicle(vehicle: VehicleType, boundaryName: string, src: number, srcScale: number, dst: number, _dstScale: number, ignoreSave: boolean = false): void {
+    const vehicleMesh = this.getVehicleMesh(vehicle)
+    if (vehicleMesh == null) {
+      return
+    }
     const { position, quaternion } = (() => {
       const vehiclePlacement = ignoreSave ? null : engine.currentSaveGame.getVehiclePlacement(vehicle)
       if (vehiclePlacement != null) {
@@ -290,7 +345,7 @@ export abstract class IsleBase extends World {
         return this._boundaryManager.getObjectPlacement(boundaryName, src, srcScale, dst, _dstScale)
       }
     })()
-    this.moveObjectTo(this.getVehicleMesh(vehicle), position, quaternion)
+    this.moveObjectTo(vehicleMesh, position, quaternion)
   }
 
   protected _updateCameraProjection(position: [number, number, number], direction: [number, number, number], up: [number, number, number], fov: number) {
