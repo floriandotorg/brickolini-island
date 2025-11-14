@@ -89,6 +89,7 @@ export class Name {
     this._letters = []
     for (let i = 0; i < MAX_LENGTH; i++) {
       const sprite = createNormalizedSprite(x + charWidth * i, y, -0.25, A_Bitmap.dimensions.width, A_Bitmap.dimensions.height)
+      sprite.name = `letter_${i}`
       sprite.visible = false
       scene.add(sprite)
       this._letters.push(sprite)

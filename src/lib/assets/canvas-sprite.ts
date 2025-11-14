@@ -23,6 +23,7 @@ export const createNormalizedSprite = (x: number, y: number, z: number, original
 
 export const createImageSprite = (bitmap: ImageAction, z: number): THREE.Sprite => {
   const sprite = new THREE.Sprite()
+  sprite.name = `image_${bitmap.siFile}.${bitmap.id}`
   setImageSprite(sprite, bitmap, z)
   return sprite
 }

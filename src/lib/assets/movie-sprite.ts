@@ -34,6 +34,7 @@ export class MovieSprite {
     const map = new THREE.VideoTexture(videoElement)
     map.colorSpace = THREE.SRGBColorSpace
     sprite.material = new THREE.SpriteMaterial({ map })
+    sprite.name = audioAction != null ? `movie_${video.siFile}.${video.id}_${audioAction.siFile}.${audioAction.id}` : `video_${video.siFile}.${video.id}`
     const audio = (await Promise.all([audioPromise, loadPromise]))[0]
     return new MovieSprite(videoElement, sprite, audio)
   }

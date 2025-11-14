@@ -345,6 +345,7 @@ export class Control {
     this._action = action
     this._handler = handler
     this._sprite = new THREE.Sprite()
+    this._sprite.name = `control_${this.name}`
     this.draw()
   }
 
