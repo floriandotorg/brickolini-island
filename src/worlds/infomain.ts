@@ -137,6 +137,8 @@ export class InfoMain extends World {
   private readonly _destinations: Destination[]
   private readonly _characterControls: Record<PlayerCharacter, string>
   private _selectedCharacter: SelectedCharacterStates = IdleState
+  private _bookWigMovie: MovieSprite | null = null
+  private readonly _bookWigInterval = engine.createInterval(3000)
 
   constructor() {
     super('infomain')
@@ -275,16 +277,15 @@ export class InfoMain extends World {
       return true
     }
 
+    this._bookWigMovie = await MovieSprite.create(BookWig_Flic, -0.3)
+    this._bookWigMovie.visible = false
+    this._bookWigMovie.hideAfterFinish = true
+    this._bookWigMovie.parent = this._building.scene
+
     this.playAnimation(iic001in_RunAnim).then(async () => {
       engine.switchBackgroundMusic(InformationCenter_Music)
       this._welcomeTimeout = engine.createTimeout(25_000)
     })
-
-    setInterval(async () => {
-      const movie = await MovieSprite.create(BookWig_Flic, -0.3)
-      await movie.play(this._building.scene)
-      movie.removeFromParent()
-    }, 3_000)
   }
 
   public override activate(composer: Composer): void {
@@ -408,6 +409,10 @@ export class InfoMain extends World {
     if (this._welcomeTimeout.isExpired) {
       this._welcomeTimeout = NeverTimeout
       void this.playAnimation(iicx17in_RunAnim)
+    }
+    if (this._bookWigMovie != null && this._bookWigInterval.resetExpired()) {
+      this._bookWigMovie.stop()
+      this._bookWigMovie.play()
     }
   }
 }

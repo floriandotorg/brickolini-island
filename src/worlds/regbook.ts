@@ -137,6 +137,7 @@ export class RegBook extends World {
   private readonly _building = new Building()
   private _names: NameWithCheck[] = []
   private _highLightSprite: THREE.Sprite
+  private readonly _highlightBlink = engine.createInterval(500)
 
   constructor() {
     super('regbook')
@@ -214,12 +215,6 @@ export class RegBook extends World {
       }
       return false
     }
-
-    setInterval(async () => {
-      if (this._names[0].name.length > 0) {
-        this._highLightSprite.visible = !this._highLightSprite.visible
-      }
-    }, 500)
   }
 
   private loadSave(name?: string) {
@@ -278,5 +273,12 @@ export class RegBook extends World {
     }
 
     super.keyPressed(key)
+  }
+
+  public override update(delta: number): void {
+    super.update(delta)
+    if (this._highlightBlink.resetExpired() && this._names[0].name.length > 0) {
+      this._highLightSprite.visible = !this._highLightSprite.visible
+    }
   }
 }

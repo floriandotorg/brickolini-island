@@ -2,10 +2,12 @@ import * as THREE from 'three'
 import type { AudioAction, CharacterMovieAction, VideoAction } from '../action-types'
 import { engine } from '../engine'
 import type { Audio } from './audio'
-import { createNormalizedSprite } from './canvas-sprite'
+import { setScaleAndPosition } from './canvas-sprite'
 import { getActionFileUrl } from './load'
 
 export class MovieSprite {
+  private _hideAfterFinish: boolean = false
+
   private constructor(
     private readonly _videoElement: HTMLVideoElement,
     private readonly _sprite: THREE.Sprite,
@@ -16,7 +18,11 @@ export class MovieSprite {
     return MovieSprite.create(movie.children[1], z, movie.children[0])
   }
 
-  public static async create(video: VideoAction, z: number, audioAction?: AudioAction): Promise<MovieSprite> {
+  public static create(video: VideoAction, z: number, audioAction?: AudioAction): Promise<MovieSprite> {
+    return MovieSprite.apply(new THREE.Sprite(), video, z, audioAction)
+  }
+
+  public static async apply(sprite: THREE.Sprite, video: VideoAction, z: number, audioAction?: AudioAction): Promise<MovieSprite> {
     const audioPromise = audioAction != null ? await engine.getAudio(audioAction, 'cutscene') : undefined
     const videoElement = document.createElement('video')
     const loadPromise = new Promise<void>(resolve => {
@@ -30,7 +36,7 @@ export class MovieSprite {
     texture.colorSpace = THREE.SRGBColorSpace
     const [x, y, _] = video.location
     const { width, height } = video.dimensions
-    const sprite = createNormalizedSprite(x, y, z, width, height)
+    setScaleAndPosition(sprite, width, height, x, y, z)
     const map = new THREE.VideoTexture(videoElement)
     map.colorSpace = THREE.SRGBColorSpace
     sprite.material = new THREE.SpriteMaterial({ map })
@@ -47,20 +53,50 @@ export class MovieSprite {
     this._videoElement.loop = value
   }
 
-  public play(scene: THREE.Scene): Promise<void> {
-    scene.add(this._sprite)
+  public get visible(): boolean {
+    return this._sprite.visible
+  }
+
+  public set visible(value: boolean) {
+    this._sprite.visible = value
+  }
+
+  public get parent(): THREE.Object3D | null {
+    return this._sprite.parent
+  }
+
+  public get hideAfterFinish(): boolean {
+    return this._hideAfterFinish
+  }
+
+  public set hideAfterFinish(hideAfterFinish: boolean) {
+    this._hideAfterFinish = hideAfterFinish
+  }
+
+  public set parent(value: THREE.Object3D | null) {
+    if (value != null) {
+      value.add(this._sprite)
+    } else {
+      this.removeFromParent()
+    }
+  }
+
+  public play(scene?: THREE.Scene): Promise<void> {
+    scene?.add(this._sprite)
+    this._sprite.visible = true
     this._audio?.play()
     this._videoElement.play()
     return new Promise<void>(resolve => {
-      this._videoElement.onended = () => {
+      const onended = () => {
         this._audio?.stop()
+        if (this.hideAfterFinish) {
+          this.visible = false
+        }
         resolve()
       }
 
-      this._videoElement.onpause = () => {
-        this._audio?.stop()
-        resolve()
-      }
+      this._videoElement.onended = onended
+      this._videoElement.onpause = onended
     })
   }
 

@@ -80,6 +80,30 @@ export const NeverTimeout: Timeout = {
   },
 }
 
+export class Interval {
+  private readonly _engine: Engine
+  private readonly _intervalMilliseconds: number
+  private _timeout: Timeout
+
+  public constructor(engine: Engine, intervalMilliseconds: number) {
+    this._engine = engine
+    this._intervalMilliseconds = intervalMilliseconds
+    this._timeout = this._engine.createTimeout(this._intervalMilliseconds)
+  }
+
+  public get isExpired() {
+    return this._timeout.isExpired
+  }
+
+  public resetExpired(): boolean {
+    if (this.isExpired) {
+      this._timeout = this._engine.createTimeout(this._intervalMilliseconds)
+      return true
+    }
+    return false
+  }
+}
+
 export type Sentinel = symbol & { __brand: 'Sentinel' }
 
 export type NormalizedMouseEvent = {
@@ -289,6 +313,10 @@ class Engine {
         return engine.elapsedTimeMilliseconds - startTime
       },
     }
+  }
+
+  public createInterval(ms: number): Interval {
+    return new Interval(this, ms)
   }
 
   constructor() {
