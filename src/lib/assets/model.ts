@@ -1,9 +1,11 @@
 import * as THREE from 'three'
 import { Water } from 'three/addons/objects/Water.js'
 import { Isle } from '../../worlds/isle'
+import type { ModelAction } from '../action-types'
 import { engine } from '../engine'
 import { getSettings } from '../settings'
-import { getFile, getFileUrl } from './load'
+import { BinaryReader } from './binary-reader'
+import { getAction, getFile, getFileUrl } from './load'
 import { colorFromName, createGeometryAndMaterials } from './mesh'
 import { WDB } from './wdb'
 
@@ -44,6 +46,13 @@ const getWdb = async (): Promise<WDB.File> => {
     wdb = new WDB.File(await getFile(getFileUrl('world.wdb')))
   }
   return wdb
+}
+
+export const getModel = async (action: ModelAction): Promise<Roi3D[]> => {
+  const model = await getAction(action)
+  const reader = new BinaryReader(model)
+  const { roi, animation } = WDB.readModel(reader)
+  return await roiToMesh(roi, [], animation.tree)
 }
 
 export const calculateTransformationMatrix = (location: readonly [number, number, number], direction: readonly [number, number, number], up: readonly [number, number, number], matrix?: THREE.Matrix4): THREE.Matrix4 => {

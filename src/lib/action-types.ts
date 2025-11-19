@@ -4,6 +4,8 @@ type Override<T, U> = Omit<T, keyof U> & U
 
 export const animationPresenters = ['LegoAnimPresenter', 'LegoLocomotionAnimPresenter', 'LegoCarBuildAnimPresenter', 'LegoAnimMMPresenter', 'LegoLoopingAnimPresenter'] as const
 
+export const modelPresenter = 'LegoModelPresenter'
+
 export type ActionBase = { id: number; siFile: string; type: Action.Type; presenter: string | null; extra: string | null; name: string; location: readonly [number, number, number] }
 
 export type FileActionBase = Override<ActionBase, { fileType: Action.FileType }>
@@ -38,13 +40,15 @@ export type FlcAction = Override<VideoAction, { fileType: Action.FileType.FLC }>
 
 export type SmackerAction = Override<VideoAction, { fileType: Action.FileType.SMK }>
 
+export type ModelAction = Override<FileActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoModelPresenter' }>
+
 export type CompositeMediaAction = ParallelActionTuple<readonly [SmackerAction, AudioAction], 'MxCompositeMediaPresenter'>
 
 export type CharacterMovieAction = ParallelActionTuple<readonly [AudioAction, SmackerAction], null>
 
-export type ActorAction = ParallelActionTuple<readonly [Override<ActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoModelPresenter' }>], 'LegoActorPresenter'>
+export type ActorAction = ParallelActionTuple<readonly [ModelAction], 'LegoActorPresenter'>
 
-export type EntityAction = ParallelActionTuple<readonly [Override<ActionBase, { type: Action.Type.ObjectAction; presenter: 'LegoModelPresenter' }>], 'LegoEntityPresenter'>
+export type EntityAction = ParallelActionTuple<readonly [ModelAction], 'LegoEntityPresenter'>
 
 export type ControlAction = ParallelAction<ImageAction | ParallelActionTuple<readonly [ImageAction, ActionBase?]>, 'MxControlPresenter'>
 
@@ -65,6 +69,8 @@ export const isControlAction = (action: unknown): action is ControlAction => isA
 export const isMeterAction = (action: unknown): action is MeterAction => isImageAction(action) && action.presenter === 'LegoMeterPresenter'
 
 export const isTextureAction = (action: unknown): action is TextureAction => isFileAction(action) && action.type === Action.Type.ObjectAction && action.presenter === 'LegoTexturePresenter'
+
+export const isModelAction = (action: unknown): action is ModelAction => isFileAction(action) && action.type === Action.Type.ObjectAction && action.presenter === modelPresenter
 
 export const getExtraValue = (action: { extra: string | null }, key: string): string | undefined => {
   if (action.extra != null) {

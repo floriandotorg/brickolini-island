@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
-import { type FileActionBase, getExtraValue, isAnimationPresenter } from '../action-types'
+import { type FileActionBase, getExtraValue, isAnimationPresenter, modelPresenter } from '../action-types'
 import { getSettings } from '../settings'
 
 THREE.Cache.enabled = !import.meta.env.DEV
@@ -343,6 +343,9 @@ const getExtension = (fileType: Action.FileType, presenter: string | null, extra
       }
       if (isAnimationPresenter(presenter)) {
         return 'ani'
+      }
+      if (presenter === modelPresenter) {
+        return 'mod'
       }
       return 'gph'
     case Action.FileType.STL:

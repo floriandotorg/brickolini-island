@@ -183,6 +183,166 @@ export namespace WDB {
     public models: Model[] = []
   }
 
+  export const readModel = (reader: BinaryReader): { roi: Roi; animation: Animation.Animation; textures: Gif[] } => {
+    const offset = reader.position
+    const version = reader.readUint32()
+    if (version !== 19) {
+      throw new Error('invalid version')
+    }
+    const textureInfoOffset = reader.readUint32()
+    const _numRois = reader.readUint32()
+    const animation = Animation.readAnimation(reader, false)
+    const roi = readRoi(reader, offset)
+    reader.seek(offset + textureInfoOffset)
+    const numTextures = reader.readUint32()
+    const _skipTextures = reader.readUint32()
+    const textures: Gif[] = []
+    for (let i = 0; i < numTextures; i += 1) {
+      const texture = readGif(reader)
+      textures.push(texture)
+      if (texture.title.startsWith('^')) {
+        textures.push(readGif(reader, texture.title.slice(1)))
+      }
+    }
+    return { roi, animation, textures }
+  }
+
+  const readRoi = (reader: BinaryReader, offset: number): Roi => {
+    const modelName = reader.readString()
+    const center = reader.readVector3()
+    const radius = reader.readFloat32()
+    const _boxMin = reader.readVector3()
+    const _boxMax = reader.readVector3()
+    const textureName = reader.readString()
+    const definedElsewhere = reader.readInt8()
+    const data = (() => {
+      if (definedElsewhere === 0) {
+        const lods: Lods = { lods: [], type: 'lods' }
+        const numLods = reader.readUint32()
+        if (numLods !== 0) {
+          const endComponentOffset = reader.readUint32()
+          for (let n = 0; n < numLods; ++n) {
+            lods.lods.push(readLod(reader))
+          }
+          reader.seek(offset + endComponentOffset)
+        }
+        return lods
+      } else {
+        const reference: Reference = { reference: modelName.replace(/[0-9]+$/, ''), type: 'reference' }
+        return reference
+      }
+    })()
+    const children: Roi[] = []
+    const numRois = reader.readUint32()
+    for (let n = 0; n < numRois; ++n) {
+      children.push(readRoi(reader, offset))
+    }
+    return { name: modelName, data, children, textureName, boundingSphere: { radius, center } }
+  }
+
+  const readLod = (reader: BinaryReader): Lod => {
+    const unknown8 = reader.readUint32()
+    if ((unknown8 & 0xffffff04) !== 0) {
+      throw new Error('invalid flags')
+    }
+    const numMeshes = reader.readUint32()
+    if (numMeshes === 0) {
+      return new Lod([], [])
+    }
+    const numVerts = reader.readUint16()
+    let numNormals = reader.readUint16()
+    numNormals = numNormals >>> 1
+    const numTextVerts = reader.readUint32()
+    const vertices = readVertices(reader, numVerts)
+    const normals = readVertices(reader, numNormals)
+    const uvs: [number, number][] = Array.from({ length: numTextVerts }, () => [reader.readFloat32(), reader.readFloat32()])
+    const meshesBeforeOffset: Mesh[] = []
+    const meshesAfterOffset: Mesh[] = []
+    for (let m = 0; m < numMeshes; m += 1) {
+      const numPolys = reader.readUint16()
+      const numMeshVerts = reader.readUint16()
+      const vertexIndicesPacked: number[] = Array.from({ length: numPolys * 3 }, () => reader.readUint32())
+      const numTextureIndices = reader.readUint32()
+      let textureIndices: number[] = []
+      if (numTextureIndices > 0) {
+        if (numTextureIndices !== numPolys * 3) {
+          throw new Error('texture index count mismatch')
+        }
+        textureIndices = Array.from({ length: numPolys * 3 }, () => reader.readUint32())
+      }
+      const meshVertices: Vertex[] = []
+      const meshNormals: Vertex[] = []
+      const meshUvs: [number, number][] = []
+      const indices: number[] = []
+      for (let i = 0; i < vertexIndicesPacked.length; i += 1) {
+        const packed = vertexIndicesPacked[i]
+        const tex = textureIndices[i]
+        if ((packed & 0x80000000) !== 0) {
+          indices.push(meshVertices.length)
+          const gv = packed & 0x7fff
+          meshVertices.push(vertices[gv])
+          const gn = (packed >>> 16) & 0x7fff
+          meshNormals.push(normals[gn])
+          if (tex !== undefined && uvs.length > 0) {
+            meshUvs.push(uvs[tex])
+          }
+        } else {
+          indices.push(packed & 0x7fff)
+        }
+      }
+      for (let i = 0; i < indices.length; i += 3) {
+        const temp = indices[i]
+        indices[i] = indices[i + 2]
+        indices[i + 2] = temp
+      }
+      if (meshVertices.length !== numMeshVerts) {
+        throw new Error('vertex count mismatch')
+      }
+      if (meshUvs.length !== 0 && meshUvs.length !== numMeshVerts) {
+        throw new Error('uv count mismatch')
+      }
+      const red = reader.readUint8()
+      const green = reader.readUint8()
+      const blue = reader.readUint8()
+      const alpha = 1 - reader.readFloat32()
+      const shading = reader.readInt8()
+      reader.skip(2)
+      const useColorAlias = reader.readUint8() !== 0
+      const textureName = reader.readString()
+      const materialName = reader.readString()
+      const color: Color = { red, green, blue, alpha }
+      const meshes = textureName.toLowerCase().startsWith('inh') || materialName.toLowerCase().startsWith('inh') ? meshesAfterOffset : meshesBeforeOffset
+      meshes.push({ vertices: meshVertices, normals: meshNormals, uvs: meshUvs, indices, color, useColorAlias, textureName: textureName, materialName: materialName, shading })
+    }
+    return new Lod(meshesBeforeOffset, meshesAfterOffset)
+  }
+
+  const readVertices = (reader: BinaryReader, count: number): Vertex[] => Array.from({ length: count }, () => reader.readVector3())
+
+  const readGif = (reader: BinaryReader, maybeTitle?: string): Gif => {
+    const title = maybeTitle ?? reader.readString()
+    const width = reader.readUint32()
+    const height = reader.readUint32()
+    const numColors = reader.readUint32()
+    const colors: Uint8Array[] = []
+    for (let i = 0; i < numColors; i += 1) {
+      const r = reader.readUint8()
+      const g = reader.readUint8()
+      const b = reader.readUint8()
+      colors.push(Uint8Array.of(r, g, b))
+    }
+    const image = new Uint8Array(width * height * 3)
+    let pos = 0
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        const pix = reader.readUint8()
+        image.set(colors[pix], pos)
+        pos += 3
+      }
+    }
+    return { title, width, height, image }
+  }
+
   export class File {
     private _reader: BinaryReader
     private _images: Gif[] = []
@@ -249,25 +409,9 @@ export namespace WDB {
         }
         for (const { offset, position, rotation, up, visible } of modelsOffsets) {
           this._reader.seek(offset)
-          const version = this._reader.readUint32()
-          if (version !== 19) {
-            throw new Error('invalid version')
-          }
-          const textureInfoOffset = this._reader.readUint32()
-          const _numRois = this._reader.readUint32()
-          const animation = Animation.readAnimation(this._reader, false)
-          const roi = this._readRoi(offset)
+          const { roi, animation, textures } = readModel(this._reader)
           world.models.push({ roi, animation, position, rotation, up, visible })
-          this._reader.seek(offset + textureInfoOffset)
-          const numTextures = this._reader.readUint32()
-          const _skipTextures = this._reader.readUint32()
-          for (let i = 0; i < numTextures; i += 1) {
-            const texture = this._readGif()
-            this._modelTextures.push(texture)
-            if (texture.title.startsWith('^')) {
-              this._modelTextures.push(this._readGif(texture.title.slice(1)))
-            }
-          }
+          this._modelTextures.push(...textures)
         }
         this._worlds.push(world)
       }
@@ -307,141 +451,7 @@ export namespace WDB {
       return tex
     }
 
-    private _readRoi = (offset: number): Roi => {
-      const modelName = this._reader.readString()
-      const center = this._reader.readVector3()
-      const radius = this._reader.readFloat32()
-      const _boxMin = this._reader.readVector3()
-      const _boxMax = this._reader.readVector3()
-      const textureName = this._reader.readString()
-      const definedElsewhere = this._reader.readInt8()
-      const data = (() => {
-        if (definedElsewhere === 0) {
-          const lods: Lods = { lods: [], type: 'lods' }
-          const numLods = this._reader.readUint32()
-          if (numLods !== 0) {
-            const endComponentOffset = this._reader.readUint32()
-            for (let n = 0; n < numLods; ++n) {
-              lods.lods.push(this._readLod())
-            }
-            this._reader.seek(offset + endComponentOffset)
-          }
-          return lods
-        } else {
-          const reference: Reference = { reference: modelName.replace(/[0-9]+$/, ''), type: 'reference' }
-          return reference
-        }
-      })()
-      const children: Roi[] = []
-      const numRois = this._reader.readUint32()
-      for (let n = 0; n < numRois; ++n) {
-        children.push(this._readRoi(offset))
-      }
-      return { name: modelName, data, children, textureName, boundingSphere: { radius, center } }
-    }
-
-    private _readGif = (maybeTitle?: string): Gif => {
-      const title = maybeTitle ?? this._reader.readString()
-      const width = this._reader.readUint32()
-      const height = this._reader.readUint32()
-      const numColors = this._reader.readUint32()
-      const colors: Uint8Array[] = []
-      for (let i = 0; i < numColors; i += 1) {
-        const r = this._reader.readUint8()
-        const g = this._reader.readUint8()
-        const b = this._reader.readUint8()
-        colors.push(Uint8Array.of(r, g, b))
-      }
-      const image = new Uint8Array(width * height * 3)
-      let pos = 0
-      for (let y = 0; y < height; y += 1) {
-        for (let x = 0; x < width; x += 1) {
-          const pix = this._reader.readUint8()
-          image.set(colors[pix], pos)
-          pos += 3
-        }
-      }
-      return { title, width, height, image }
-    }
-
-    private _readVertices = (count: number): Vertex[] => Array.from({ length: count }, () => this._reader.readVector3())
-
-    private _readLod = (): Lod => {
-      const unknown8 = this._reader.readUint32()
-      if ((unknown8 & 0xffffff04) !== 0) {
-        throw new Error('invalid flags')
-      }
-      const numMeshes = this._reader.readUint32()
-      if (numMeshes === 0) {
-        return new Lod([], [])
-      }
-      const numVerts = this._reader.readUint16()
-      let numNormals = this._reader.readUint16()
-      numNormals = numNormals >>> 1
-      const numTextVerts = this._reader.readUint32()
-      const vertices = this._readVertices(numVerts)
-      const normals = this._readVertices(numNormals)
-      const uvs: [number, number][] = Array.from({ length: numTextVerts }, () => [this._reader.readFloat32(), this._reader.readFloat32()])
-      const meshesBeforeOffset: Mesh[] = []
-      const meshesAfterOffset: Mesh[] = []
-      for (let m = 0; m < numMeshes; m += 1) {
-        const numPolys = this._reader.readUint16()
-        const numMeshVerts = this._reader.readUint16()
-        const vertexIndicesPacked: number[] = Array.from({ length: numPolys * 3 }, () => this._reader.readUint32())
-        const numTextureIndices = this._reader.readUint32()
-        let textureIndices: number[] = []
-        if (numTextureIndices > 0) {
-          if (numTextureIndices !== numPolys * 3) {
-            throw new Error('texture index count mismatch')
-          }
-          textureIndices = Array.from({ length: numPolys * 3 }, () => this._reader.readUint32())
-        }
-        const meshVertices: Vertex[] = []
-        const meshNormals: Vertex[] = []
-        const meshUvs: [number, number][] = []
-        const indices: number[] = []
-        for (let i = 0; i < vertexIndicesPacked.length; i += 1) {
-          const packed = vertexIndicesPacked[i]
-          const tex = textureIndices[i]
-          if ((packed & 0x80000000) !== 0) {
-            indices.push(meshVertices.length)
-            const gv = packed & 0x7fff
-            meshVertices.push(vertices[gv])
-            const gn = (packed >>> 16) & 0x7fff
-            meshNormals.push(normals[gn])
-            if (tex !== undefined && uvs.length > 0) {
-              meshUvs.push(uvs[tex])
-            }
-          } else {
-            indices.push(packed & 0x7fff)
-          }
-        }
-        for (let i = 0; i < indices.length; i += 3) {
-          const temp = indices[i]
-          indices[i] = indices[i + 2]
-          indices[i + 2] = temp
-        }
-        if (meshVertices.length !== numMeshVerts) {
-          throw new Error('vertex count mismatch')
-        }
-        if (meshUvs.length !== 0 && meshUvs.length !== numMeshVerts) {
-          throw new Error('uv count mismatch')
-        }
-        const red = this._reader.readUint8()
-        const green = this._reader.readUint8()
-        const blue = this._reader.readUint8()
-        const alpha = 1 - this._reader.readFloat32()
-        const shading = this._reader.readInt8()
-        this._reader.skip(2)
-        const useColorAlias = this._reader.readUint8() !== 0
-        const textureName = this._reader.readString()
-        const materialName = this._reader.readString()
-        const color: Color = { red, green, blue, alpha }
-        const meshes = textureName.toLowerCase().startsWith('inh') || materialName.toLowerCase().startsWith('inh') ? meshesAfterOffset : meshesBeforeOffset
-        meshes.push({ vertices: meshVertices, normals: meshNormals, uvs: meshUvs, indices, color, useColorAlias, textureName: textureName, materialName: materialName, shading })
-      }
-      return new Lod(meshesBeforeOffset, meshesAfterOffset)
-    }
+    private _readGif = (maybeTitle?: string): Gif => readGif(this._reader, maybeTitle)
 
     private _readParts = (offset: number): Part[] => {
       const parts: Part[] = []
@@ -456,7 +466,7 @@ export namespace WDB {
 
         const lods: Lod[] = []
         for (let n = 0; n < numLods; ++n) {
-          const lod = this._readLod()
+          const lod = readLod(this._reader)
           if (lod.length !== 0) {
             lods.push(lod)
           }
