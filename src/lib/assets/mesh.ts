@@ -7,7 +7,33 @@ import { WDB } from './wdb'
 
 export const textureLoader = new THREE.TextureLoader(manager)
 
-export const colorAliases: Record<string, WDB.Color> = {
+export const ColorNames = [
+  'lego black',
+  'lego black f',
+  'lego black flat',
+  'lego blue',
+  'lego blue flat',
+  'lego brown',
+  'lego brown flt',
+  'lego brown flat',
+  'lego drk grey',
+  'lego drk grey flt',
+  'lego dk grey flt',
+  'lego green',
+  'lego green flat',
+  'lego lt grey',
+  'lego lt grey flt',
+  'lego lt grey fla',
+  'lego red',
+  'lego red flat',
+  'lego white',
+  'lego white flat',
+  'lego yellow',
+  'lego yellow flat',
+] as const
+export type ColorName = (typeof ColorNames)[number]
+
+export const colorAliases: Record<ColorName, WDB.Color> = {
   'lego black': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
   'lego black f': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
   'lego black flat': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
@@ -32,8 +58,56 @@ export const colorAliases: Record<string, WDB.Color> = {
   'lego yellow flat': { red: 0xff, green: 0xb9, blue: 0x00, alpha: 1 },
 }
 
+export const ColorTableNames = [
+  'c_dbbkfny0',
+  'c_dbbkxly0',
+  'c_chbasey0',
+  'c_chbacky0',
+  'c_chdishy0',
+  'c_chhorny0',
+  'c_chljety1',
+  'c_chrjety1',
+  'c_chmidly0',
+  'c_chmotry0',
+  'c_chsidly0',
+  'c_chsidry0',
+  'c_chstuty0',
+  'c_chtaily0',
+  'c_chwindy1',
+  'c_dbfbrdy0',
+  'c_dbflagy0',
+  'c_dbfrfny4',
+  'c_dbfrxly0',
+  'c_dbhndly0',
+  'c_dbltbry0',
+  'c_jsdashy0',
+  'c_jsexhy0',
+  'c_jsfrnty5',
+  'c_jshndly0',
+  'c_jslsidy0',
+  'c_jsrsidy0',
+  'c_jsskiby0',
+  'c_jswnshy5',
+  'c_rcbacky6',
+  'c_rcedgey0',
+  'c_rcfrmey0',
+  'c_rcfrnty6',
+  'c_rcmotry0',
+  'c_rcsidey0',
+  'c_rcstery0',
+  'c_rcstrpy0',
+  'c_rctailya',
+  'c_rcwhl1y0',
+  'c_rcwhl2y0',
+  'c_jsbasey0',
+  'c_chblady0',
+  'c_chseaty0',
+] as const
+export type ColorTableName = (typeof ColorTableNames)[number]
+export const isColorTableName = (name: string): name is ColorTableName => ColorTableNames.includes(name as ColorTableName)
+
 // spellchecker: disable
-const variableTable: Record<string, string> = {
+const colorTable: Record<ColorTableName, ColorName> = {
   c_dbbkfny0: 'lego red', // dunebuggy back fender
   c_dbbkxly0: 'lego white', // dunebuggy back axle
   c_chbasey0: 'lego black', // copter base
@@ -82,13 +156,17 @@ const variableTable: Record<string, string> = {
 
 export const colorFromName = (name: string): WDB.Color | null => {
   if (name.length > 0 && (name.toLowerCase().startsWith('indir-f-') || name.toLowerCase().startsWith('indir-g-'))) {
-    const variableName = `c_${name.substring('indir-f-'.length)}`.toLowerCase()
-    const variableValue = variableTable[variableName].toLowerCase()
-    if (variableValue != null) {
-      const aliasedColor = colorAliases[variableValue]
-      if (aliasedColor != null) {
-        return aliasedColor
-      }
+    const colorTableName = `c_${name.substring('indir-f-'.length)}`.toLowerCase()
+
+    if (!isColorTableName(colorTableName)) {
+      console.warn(`Variable ${colorTableName} not found in variable table`)
+      return null
+    }
+
+    const colorTableValue = colorTable[colorTableName]
+    const aliasedColor = colorAliases[colorTableValue]
+    if (aliasedColor != null) {
+      return aliasedColor
     }
   }
   return null
@@ -171,7 +249,7 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
     geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
     geometry.setAttribute('uv2', new THREE.BufferAttribute(new Float32Array(uvs), 2))
   } else {
-    const color = customColor ?? colorFromName(modelMesh.materialName) ?? modelMesh.color ?? modelMesh.color
+    const color = customColor ?? colorFromName(modelMesh.materialName) ?? modelMesh.color
     material.color = toThreeColor(color)
     if (color.alpha < 0.99) {
       material.transparent = true
