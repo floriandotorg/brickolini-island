@@ -812,39 +812,6 @@ export class Isle extends IsleBase {
     return this._cameraAnimationPlaying
   }
 
-  public getVehicleMesh(vehicle: VehicleType): THREE.Object3D[] {
-    let result: THREE.Object3D[] | THREE.Object3D | null = null
-
-    switch (vehicle) {
-      case 'bike':
-        result = this._bikeMesh
-        break
-      case 'moto':
-        result = this._motobkMesh
-        break
-      case 'skate':
-        result = this._skateMesh
-        break
-      case 'ambul':
-        result = this._ambulanceMesh
-        break
-      case 'towtk':
-        result = this._towtruckMesh
-        break
-    }
-
-    if (result == null) {
-      throw new Error(`Vehicle mesh not found for ${vehicle}`)
-    }
-
-    return Array.isArray(result) ? result : [result]
-  }
-
-  public placeVehicle(vehicle: VehicleType, boundaryName: string, src: number, srcScale: number, dst: number, _dstScale: number): void {
-    const { position, quaternion } = this._boundaryManager.getObjectPlacement(boundaryName, src, srcScale, dst, _dstScale)
-    this.moveObjectTo(this.getVehicleMesh(vehicle), position, quaternion)
-  }
-
   private get _currentVehicleMesh(): THREE.Object3D[] {
     if (this._currentVehicle == null) {
       throw new Error('No vehicle set')
@@ -1004,20 +971,6 @@ export class Isle extends IsleBase {
       throw new Error('Isle mesh not found')
     }
     this._isleMesh = isle
-
-    this._bikeMesh = this.scene.getObjectByName('bike') ?? null
-    this._motobkMesh = this.scene.getObjectByName('motobk') ?? null
-    this._skateMesh = this.scene.getObjectByName('skate') ?? null
-    this._ambulanceMesh = this.getObjectsByPrefix('ambul') ?? []
-    this._towtruckMesh = this.getObjectsByPrefix('towtk') ?? []
-
-    if (this._bikeMesh == null || this._motobkMesh == null || this._skateMesh == null || this._ambulanceMesh.length < 1 || this._towtruckMesh.length < 1) {
-      throw new Error('Vehicle meshes not found')
-    }
-
-    this.placeVehicle('bike', 'INT44', 2, 0.5, 0, 0.5)
-    this.placeVehicle('moto', 'INT43', 4, 0.5, 1, 0.5)
-    this.placeVehicle('skate', 'EDG02_84', 4, 0.5, 0, 0.5)
 
     await this._pizzaMission.init()
 
