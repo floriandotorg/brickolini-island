@@ -1,3 +1,5 @@
+import { type ColorName, type ColorTableName, ColorTableNames, getDefaultColor, isColorName } from './assets/mesh'
+
 export const PlayerCharacters = ['pepper', 'papa', 'mama', 'nick', 'laura'] as const
 export type PlayerCharacter = (typeof PlayerCharacters)[number]
 
@@ -5,6 +7,7 @@ export const SAVE_GAME_STORAGE_KEY = 'saves'
 
 export class SaveGame {
   private _player: PlayerCharacter | null = null
+  private _colorTable = new Map<ColorTableName, ColorName>()
 
   public get playerUnsafe(): PlayerCharacter | null {
     return this._player
@@ -26,6 +29,19 @@ export class SaveGame {
     return this.name.length === 0
   }
 
+  public getColor(name: ColorTableName): ColorName {
+    const customColor = this._colorTable.get(name)
+    if (customColor != null) {
+      return customColor
+    }
+    return getDefaultColor(name)
+  }
+
+  public setColor(name: ColorTableName, color: ColorName): void {
+    this._colorTable.set(name, color)
+    this.setItem(color, SaveGame.ColorKey, name)
+  }
+
   public readonly name: string
 
   private constructor(name: string) {
@@ -37,6 +53,13 @@ export class SaveGame {
         this.player = playerName as PlayerCharacter
       } else {
         console.warn(`Unknown player character ${playerName}`)
+      }
+    }
+
+    for (const name of ColorTableNames) {
+      const colorValue = this.getItem(SaveGame.ColorKey, name)
+      if (colorValue != null && isColorName(colorValue)) {
+        this._colorTable.set(name, colorValue)
       }
     }
   }
@@ -54,6 +77,7 @@ export class SaveGame {
   public static validName = (name: string) => /^[A-Z0-9]+$/.test(name.toUpperCase())
 
   private static readonly PlayerKey = 'player'
+  private static readonly ColorKey = 'color'
 
   private getItem(...names: string[]): string | null {
     return localStorage.getItem(`${SAVE_GAME_STORAGE_KEY}.${this.name}.${names.join('.')}`)

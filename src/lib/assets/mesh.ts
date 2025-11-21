@@ -32,6 +32,7 @@ export const ColorNames = [
   'lego yellow flat',
 ] as const
 export type ColorName = (typeof ColorNames)[number]
+export const isColorName = (name: string): name is ColorName => ColorNames.includes(name as ColorName)
 
 export const colorAliases: Record<ColorName, WDB.Color> = {
   'lego black': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
@@ -154,6 +155,10 @@ const colorTable: Record<ColorTableName, ColorName> = {
 }
 // spellchecker: enable
 
+export const getDefaultColor = (name: ColorTableName): ColorName => {
+  return colorTable[name]
+}
+
 export const colorFromName = (name: string): WDB.Color | null => {
   if (name.length > 0 && (name.toLowerCase().startsWith('indir-f-') || name.toLowerCase().startsWith('indir-g-'))) {
     const colorTableName = `c_${name.substring('indir-f-'.length)}`.toLowerCase()
@@ -163,7 +168,7 @@ export const colorFromName = (name: string): WDB.Color | null => {
       return null
     }
 
-    const colorTableValue = colorTable[colorTableName]
+    const colorTableValue = engine.currentSaveGame.getColor(colorTableName)
     const aliasedColor = colorAliases[colorTableValue]
     if (aliasedColor != null) {
       return aliasedColor
