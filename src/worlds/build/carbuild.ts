@@ -4,7 +4,7 @@ import { type Animation3DNode, findRecursively } from '../../lib/assets/animatio
 import type { Audio } from '../../lib/assets/audio'
 import { createImageSprite } from '../../lib/assets/canvas-sprite'
 import type { Control, ControlEvent } from '../../lib/assets/control'
-import { colorAliases, colorMesh, toThreeColor } from '../../lib/assets/mesh'
+import { colorAliases, colorMesh, isColorTableName, toThreeColor } from '../../lib/assets/mesh'
 import { Roi3D } from '../../lib/assets/model'
 import { createTexture } from '../../lib/assets/texture'
 import { engine } from '../../lib/engine'
@@ -667,6 +667,10 @@ export class Carbuild {
           }
           const customColor = this._colorControls.getColor(buttonName)
           if (customColor != null) {
+            const colorTableName = `c_${part.shelfPart.ownName}`
+            if (isColorTableName(colorTableName)) {
+              engine.currentSaveGame.setColor(colorTableName, customColor)
+            }
             const threeColor = toThreeColor(colorAliases[customColor])
             colorMesh(part.shelfPart, threeColor)
             colorMesh(part.clone, threeColor)
