@@ -1133,6 +1133,7 @@ export class Isle extends IsleBase {
     }
 
     const groundPosition = this._getGroundPosition(this.camera.position, new THREE.Vector3(0, 0, 0))
+    engine.currentSaveGame.setVehiclePlacement(this._currentVehicle.type, { position: groundPosition, quaternion: this.camera.quaternion })
     this.moveObjectTo(this._currentVehicleMesh, groundPosition, this.camera.quaternion)
     for (const mesh of this._currentVehicleMesh) {
       mesh.visible = true

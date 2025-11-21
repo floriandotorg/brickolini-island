@@ -277,8 +277,15 @@ export abstract class IsleBase extends World {
     return Array.isArray(result) ? result : [result]
   }
 
-  public placeVehicle(vehicle: VehicleType, boundaryName: string, src: number, srcScale: number, dst: number, _dstScale: number): void {
-    const { position, quaternion } = this._boundaryManager.getObjectPlacement(boundaryName, src, srcScale, dst, _dstScale)
+  public placeVehicle(vehicle: VehicleType, boundaryName: string, src: number, srcScale: number, dst: number, _dstScale: number, ignoreSave: boolean = false): void {
+    const { position, quaternion } = (() => {
+      const vehiclePlacement = ignoreSave ? null : engine.currentSaveGame.getVehiclePlacement(vehicle)
+      if (vehiclePlacement != null) {
+        return vehiclePlacement
+      } else {
+        return this._boundaryManager.getObjectPlacement(boundaryName, src, srcScale, dst, _dstScale)
+      }
+    })()
     this.moveObjectTo(this.getVehicleMesh(vehicle), position, quaternion)
   }
 

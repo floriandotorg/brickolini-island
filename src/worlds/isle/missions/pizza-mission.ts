@@ -189,7 +189,7 @@ export class PizzaMission {
         void this.isle.playCameraAnimation(action).then(() => {
           this.isle.cameraAnimationTriggerEnabled = false
           this.isle.backgroundMusicTriggerEnabled = false
-          this.isle.placeVehicle('skate', 'INT37', 2, 0.5, 3, 0.5)
+          this.isle.placeVehicle('skate', 'INT37', 2, 0.5, 3, 0.5, true)
           this.isle.enterVehicle({ type: 'skate', showPizza: true })
           this._helpAudioPlayed = false
           for (let n = 0; n < 4; ++n) {

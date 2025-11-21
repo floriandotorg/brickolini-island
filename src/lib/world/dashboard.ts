@@ -61,16 +61,17 @@ import type { ColorName } from '../assets/mesh'
 import { type Composer, Render2D } from '../effect/composer'
 import { engine } from '../engine'
 
+export const VehicleTypes = ['bike', 'moto', 'ambul', 'towtk', 'jetski', 'racecar', 'helicopter', 'dunecar', 'skate'] as const
+export type VehicleType = (typeof VehicleTypes)[number]
+export const isVehicleType = (name: string): name is VehicleType => VehicleTypes.includes(name as VehicleType)
 export type Vehicle =
   | {
-      type: 'bike' | 'moto' | 'ambul' | 'towtk' | 'jetski' | 'racecar' | 'helicopter' | 'dunecar'
+      type: Exclude<VehicleType, 'skate'>
     }
   | {
       type: 'skate'
       showPizza: boolean
     }
-
-export type VehicleType = Vehicle['type']
 
 const vehicleToDashboard: {
   [key in VehicleType]: ParallelAction<ImageAction | AudioAction | ControlAction>
