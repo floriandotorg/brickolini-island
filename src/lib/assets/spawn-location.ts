@@ -2,6 +2,7 @@ import type { IsleParam } from '../../worlds/isle-base'
 
 export const SpawnLocations = ['pizzeriaExterior', 'infocenterExited', 'jetraceExterior', 'jetskibuildExited', 'carraceExterior', 'racecarbuildExited', 'garageExterior', 'garageExited', 'hospitalExterior', 'hospitalExited', 'policeExterior', 'policeExited'] as const
 export type SpawnLocation = (typeof SpawnLocations)[number]
+export const isSpawnLocation = (name: string): name is SpawnLocation => SpawnLocations.includes(name as SpawnLocation)
 
 export const getSpawnLocation = (location: SpawnLocation): IsleParam => {
   switch (location) {
