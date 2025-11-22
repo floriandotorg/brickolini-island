@@ -350,7 +350,7 @@ export class InfoMain extends World {
               const selectionAnimation = getSelectionAnimation(character)
               this.playAnimation(selectionAnimation).then(() => {
                 if (dest.destination != null) {
-                  void switchWorld('isle', dest.destination satisfies IsleParam)
+                  void switchWorld({ name: 'isle', spawn: dest.destination })
                 }
               })
             }

@@ -1,18 +1,19 @@
 import { engine } from './engine'
-import type { World, WorldName } from './world/world'
+import type { NormalWorld, World, WorldName, WorldSpawn } from './world/world'
 
 const worlds = new Map<WorldName, World>()
 
-export const switchWorld = async (worldName: WorldName, param?: unknown) => {
+export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
   if (engine.hasWorld) {
     engine.currentWorld.skipAllRunningAnimations(true)
   }
 
   const transition = engine.hasWorld ? engine.transition() : Promise.resolve()
+  const normalizedSpawn: WorldSpawn = typeof spawn === 'string' ? { name: spawn } : spawn
 
-  if (!worlds.has(worldName)) {
+  if (!worlds.has(normalizedSpawn.name)) {
     const newWorld = await (() => {
-      switch (worldName) {
+      switch (normalizedSpawn.name) {
         case 'isle':
           return import('../worlds/isle').then(m => new m.Isle())
         case 'hospital':
@@ -54,17 +55,17 @@ export const switchWorld = async (worldName: WorldName, param?: unknown) => {
         case 'elevdown':
           return import('../worlds/elevator/elevdown').then(m => new m.ElevDown())
         default: {
-          const _exhaustiveCheck: never = worldName
-          throw new Error(`Unhandled world: ${worldName}`)
+          const _exhaustiveCheck: never = normalizedSpawn
+          throw new Error(`Unhandled world: ${normalizedSpawn}`)
         }
       }
     })()
-    worlds.set(worldName, newWorld)
+    worlds.set(normalizedSpawn.name, newWorld)
   }
 
-  const world = worlds.get(worldName)
+  const world = worlds.get(normalizedSpawn.name)
   if (world == null) {
-    throw new Error(`World ${worldName} not found`)
+    throw new Error(`World ${normalizedSpawn.name} not found`)
   }
 
   if (!world.initialized) {
@@ -72,6 +73,17 @@ export const switchWorld = async (worldName: WorldName, param?: unknown) => {
   }
 
   await transition
+
+  const param = (() => {
+    switch (normalizedSpawn.name) {
+      case 'elevride':
+        return normalizedSpawn.floor
+      case 'isle':
+        return normalizedSpawn.spawn
+      default:
+        return undefined
+    }
+  })()
 
   await engine.setWorld(world, param)
 }

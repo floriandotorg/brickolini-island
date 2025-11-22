@@ -4,8 +4,7 @@ import type { Composer } from '../lib/effect/composer'
 import type { NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
-import { World } from '../lib/world/world'
-import { ElevatorEntrance } from './elevator'
+import { ElevatorEntrance, World } from '../lib/world/world'
 
 export class ElevBott extends World {
   private readonly _building = new Building()
@@ -25,7 +24,7 @@ export class ElevBott extends World {
     this._building.onButtonClicked = buttonName => {
       switch (buttonName) {
         case 'ElevBott_Elevator_Ctl':
-          void switchWorld('elevride', ElevatorEntrance.First)
+          void switchWorld({ name: 'elevride', floor: ElevatorEntrance.First })
           return true
         case 'LeftArrow_Ctl':
           void switchWorld('infodoor')

@@ -2,8 +2,9 @@ import { Intro_Movie, Lego_Movie, Mindscape_Movie } from './actions/intro'
 import { engine, getURLParam } from './lib/engine'
 import './lib/settings-dialog'
 import './style.css'
+import { getSpawnLocation } from './lib/assets/spawn-location'
 import { switchWorld } from './lib/switch-world'
-import type { WorldName } from './lib/world/world'
+import { ElevatorEntrance, type WorldName, type WorldSpawn } from './lib/world/world'
 
 const playButton = document.getElementById('play-button')
 if (playButton == null || !(playButton instanceof HTMLButtonElement)) {
@@ -22,8 +23,18 @@ const start = async () => {
     await engine.playCutscene(Intro_Movie)
   }
 
-  const world = getURLParam('world') ?? ('infomain' satisfies WorldName)
-  await switchWorld(world as WorldName)
+  const world = (getURLParam('world') ?? ('infomain' satisfies WorldName)) as WorldName
+  const spawn: WorldSpawn = (() => {
+    switch (world) {
+      case 'isle':
+        return { name: 'isle', spawn: getSpawnLocation('pizzeriaExterior') }
+      case 'elevride':
+        return { name: 'elevride', floor: ElevatorEntrance.First }
+      default:
+        return { name: world }
+    }
+  })()
+  await switchWorld(spawn)
 }
 
 playButton.addEventListener('click', start)

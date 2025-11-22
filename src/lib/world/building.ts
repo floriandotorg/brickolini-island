@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator.js'
-import type { IsleParam } from '../../worlds/isle-base'
 import { type ActionBase, type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
 import { createImageSprite } from '../assets/canvas-sprite'
@@ -14,20 +13,15 @@ import { TransparentEdgeBlurEffect } from '../effect/transparent-edge-blur'
 import { engine } from '../engine'
 import { getSettings } from '../settings'
 import { switchWorld } from '../switch-world'
-import type { World, WorldName } from './world'
+import type { NormalWorld, World, WorldSpawn } from './world'
 
 export class Building {
   private _render = new Render2D()
   private _controls: Control[] = []
-  private _exitSpawnPoint?:
-    | {
-        spawn: SpawnLocation
-        control: string
-      }
-    | {
-        world: WorldName
-        control: string
-      }
+  private _exitSpawnPoint?: {
+    world: WorldSpawn
+    control: string
+  }
 
   constructor() {
     this._render.addEffect(new TransparentEdgeBlurEffect())
@@ -63,7 +57,7 @@ export class Building {
           control?: string
         }
       | {
-          world: WorldName
+          world: NormalWorld
           control?: string
         }
     noLights?: boolean
@@ -73,11 +67,8 @@ export class Building {
         ? undefined
         : (() => {
             const control = exitSpawnPoint?.control ?? 'Door_Ctl'
-            if ('world' in exitSpawnPoint) {
-              return { world: exitSpawnPoint.world, control }
-            } else {
-              return { spawn: exitSpawnPoint.spawn, control }
-            }
+            const world: WorldSpawn = 'world' in exitSpawnPoint ? { name: exitSpawnPoint.world } : { name: 'isle', spawn: getSpawnLocation(exitSpawnPoint.spawn) }
+            return { world, control }
           })()
 
     if (backgroundMusic != null) {
@@ -171,11 +162,7 @@ export class Building {
         }
 
         if (this._exitSpawnPoint != null && control.name.endsWith(this._exitSpawnPoint.control)) {
-          if ('world' in this._exitSpawnPoint) {
-            void switchWorld(this._exitSpawnPoint.world)
-          } else {
-            void switchWorld('isle', getSpawnLocation(this._exitSpawnPoint.spawn) satisfies IsleParam)
-          }
+          void switchWorld(this._exitSpawnPoint.world)
           return true
         }
 

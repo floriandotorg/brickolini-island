@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
+import type { IsleParam } from '../../worlds/isle-base'
 import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
 import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, createAnimationActor, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { type Audio, getPositionalAudio } from '../assets/audio'
@@ -11,6 +12,26 @@ import { type AudioType, engine, getURLParam, type NormalizedMouseEvent } from '
 import { Actor } from './actor'
 
 export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevride' | 'elevopen' | 'seaview' | 'observe' | 'elevdown'
+
+// you cannot enter the second floor
+export enum ElevatorEntrance {
+  First,
+  Third,
+}
+
+export type NormalWorld = Exclude<WorldName, 'isle' | 'elevride'>
+export type WorldSpawn =
+  | {
+      name: NormalWorld
+    }
+  | {
+      name: 'elevride'
+      floor: ElevatorEntrance
+    }
+  | {
+      name: 'isle'
+      spawn: IsleParam
+    }
 
 type FaceAnimation = {
   actor: Actor

@@ -8,13 +8,8 @@ import type { Composer } from '../../lib/effect/composer'
 import type { NormalizedMouseEvent } from '../../lib/engine'
 import { switchWorld } from '../../lib/switch-world'
 import { Building } from '../../lib/world/building'
+import { ElevatorEntrance } from '../../lib/world/world'
 import { IsleBase } from '../isle-base'
-
-// you cannot enter the second floor
-export enum ElevatorEntrance {
-  First,
-  Third,
-}
 
 enum Floor {
   First,
