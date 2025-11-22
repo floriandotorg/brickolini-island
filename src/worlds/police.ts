@@ -7,7 +7,7 @@ import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
 
 export class Police extends World {
-  private _building = new Building()
+  private readonly _building = new Building()
   private _numVisits = 0
 
   constructor() {

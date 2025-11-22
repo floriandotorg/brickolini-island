@@ -8,7 +8,7 @@ import { Building } from '../lib/world/building'
 import { IsleBase } from './isle-base'
 
 export class PoliDoor extends IsleBase {
-  public _building = new Building()
+  private readonly _building = new Building()
 
   constructor() {
     super('polidoor')

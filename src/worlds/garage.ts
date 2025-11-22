@@ -8,7 +8,7 @@ import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
 
 export class Garage extends World {
-  private _building = new Building()
+  private readonly _building = new Building()
 
   constructor() {
     super('garage')

@@ -9,7 +9,7 @@ import { World } from '../../lib/world/world'
 import { buildColorControls, buildDecalControls, Carbuild } from './carbuild'
 
 export class Dunecar extends World {
-  private _building = new Building()
+  private readonly _building = new Building()
   private _carbuild: Carbuild | null = null
 
   constructor() {

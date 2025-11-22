@@ -23,7 +23,7 @@ enum Floor {
 }
 
 export class Elevator extends IsleBase {
-  public _building = new Building()
+  private readonly _building = new Building()
   private _meterSprite = new THREE.Sprite()
   private _floor = Floor.First
 

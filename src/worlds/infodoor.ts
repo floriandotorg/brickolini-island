@@ -9,7 +9,7 @@ import { World } from '../lib/world/world'
 import type { IsleParam } from './isle-base'
 
 export class InfoDoor extends World {
-  private _building = new Building()
+  private readonly _building = new Building()
 
   constructor() {
     super('infodoor')

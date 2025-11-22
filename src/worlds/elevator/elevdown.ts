@@ -9,7 +9,7 @@ import { IsleBase } from '../isle-base'
 import { ElevatorEntrance } from '.'
 
 export class ElevDown extends IsleBase {
-  public _building = new Building()
+  private readonly _building = new Building()
 
   constructor() {
     super('elevdown')

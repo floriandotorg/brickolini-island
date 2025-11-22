@@ -8,7 +8,7 @@ import { World } from '../lib/world/world'
 import { ElevatorEntrance } from './elevator'
 
 export class ElevBott extends World {
-  private _building = new Building()
+  private readonly _building = new Building()
 
   constructor() {
     super('elevbott')

@@ -126,7 +126,7 @@ const getSelectionAnimation = (character: PlayerCharacter): RunAnimationAction =
 }
 
 export class InfoMain extends World {
-  private _building = new Building()
+  private readonly _building = new Building()
 
   private readonly _characterFrame: THREE.Sprite
   private readonly _name: Name

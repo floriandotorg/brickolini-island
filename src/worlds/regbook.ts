@@ -134,7 +134,7 @@ class NameWithCheck {
 }
 
 export class RegBook extends World {
-  private _building = new Building()
+  private readonly _building = new Building()
   private _names: NameWithCheck[] = []
   private _highLightSprite: THREE.Sprite
 
