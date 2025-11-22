@@ -7,7 +7,7 @@ import { getBoundaries } from '../lib/assets/boundary'
 import { manager } from '../lib/assets/load'
 import { calculateTransformationMatrix, getWorld } from '../lib/assets/model'
 import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
-import { applyLights } from '../lib/original-lights'
+import { applyLights, NUM_ORIGINAL_LIGHTS } from '../lib/original-lights'
 import { getSettings } from '../lib/settings'
 import { Actor } from '../lib/world/actor'
 import { BoundaryManager } from '../lib/world/boundary-manager'
@@ -24,6 +24,7 @@ export type IsleParam = {
     destinationScale: number
   }
 }
+const SECONDS_PER_DAY = 24 * 60
 
 export abstract class IsleBase extends World {
   protected _slewMode: boolean = false
@@ -50,7 +51,6 @@ export abstract class IsleBase extends World {
         type: 'none'
       } = { type: 'none' }
   protected _ambientLight: THREE.AmbientLight | null = null
-  protected _dayTime = 0
   protected _water: Water | null = null
   protected _isleMesh: THREE.Object3D | null = null
   protected _bikeMesh: THREE.Object3D | null = null
@@ -186,7 +186,6 @@ export abstract class IsleBase extends World {
         sky,
       }
 
-      this._dayTime = 0.5
       this._updateSun()
     } else {
       const ambientLight = new THREE.AmbientLight(new THREE.Color(0.3, 0.3, 0.3))
@@ -291,6 +290,21 @@ export abstract class IsleBase extends World {
     this.camera.updateProjectionMatrix()
   }
 
+  private get _modernDayTime(): number {
+    return (engine.elapsedTimeSeconds / SECONDS_PER_DAY + engine.currentSaveGame.sunPosition / NUM_ORIGINAL_LIGHTS) % 1
+  }
+
+  protected get _currentSunPosition(): number {
+    switch (this._sun.type) {
+      case 'original':
+        return engine.currentSaveGame.sunPosition
+      case 'modern':
+        return Math.floor(this._modernDayTime * NUM_ORIGINAL_LIGHTS)
+    }
+
+    throw new Error('Invalid sun type')
+  }
+
   protected _updateSun(): void {
     switch (this._sun.type) {
       case 'original': {
@@ -299,7 +313,8 @@ export abstract class IsleBase extends World {
         break
       }
       case 'modern': {
-        const elevationDeg = Math.sin(Math.PI * this._dayTime) * 90 // 0-90-0°
+        const dayTime = this._modernDayTime
+        const elevationDeg = Math.sin(Math.PI * dayTime) * 90 // 0-90-0°
         const phi = THREE.MathUtils.degToRad(90 - elevationDeg)
         const theta = THREE.MathUtils.degToRad(135) // fixed azimuth
 
@@ -307,10 +322,10 @@ export abstract class IsleBase extends World {
 
         this._sun.sky.material.uniforms.sunPosition.value.copy(sunDir)
 
-        const intensity = 0.25 + 0.75 * Math.sin(Math.PI * this._dayTime) // 0.25-1-0.25
+        const intensity = 0.25 + 0.75 * Math.sin(Math.PI * dayTime) // 0.25-1-0.25
         const warm = new THREE.Color(0xff9f46) // ≈ 2500 K
         const cold = new THREE.Color(0xfffefa) // ≈ 6500 K
-        const color = warm.clone().lerp(cold, Math.sin(Math.PI * this._dayTime)) // warm → cold → warm
+        const color = warm.clone().lerp(cold, Math.sin(Math.PI * dayTime)) // warm → cold → warm
 
         this.scene.environmentIntensity = 0.15 * intensity
 
@@ -366,7 +381,6 @@ export abstract class IsleBase extends World {
   public override update(delta: number): void {
     super.update(delta)
 
-    this._dayTime = (this._dayTime + delta * (1 / (24 * 60))) % 1
     this._updateSun()
 
     if (this._water != null) {

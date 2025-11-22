@@ -77,12 +77,18 @@ export class Observe extends IsleBase {
   }
 
   private _updateGlobeSprite(): void {
+    const currentSunPosition = this._currentSunPosition
     for (const [index, globeSprite] of this._globeSprites.entries()) {
-      globeSprite.visible = index === engine.currentSaveGame.sunPosition
+      globeSprite.visible = index === currentSunPosition
     }
   }
 
   public override pointerUp(_event: NormalizedMouseEvent): void {
     this._building.pointerUp()
+  }
+
+  public override update(delta: number): void {
+    super.update(delta)
+    this._updateGlobeSprite()
   }
 }

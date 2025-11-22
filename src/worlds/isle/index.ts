@@ -1211,7 +1211,7 @@ export class Isle extends IsleBase {
     }
 
     if (key === 'm') {
-      this._dayTime = (Math.round(((this._dayTime + 0.25) % 1) / 0.25) * 0.25) % 1
+      engine.currentSaveGame.nextSunPosition()
       this._updateSun()
     }
   }
