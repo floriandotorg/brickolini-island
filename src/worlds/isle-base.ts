@@ -7,6 +7,7 @@ import { getBoundaries } from '../lib/assets/boundary'
 import { manager } from '../lib/assets/load'
 import { calculateTransformationMatrix, getWorld } from '../lib/assets/model'
 import { engine, type NormalizedMouseEvent } from '../lib/engine'
+import { applyLights } from '../lib/original-lights'
 import { getSettings } from '../lib/settings'
 import { Actor } from '../lib/world/actor'
 import { BoundaryManager } from '../lib/world/boundary-manager'
@@ -34,9 +35,21 @@ export abstract class IsleBase extends World {
   protected _plantGroup: THREE.Group = new THREE.Group()
   protected _boundaryManager = new BoundaryManager([], this)
   protected _dashboard = new Dashboard()
-  protected _sky: Sky | null = null
+  protected _sun:
+    | {
+        type: 'original'
+        sunLight: THREE.PointLight
+        directionalLight: THREE.DirectionalLight
+      }
+    | {
+        type: 'modern'
+        sky: Sky
+        sunLight: THREE.DirectionalLight
+      }
+    | {
+        type: 'none'
+      } = { type: 'none' }
   protected _ambientLight: THREE.AmbientLight | null = null
-  protected _sunLight: THREE.DirectionalLight | null = null
   protected _dayTime = 0
   protected _water: Water | null = null
   protected _isleMesh: THREE.Object3D | null = null
@@ -141,31 +154,37 @@ export abstract class IsleBase extends World {
 
     const settings = getSettings()
     if (settings.graphics.sun) {
-      this._sky = new Sky()
-      this._sky.scale.setScalar(10000)
-      this.scene.add(this._sky)
-      this._sky.material.uniforms.turbidity.value = 10
-      this._sky.material.uniforms.rayleigh.value = 2
-      this._sky.material.uniforms.mieCoefficient.value = 0.005
-      this._sky.material.uniforms.mieDirectionalG.value = 0.8
+      const sky = new Sky()
+      sky.scale.setScalar(10000)
+      this.scene.add(sky)
+      sky.material.uniforms.turbidity.value = 10
+      sky.material.uniforms.rayleigh.value = 2
+      sky.material.uniforms.mieCoefficient.value = 0.005
+      sky.material.uniforms.mieDirectionalG.value = 0.8
 
       if (!settings.graphics.pbrMaterials) {
         this._ambientLight = new THREE.AmbientLight()
         this.scene.add(this._ambientLight)
       }
 
-      this._sunLight = new THREE.DirectionalLight()
+      const sunLight = new THREE.DirectionalLight()
       if (settings.graphics.shadows) {
-        this._sunLight.castShadow = true
-        this._sunLight.shadow.mapSize.set(4096, 4096)
-        this._sunLight.shadow.camera.near = 0.5
-        this._sunLight.shadow.camera.far = 500
-        this._sunLight.shadow.camera.left = -200
-        this._sunLight.shadow.camera.right = 200
-        this._sunLight.shadow.camera.top = 200
-        this._sunLight.shadow.camera.bottom = -200
+        sunLight.castShadow = true
+        sunLight.shadow.mapSize.set(4096, 4096)
+        sunLight.shadow.camera.near = 0.5
+        sunLight.shadow.camera.far = 500
+        sunLight.shadow.camera.left = -200
+        sunLight.shadow.camera.right = 200
+        sunLight.shadow.camera.top = 200
+        sunLight.shadow.camera.bottom = -200
       }
-      this.scene.add(this._sunLight)
+      this.scene.add(sunLight)
+
+      this._sun = {
+        type: 'modern',
+        sunLight,
+        sky,
+      }
 
       this._dayTime = 0.5
       this._updateSun()
@@ -196,20 +215,13 @@ export abstract class IsleBase extends World {
       }
       setSkyColor({ h: 0.56, s: 0.54, l: 0.68 })
 
-      const setLightPosition = (index: number) => {
-        const lights: [number, number, number, number, number, number][] = [
-          [1.0, 0.0, 0.0, -150.0, 50.0, -50.0],
-          [0.809, -0.588, 0.0, -75.0, 50.0, -50.0],
-          [0.0, -1.0, 0.0, 0.0, 150.0, -150.0],
-          [-0.309, -0.951, 0.0, 25.0, 50.0, -50.0],
-          [-0.809, -0.588, 0.0, 75.0, 50.0, -50.0],
-          [-1.0, 0.0, 0.0, 150.0, 50.0, -50.0],
-        ]
-        sunLight.position.set(lights[index][3], lights[index][4], lights[index][5])
-        sunLight.lookAt(lights[index][0], lights[index][1], lights[index][2])
-        directionalLight.position.set(lights[index][0], lights[index][1], lights[index][2])
+      this._sun = {
+        type: 'original',
+        sunLight,
+        directionalLight,
       }
-      setLightPosition(0)
+
+      this._updateSun()
     }
 
     this._boundaryManager = new BoundaryManager(await getBoundaries(IslePath), this)
@@ -233,54 +245,60 @@ export abstract class IsleBase extends World {
   }
 
   protected _updateSun(): void {
-    if (this._sky == null || this._sunLight == null) {
-      return
-    }
+    switch (this._sun.type) {
+      case 'original': {
+        const index = engine.currentSaveGame.sunPosition
+        applyLights(index, this._sun.sunLight, this._sun.directionalLight)
+        break
+      }
+      case 'modern': {
+        const elevationDeg = Math.sin(Math.PI * this._dayTime) * 90 // 0-90-0°
+        const phi = THREE.MathUtils.degToRad(90 - elevationDeg)
+        const theta = THREE.MathUtils.degToRad(135) // fixed azimuth
 
-    const elevationDeg = Math.sin(Math.PI * this._dayTime) * 90 // 0-90-0°
-    const phi = THREE.MathUtils.degToRad(90 - elevationDeg)
-    const theta = THREE.MathUtils.degToRad(135) // fixed azimuth
+        const sunDir = new THREE.Vector3().setFromSphericalCoords(1, phi, theta)
 
-    const sunDir = new THREE.Vector3().setFromSphericalCoords(1, phi, theta)
+        this._sun.sky.material.uniforms.sunPosition.value.copy(sunDir)
 
-    this._sky.material.uniforms.sunPosition.value.copy(sunDir)
+        const intensity = 0.25 + 0.75 * Math.sin(Math.PI * this._dayTime) // 0.25-1-0.25
+        const warm = new THREE.Color(0xff9f46) // ≈ 2500 K
+        const cold = new THREE.Color(0xfffefa) // ≈ 6500 K
+        const color = warm.clone().lerp(cold, Math.sin(Math.PI * this._dayTime)) // warm → cold → warm
 
-    const intensity = 0.25 + 0.75 * Math.sin(Math.PI * this._dayTime) // 0.25-1-0.25
-    const warm = new THREE.Color(0xff9f46) // ≈ 2500 K
-    const cold = new THREE.Color(0xfffefa) // ≈ 6500 K
-    const color = warm.clone().lerp(cold, Math.sin(Math.PI * this._dayTime)) // warm → cold → warm
+        this.scene.environmentIntensity = 0.15 * intensity
 
-    this.scene.environmentIntensity = 0.15 * intensity
+        if (this._ambientLight != null) {
+          this._ambientLight.intensity = 0.4
+          this._ambientLight.color.copy(color)
+        }
 
-    if (this._ambientLight != null) {
-      this._ambientLight.intensity = 0.4
-      this._ambientLight.color.copy(color)
-    }
+        const lightElevationDeg = Math.max(elevationDeg, 20)
+        const lightPhi = THREE.MathUtils.degToRad(90 - lightElevationDeg)
+        const lightDir = new THREE.Vector3().setFromSphericalCoords(1, lightPhi, theta)
 
-    const lightElevationDeg = Math.max(elevationDeg, 20)
-    const lightPhi = THREE.MathUtils.degToRad(90 - lightElevationDeg)
-    const lightDir = new THREE.Vector3().setFromSphericalCoords(1, lightPhi, theta)
+        this._sun.sunLight.position.copy(lightDir).multiplyScalar(100)
+        this._sun.sunLight.intensity = intensity
+        this._sun.sunLight.color.copy(color)
 
-    this._sunLight.position.copy(lightDir).multiplyScalar(100)
-    this._sunLight.intensity = intensity
-    this._sunLight.color.copy(color)
+        if (getSettings().graphics.shadows && this._sun.sunLight.shadow) {
+          const frustumScale = 1 + (1 - elevationDeg / 90) * 3
+          const baseFrustum = 200
+          const scaledFrustum = baseFrustum * frustumScale
 
-    if (getSettings().graphics.shadows && this._sunLight.shadow) {
-      const frustumScale = 1 + (1 - elevationDeg / 90) * 3
-      const baseFrustum = 200
-      const scaledFrustum = baseFrustum * frustumScale
+          this._sun.sunLight.shadow.camera.left = -scaledFrustum
+          this._sun.sunLight.shadow.camera.right = scaledFrustum
+          this._sun.sunLight.shadow.camera.top = scaledFrustum
+          this._sun.sunLight.shadow.camera.bottom = -scaledFrustum
 
-      this._sunLight.shadow.camera.left = -scaledFrustum
-      this._sunLight.shadow.camera.right = scaledFrustum
-      this._sunLight.shadow.camera.top = scaledFrustum
-      this._sunLight.shadow.camera.bottom = -scaledFrustum
+          this._sun.sunLight.shadow.camera.far = 500 + (1 - elevationDeg / 90) * 500
+        }
 
-      this._sunLight.shadow.camera.far = 500 + (1 - elevationDeg / 90) * 500
-    }
-
-    if (this._water != null) {
-      this._water.material.uniforms.sunColor.value.copy(color)
-      this._water.material.uniforms.sunDirection.value.copy(sunDir.normalize())
+        if (this._water != null) {
+          this._water.material.uniforms.sunColor.value.copy(color)
+          this._water.material.uniforms.sunDirection.value.copy(sunDir.normalize())
+        }
+        break
+      }
     }
   }
 

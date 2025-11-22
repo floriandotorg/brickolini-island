@@ -1,17 +1,26 @@
 import * as THREE from 'three'
-import { Observe as Observe_StartUp } from '../../actions/isle'
+import { Observe_Globe1_Bitmap, Observe_Globe2_Bitmap, Observe_Globe3_Bitmap, Observe_Globe4_Bitmap, Observe_Globe5_Bitmap, Observe_Globe6_Bitmap, Observe as Observe_StartUp } from '../../actions/isle'
 import { InfoCenter_3rd_Floor_Music } from '../../actions/jukebox'
+import { createImageSprite } from '../../lib/assets/canvas-sprite'
+import { Control } from '../../lib/assets/control'
 import type { Composer } from '../../lib/effect/composer'
-import type { NormalizedMouseEvent } from '../../lib/engine'
+import { engine, type NormalizedMouseEvent } from '../../lib/engine'
 import { switchWorld } from '../../lib/switch-world'
 import { Building } from '../../lib/world/building'
 import { IsleBase } from '../isle-base'
 
 export class Observe extends IsleBase {
   private readonly _building = new Building()
+  private readonly _globeSprites: THREE.Sprite[] = []
 
   constructor() {
     super('observe')
+    for (const imageAction of [Observe_Globe1_Bitmap, Observe_Globe2_Bitmap, Observe_Globe3_Bitmap, Observe_Globe4_Bitmap, Observe_Globe5_Bitmap, Observe_Globe6_Bitmap]) {
+      const globeSprite = createImageSprite(imageAction, Control.normalizeZ(imageAction))
+      globeSprite.visible = false
+      this._building.scene.add(globeSprite)
+      this._globeSprites.push(globeSprite)
+    }
   }
 
   public override async init(): Promise<void> {
@@ -31,6 +40,16 @@ export class Observe extends IsleBase {
         case 'Observe_LeftArrow_Ctl':
           void switchWorld('elevopen')
           return true
+        case 'Observe_GlobeRArrow_Ctl':
+          engine.currentSaveGame.nextSunPosition()
+          this._updateSun()
+          this._updateGlobeSprite()
+          return true
+        case 'Observe_GlobeLArrow_Ctl':
+          engine.currentSaveGame.prevSunPosition()
+          this._updateSun()
+          this._updateGlobeSprite()
+          return true
       }
       return false
     }
@@ -47,6 +66,7 @@ export class Observe extends IsleBase {
   public override activate(composer: Composer, _param?: unknown): void {
     super.activate(composer)
     this._building.activate(composer)
+    this._updateGlobeSprite()
   }
 
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
@@ -54,6 +74,12 @@ export class Observe extends IsleBase {
       return
     }
     super.pointerDown(event)
+  }
+
+  private _updateGlobeSprite(): void {
+    for (const [index, globeSprite] of this._globeSprites.entries()) {
+      globeSprite.visible = index === engine.currentSaveGame.sunPosition
+    }
   }
 
   public override pointerUp(_event: NormalizedMouseEvent): void {

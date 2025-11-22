@@ -1,4 +1,5 @@
 import { type ColorName, type ColorTableName, ColorTableNames, getDefaultColor, isColorName } from './assets/mesh'
+import { NUM_ORIGINAL_LIGHTS } from './original-lights'
 
 export const PlayerCharacters = ['pepper', 'papa', 'mama', 'nick', 'laura'] as const
 export type PlayerCharacter = (typeof PlayerCharacters)[number]
@@ -7,6 +8,7 @@ export const SAVE_GAME_STORAGE_KEY = 'saves'
 
 export class SaveGame {
   private _player: PlayerCharacter | null = null
+  private _sunPosition: number = 0
   private _colorTable = new Map<ColorTableName, ColorName>()
 
   public get playerUnsafe(): PlayerCharacter | null {
@@ -23,6 +25,23 @@ export class SaveGame {
   public set player(character: PlayerCharacter) {
     this._player = character
     this.setItem(this.playerUnsafe, SaveGame.PlayerKey)
+  }
+
+  public get sunPosition(): number {
+    return this._sunPosition
+  }
+
+  public nextSunPosition(): void {
+    this._sunPosition = (this._sunPosition + 1) % NUM_ORIGINAL_LIGHTS
+    this.setItem(this._sunPosition, SaveGame.SunPositionKey)
+  }
+
+  public prevSunPosition(): void {
+    this._sunPosition--
+    if (this._sunPosition < 0) {
+      this._sunPosition = NUM_ORIGINAL_LIGHTS - 1
+    }
+    this.setItem(this._sunPosition, SaveGame.SunPositionKey)
   }
 
   public get isUnloaded(): boolean {
@@ -62,6 +81,11 @@ export class SaveGame {
         this._colorTable.set(name, colorValue)
       }
     }
+
+    const sunPosition = Number.parseFloat(this.getItem(SaveGame.SunPositionKey) ?? '0')
+    if (Number.isInteger(sunPosition) && sunPosition >= 0 && sunPosition < NUM_ORIGINAL_LIGHTS) {
+      this._sunPosition = sunPosition
+    }
   }
 
   public static readonly UnloadedSave: SaveGame = new SaveGame('')
@@ -78,19 +102,21 @@ export class SaveGame {
 
   private static readonly PlayerKey = 'player'
   private static readonly ColorKey = 'color'
+  private static readonly SunPositionKey = 'sun'
 
   private getItem(...names: string[]): string | null {
     return localStorage.getItem(`${SAVE_GAME_STORAGE_KEY}.${this.name}.${names.join('.')}`)
   }
 
-  private setItem(value: string | null, ...names: string[]): void {
+  private setItem(value: string | number | null, ...names: string[]): void {
     if (this.isUnloaded) {
       return
     }
 
     const key = `${SAVE_GAME_STORAGE_KEY}.${this.name}.${names.join('.')}`
     if (value != null) {
-      localStorage.setItem(key, value)
+      const stringValue = typeof value === 'number' ? value.toString() : value
+      localStorage.setItem(key, stringValue)
     } else {
       localStorage.removeItem(key)
     }

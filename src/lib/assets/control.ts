@@ -247,6 +247,10 @@ function sigmoid(z: number): number {
   return 1 / (1 + Math.exp(-z))
 }
 
+export const normalizeZ = (z: number, center: number, spread: number): number => {
+  return center - (sigmoid(z) - 0.5) * spread
+}
+
 export class Control {
   private readonly _action: ControlAction
   private readonly _sprite: THREE.Sprite
@@ -341,6 +345,11 @@ export class Control {
     }
   }
 
+  public static normalizeZ(z: number | ImageAction) {
+    const actualZ = typeof z === 'number' ? z : z.location[2]
+    return normalizeZ(actualZ, -0.5, 1 / 20)
+  }
+
   private constructor(action: ControlAction, handler: Handler) {
     this._action = action
     this._handler = handler
@@ -399,7 +408,7 @@ export class Control {
     } else {
       setImageSprite(this._sprite, image)
       this._z = image.location[2]
-      this._sprite.position.z = -0.5 - (sigmoid(this._z) - 0.5) / 20
+      this._sprite.position.z = Control.normalizeZ(this._z)
     }
     this._sprite.material.needsUpdate = true
   }
