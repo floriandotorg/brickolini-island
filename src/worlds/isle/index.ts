@@ -1327,9 +1327,6 @@ export class Isle extends IsleBase {
   public override update(delta: number): void {
     super.update(delta)
 
-    this._dayTime = (this._dayTime + delta * (1 / (24 * 60))) % 1
-    this._updateSun()
-
     this._pizzaMission.update()
 
     if (this._water != null) {
