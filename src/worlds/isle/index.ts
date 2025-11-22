@@ -1034,41 +1034,11 @@ export class Isle extends IsleBase {
       })
     }
 
-    this.addClickListener(this._bikeMesh, async () => {
-      if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
-        return false
-      }
-      await this.enterVehicle({ type: 'bike' })
-      return true
-    })
-    this.addClickListener(this._motobkMesh, async () => {
-      if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
-        return false
-      }
-      await this.enterVehicle({ type: 'moto' })
-      return true
-    })
-    this.addClickListener(this._skateMesh, async () => {
-      if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
-        return false
-      }
-      await this.enterVehicle({ type: 'skate', showPizza: false })
-      return true
-    })
-    this.addClickListener(this._ambulanceMesh, async () => {
-      if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
-        return false
-      }
-      await this.enterVehicle({ type: 'ambul' })
-      return true
-    })
-    this.addClickListener(this._towtruckMesh, async () => {
-      if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
-        return false
-      }
-      await this.enterVehicle({ type: 'towtk' })
-      return true
-    })
+    this._addVehicleClickListener({ type: 'bike' })
+    this._addVehicleClickListener({ type: 'moto' })
+    this._addVehicleClickListener({ type: 'skate', showPizza: false })
+    this._addVehicleClickListener({ type: 'ambul' })
+    this._addVehicleClickListener({ type: 'towtk' })
 
     this._dashboard.onExit = () => {
       this._exitVehicle()
@@ -1089,6 +1059,17 @@ export class Isle extends IsleBase {
 
     // brickster scene (only works in ACT2)
     // this.playAnimation(tns002br_RunAnim)
+  }
+
+  private _addVehicleClickListener = (vehicle: Vehicle): void => {
+    const mesh = this.getVehicleMesh(vehicle.type)
+    this.addClickListener(mesh, async () => {
+      if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
+        return false
+      }
+      await this.enterVehicle(vehicle)
+      return true
+    })
   }
 
   public enterVehicle = async (vehicle: Vehicle): Promise<void> => {
