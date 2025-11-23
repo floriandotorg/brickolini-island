@@ -7,7 +7,7 @@ import { getAction, getActionFileUrl } from '../assets/load'
 import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
 import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
-import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
+import { type AudioType, engine, getURLParam, type NormalizedMouseEvent } from '../engine'
 import { Actor } from './actor'
 
 export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevride' | 'elevopen' | 'seaview' | 'observe' | 'elevdown'
@@ -78,7 +78,7 @@ export abstract class World {
     this._debugDirection = getElement('debug-direction')
     this._debugSlewMode = getElement('debug-slew-mode')
 
-    this.debugMode = new URLSearchParams(window.location.search).get('debug') === 'true'
+    this.debugMode = getURLParam('debug') === 'true'
 
     this._render.scene.add(this._debugGroup)
   }

@@ -6,7 +6,7 @@ import { IslePath } from '../actions/isle'
 import { getBoundaries } from '../lib/assets/boundary'
 import { manager } from '../lib/assets/load'
 import { calculateTransformationMatrix, getWorld } from '../lib/assets/model'
-import { engine, type NormalizedMouseEvent } from '../lib/engine'
+import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
 import { applyLights } from '../lib/original-lights'
 import { getSettings } from '../lib/settings'
 import { Actor } from '../lib/world/actor'
@@ -105,7 +105,7 @@ export abstract class IsleBase extends World {
       })
     }
 
-    if (new URLSearchParams(window.location.search).get('generate-cubemap') === 'true') {
+    if (getURLParam('generate-cubemap') === 'true') {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       const ambientLight = new THREE.AmbientLight(new THREE.Color(1, 1, 1), 2)

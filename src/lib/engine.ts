@@ -16,6 +16,10 @@ const BACKGROUND_MUSIC_FADE_TIME_SETTINGS = 0.5
 export const ORIGINAL_TOTAL_WIDTH: number = 640
 export const ORIGINAL_TOTAL_HEIGHT: number = 480
 
+export const getURLParam = (name: string): string | null => {
+  return new URLSearchParams(window.location.search).get(name)
+}
+
 export const normalizePoint = (x: number, y: number, totalSize: [number, number] = [ORIGINAL_TOTAL_WIDTH, ORIGINAL_TOTAL_HEIGHT]): [number, number] => {
   const normalizedX = (x / totalSize[0]) * 2 - 1
   const normalizedY = -((y / totalSize[1]) * 2 - 1)
@@ -392,6 +396,11 @@ class Engine {
             }
             return []
           })()
+
+    const preloadedSave = getURLParam('save')
+    if (preloadedSave != null) {
+      this.loadSaveGame(preloadedSave.toUpperCase())
+    }
 
     this._gains = {
       music: new GainNode(this._audioListener.context),

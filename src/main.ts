@@ -1,5 +1,5 @@
 import { Intro_Movie, Lego_Movie, Mindscape_Movie } from './actions/intro'
-import { engine } from './lib/engine'
+import { engine, getURLParam } from './lib/engine'
 import './lib/settings-dialog'
 import './style.css'
 import { switchWorld } from './lib/switch-world'
@@ -22,7 +22,7 @@ const start = async () => {
     await engine.playCutscene(Intro_Movie)
   }
 
-  const world = new URLSearchParams(window.location.search).get('world') ?? ('infomain' satisfies WorldName)
+  const world = getURLParam('world') ?? ('infomain' satisfies WorldName)
   await switchWorld(world as WorldName)
 }
 
