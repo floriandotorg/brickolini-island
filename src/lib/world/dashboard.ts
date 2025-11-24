@@ -1,10 +1,63 @@
 import type * as THREE from 'three'
 import { RaceCarDashboard } from '../../actions/carrace'
-import { AmbulanceDashboard, BikeDashboard, DuneCarDashboard, HelicopterDashboard, JetskiDashboard, MotoBikeDashboard, SkateDashboard, SkatePizza_Bitmap, TowTrackDashboard } from '../../actions/isle'
+import {
+  AmbulanceDashboard,
+  BikeDashboard,
+  DuneCarDashboard,
+  DuneCarDashboard1_Bitmap,
+  DuneCarDashboard2_Bitmap,
+  DuneCarDashboard3_Bitmap,
+  DuneCarDashboard4_Bitmap,
+  DuneCarDashboard5_Bitmap,
+  DuneCarDashboard6_Bitmap,
+  HelicopterDashboard,
+  JetskiDashboard,
+  JetskiDashboard11_Bitmap,
+  JetskiDashboard12_Bitmap,
+  JetskiDashboard13_Bitmap,
+  JetskiDashboard14_Bitmap,
+  JetskiDashboard15_Bitmap,
+  JetskiDashboard16_Bitmap,
+  JetskiDashboard21_Bitmap,
+  JetskiDashboard22_Bitmap,
+  JetskiDashboard23_Bitmap,
+  JetskiDashboard24_Bitmap,
+  JetskiDashboard25_Bitmap,
+  JetskiDashboard26_Bitmap,
+  JetskiDashboard31_Bitmap,
+  JetskiDashboard32_Bitmap,
+  JetskiDashboard33_Bitmap,
+  JetskiDashboard34_Bitmap,
+  JetskiDashboard35_Bitmap,
+  JetskiDashboard36_Bitmap,
+  JetskiDashboard41_Bitmap,
+  JetskiDashboard42_Bitmap,
+  JetskiDashboard43_Bitmap,
+  JetskiDashboard44_Bitmap,
+  JetskiDashboard45_Bitmap,
+  JetskiDashboard46_Bitmap,
+  JetskiDashboard51_Bitmap,
+  JetskiDashboard52_Bitmap,
+  JetskiDashboard53_Bitmap,
+  JetskiDashboard54_Bitmap,
+  JetskiDashboard55_Bitmap,
+  JetskiDashboard56_Bitmap,
+  JetskiDashboard61_Bitmap,
+  JetskiDashboard62_Bitmap,
+  JetskiDashboard63_Bitmap,
+  JetskiDashboard64_Bitmap,
+  JetskiDashboard65_Bitmap,
+  JetskiDashboard66_Bitmap,
+  MotoBikeDashboard,
+  SkateDashboard,
+  SkatePizza_Bitmap,
+  TowTrackDashboard,
+} from '../../actions/isle'
 import { type AudioAction, type ControlAction, getExtraValue, type ImageAction, isAudioAction, isControlAction, isImageAction, isMeterAction, type MeterAction, type ParallelAction } from '../action-types'
 import { CanvasSprite, createImageSprite } from '../assets/canvas-sprite'
 import { Control } from '../assets/control'
 import { getImage } from '../assets/image'
+import type { ColorName } from '../assets/mesh'
 import { type Composer, Render2D } from '../effect/composer'
 import { engine } from '../engine'
 
@@ -31,6 +84,74 @@ const vehicleToDashboard: {
   racecar: RaceCarDashboard,
   helicopter: HelicopterDashboard,
   dunecar: DuneCarDashboard,
+}
+
+const DashboardColorNames = ['lego green', 'lego red', 'lego yellow', 'lego black', 'lego blue', 'lego white'] as const
+type DashboardColorName = (typeof DashboardColorNames)[number]
+
+const getDashboardMap = <T>(color: ColorName, record: Record<DashboardColorName, T>): T => {
+  const dashboardColor: DashboardColorName = DashboardColorNames.includes(color as DashboardColorName) ? (color as DashboardColorName) : 'lego green'
+  return record[dashboardColor]
+}
+
+const duneCarDashboards: Record<DashboardColorName, ImageAction> = {
+  'lego red': DuneCarDashboard2_Bitmap,
+  'lego yellow': DuneCarDashboard3_Bitmap,
+  'lego black': DuneCarDashboard4_Bitmap,
+  'lego blue': DuneCarDashboard5_Bitmap,
+  'lego white': DuneCarDashboard6_Bitmap,
+  'lego green': DuneCarDashboard1_Bitmap,
+}
+
+const jetSkiDashboards: Record<DashboardColorName, Record<DashboardColorName, ImageAction>> = {
+  'lego red': {
+    'lego red': JetskiDashboard22_Bitmap,
+    'lego yellow': JetskiDashboard23_Bitmap,
+    'lego black': JetskiDashboard24_Bitmap,
+    'lego blue': JetskiDashboard25_Bitmap,
+    'lego white': JetskiDashboard26_Bitmap,
+    'lego green': JetskiDashboard21_Bitmap,
+  },
+  'lego yellow': {
+    'lego red': JetskiDashboard32_Bitmap,
+    'lego yellow': JetskiDashboard33_Bitmap,
+    'lego black': JetskiDashboard34_Bitmap,
+    'lego blue': JetskiDashboard35_Bitmap,
+    'lego white': JetskiDashboard36_Bitmap,
+    'lego green': JetskiDashboard31_Bitmap,
+  },
+  'lego black': {
+    'lego red': JetskiDashboard42_Bitmap,
+    'lego yellow': JetskiDashboard43_Bitmap,
+    'lego black': JetskiDashboard44_Bitmap,
+    'lego blue': JetskiDashboard45_Bitmap,
+    'lego white': JetskiDashboard46_Bitmap,
+    'lego green': JetskiDashboard41_Bitmap,
+  },
+  'lego blue': {
+    'lego red': JetskiDashboard52_Bitmap,
+    'lego yellow': JetskiDashboard53_Bitmap,
+    'lego black': JetskiDashboard54_Bitmap,
+    'lego blue': JetskiDashboard55_Bitmap,
+    'lego white': JetskiDashboard56_Bitmap,
+    'lego green': JetskiDashboard51_Bitmap,
+  },
+  'lego white': {
+    'lego red': JetskiDashboard62_Bitmap,
+    'lego yellow': JetskiDashboard63_Bitmap,
+    'lego black': JetskiDashboard64_Bitmap,
+    'lego blue': JetskiDashboard65_Bitmap,
+    'lego white': JetskiDashboard66_Bitmap,
+    'lego green': JetskiDashboard61_Bitmap,
+  },
+  'lego green': {
+    'lego red': JetskiDashboard12_Bitmap,
+    'lego yellow': JetskiDashboard13_Bitmap,
+    'lego black': JetskiDashboard14_Bitmap,
+    'lego blue': JetskiDashboard15_Bitmap,
+    'lego white': JetskiDashboard16_Bitmap,
+    'lego green': JetskiDashboard11_Bitmap,
+  },
 }
 
 const leftToRight = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => {
@@ -194,7 +315,27 @@ export class Dashboard {
       }
     }
 
-    const dashboardAction = vehicle.type === 'skate' && vehicle.showPizza ? SkatePizza_Bitmap : action.children.find(child => child.name.endsWith('Dashboard_Bitmap'))
+    const dashboardAction = (() => {
+      switch (vehicle.type) {
+        case 'dunecar': {
+          const frontColor = engine.currentSaveGame.getColor('c_dbfrfny4')
+          return getDashboardMap(frontColor, duneCarDashboards)
+        }
+        case 'jetski': {
+          const windshieldColor = engine.currentSaveGame.getColor('c_jswnshy5')
+          const windshieldDashboards = getDashboardMap(windshieldColor, jetSkiDashboards)
+          const frontColor = engine.currentSaveGame.getColor('c_jsfrnty5')
+          return getDashboardMap(frontColor, windshieldDashboards)
+        }
+        // biome-ignore lint/suspicious/noFallthroughSwitchClause: same as default clause unless it should show a pizza
+        case 'skate':
+          if (vehicle.showPizza) {
+            return SkatePizza_Bitmap
+          }
+        default:
+          return action.children.find(child => child.name.endsWith('Dashboard_Bitmap'))
+      }
+    })()
     if (dashboardAction != null && isImageAction(dashboardAction)) {
       this._background = createImageSprite(dashboardAction, -1)
       this._render.scene.add(this._background)
