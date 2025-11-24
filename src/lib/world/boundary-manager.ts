@@ -88,7 +88,7 @@ export class BoundaryManager {
         debugMesh.visible = true
       }
 
-      if (engine.currentWorld.debugMode) {
+      if (engine.debugMode) {
         hit.object.visible = true
       }
     }

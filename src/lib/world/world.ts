@@ -8,7 +8,7 @@ import { getAction, getActionFileUrl } from '../assets/load'
 import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
 import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
-import { type AudioType, engine, getURLParam, type NormalizedMouseEvent } from '../engine'
+import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
 import { Actor } from './actor'
 
 export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevride' | 'elevopen' | 'seaview' | 'observe' | 'elevdown'
@@ -61,11 +61,11 @@ export type BuiltAnimation = {
 export abstract class World {
   protected _render = new Render3D()
 
-  private _debugGroup: THREE.Group = new THREE.Group()
-  private _debugBox: HTMLElement
-  private _debugPosition: HTMLElement
-  private _debugDirection: HTMLElement
-  private _debugSlewMode: HTMLElement
+  private readonly _debugGroup: THREE.Group = new THREE.Group()
+  private readonly _debugBox: HTMLElement
+  private readonly _debugPosition: HTMLElement
+  private readonly _debugDirection: HTMLElement
+  private readonly _debugSlewMode: HTMLElement
 
   private _raycaster = new THREE.Raycaster()
   private _clickListeners = new Map<THREE.Object3D, () => Promise<boolean>>()
@@ -98,8 +98,6 @@ export abstract class World {
     this._debugPosition = getElement('debug-position')
     this._debugDirection = getElement('debug-direction')
     this._debugSlewMode = getElement('debug-slew-mode')
-
-    this.debugMode = getURLParam('debug') === 'true'
 
     this._render.scene.add(this._debugGroup)
   }
@@ -590,19 +588,8 @@ export abstract class World {
   public keyDown(_event: KeyboardEvent): void {}
   public keyUp(_event: KeyboardEvent): void {}
 
-  public get debugMode(): boolean {
-    return this._debugGroup.visible
-  }
-
-  protected set debugMode(value: boolean) {
-    this._debugGroup.visible = value
-    this._debugBox.classList.toggle('hidden', !value)
-  }
-
-  protected setDebugData(position: THREE.Vector3, direction: THREE.Vector3, slewMode: boolean): void {
-    this._debugPosition.textContent = `x: ${position.x.toFixed(4)}, y: ${position.y.toFixed(4)}, z: ${position.z.toFixed(4)}`
-    this._debugDirection.textContent = `x: ${direction.x.toFixed(4)}, y: ${direction.y.toFixed(4)}, z: ${direction.z.toFixed(4)}`
-    this._debugSlewMode.classList.toggle('hidden', !slewMode)
+  protected get debugPositionDirection(): { position: THREE.Vector3; direction: THREE.Vector3; slewMode: boolean } | null {
+    return null
   }
 
   private _initialized = false
@@ -619,7 +606,24 @@ export abstract class World {
     this._initialized = true
   }
 
-  public update(delta: number): void {
+  public updateWorld(delta: number): void {
+    this.update(delta)
+
+    this._debugGroup.visible = engine.debugMode
+    this._debugBox.classList.toggle('hidden', !engine.debugMode)
+
+    const positionDirection = this.debugPositionDirection
+    this._debugPosition.parentElement?.classList.toggle('hidden', positionDirection == null)
+    this._debugDirection.parentElement?.classList.toggle('hidden', positionDirection == null)
+    if (positionDirection != null) {
+      const { position, direction } = positionDirection
+      this._debugPosition.textContent = `x: ${position.x.toFixed(4)}, y: ${position.y.toFixed(4)}, z: ${position.z.toFixed(4)}`
+      this._debugDirection.textContent = `x: ${direction.x.toFixed(4)}, y: ${direction.y.toFixed(4)}, z: ${direction.z.toFixed(4)}`
+    }
+    this._debugSlewMode.classList.toggle('hidden', positionDirection == null || !positionDirection.slewMode)
+  }
+
+  protected update(delta: number): void {
     for (const { mixer, resolve, lookAtKeys, faceAnimations, pointAtCameraObjects, stopAtTime } of this._runningAnimations) {
       const finishedByStopAtTime = stopAtTime != null && mixer.time + delta > stopAtTime
       if (finishedByStopAtTime) {
@@ -698,7 +702,7 @@ export abstract class World {
 
   public keyPressed(key: string): void {
     if (key === 'd' && import.meta.env.DEV) {
-      this.debugMode = !this.debugMode
+      engine.debugMode = !engine.debugMode
     }
 
     if (key === 'c') {

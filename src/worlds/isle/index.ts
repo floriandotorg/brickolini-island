@@ -1259,6 +1259,10 @@ export class Isle extends IsleBase {
     return totalMove
   }
 
+  protected override get debugPositionDirection(): { position: THREE.Vector3; direction: THREE.Vector3; slewMode: boolean } | null {
+    return { position: this.camera.position, direction: new THREE.Vector3(0, 0, 1).applyEuler(this.camera.rotation), slewMode: this._slewMode }
+  }
+
   public override update(delta: number): void {
     super.update(delta)
 
@@ -1350,8 +1354,6 @@ export class Isle extends IsleBase {
         void this.playAnimation(trigger.animation)
       }
     }
-
-    this.setDebugData(this.camera.position, new THREE.Vector3(0, 0, 1).applyEuler(this.camera.rotation), this._slewMode)
 
     if (!this._slewMode) {
       this._placeObjectOnGround(this.camera)

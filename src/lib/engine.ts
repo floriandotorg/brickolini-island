@@ -141,6 +141,7 @@ class Engine {
   private readonly _backgroundLowerGain: GainNode
   private readonly _backgroundLowerSentinels = new Set<Sentinel>()
 
+  public debugMode: boolean = false
   public readonly saveGameNames: string[]
 
   public get currentPlayerMask(): number {
@@ -440,6 +441,8 @@ class Engine {
     this._backgroundLowerGain = new GainNode(this._audioListener.context)
 
     this.updateVolumes(false)
+
+    this.debugMode = getURLParam('debug') === 'true'
   }
 
   public isKeyDown(key: string): boolean {
@@ -528,7 +531,7 @@ class Engine {
     const delta = this._clock.getDelta()
 
     if (this._state === 'game') {
-      this._world?.update(delta)
+      this._world?.updateWorld(delta)
     }
 
     if (this._state === 'transition') {
