@@ -65,6 +65,7 @@ export abstract class World {
   private readonly _debugBox: HTMLElement
   private readonly _debugPosition: HTMLElement
   private readonly _debugDirection: HTMLElement
+  private readonly _debugTime: HTMLElement
   private readonly _debugSlewMode: HTMLElement
 
   private _raycaster = new THREE.Raycaster()
@@ -97,6 +98,7 @@ export abstract class World {
     this._debugBox = getElement('debug')
     this._debugPosition = getElement('debug-position')
     this._debugDirection = getElement('debug-direction')
+    this._debugTime = getElement('debug-time')
     this._debugSlewMode = getElement('debug-slew-mode')
 
     this._render.scene.add(this._debugGroup)
@@ -592,6 +594,10 @@ export abstract class World {
     return null
   }
 
+  protected get debugTime(): number | null {
+    return null
+  }
+
   private _initialized = false
 
   public get initialized(): boolean {
@@ -613,12 +619,19 @@ export abstract class World {
     this._debugBox.classList.toggle('hidden', !engine.debugMode)
 
     const positionDirection = this.debugPositionDirection
+    const time = this.debugTime
     this._debugPosition.parentElement?.classList.toggle('hidden', positionDirection == null)
     this._debugDirection.parentElement?.classList.toggle('hidden', positionDirection == null)
     if (positionDirection != null) {
       const { position, direction } = positionDirection
       this._debugPosition.textContent = `x: ${position.x.toFixed(4)}, y: ${position.y.toFixed(4)}, z: ${position.z.toFixed(4)}`
       this._debugDirection.textContent = `x: ${direction.x.toFixed(4)}, y: ${direction.y.toFixed(4)}, z: ${direction.z.toFixed(4)}`
+    }
+    this._debugTime.parentElement?.classList.toggle('hidden', time == null)
+    if (time != null) {
+      const hours = time * 12 + 6
+      const minutes = (hours * 60) % 60
+      this._debugTime.textContent = `${Math.floor(hours).toFixed(0).padStart(2, '0')}:${Math.floor(minutes).toFixed(0).padStart(2, '0')}`
     }
     this._debugSlewMode.classList.toggle('hidden', positionDirection == null || !positionDirection.slewMode)
   }

@@ -299,7 +299,7 @@ export abstract class IsleBase extends World {
     this.camera.updateProjectionMatrix()
   }
 
-  private get _modernDayTime(): number {
+  protected get _modernDayTime(): number {
     return (engine.elapsedTimeSeconds / SECONDS_PER_DAY + engine.currentSaveGame.sunPosition / NUM_ORIGINAL_LIGHTS) % 1
   }
 
@@ -385,6 +385,13 @@ export abstract class IsleBase extends World {
   public override pointerUp(event: NormalizedMouseEvent): void {
     super.pointerUp(event)
     this._dashboard.pointerUp()
+  }
+
+  protected override get debugTime(): number | null {
+    if (this._sun.type === 'modern') {
+      return this._modernDayTime
+    }
+    return null
   }
 
   public override update(delta: number): void {
