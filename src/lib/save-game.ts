@@ -15,6 +15,13 @@ export class SaveGame {
   private _sunPosition: number = 0
   private _colorTable = new Map<ColorTableName, ColorName>()
   private _vehiclePlacements = new Map<VehicleType, VehiclePlacement>()
+  private _vehicleProgress = new Map<VehicleType, number>()
+
+  private static readonly PlayerKey = 'player'
+  private static readonly ColorKey = 'color'
+  private static readonly SunPositionKey = 'sun'
+  private static readonly VehiclePlacementKey = ['vehicle', 'placement']
+  private static readonly VehicleProgressKey = ['vehicle', 'progress']
 
   public get playerUnsafe(): PlayerCharacter | null {
     return this._player
@@ -66,15 +73,24 @@ export class SaveGame {
     this.setItem(color, SaveGame.ColorKey, name)
   }
 
-  public getVehiclePlacement(name: VehicleType): VehiclePlacement | null {
-    return this._vehiclePlacements.get(name) ?? null
+  public getVehiclePlacement(type: VehicleType): VehiclePlacement | null {
+    return this._vehiclePlacements.get(type) ?? null
   }
 
-  public setVehiclePlacement(name: VehicleType, placement: VehiclePlacement): void {
-    this._vehiclePlacements.set(name, placement)
+  public setVehiclePlacement(type: VehicleType, placement: VehiclePlacement): void {
+    this._vehiclePlacements.set(type, placement)
     const elements = placement.position.toArray().concat(placement.quaternion.toArray())
     const json = JSON.stringify(elements)
-    this.setItem(json, SaveGame.VehicleKey, name)
+    this.setItem(json, ...SaveGame.VehiclePlacementKey, type)
+  }
+
+  public getVehicleProgress(type: VehicleType): number {
+    return this._vehicleProgress.get(type) ?? 0
+  }
+
+  public setVehicleProgress(type: VehicleType, progress: number): void {
+    this._vehicleProgress.set(type, progress)
+    this.setItem(progress, ...SaveGame.VehicleProgressKey, type)
   }
 
   public readonly name: string
@@ -106,19 +122,22 @@ export class SaveGame {
     const VECTOR3_COUNT = 3
     const QUATERNION_COUNT = 4
     for (const vehicle of VehicleTypes) {
-      const placementJson = this.getItem(SaveGame.VehicleKey, vehicle)
-      if (placementJson == null) {
-        continue
+      const placementJson = this.getItem(...SaveGame.VehiclePlacementKey, vehicle)
+      if (placementJson != null) {
+        const jsonResult = JSON.parse(placementJson)
+        if (Array.isArray(jsonResult) && jsonResult.length === VECTOR3_COUNT + QUATERNION_COUNT && jsonResult.every(name => typeof name === 'number')) {
+          const position = new THREE.Vector3()
+          position.fromArray(jsonResult)
+          const quaternion = new THREE.Quaternion()
+          quaternion.fromArray(jsonResult, VECTOR3_COUNT)
+          this._vehiclePlacements.set(vehicle, { position, quaternion })
+        }
       }
-      const jsonResult = JSON.parse(placementJson)
-      if (!Array.isArray(jsonResult) || jsonResult.length !== VECTOR3_COUNT + QUATERNION_COUNT || !jsonResult.every(name => typeof name === 'number')) {
-        continue
+
+      const progress = Number.parseInt(this.getItem(...SaveGame.VehicleProgressKey, vehicle) ?? '0', 10)
+      if (Number.isInteger(progress) && progress >= 0) {
+        this._vehicleProgress.set(vehicle, progress)
       }
-      const position = new THREE.Vector3()
-      position.fromArray(jsonResult)
-      const quaternion = new THREE.Quaternion()
-      quaternion.fromArray(jsonResult, VECTOR3_COUNT)
-      this._vehiclePlacements.set(vehicle, { position, quaternion })
     }
   }
 
@@ -133,11 +152,6 @@ export class SaveGame {
   }
 
   public static validName = (name: string) => /^[A-Z0-9]+$/.test(name.toUpperCase())
-
-  private static readonly PlayerKey = 'player'
-  private static readonly ColorKey = 'color'
-  private static readonly SunPositionKey = 'sun'
-  private static readonly VehicleKey = 'vehicle'
 
   private getItem(...names: string[]): string | null {
     return localStorage.getItem(`${SAVE_GAME_STORAGE_KEY}.${this.name}.${names.join('.')}`)

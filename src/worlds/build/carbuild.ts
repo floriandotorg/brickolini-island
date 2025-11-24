@@ -11,6 +11,7 @@ import { engine } from '../../lib/engine'
 import { getSettings } from '../../lib/settings'
 import type { Building } from '../../lib/world/building'
 import type { BuiltAnimation, World } from '../../lib/world/world'
+import type { VehicleType } from '../../lib/world/dashboard'
 
 type Part = { readonly wired: Roi3D; readonly shelfPart: Roi3D; readonly shelfGroup: THREE.Group; readonly clone: Roi3D; readonly objectType: ObjectType; readonly basename: string }
 
@@ -235,6 +236,7 @@ export class Carbuild {
   private _part = 0
   private readonly _colorControls: CustomColorControls
   private readonly _decalControls: CustomDecalControls
+  private readonly _vehicleType: VehicleType
   private readonly _buildPlatform = new THREE.Group()
   private readonly _highlightPlatform = new THREE.Group()
   private readonly _displayPosition
@@ -272,6 +274,7 @@ export class Carbuild {
     rotationSound: AudioAction,
     colorControls: CustomColorControls,
     decalControls: CustomDecalControls,
+    vehicleType: VehicleType,
     ...animations: AnimationAction[]
   ): Promise<Carbuild> {
     const animation = await world.buildAnimation(animations[Math.floor(Math.random() * animations.length)])
@@ -279,10 +282,11 @@ export class Carbuild {
     const selectionAudio = await engine.getAudio(selectionSound, 'effects')
     const placementAudio = await engine.getAudio(placementSound, 'effects')
     const rotationAudio = await engine.getAudio(rotationSound, 'effects')
-    return new Carbuild(world, building, displayPosition, shelfUpAudio, selectionAudio, placementAudio, rotationAudio, colorControls, decalControls, animation)
+    return new Carbuild(world, building, displayPosition, shelfUpAudio, selectionAudio, placementAudio, rotationAudio, colorControls, decalControls, vehicleType, animation)
   }
 
-  private constructor(world: World, building: Building, displayPosition: THREE.Vector3, shelfUpSound: Audio, selectionSound: Audio, placementSound: Audio, rotationSound: Audio, colorControls: CustomColorControls, decalControls: CustomDecalControls, animation: BuiltAnimation) {
+  private constructor(world: World, building: Building, displayPosition: THREE.Vector3, shelfUpSound: Audio, selectionSound: Audio, placementSound: Audio, rotationSound: Audio, colorControls: CustomColorControls, decalControls: CustomDecalControls, vehicleType: VehicleType, animation: BuiltAnimation) {
+    this._part = engine.currentSaveGame.getVehicleProgress(vehicleType)
     this._world = world
     world.setupCameraForAnimation(animation.animation.tree)
     // In theory the "number of shelves" is determined by using the translation keys of the "first" shelf it encounters and subtracting one
@@ -310,6 +314,8 @@ export class Carbuild {
     if (this._decalControls.background != null) {
       building.scene.add(this._decalControls.background)
     }
+
+    this._vehicleType = vehicleType
 
     this._shelfUpSound = shelfUpSound
     this._selectionSound = selectionSound
@@ -471,6 +477,11 @@ export class Carbuild {
     if (this._part < this._parts.length) {
       this._part++
       this.updateParts()
+      if (this._part === this._parts.length) {
+        engine.currentSaveGame.setVehicleProgress(this._vehicleType, 0)
+      } else {
+        engine.currentSaveGame.setVehicleProgress(this._vehicleType, this._part)
+      }
     }
   }
 
