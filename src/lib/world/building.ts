@@ -16,6 +16,7 @@ import { switchWorld } from '../switch-world'
 import type { NormalWorld, World, WorldSpawn } from './world'
 
 export class Building {
+  private _backgroundMusic?: AudioAction
   private _render = new Render2D()
   private _controls: Control[] = []
   private _exitSpawnPoint?: {
@@ -71,9 +72,7 @@ export class Building {
             return { world, control }
           })()
 
-    if (backgroundMusic != null) {
-      engine.switchBackgroundMusic(backgroundMusic)
-    }
+    this._backgroundMusic = backgroundMusic
 
     const worldName = getExtraValue(startUpAction, 'World')?.trim()
     if (worldName != null) {
@@ -150,6 +149,9 @@ export class Building {
   public activate(composer: Composer): void {
     this.pointerUp() // Reset control state
     composer.add(this._render)
+    if (this._backgroundMusic != null) {
+      engine.switchBackgroundMusic(this._backgroundMusic)
+    }
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): boolean {
