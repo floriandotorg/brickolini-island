@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { type AnimationAction, type AudioAction, type ControlAction, type ImageAction, isTextureAction } from '../../lib/action-types'
+import { type AnimationAction, type AudioAction, type ControlAction, type ImageAction, isTextureAction, type RunAnimationAction } from '../../lib/action-types'
 import { type Animation3DNode, findRecursively } from '../../lib/assets/animation'
 import type { Audio } from '../../lib/assets/audio'
 import { createImageSprite } from '../../lib/assets/canvas-sprite'
@@ -199,6 +199,10 @@ export class CustomDecalControls {
   }
 }
 
+export type SpeakerAnimations = {
+  completed: RunAnimationAction
+}
+
 type PartDisplayed = {
   readonly state: 'displaying'
   readonly part: Part
@@ -240,6 +244,7 @@ export class Carbuild {
   private readonly _decalControls: CustomDecalControls
   private readonly _spawnLocation: SpawnLocation
   private readonly _vehicleType: VehicleType
+  private readonly _speakerAnimations: SpeakerAnimations
   private readonly _buildPlatform = new THREE.Group()
   private readonly _highlightPlatform = new THREE.Group()
   private readonly _displayPosition
@@ -279,6 +284,7 @@ export class Carbuild {
     decalControls: CustomDecalControls,
     spawnLocation: SpawnLocation,
     vehicleType: VehicleType,
+    speakerAnimations: SpeakerAnimations,
     ...animations: AnimationAction[]
   ): Promise<Carbuild> {
     const animation = await world.buildAnimation(animations[Math.floor(Math.random() * animations.length)])
@@ -286,7 +292,7 @@ export class Carbuild {
     const selectionAudio = await engine.getAudio(selectionSound, 'effects')
     const placementAudio = await engine.getAudio(placementSound, 'effects')
     const rotationAudio = await engine.getAudio(rotationSound, 'effects')
-    return new Carbuild(world, building, displayPosition, shelfUpAudio, selectionAudio, placementAudio, rotationAudio, colorControls, decalControls, spawnLocation, vehicleType, animation)
+    return new Carbuild(world, building, displayPosition, shelfUpAudio, selectionAudio, placementAudio, rotationAudio, colorControls, decalControls, spawnLocation, vehicleType, speakerAnimations, animation)
   }
 
   private constructor(
@@ -301,6 +307,7 @@ export class Carbuild {
     decalControls: CustomDecalControls,
     spawnLocation: SpawnLocation,
     vehicleType: VehicleType,
+    speakerAnimations: SpeakerAnimations,
     animation: BuiltAnimation,
   ) {
     this._part = engine.currentSaveGame.getVehicleProgress(vehicleType)
@@ -334,6 +341,7 @@ export class Carbuild {
 
     this._spawnLocation = spawnLocation
     this._vehicleType = vehicleType
+    this._speakerAnimations = speakerAnimations
 
     this._shelfUpSound = shelfUpSound
     this._selectionSound = selectionSound
@@ -491,12 +499,13 @@ export class Carbuild {
     }
   }
 
-  private addPart(): void {
+  private async addPart(): Promise<void> {
     if (this._part < this._parts.length) {
       this._part++
       this.updateParts()
       if (this._part === this._parts.length) {
         engine.currentSaveGame.setVehicleProgress(this._vehicleType, 0)
+        await this._world.playAnimation(this._speakerAnimations.completed)
         engine.respawnVehicle(this._vehicleType)
         switchWorld({ name: 'isle', spawn: getSpawnLocation(this._spawnLocation) })
       } else {

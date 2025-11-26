@@ -1,12 +1,12 @@
 import * as THREE from 'three'
-import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, ijs003d4_RunAnim, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/jetski'
+import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, ijs003d4_RunAnim, ijs004d4_RunAnim, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/jetski'
 import { JetskiBuild_Flic, JetskiBuild_Music } from '../../actions/jukebox'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
 import type { NormalizedMouseEvent } from '../../lib/engine'
 import { Building } from '../../lib/world/building'
 import { World } from '../../lib/world/world'
-import { buildColorControls, buildDecalControls, Carbuild } from './carbuild'
+import { buildColorControls, buildDecalControls, Carbuild, type SpeakerAnimations } from './carbuild'
 
 export class Jetski extends World {
   private readonly _building = new Building()
@@ -55,7 +55,10 @@ export class Jetski extends World {
       { action: Gray_Ctl, color: 'lego white' },
       { action: Black_Ctl, color: 'lego black' },
     )
-    this._carbuild = await Carbuild.create(this, this._building, displayPosition, Shelf_Sound, GetBrick_Sound, PlaceBrick_Sound, Rotate_Sound, colorControls, decalControls, 'jetskibuildExited', 'jetski', Build_Anim0, Build_Anim1, Build_Anim2)
+    const speakerAnimations: SpeakerAnimations = {
+      completed: ijs004d4_RunAnim,
+    }
+    this._carbuild = await Carbuild.create(this, this._building, displayPosition, Shelf_Sound, GetBrick_Sound, PlaceBrick_Sound, Rotate_Sound, colorControls, decalControls, 'jetskibuildExited', 'jetski', speakerAnimations, Build_Anim0, Build_Anim1, Build_Anim2)
 
     this._building.onButtonClicked = (buttonName, event) => {
       if (this._carbuild == null) {
