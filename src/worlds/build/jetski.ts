@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/jetski'
+import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, ijs003d4_RunAnim, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/jetski'
 import { JetskiBuild_Flic, JetskiBuild_Music } from '../../actions/jukebox'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
@@ -30,6 +30,7 @@ export class Jetski extends World {
       exitSpawnPoint: {
         spawn: 'jetskibuildExited',
         control: 'Exit_Ctl',
+        animation: ijs003d4_RunAnim,
       },
     })
 

@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/copter'
+import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, ips002d2_RunAnim, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/copter'
 import { HelicopterBuild_Flic, HelicopterBuild_Music } from '../../actions/jukebox'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
@@ -27,7 +27,7 @@ export class Copter extends World {
       world: this,
       startUpAction: _StartUp,
       backgroundMusic: HelicopterBuild_Music,
-      exitSpawnPoint: { world: 'police', control: 'Exit_Ctl' },
+      exitSpawnPoint: { world: 'police', control: 'Exit_Ctl', animation: ips002d2_RunAnim },
     })
 
     const sprite = await MovieSprite.create(HelicopterBuild_Flic, -0.25)

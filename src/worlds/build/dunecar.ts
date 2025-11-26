@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/dunecar'
+import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, igs002d3_RunAnim, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/dunecar'
 import { DuneCarBuild_Flic, DuneCarBuild_Music } from '../../actions/jukebox'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
@@ -27,7 +27,7 @@ export class Dunecar extends World {
       world: this,
       startUpAction: _StartUp,
       backgroundMusic: DuneCarBuild_Music,
-      exitSpawnPoint: { world: 'garage', control: 'Exit_Ctl' },
+      exitSpawnPoint: { world: 'garage', control: 'Exit_Ctl', animation: igs002d3_RunAnim },
     })
 
     const sprite = await MovieSprite.create(DuneCarBuild_Flic, -0.25)

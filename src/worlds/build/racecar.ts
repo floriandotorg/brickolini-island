@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { RaceCarBuild_Flic, RaceCarBuild_Music } from '../../actions/jukebox'
-import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/racecar'
+import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, irt002d1_RunAnim, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/racecar'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
 import type { NormalizedMouseEvent } from '../../lib/engine'
@@ -30,6 +30,7 @@ export class Racecar extends World {
       exitSpawnPoint: {
         spawn: 'racecarbuildExited',
         control: 'Exit_Ctl',
+        animation: irt002d1_RunAnim,
       },
     })
 

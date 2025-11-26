@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator.js'
-import { type ActionBase, type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type SerialAction } from '../action-types'
+import { type ActionBase, type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type RunAnimationAction, type SerialAction } from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
 import { createImageSprite } from '../assets/canvas-sprite'
 import { Control, type ControlEvent } from '../assets/control'
@@ -16,12 +16,14 @@ import { switchWorld } from '../switch-world'
 import type { NormalWorld, World, WorldSpawn } from './world'
 
 export class Building {
+  private _world: World | null = null
   private _backgroundMusic?: AudioAction
   private _render = new Render2D()
   private _controls: Control[] = []
   private _exitSpawnPoint?: {
     world: WorldSpawn
     control: string
+    animation?: RunAnimationAction
   }
 
   constructor() {
@@ -56,10 +58,12 @@ export class Building {
       | {
           spawn: SpawnLocation
           control?: string
+          animation?: RunAnimationAction
         }
       | {
           world: NormalWorld
           control?: string
+          animation?: RunAnimationAction
         }
     noLights?: boolean
   }): Promise<void> {
@@ -69,8 +73,10 @@ export class Building {
         : (() => {
             const control = exitSpawnPoint?.control ?? 'Door_Ctl'
             const world: WorldSpawn = 'world' in exitSpawnPoint ? { name: exitSpawnPoint.world } : { name: 'isle', spawn: getSpawnLocation(exitSpawnPoint.spawn) }
-            return { world, control }
+            return { world, control, animation: exitSpawnPoint.animation }
           })()
+
+    this._world = world
 
     this._backgroundMusic = backgroundMusic
 
@@ -165,7 +171,11 @@ export class Building {
         }
 
         if (this._exitSpawnPoint != null && control.name.endsWith(this._exitSpawnPoint.control)) {
-          void switchWorld(this._exitSpawnPoint.world)
+          const spawn = this._exitSpawnPoint.world
+          const animationPromise = this._exitSpawnPoint.animation != null && this._world != null ? this._world.playAnimation(this._exitSpawnPoint.animation) : Promise.resolve()
+          animationPromise.then(() => {
+            void switchWorld(spawn)
+          })
           return true
         }
 
