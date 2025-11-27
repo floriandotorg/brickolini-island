@@ -10,8 +10,8 @@ import { createTexture } from '../../lib/assets/texture'
 import { engine } from '../../lib/engine'
 import { getSettings } from '../../lib/settings'
 import type { Building } from '../../lib/world/building'
-import type { BuiltAnimation, World } from '../../lib/world/world'
 import type { VehicleType } from '../../lib/world/dashboard'
+import type { BuiltAnimation, World } from '../../lib/world/world'
 
 type Part = { readonly wired: Roi3D; readonly shelfPart: Roi3D; readonly shelfGroup: THREE.Group; readonly clone: Roi3D; readonly objectType: ObjectType; readonly basename: string }
 

@@ -40,7 +40,8 @@
         "noUnusedImports": "error",
         "useParseIntRadix": "error",
         "noUnusedFunctionParameters": "error",
-        "noUnusedPrivateClassMembers": "error"
+        "noUnusedPrivateClassMembers": "error",
+        "noUnusedVariables": "error"
       }
     }
   },
