@@ -1905,6 +1905,10 @@ export const RegBook_Flc = {
   filename: 'q:\\lego\\scripts\\infocntr\\floor1\\register\\regbook.flc',
   fileType: 1129072160,
   extra: null,
+  dimensions: {
+    width: 105,
+    height: 213,
+  },
   children: [],
 } as const
 export const Boat_Ctl = {
@@ -4671,6 +4675,10 @@ export const GoTo_RegBook = {
       filename: 'q:\\lego\\scripts\\infocntr\\floor1\\register\\regbook.flc',
       fileType: 1129072160,
       extra: null,
+      dimensions: {
+        width: 105,
+        height: 213,
+      },
       children: [],
     },
   ],
