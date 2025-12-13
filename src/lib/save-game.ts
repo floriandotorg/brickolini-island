@@ -12,7 +12,7 @@ export const SAVE_GAME_STORAGE_KEY = 'saves'
 
 export class SaveGame {
   private _player: PlayerCharacter | null = null
-  private _sunPosition: number = 0
+  private _sunPosition: number = 3
   private _colorTable = new Map<ColorTableName, ColorName>()
   private _vehiclePlacements = new Map<VehicleType, VehiclePlacement>()
   private _vehicleProgress = new Map<VehicleType, number>()
@@ -114,7 +114,7 @@ export class SaveGame {
       }
     }
 
-    const sunPosition = Number.parseFloat(this.getItem(SaveGame.SunPositionKey) ?? '0')
+    const sunPosition = Number.parseFloat(this.getItem(SaveGame.SunPositionKey) ?? '3')
     if (Number.isInteger(sunPosition) && sunPosition >= 0 && sunPosition < NUM_ORIGINAL_LIGHTS) {
       this._sunPosition = sunPosition
     }
