@@ -266,8 +266,11 @@ export class InfoMain extends World {
 
     if (getSettings().graphics.shadows) {
       leftPointLight.castShadow = true
+      leftPointLight.shadow.radius = 1.5
       rightPointLight.castShadow = true
+      rightPointLight.shadow.radius = 1.5
       centerPointLight.castShadow = true
+      centerPointLight.shadow.radius = 1.5
     }
 
     this.scene.add(await Plants.place(this, Plants.World.IMAIN))

@@ -336,7 +336,7 @@ class Engine {
 
     if (getSettings().graphics.shadows) {
       this._renderer.shadowMap.enabled = true
-      this._renderer.shadowMap.type = THREE.PCFSoftShadowMap
+      this._renderer.shadowMap.type = THREE.PCFShadowMap
     }
 
     this._composer = new Composer(this._canvas, this._renderer)

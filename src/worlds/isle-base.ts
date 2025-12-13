@@ -171,6 +171,7 @@ export abstract class IsleBase extends World {
       if (settings.graphics.shadows) {
         sunLight.castShadow = true
         sunLight.shadow.mapSize.set(4096, 4096)
+        sunLight.shadow.radius = 1.5
         sunLight.shadow.camera.near = 0.5
         sunLight.shadow.camera.far = 500
         sunLight.shadow.camera.left = -200
@@ -196,6 +197,7 @@ export abstract class IsleBase extends World {
       if (settings.graphics.shadows) {
         directionalLight.castShadow = true
         directionalLight.shadow.mapSize.set(4096, 4096)
+        directionalLight.shadow.radius = 1.5
         directionalLight.shadow.camera.near = 0.5
         directionalLight.shadow.camera.far = 500
         directionalLight.shadow.camera.left = -200

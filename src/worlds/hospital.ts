@@ -30,6 +30,7 @@ export class Hospital extends World {
 
     if (getSettings().graphics.shadows) {
       leftPointLight.castShadow = true
+      leftPointLight.shadow.radius = 1.5
     }
 
     void this.playAnimation(hho003cl_RunAnim)
