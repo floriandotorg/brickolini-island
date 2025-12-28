@@ -1038,6 +1038,52 @@ export class Isle extends IsleBase {
     this._placeObjectOnGround(this.camera)
 
     this._showDashboard()
+
+    const explanationAnimation = (() => {
+      switch (vehicle.type) {
+        case 'bike':
+          return {
+            animation: sns006in_RunAnim,
+            offset: new THREE.Vector3(2.5, 0.7, 2.5),
+          }
+        case 'moto':
+          return {
+            animation: sns006in_RunAnim,
+            offset: new THREE.Vector3(2.5, 0.7, 2.5),
+          }
+        case 'skate':
+          return {
+            animation: sns008in_RunAnim,
+            offset: new THREE.Vector3(2.5, 0.2, 2.5),
+          }
+        case 'dunecar':
+          return {
+            animation: sns005in_RunAnim,
+            offset: new THREE.Vector3(2.5, 0.7, 2.5),
+          }
+        case 'jetski':
+          return {
+            animation: sjs007in_RunAnim,
+            offset: new THREE.Vector3(2.5, 0.6, 2.5),
+          }
+        default:
+          return null
+      }
+    })()
+
+    if (explanationAnimation != null && !engine.currentSaveGame.playedExitExplanation) {
+      engine.currentSaveGame.playedExitExplanation = true
+
+      const forward = new THREE.Vector3()
+      this.camera.getWorldDirection(forward)
+
+      const offset = new THREE.Vector3(forward.x * explanationAnimation.offset.x, forward.y + explanationAnimation.offset.y - CAM_HEIGHT, forward.z * explanationAnimation.offset.z)
+
+      void this.playAnimation(explanationAnimation.animation, {
+        location: this.camera.position.clone().add(offset),
+        rotation: this.camera.quaternion.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)),
+      })
+    }
   }
 
   public override activate(composer: Composer, param?: IsleParam): void {

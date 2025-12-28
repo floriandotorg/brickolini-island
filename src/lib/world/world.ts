@@ -307,7 +307,7 @@ export abstract class World {
     }
   }
 
-  public async buildAnimation(action: RunAnimationAction | AnimationAction, { location, extraTracks }: { location?: THREE.Vector3; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<BuiltAnimation> {
+  public async buildAnimation(action: RunAnimationAction | AnimationAction, { location, rotation, extraTracks }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<BuiltAnimation> {
     const children = action.type === Action.Type.ParallelAction ? action.children : []
     const animationActions = action.type === Action.Type.ParallelAction ? children.filter(c => c.presenter === 'LegoAnimPresenter' || c.presenter === 'LegoLocomotionAnimPresenter' || c.presenter === 'LegoLoopingAnimPresenter') : [action]
     if (animationActions.length !== 1) {
@@ -442,6 +442,10 @@ export abstract class World {
     const animationTransform = new THREE.Matrix4()
     calculateTransformationMatrix([-animationAction.location[0], animationAction.location[1], animationAction.location[2]], [-animationAction.direction[0], animationAction.direction[1], animationAction.direction[2]], [-animationAction.up[0], animationAction.up[1], animationAction.up[2]], animationTransform)
 
+    if (rotation != null) {
+      animationTransform.makeRotationFromQuaternion(rotation)
+    }
+
     if (location != null) {
       animationTransform.setPosition(location)
     }
@@ -483,8 +487,8 @@ export abstract class World {
     return { animation, animationActors, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, location, loop: animationAction.presenter === 'LegoLoopingAnimPresenter' ? THREE.LoopRepeat : THREE.LoopOnce }
   }
 
-  public async playAnimation(action: RunAnimationAction | AnimationAction, { location, unskippable, lockCamera, extraTracks }: { location?: THREE.Vector3; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<void> {
-    const { animation, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, loop } = await this.buildAnimation(action, { location, extraTracks })
+  public async playAnimation(action: RunAnimationAction | AnimationAction, { location, rotation, unskippable, lockCamera, extraTracks }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<void> {
+    const { animation, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, loop } = await this.buildAnimation(action, { location, rotation, extraTracks })
 
     this.setupCameraForAnimation(animation.tree)
 

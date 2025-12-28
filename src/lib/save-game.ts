@@ -16,12 +16,14 @@ export class SaveGame {
   private _colorTable = new Map<ColorTableName, ColorName>()
   private _vehiclePlacements = new Map<VehicleType, VehiclePlacement>()
   private _vehicleProgress = new Map<VehicleType, number>()
+  private _playedExitExplanation = false
 
   private static readonly PlayerKey = 'player'
   private static readonly ColorKey = 'color'
   private static readonly SunPositionKey = 'sun'
   private static readonly VehiclePlacementKey = ['vehicle', 'placement']
   private static readonly VehicleProgressKey = ['vehicle', 'progress']
+  private static readonly PlayedExitExplanationKey = 'playedExitExplanation'
 
   public get playerUnsafe(): PlayerCharacter | null {
     return this._player
@@ -37,6 +39,15 @@ export class SaveGame {
   public set player(character: PlayerCharacter) {
     this._player = character
     this.setItem(this.playerUnsafe, SaveGame.PlayerKey)
+  }
+
+  public get playedExitExplanation(): boolean {
+    return this._playedExitExplanation
+  }
+
+  public set playedExitExplanation(value: boolean) {
+    this._playedExitExplanation = value
+    this.setItem(value, SaveGame.PlayedExitExplanationKey)
   }
 
   public get sunPosition(): number {
@@ -107,6 +118,8 @@ export class SaveGame {
       }
     }
 
+    this._playedExitExplanation = this.getItem(SaveGame.PlayedExitExplanationKey) === 'true'
+
     for (const name of ColorTableNames) {
       const colorValue = this.getItem(SaveGame.ColorKey, name)
       if (colorValue != null && isColorName(colorValue)) {
@@ -157,14 +170,14 @@ export class SaveGame {
     return localStorage.getItem(`${SAVE_GAME_STORAGE_KEY}.${this.name}.${names.join('.')}`)
   }
 
-  private setItem(value: string | number | null, ...names: string[]): void {
+  private setItem(value: string | boolean | number | null, ...names: string[]): void {
     if (this.isUnloaded) {
       return
     }
 
     const key = `${SAVE_GAME_STORAGE_KEY}.${this.name}.${names.join('.')}`
     if (value != null) {
-      const stringValue = typeof value === 'number' ? value.toString() : value
+      const stringValue = typeof value === 'number' ? value.toString() : typeof value === 'boolean' ? value.toString() : value
       localStorage.setItem(key, stringValue)
     } else {
       localStorage.removeItem(key)
