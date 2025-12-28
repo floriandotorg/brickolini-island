@@ -71,37 +71,8 @@ export type Timeout = {
   get millisecondsSinceStart(): number
 }
 
-export const NeverTimeout: Timeout = {
-  get isExpired(): boolean {
-    return false
-  },
-  get millisecondsSinceStart(): number {
-    return 0
-  },
-}
-
-export class Interval {
-  private readonly _engine: Engine
-  private readonly _intervalMilliseconds: number
-  private _timeout: Timeout
-
-  public constructor(engine: Engine, intervalMilliseconds: number) {
-    this._engine = engine
-    this._intervalMilliseconds = intervalMilliseconds
-    this._timeout = this._engine.createTimeout(this._intervalMilliseconds)
-  }
-
-  public get isExpired() {
-    return this._timeout.isExpired
-  }
-
-  public resetExpired(): boolean {
-    if (this.isExpired) {
-      this._timeout = this._engine.createTimeout(this._intervalMilliseconds)
-      return true
-    }
-    return false
-  }
+export type Interval = Timeout & {
+  resetExpired: () => boolean
 }
 
 export type Sentinel = symbol & { __brand: 'Sentinel' }
@@ -305,7 +276,11 @@ class Engine {
   }
 
   public createTimeout(ms: number): Timeout {
-    const startTime = this.elapsedTimeMilliseconds
+    return this.createInterval(ms)
+  }
+
+  public createInterval(ms: number): Interval {
+    let startTime = engine.elapsedTimeMilliseconds
     return {
       get isExpired(): boolean {
         return engine.elapsedTimeMilliseconds - startTime >= ms
@@ -313,11 +288,14 @@ class Engine {
       get millisecondsSinceStart(): number {
         return engine.elapsedTimeMilliseconds - startTime
       },
+      resetExpired(): boolean {
+        if (this.isExpired) {
+          startTime = engine.elapsedTimeMilliseconds
+          return true
+        }
+        return false
+      },
     }
-  }
-
-  public createInterval(ms: number): Interval {
-    return new Interval(this, ms)
   }
 
   constructor() {

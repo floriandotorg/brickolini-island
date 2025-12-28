@@ -59,7 +59,7 @@ import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { MovieSprite } from '../lib/assets/movie-sprite'
 import { getSpawnLocation, type SpawnLocation } from '../lib/assets/spawn-location'
 import type { Composer } from '../lib/effect/composer'
-import { engine, NeverTimeout, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect, type Timeout } from '../lib/engine'
+import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect, type Timeout } from '../lib/engine'
 import { type PlayerCharacter, PlayerCharacters } from '../lib/save-game'
 import { getSettings } from '../lib/settings'
 import { switchToPreviousWorld, switchWorld } from '../lib/switch-world'
@@ -130,7 +130,7 @@ export class InfoMain extends World {
 
   private readonly _characterFrame: THREE.Sprite
   private readonly _name: Name
-  private _welcomeTimeout: Timeout = NeverTimeout
+  private _welcomeTimeout: Timeout | null = null
   private _currentAnimationIndex = 0
   private _characterMovieState: CharacterMovieState = CharacterMovieState.idle
   private _characterMovie: [MovieSprite, MovieSprite, MovieSprite] | null = null
@@ -277,7 +277,7 @@ export class InfoMain extends World {
 
     ;(await this.getActor('infoman')).onClicked = () => {
       this.skipAllRunningAnimations()
-      this._welcomeTimeout = NeverTimeout
+      this._welcomeTimeout = null
       void this.playAnimation(ANIMATIONS[this._currentAnimationIndex])
       this._currentAnimationIndex = (this._currentAnimationIndex + 1) % ANIMATIONS.length
       return true
@@ -303,13 +303,13 @@ export class InfoMain extends World {
   }
 
   public override deactivate(): void {
-    this._welcomeTimeout = NeverTimeout
+    this._welcomeTimeout = null
     super.deactivate()
   }
 
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
     if (this._building.pointerDown(event.normalizedX, event.normalizedY)) {
-      this._welcomeTimeout = NeverTimeout
+      this._welcomeTimeout = null
       return
     }
     super.pointerDown(event)
@@ -412,8 +412,8 @@ export class InfoMain extends World {
 
   public override update(delta: number): void {
     super.update(delta)
-    if (this._welcomeTimeout.isExpired) {
-      this._welcomeTimeout = NeverTimeout
+    if (this._welcomeTimeout?.isExpired === true) {
+      this._welcomeTimeout = null
       void this.playAnimation(iicx17in_RunAnim)
     }
     if (this._bookWigMovie != null && this._bookWigInterval.resetExpired()) {
