@@ -23,7 +23,7 @@ export class Elevator extends IsleBase {
   private _floor = Floor.First
 
   constructor() {
-    super('elevride')
+    super('elevride', 'Isle')
   }
 
   public override async init(): Promise<void> {

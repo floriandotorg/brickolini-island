@@ -5,14 +5,14 @@ import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerat
 import { IslePath } from '../actions/isle'
 import { getBoundaries } from '../lib/assets/boundary'
 import { manager } from '../lib/assets/load'
-import { calculateTransformationMatrix, getWorld } from '../lib/assets/model'
+import { calculateTransformationMatrix, getWorld, type WdbWorldName } from '../lib/assets/model'
 import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
 import { applyLights, NUM_ORIGINAL_LIGHTS } from '../lib/original-lights'
 import { getSettings } from '../lib/settings'
 import { BoundaryManager } from '../lib/world/boundary-manager'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
 import { Plants } from '../lib/world/plants'
-import { World } from '../lib/world/world'
+import { World, type WorldName } from '../lib/world/world'
 
 export type IsleParam = {
   position: {
@@ -62,6 +62,13 @@ export abstract class IsleBase extends World {
     this._water = water
   }
 
+  constructor(
+    name: WorldName,
+    private readonly wdbWorldName: WdbWorldName | null = null,
+  ) {
+    super(name)
+  }
+
   override async init(): Promise<void> {
     await super.init()
 
@@ -84,7 +91,9 @@ export abstract class IsleBase extends World {
       }
     }
 
-    this.worldGroup = await getWorld('ACT1')
+    if (this.wdbWorldName != null) {
+      this.worldGroup = await getWorld(this.wdbWorldName)
+    }
 
     this._plantGroup = await Plants.place(this, Plants.World.ACT1)
     this.scene.add(this._plantGroup)
@@ -221,28 +230,28 @@ export abstract class IsleBase extends World {
 
     this._boundaryManager = new BoundaryManager(await getBoundaries(IslePath), this)
 
-    // spell-checker: ignore brdg jailbrdg racebrdg
-    for (const name of ['isle_hi', 'inf-brdg', 'jailbrdg', 'racebrdg']) {
-      const object = this.scene.getObjectByName(name)
-      if (object == null || !(object instanceof THREE.Object3D)) {
-        throw new Error(`Mesh ${name} not found`)
-      }
-      this._groundGroup.push(object)
-    }
+    // // spell-checker: ignore brdg jailbrdg racebrdg
+    // for (const name of ['isle_hi', 'inf-brdg', 'jailbrdg', 'racebrdg']) {
+    //   const object = this.scene.getObjectByName(name)
+    //   if (object == null || !(object instanceof THREE.Object3D)) {
+    //     throw new Error(`Mesh ${name} not found`)
+    //   }
+    //   this._groundGroup.push(object)
+    // }
 
-    this._bikeMesh = this.scene.getObjectByName('bike') ?? null
-    this._motobkMesh = this.scene.getObjectByName('motobk') ?? null
-    this._skateMesh = this.scene.getObjectByName('skate') ?? null
-    this._ambulanceMesh = this.getObjectsByPrefix('ambul') ?? []
-    this._towtruckMesh = this.getObjectsByPrefix('towtk') ?? []
+    // this._bikeMesh = this.scene.getObjectByName('bike') ?? null
+    // this._motobkMesh = this.scene.getObjectByName('motobk') ?? null
+    // this._skateMesh = this.scene.getObjectByName('skate') ?? null
+    // this._ambulanceMesh = this.getObjectsByPrefix('ambul') ?? []
+    // this._towtruckMesh = this.getObjectsByPrefix('towtk') ?? []
 
-    if (this._bikeMesh == null || this._motobkMesh == null || this._skateMesh == null || this._ambulanceMesh.length < 1 || this._towtruckMesh.length < 1) {
-      throw new Error('Vehicle meshes not found')
-    }
+    // if (this._bikeMesh == null || this._motobkMesh == null || this._skateMesh == null || this._ambulanceMesh.length < 1 || this._towtruckMesh.length < 1) {
+    //   throw new Error('Vehicle meshes not found')
+    // }
 
-    this.placeVehicle('bike', 'INT44', 2, 0.5, 0, 0.5)
-    this.placeVehicle('moto', 'INT43', 4, 0.5, 1, 0.5)
-    this.placeVehicle('skate', 'EDG02_84', 4, 0.5, 0, 0.5)
+    // this.placeVehicle('bike', 'INT44', 2, 0.5, 0, 0.5)
+    // this.placeVehicle('moto', 'INT43', 4, 0.5, 1, 0.5)
+    // this.placeVehicle('skate', 'EDG02_84', 4, 0.5, 0, 0.5)
   }
 
   public getVehicleMesh(vehicle: VehicleType): THREE.Object3D[] {

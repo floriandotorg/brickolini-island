@@ -59,6 +59,8 @@ export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
           return import('../worlds/elevator/observe').then(m => new m.Observe())
         case 'elevdown':
           return import('../worlds/elevator/elevdown').then(m => new m.ElevDown())
+        case 'carrace':
+          return import('../worlds/carrace').then(m => new m.CarRace())
         default: {
           const _exhaustiveCheck: never = normalizedSpawn
           throw new Error(`Unhandled world: ${normalizedSpawn}`)

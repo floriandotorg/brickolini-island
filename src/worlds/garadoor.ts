@@ -11,7 +11,7 @@ export class GarDoor extends IsleBase {
   private readonly _building = new Building()
 
   constructor() {
-    super('garadoor')
+    super('garadoor', 'Isle')
   }
 
   public override async init(): Promise<void> {

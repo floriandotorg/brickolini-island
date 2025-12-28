@@ -820,7 +820,7 @@ export class Isle extends IsleBase {
   }
 
   constructor() {
-    super('isle')
+    super('isle', 'ACT1')
   }
 
   override async init(): Promise<void> {
