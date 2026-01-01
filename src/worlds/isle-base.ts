@@ -9,7 +9,6 @@ import { calculateTransformationMatrix, getWorld } from '../lib/assets/model'
 import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
 import { applyLights, NUM_ORIGINAL_LIGHTS } from '../lib/original-lights'
 import { getSettings } from '../lib/settings'
-import { Actor } from '../lib/world/actor'
 import { BoundaryManager } from '../lib/world/boundary-manager'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
 import { Plants } from '../lib/world/plants'
@@ -86,11 +85,6 @@ export abstract class IsleBase extends World {
     }
 
     this.worldGroup = await getWorld('ACT1')
-
-    const actor = await Actor.create(this, 'ml')
-    actor.position.set(22, 1, 30)
-    actor.rotateY(Math.PI / 2)
-    this.scene.add(actor)
 
     this._plantGroup = await Plants.place(this, Plants.World.ACT1)
     this.scene.add(this._plantGroup)

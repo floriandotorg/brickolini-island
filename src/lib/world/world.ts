@@ -47,6 +47,7 @@ type FaceAnimation = {
 export type BuiltAnimation = {
   animation: Animation3D
   animationActors: Map<string, AnimationActor>
+  managedActorNames: string[]
   positionalAudioActions: PositionalAudioAction[]
   audioActions: AudioAction[]
   tracks: THREE.KeyframeTrack[]
@@ -83,7 +84,7 @@ export abstract class World {
     stopAtTime?: number
   }[] = []
   private _runningAudios: Audio[] = []
-  private _actors = new Map<string, Actor>()
+  private _actors = new Map<string, { actor: Actor; refCount: number }>()
   private _worldGroup: THREE.Group | null = null
 
   constructor(public readonly name: WorldName) {
@@ -201,11 +202,25 @@ export abstract class World {
   public async getActor(name: string): Promise<Actor> {
     const existing = this._actors.get(name)
     if (existing != null) {
-      return existing
+      ++existing.refCount
+      return existing.actor
     }
     const actor = await Actor.create(this, name)
-    this._actors.set(name, actor)
+    this._actors.set(name, { actor, refCount: 1 })
     return actor
+  }
+
+  public releaseActor(name: string): void {
+    const entry = this._actors.get(name)
+    if (entry == null) {
+      throw new Error(`Trying to release an actor that was already released: ${name}`)
+    }
+
+    --entry.refCount
+    if (entry.refCount <= 0) {
+      entry.actor.removeFromParent()
+      this._actors.delete(name)
+    }
   }
 
   public getObjectByNameRecursive(name: string, root: THREE.Object3D = this.scene): THREE.Object3D | null {
@@ -322,6 +337,7 @@ export abstract class World {
     const animation = parse3DAnimation(await getAction(animationAction))
 
     const animationActors = new Map<string, AnimationActor>()
+    const managedActorNames: string[] = []
 
     const addActorToList = (type: WDB.ActorType, actor: THREE.Object3D) => {
       animationActors.set(actor.name, createAnimationActor(type, actor, this.worldGroup))
@@ -339,7 +355,9 @@ export abstract class World {
           break
         }
         case WDB.ActorType.ManagedActor: {
-          const minifig = await this.getActor(actor.name.replace(/^\*/, ''))
+          const actorName = actor.name.replace(/^\*/, '')
+          const minifig = await this.getActor(actorName)
+          managedActorNames.push(actorName)
           if (actor.name.startsWith('*')) {
             minifig.visible = false
           }
@@ -484,11 +502,11 @@ export abstract class World {
 
     const objectsToHideOnStop = getExtraValue(action, 'hide_on_stop') != null ? Array.from(animationActors.values()).flatMap(actor => [actor.object, ...actor.children.values()]) : []
 
-    return { animation, animationActors, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, location, loop: animationAction.presenter === 'LegoLoopingAnimPresenter' ? THREE.LoopRepeat : THREE.LoopOnce }
+    return { animation, animationActors, managedActorNames, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, location, loop: animationAction.presenter === 'LegoLoopingAnimPresenter' ? THREE.LoopRepeat : THREE.LoopOnce }
   }
 
   public async playAnimation(action: RunAnimationAction | AnimationAction, { location, rotation, unskippable, lockCamera, extraTracks }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<void> {
-    const { animation, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, loop } = await this.buildAnimation(action, { location, rotation, extraTracks })
+    const { animation, managedActorNames, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, loop } = await this.buildAnimation(action, { location, rotation, extraTracks })
 
     this.setupCameraForAnimation(animation.tree)
 
@@ -508,7 +526,7 @@ export abstract class World {
     const sentinel = audioActions.length > 0 || audios.length > 0 ? engine.lowerBackgroundMusic() : null
 
     const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
-    await this.playAnimationClip(this.scene, clip, { audios, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, lockCamera, unskippable, loop })
+    await this.playAnimationClip(this.scene, clip, { audios, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, managedActorNames, lockCamera, unskippable, loop })
     if (sentinel != null) {
       engine.raiseBackgroundMusic(sentinel)
     }
@@ -523,6 +541,7 @@ export abstract class World {
       faceAnimations = [],
       pointAtCameraObjects = [],
       objectsToHideOnStop = [],
+      managedActorNames = [],
       lockCamera,
       unskippable,
       startAtTime = 0,
@@ -534,6 +553,7 @@ export abstract class World {
       faceAnimations?: FaceAnimation[]
       pointAtCameraObjects?: THREE.Object3D[]
       objectsToHideOnStop?: THREE.Object3D[]
+      managedActorNames?: string[]
       lockCamera?: boolean
       unskippable?: boolean
       startAtTime?: number
@@ -561,6 +581,9 @@ export abstract class World {
         }
         for (const actor of objectsToHideOnStop) {
           actor.visible = false
+        }
+        for (const actorName of managedActorNames) {
+          this.releaseActor(actorName)
         }
         this._runningAnimations = this._runningAnimations.filter(a => a.mixer !== mixer)
         resolve()
