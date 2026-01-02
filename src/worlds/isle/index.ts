@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-// import { CNs001Pe, tns030bd_RunAnim } from '../actions/act2main'
 import {
   Beach,
   bho142en_RunAnim,
@@ -64,6 +63,7 @@ import {
   hpzy51gd_RunAnim,
   hpzz51gd_RunAnim,
   InfoCenter_Entity,
+  IslePath,
   igs001na_RunAnim,
   igs008na_RunAnim,
   ijs001sn_RunAnim,
@@ -378,9 +378,10 @@ import {
   wrt078ni_RunAnim,
   wrt079bm_RunAnim,
 } from '../../actions/isle'
+// import { CNs001Pe, tns030bd_RunAnim } from '../actions/act2main'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../../actions/jukebox'
 import { type AnimationAction, type AudioAction, getExtraValue, type ParallelAction, type PhonemeAction, type PositionalAudioAction, type RunAnimationAction } from '../../lib/action-types'
-import { type DTA, loadAnimationInfoFromDTA } from '../../lib/assets/dta'
+import type { DTA } from '../../lib/assets/dta'
 import { calculateTransformationMatrix } from '../../lib/assets/model'
 import { createTexture } from '../../lib/assets/texture'
 import type { Composer } from '../../lib/effect/composer'
@@ -392,8 +393,6 @@ import { PlayerMovement } from '../../lib/world/player-movement'
 import type { WorldName } from '../../lib/world/world'
 import { CAR_BUILD_VEHICLES, IsleBase, type IsleParam } from '../isle-base'
 import { PizzaMission } from './missions/pizza-mission'
-
-// import { tns002br_RunAnim } from '../actions/act2main'
 
 const ANIMATIONS = [
   sba001bu_RunAnim,
@@ -766,14 +765,15 @@ const ANIMATIONS = [
   nrtflag0_RunAnim,
 ]
 
+// import { tns002br_RunAnim } from '../actions/act2main'
+
 export class Isle extends IsleBase {
   private readonly _playerMovement = new PlayerMovement(
     this.camera,
     this._groundGroup,
-    () => this._boundaryManager.walls,
+    () => this.boundaryManager.walls,
     () => this._isleMesh,
   )
-  private _cameraAnimationPlaying = false
 
   private _animationTrigger: Array<{
     center: THREE.Vector3
@@ -782,19 +782,10 @@ export class Isle extends IsleBase {
   }> = []
 
   private _currentVehicle: Vehicle | null = null
-  private _animationInfos: DTA.AnimationInfo[] = []
+  private _cameraAnimationPlaying = false
   private readonly _pizzaMission = new PizzaMission(this)
 
-  public cameraAnimationTriggerEnabled = true
   public backgroundMusicTriggerEnabled = true
-
-  public get animationInfos(): DTA.AnimationInfo[] {
-    return this._animationInfos
-  }
-
-  public get cameraAnimationPlaying(): boolean {
-    return this._cameraAnimationPlaying
-  }
 
   private get _currentVehicleMesh(): THREE.Object3D[] {
     if (this._currentVehicle == null) {
@@ -808,17 +799,12 @@ export class Isle extends IsleBase {
   }
 
   constructor() {
-    super('isle', 'ACT1')
+    super('isle', { wdbWorldName: 'ACT1', dtaWorldName: 'ACT1', boundaryPathAction: IslePath })
   }
   override async init(): Promise<void> {
     await super.init()
 
-    this._animationInfos = await loadAnimationInfoFromDTA('ACT1')
-    for (const animationInfo of this._animationInfos) {
-      animationInfo.active = true
-    }
-
-    this._boundaryManager.onTrigger = (name, data, direction) => {
+    this.boundaryManager.onTrigger = (name, data, direction) => {
       const music = [ResidentalArea_Music, BeachBlvd_Music, Cave_Music, CentralRoads_Music, Jail_Music, Hospital_Music, InformationCenter_Music, PoliceStation_Music, Park_Music, CentralNorthRoad_Music, GarageArea_Music, RaceTrackRoad_Music, Beach_Music, Quiet_Audio]
 
       const triggers: [number, number][] = [
@@ -864,11 +850,11 @@ export class Isle extends IsleBase {
         if (this.cameraAnimationTriggerEnabled && (location == null || !location.animationPlayedAtLocation || location.frequency < Math.floor(Math.random() * 101))) {
           const indices = (() => {
             let firstIndex = -1
-            for (let n = 0; n < this._animationInfos.length; ++n) {
-              if (this._animationInfos[n].location === -1) {
+            for (let n = 0; n < this.animationInfos.length; ++n) {
+              if (this.animationInfos[n].location === -1) {
                 return null
               }
-              if (this._animationInfos[n].location === data) {
+              if (this.animationInfos[n].location === data) {
                 firstIndex = n
                 break
               }
@@ -877,8 +863,8 @@ export class Isle extends IsleBase {
               return null
             }
             let lastIndex = firstIndex
-            for (let n = firstIndex + 1; n < this._animationInfos.length; ++n) {
-              if (this._animationInfos[n].location !== data) {
+            for (let n = firstIndex + 1; n < this.animationInfos.length; ++n) {
+              if (this.animationInfos[n].location !== data) {
                 lastIndex = n
                 break
               }
@@ -888,7 +874,7 @@ export class Isle extends IsleBase {
           })()
 
           if (indices != null) {
-            const animationInfosAtLocation = this._animationInfos.slice(indices.firstIndex, indices.lastIndex)
+            const animationInfosAtLocation = this.animationInfos.slice(indices.firstIndex, indices.lastIndex)
             let lastAnimationNumPlayed = Number.MAX_SAFE_INTEGER
             let animationToPlay: DTA.AnimationInfo | undefined
             for (const animationInfo of animationInfosAtLocation) {
@@ -1078,7 +1064,7 @@ export class Isle extends IsleBase {
   public override async activate(composer: Composer, param?: IsleParam): Promise<void> {
     await super.activate(composer, param)
     if (param != null) {
-      const { position, quaternion } = this._boundaryManager.getObjectPlacement(param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
+      const { position, quaternion } = this.boundaryManager.getObjectPlacement(param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
       this.camera.position.copy(position)
       this.camera.quaternion.copy(quaternion)
     }
@@ -1231,7 +1217,7 @@ export class Isle extends IsleBase {
 
     this._dashboard.update(normalizedSpeed)
 
-    this._boundaryManager.update(fromPos, toPos)
+    this.boundaryManager.update(fromPos, toPos)
     for (const trigger of this._animationTrigger) {
       const distance = toPos.distanceTo(trigger.center)
       if (distance <= trigger.radius && fromPos.distanceTo(trigger.center) > trigger.radius) {

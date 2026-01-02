@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { irtx08ra_PlayWav, Map_Ctl, Rhoda_Locator, Studs_Locator, srt001rh_RunAnim, srt001sl_RunAnim, srt002rh_RunAnim, srt002sl_RunAnim, srt003rh_RunAnim, srt003sl_RunAnim, srt004sl_RunAnim, srt005sl_RunAnim, User_Locator, UserCar_Actor } from '../actions/carrace'
+import { irtx08ra_PlayWav, Map_Ctl, RacePath, Rhoda_Locator, Studs_Locator, srt001rh_RunAnim, srt001sl_RunAnim, srt002rh_RunAnim, srt002sl_RunAnim, srt003rh_RunAnim, srt003sl_RunAnim, srt004sl_RunAnim, srt005sl_RunAnim, User_Locator, UserCar_Actor } from '../actions/carrace'
 import { RaceTrackRoad_Music } from '../actions/jukebox'
 import { getExtraValue, type ImageAction, splitExtraValue } from '../lib/action-types'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
@@ -88,10 +88,13 @@ class MapLocator {
 }
 
 export class CarRace extends IsleBase {
+  private _playerLastWaypointNo = 0
+  private _playerLapsLeft = 2
+
   private _playerMovement = new PlayerMovement(
     this.camera,
     this._groundGroup,
-    () => this._boundaryManager.walls,
+    () => this.boundaryManager.walls,
     () => this._isleMesh,
   )
   private readonly _controlsRender = new Render2D()
@@ -99,7 +102,7 @@ export class CarRace extends IsleBase {
   private _raceMap: RaceMap | null = null
 
   constructor() {
-    super('carrace', 'RACC')
+    super('carrace', { wdbWorldName: 'RACC', dtaWorldName: 'RACC', boundaryPathAction: RacePath })
 
     this._controls.onButtonClicked = (buttonName, event) => {
       switch (buttonName) {
@@ -116,6 +119,26 @@ export class CarRace extends IsleBase {
 
   public override async activate(composer: Composer, _param?: unknown): Promise<void> {
     await super.activate(composer)
+
+    this.boundaryManager.onTrigger = (name, data, direction) => {
+      console.log(`Boundary trigger: ${name}, ${data}, ${direction}`)
+
+      if (name[2] === 'D') {
+        if (data <= this._playerLastWaypointNo || data >= this._playerLastWaypointNo + 5) {
+          console.warn(`Got waypoint out of valid range: ${data} (last: ${this._playerLastWaypointNo})`)
+          return
+        }
+
+        this._playerLastWaypointNo = data
+        if (this._playerLastWaypointNo >= 20) {
+          this._playerLastWaypointNo = 0
+
+          if (--this._playerLapsLeft <= 0) {
+            console.log('Player finished race')
+          }
+        }
+      }
+    }
 
     await this._dashboard.show({ type: 'racecar' })
 
@@ -170,9 +193,11 @@ export class CarRace extends IsleBase {
       return
     }
 
-    const { normalizedSpeed } = this._playerMovement.update(delta, 'racecar')
+    const { normalizedSpeed, fromPos, toPos } = this._playerMovement.update(delta, 'racecar')
+
     this._dashboard.update(normalizedSpeed)
 
     this._raceMap?.update()
+    this.boundaryManager.update(fromPos, toPos)
   }
 }

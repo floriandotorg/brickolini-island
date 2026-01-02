@@ -11,7 +11,9 @@ export class PoliDoor extends IsleBase {
   private readonly _building = new Building()
 
   constructor() {
-    super('polidoor', 'Isle')
+    super('polidoor', {
+      wdbWorldName: 'Isle',
+    })
   }
 
   public override async init(): Promise<void> {

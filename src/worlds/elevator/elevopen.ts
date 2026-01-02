@@ -11,7 +11,7 @@ export class ElevOpen extends IsleBase {
   private readonly _building = new Building()
 
   constructor() {
-    super('elevopen', 'Isle')
+    super('elevopen', { wdbWorldName: 'Isle' })
   }
 
   public override async init(): Promise<void> {

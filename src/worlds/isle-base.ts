@@ -4,11 +4,11 @@ import type { Water } from 'three/addons/objects/Water.js'
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator.js'
 import { Chptr_Model } from '../actions/copter'
 import { DuneBugy_Model } from '../actions/dunecar'
-import { IslePath } from '../actions/isle'
 import { Jsuser_Model } from '../actions/jetski'
 import { Rcuser_Model } from '../actions/racecar'
-import type { ModelAction } from '../lib/action-types'
+import type { BoundaryAction, ModelAction } from '../lib/action-types'
 import { getBoundaries } from '../lib/assets/boundary'
+import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
 import { calculateTransformationMatrix, getModel, getWorld, type WdbWorldName } from '../lib/assets/model'
 import { getSpawnLocation, type SpawnLocation } from '../lib/assets/spawn-location'
@@ -43,7 +43,7 @@ export const CAR_BUILD_VEHICLES: { readonly type: CarBuildVehicleType; readonly 
 export abstract class IsleBase extends World {
   protected _groundGroup: THREE.Object3D[] = []
   protected _plantGroup: THREE.Group = new THREE.Group()
-  protected _boundaryManager = new BoundaryManager([], this)
+  private _boundaryManager: BoundaryManager | null = null
   protected _dashboard = new Dashboard()
   protected _sun:
     | {
@@ -68,16 +68,44 @@ export abstract class IsleBase extends World {
   protected _ambulanceMesh: THREE.Object3D[] = []
   protected _towtruckMesh: THREE.Object3D[] = []
   private _buildMeshes = new Map<VehicleType, THREE.Object3D[]>()
+  private _animationInfos: DTA.AnimationInfo[] = []
+  private readonly _wdbWorldName: WdbWorldName | null
+  private readonly _dtaWorldName: DtaWorldName | null
+  private readonly _boundaryPathAction: BoundaryAction | null
+
+  public cameraAnimationTriggerEnabled = true
 
   public set water(water: Water) {
     this._water = water
   }
 
+  public get animationInfos(): DTA.AnimationInfo[] {
+    return this._animationInfos
+  }
+
+  public get boundaryManager(): BoundaryManager {
+    if (this._boundaryManager == null) {
+      throw new Error('Boundary manager not initialized')
+    }
+    return this._boundaryManager
+  }
+
   constructor(
     name: WorldName,
-    private readonly wdbWorldName: WdbWorldName | null = null,
+    {
+      wdbWorldName,
+      dtaWorldName,
+      boundaryPathAction,
+    }: {
+      wdbWorldName?: WdbWorldName
+      dtaWorldName?: DtaWorldName
+      boundaryPathAction?: BoundaryAction
+    } = {},
   ) {
     super(name)
+    this._wdbWorldName = wdbWorldName ?? null
+    this._dtaWorldName = dtaWorldName ?? null
+    this._boundaryPathAction = boundaryPathAction ?? null
   }
 
   override async init(): Promise<void> {
@@ -102,8 +130,8 @@ export abstract class IsleBase extends World {
       }
     }
 
-    if (this.wdbWorldName != null) {
-      this.worldGroup = await getWorld(this.wdbWorldName)
+    if (this._wdbWorldName != null) {
+      this.worldGroup = await getWorld(this._wdbWorldName)
     }
 
     this._plantGroup = await Plants.place(this, Plants.World.ACT1)
@@ -117,6 +145,13 @@ export abstract class IsleBase extends World {
         this._plantGroup = await newModule.Plants.place(this, Plants.World.ACT1)
         this.scene.add(this._plantGroup)
       })
+    }
+
+    if (this._dtaWorldName != null) {
+      this._animationInfos = await loadAnimationInfoFromDTA(this._dtaWorldName)
+      for (const animationInfo of this._animationInfos) {
+        animationInfo.active = true
+      }
     }
 
     if (getURLParam('generate-cubemap') === 'true') {
@@ -239,7 +274,9 @@ export abstract class IsleBase extends World {
       this._updateSun()
     }
 
-    this._boundaryManager = new BoundaryManager(await getBoundaries(IslePath), this)
+    if (this._boundaryPathAction != null) {
+      this._boundaryManager = new BoundaryManager(await getBoundaries(this._boundaryPathAction), this)
+    }
 
     // spell-checker: ignore brdg jailbrdg racebrdg
     for (const name of ['isle_hi', 'inf-brdg', 'jailbrdg', 'racebrdg']) {
@@ -282,7 +319,7 @@ export abstract class IsleBase extends World {
       const placement = (() => {
         if (engine.resetVehicleRespawn(type)) {
           const spawnPosition = getSpawnLocation(spawn).position
-          return this._boundaryManager.getObjectPlacement(spawnPosition.boundaryName, spawnPosition.source, spawnPosition.sourceScale, spawnPosition.destination, spawnPosition.destinationScale)
+          return this.boundaryManager.getObjectPlacement(spawnPosition.boundaryName, spawnPosition.source, spawnPosition.sourceScale, spawnPosition.destination, spawnPosition.destinationScale)
         }
         return engine.currentSaveGame.getVehiclePlacement(type)
       })()
@@ -344,7 +381,7 @@ export abstract class IsleBase extends World {
       if (vehiclePlacement != null) {
         return vehiclePlacement
       } else {
-        return this._boundaryManager.getObjectPlacement(boundaryName, src, srcScale, dst, _dstScale)
+        return this.boundaryManager.getObjectPlacement(boundaryName, src, srcScale, dst, _dstScale)
       }
     })()
     this.moveObjectTo(vehicleMesh, position, quaternion)

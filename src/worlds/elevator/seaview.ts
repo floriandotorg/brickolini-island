@@ -11,7 +11,7 @@ export class SeaView extends IsleBase {
   private readonly _building = new Building()
 
   constructor() {
-    super('seaview', 'Isle')
+    super('seaview', { wdbWorldName: 'Isle' })
   }
 
   public override async init(): Promise<void> {

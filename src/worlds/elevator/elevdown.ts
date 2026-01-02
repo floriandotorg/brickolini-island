@@ -12,7 +12,7 @@ export class ElevDown extends IsleBase {
   private readonly _building = new Building()
 
   constructor() {
-    super('elevdown', 'Isle')
+    super('elevdown', { wdbWorldName: 'Isle' })
   }
 
   public override async init(): Promise<void> {

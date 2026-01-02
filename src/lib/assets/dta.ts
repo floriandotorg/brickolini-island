@@ -71,7 +71,9 @@ const parseAnimation = (reader: BinaryReader): DTA.AnimationInfo => {
   }
 }
 
-export const loadAnimationInfoFromDTA = async (worldName: 'BLDD' | 'BLDH' | 'BLDJ' | 'BLDR' | 'HOSP' | 'POLICE' | 'GMAIN' | 'ICUBE' | 'IELEV' | 'IISLE' | 'IMAIN' | 'IREG' | 'RACC' | 'RACJ' | 'ACT1' | 'ACT2' | 'ACT3'): Promise<DTA.AnimationInfo[]> => {
+export type DtaWorldName = 'BLDD' | 'BLDH' | 'BLDJ' | 'BLDR' | 'HOSP' | 'POLICE' | 'GMAIN' | 'ICUBE' | 'IELEV' | 'IISLE' | 'IMAIN' | 'IREG' | 'RACC' | 'RACJ' | 'ACT1' | 'ACT2' | 'ACT3'
+
+export const loadAnimationInfoFromDTA = async (worldName: DtaWorldName): Promise<DTA.AnimationInfo[]> => {
   const reader = new BinaryReader(await getFile(getFileUrl(`${worldName}INF.DTA`)))
 
   const version = reader.readUint32()

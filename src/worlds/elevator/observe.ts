@@ -14,7 +14,7 @@ export class Observe extends IsleBase {
   private readonly _globeSprites: THREE.Sprite[] = []
 
   constructor() {
-    super('observe', 'Isle')
+    super('observe', { wdbWorldName: 'Isle' })
 
     for (const imageAction of [Observe_Globe1_Bitmap, Observe_Globe2_Bitmap, Observe_Globe3_Bitmap, Observe_Globe4_Bitmap, Observe_Globe5_Bitmap, Observe_Globe6_Bitmap]) {
       const globeSprite = createImageSprite(imageAction, Control.normalizeZ(imageAction))
