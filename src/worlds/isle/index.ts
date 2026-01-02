@@ -1077,7 +1077,6 @@ export class Isle extends IsleBase {
 
   public override async activate(composer: Composer, param?: IsleParam): Promise<void> {
     await super.activate(composer, param)
-    this._dashboard.activate(composer)
     if (param != null) {
       const { position, quaternion } = this._boundaryManager.getObjectPlacement(param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
       this.camera.position.copy(position)

@@ -1,5 +1,43 @@
 import type * as THREE from 'three'
-import { RaceCarDashboard } from '../../actions/carrace'
+import {
+  RaceCarDashboard,
+  RaceCarDashboard11_Bitmap,
+  RaceCarDashboard12_Bitmap,
+  RaceCarDashboard13_Bitmap,
+  RaceCarDashboard14_Bitmap,
+  RaceCarDashboard15_Bitmap,
+  RaceCarDashboard16_Bitmap,
+  RaceCarDashboard21_Bitmap,
+  RaceCarDashboard22_Bitmap,
+  RaceCarDashboard23_Bitmap,
+  RaceCarDashboard24_Bitmap,
+  RaceCarDashboard25_Bitmap,
+  RaceCarDashboard26_Bitmap,
+  RaceCarDashboard31_Bitmap,
+  RaceCarDashboard32_Bitmap,
+  RaceCarDashboard33_Bitmap,
+  RaceCarDashboard34_Bitmap,
+  RaceCarDashboard35_Bitmap,
+  RaceCarDashboard36_Bitmap,
+  RaceCarDashboard41_Bitmap,
+  RaceCarDashboard42_Bitmap,
+  RaceCarDashboard43_Bitmap,
+  RaceCarDashboard44_Bitmap,
+  RaceCarDashboard45_Bitmap,
+  RaceCarDashboard46_Bitmap,
+  RaceCarDashboard51_Bitmap,
+  RaceCarDashboard52_Bitmap,
+  RaceCarDashboard53_Bitmap,
+  RaceCarDashboard54_Bitmap,
+  RaceCarDashboard55_Bitmap,
+  RaceCarDashboard56_Bitmap,
+  RaceCarDashboard61_Bitmap,
+  RaceCarDashboard62_Bitmap,
+  RaceCarDashboard63_Bitmap,
+  RaceCarDashboard64_Bitmap,
+  RaceCarDashboard65_Bitmap,
+  RaceCarDashboard66_Bitmap,
+} from '../../actions/carrace'
 import {
   AmbulanceDashboard,
   BikeDashboard,
@@ -152,6 +190,57 @@ const jetSkiDashboards: Record<DashboardColorName, Record<DashboardColorName, Im
     'lego blue': JetskiDashboard15_Bitmap,
     'lego white': JetskiDashboard16_Bitmap,
     'lego green': JetskiDashboard11_Bitmap,
+  },
+}
+
+const raceCarDashboards: Record<DashboardColorName, Record<DashboardColorName, ImageAction>> = {
+  'lego red': {
+    'lego red': RaceCarDashboard22_Bitmap,
+    'lego yellow': RaceCarDashboard23_Bitmap,
+    'lego black': RaceCarDashboard24_Bitmap,
+    'lego blue': RaceCarDashboard25_Bitmap,
+    'lego white': RaceCarDashboard26_Bitmap,
+    'lego green': RaceCarDashboard21_Bitmap,
+  },
+  'lego yellow': {
+    'lego red': RaceCarDashboard32_Bitmap,
+    'lego yellow': RaceCarDashboard33_Bitmap,
+    'lego black': RaceCarDashboard34_Bitmap,
+    'lego blue': RaceCarDashboard35_Bitmap,
+    'lego white': RaceCarDashboard36_Bitmap,
+    'lego green': RaceCarDashboard31_Bitmap,
+  },
+  'lego black': {
+    'lego red': RaceCarDashboard42_Bitmap,
+    'lego yellow': RaceCarDashboard43_Bitmap,
+    'lego black': RaceCarDashboard44_Bitmap,
+    'lego blue': RaceCarDashboard45_Bitmap,
+    'lego white': RaceCarDashboard46_Bitmap,
+    'lego green': RaceCarDashboard41_Bitmap,
+  },
+  'lego blue': {
+    'lego red': RaceCarDashboard52_Bitmap,
+    'lego yellow': RaceCarDashboard53_Bitmap,
+    'lego black': RaceCarDashboard54_Bitmap,
+    'lego blue': RaceCarDashboard55_Bitmap,
+    'lego white': RaceCarDashboard56_Bitmap,
+    'lego green': RaceCarDashboard51_Bitmap,
+  },
+  'lego white': {
+    'lego red': RaceCarDashboard62_Bitmap,
+    'lego yellow': RaceCarDashboard63_Bitmap,
+    'lego black': RaceCarDashboard64_Bitmap,
+    'lego blue': RaceCarDashboard65_Bitmap,
+    'lego white': RaceCarDashboard66_Bitmap,
+    'lego green': RaceCarDashboard61_Bitmap,
+  },
+  'lego green': {
+    'lego red': RaceCarDashboard12_Bitmap,
+    'lego yellow': RaceCarDashboard13_Bitmap,
+    'lego black': RaceCarDashboard14_Bitmap,
+    'lego blue': RaceCarDashboard15_Bitmap,
+    'lego white': RaceCarDashboard16_Bitmap,
+    'lego green': RaceCarDashboard11_Bitmap,
   },
 }
 
@@ -318,6 +407,12 @@ export class Dashboard {
           const windshieldColor = engine.currentSaveGame.getColor('c_jswnshy5')
           const windshieldDashboards = getDashboardMap(windshieldColor, jetSkiDashboards)
           const frontColor = engine.currentSaveGame.getColor('c_jsfrnty5')
+          return getDashboardMap(frontColor, windshieldDashboards)
+        }
+        case 'racecar': {
+          const windshieldColor = engine.currentSaveGame.getColor('c_rcfrnty6')
+          const windshieldDashboards = getDashboardMap(windshieldColor, raceCarDashboards)
+          const frontColor = engine.currentSaveGame.getColor('c_rcedgey0')
           return getDashboardMap(frontColor, windshieldDashboards)
         }
         // biome-ignore lint/suspicious/noFallthroughSwitchClause: same as default clause unless it should show a pizza

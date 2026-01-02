@@ -272,6 +272,8 @@ export abstract class IsleBase extends World {
   public override async activate(composer: Composer, _param?: unknown): Promise<void> {
     super.activate(composer, _param)
 
+    this._dashboard.activate(composer)
+
     for (const { type, model, spawn } of CAR_BUILD_VEHICLES) {
       const previousMeshes = this._buildMeshes.get(type)
       if (previousMeshes != null) {

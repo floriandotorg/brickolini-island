@@ -2,7 +2,7 @@ import type * as THREE from 'three'
 import { irtx08ra_PlayWav, srt001rh_RunAnim, srt001sl_RunAnim, srt002rh_RunAnim, srt002sl_RunAnim, srt003rh_RunAnim, srt003sl_RunAnim, srt004sl_RunAnim, srt005sl_RunAnim } from '../actions/carrace'
 import { RaceTrackRoad_Music } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
-import { engine } from '../lib/engine'
+import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { PlayerMovement } from '../lib/world/player-movement'
 import { IsleBase } from './isle-base'
 
@@ -22,7 +22,8 @@ export class CarRace extends IsleBase {
 
   public override async activate(composer: Composer, _param?: unknown): Promise<void> {
     await super.activate(composer)
-    this._dashboard.activate(composer)
+
+    await this._dashboard.show({ type: 'racecar' })
 
     void engine.switchBackgroundMusic(RaceTrackRoad_Music)
     void this.playAnimation(introAnimations[Math.floor(Math.random() * introAnimations.length)]).then(() => {
@@ -40,11 +41,16 @@ export class CarRace extends IsleBase {
     if (key === 'f' && import.meta.env.DEV) {
       this._playerMovement.toggleSlewMode()
     }
+  }
 
-    if (key === 'm') {
-      engine.currentSaveGame.nextSunPosition()
-      this._updateSun()
-    }
+  public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
+    await super.pointerDown(event)
+    this._dashboard.pointerDown(event.normalizedX, event.normalizedY)
+  }
+
+  public override pointerUp(event: NormalizedMouseEvent): void {
+    super.pointerUp(event)
+    this._dashboard.pointerUp()
   }
 
   public override update(delta: number): void {
@@ -54,7 +60,7 @@ export class CarRace extends IsleBase {
       return
     }
 
-    const { normalizedSpeed } = this._playerMovement.update(delta, null)
+    const { normalizedSpeed } = this._playerMovement.update(delta, 'racecar')
     this._dashboard.update(normalizedSpeed)
   }
 }
