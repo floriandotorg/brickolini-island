@@ -1478,7 +1478,7 @@ export class Actor extends THREE.Group {
               throw new Error(`Unknown part: ${bodyPartName}`)
           }
 
-          world.playPositionalAudio(Sound10, parentMesh)
+          void world.playPositionalAudio(Sound10, parentMesh)
 
           return true
         }

@@ -155,9 +155,7 @@ const colorTable: Record<ColorTableName, ColorName> = {
 }
 // spellchecker: enable
 
-export const getDefaultColor = (name: ColorTableName): ColorName => {
-  return colorTable[name]
-}
+export const getDefaultColor = (name: ColorTableName): ColorName => colorTable[name]
 
 export const colorFromName = (name: string): WDB.Color | null => {
   if (name.length > 0 && (name.toLowerCase().startsWith('indir-f-') || name.toLowerCase().startsWith('indir-g-'))) {
@@ -177,9 +175,7 @@ export const colorFromName = (name: string): WDB.Color | null => {
   return null
 }
 
-export const toThreeColor = (color: WDB.Color): THREE.Color => {
-  return new THREE.Color(color.red / 255, color.green / 255, color.blue / 255).convertSRGBToLinear()
-}
+export const toThreeColor = (color: WDB.Color): THREE.Color => new THREE.Color(color.red / 255, color.green / 255, color.blue / 255).convertSRGBToLinear()
 
 export const colorMesh = (object: THREE.Object3D, color: THREE.Color): void =>
   Roi3D.traverseWithOffset(object, object => {

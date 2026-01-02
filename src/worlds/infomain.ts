@@ -188,7 +188,7 @@ export class InfoMain extends World {
     engine.resumeBackgroundMusic()
     this._characterMovieState = CharacterMovieState.idle
     this._characterMovie = null
-    this.playAnimation(selectionAnimation)
+    void this.playAnimation(selectionAnimation)
   }
 
   private placeCharacterFrame(): void {
@@ -288,8 +288,8 @@ export class InfoMain extends World {
     this._bookWigMovie.hideAfterFinish = true
     this._bookWigMovie.parent = this._building.scene
 
-    this.playAnimation(iic001in_RunAnim).then(async () => {
-      engine.switchBackgroundMusic(InformationCenter_Music)
+    void this.playAnimation(iic001in_RunAnim).then(async () => {
+      void engine.switchBackgroundMusic(InformationCenter_Music)
       this._welcomeTimeout = engine.createTimeout(25_000)
     })
   }
@@ -312,7 +312,7 @@ export class InfoMain extends World {
       this._welcomeTimeout = null
       return
     }
-    super.pointerDown(event)
+    await super.pointerDown(event)
   }
 
   public override pointerUp(event: NormalizedMouseEvent): void {
@@ -355,7 +355,7 @@ export class InfoMain extends World {
               void this.playAudio(iic007in_PlayWav, 'speech')
             } else {
               const selectionAnimation = getSelectionAnimation(character)
-              this.playAnimation(selectionAnimation).then(() => {
+              void this.playAnimation(selectionAnimation).then(() => {
                 if (dest.destination != null) {
                   void switchWorld({ name: 'isle', spawn: dest.destination })
                 }

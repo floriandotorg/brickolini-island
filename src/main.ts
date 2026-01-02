@@ -43,5 +43,5 @@ const start = async () => {
 playButton.addEventListener('click', start)
 
 if (import.meta.env.DEV) {
-  start()
+  void start()
 }

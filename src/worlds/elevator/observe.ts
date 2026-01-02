@@ -65,7 +65,7 @@ export class Observe extends IsleBase {
   }
 
   public override async activate(composer: Composer, _param?: unknown): Promise<void> {
-    super.activate(composer)
+    await super.activate(composer)
     this._building.activate(composer)
     this._updateGlobeSprite()
   }
@@ -74,7 +74,7 @@ export class Observe extends IsleBase {
     if (this._building.pointerDown(event.normalizedX, event.normalizedY)) {
       return
     }
-    super.pointerDown(event)
+    await super.pointerDown(event)
   }
 
   private _updateGlobeSprite(): void {

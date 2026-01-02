@@ -115,12 +115,12 @@ export class Building {
         this._render.scene.add(background)
 
         if (getSettings().graphics.pbrMaterials) {
-          createTextureAsync(child).then(async texture => {
+          void createTextureAsync(child).then(async texture => {
             world.scene.environment = new THREE.PMREMGenerator(engine.renderer).fromEquirectangular(texture).texture
             world.scene.environmentIntensity = 0.1
             const cubeRenderTarget = new THREE.WebGLCubeRenderTarget()
             cubeRenderTarget.fromEquirectangularTexture(engine.renderer, texture)
-            LightProbeGenerator.fromCubeRenderTarget(engine.renderer, cubeRenderTarget).then(lightProbe => {
+            void LightProbeGenerator.fromCubeRenderTarget(engine.renderer, cubeRenderTarget).then(lightProbe => {
               world.scene.add(lightProbe)
             })
           })
@@ -157,7 +157,7 @@ export class Building {
     this.pointerUp() // Reset control state
     composer.add(this._render)
     if (this._backgroundMusic != null) {
-      engine.switchBackgroundMusic(this._backgroundMusic)
+      void engine.switchBackgroundMusic(this._backgroundMusic)
     }
   }
 

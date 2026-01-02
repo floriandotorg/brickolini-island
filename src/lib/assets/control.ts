@@ -247,9 +247,7 @@ function sigmoid(z: number): number {
   return 1 / (1 + Math.exp(-z))
 }
 
-export const normalizeZ = (z: number, center: number, spread: number): number => {
-  return center - (sigmoid(z) - 0.5) * spread
-}
+export const normalizeZ = (z: number, center: number, spread: number): number => center - (sigmoid(z) - 0.5) * spread
 
 export class Control {
   private readonly _action: ControlAction

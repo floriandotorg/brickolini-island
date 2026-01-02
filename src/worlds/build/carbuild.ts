@@ -42,9 +42,7 @@ const determineObjectType = (name: string): ObjectType => {
   }
 }
 
-const getPosition = (node: Animation3DNode): THREE.Vector3 => {
-  return node.translationKeys[0].vertex.clone()
-}
+const getPosition = (node: Animation3DNode): THREE.Vector3 => node.translationKeys[0].vertex.clone()
 
 const saveAt = (text: string, index: number): string => {
   const result = text.at(index)
@@ -507,7 +505,7 @@ export class Carbuild {
         engine.currentSaveGame.setVehicleProgress(this._vehicleType, 0)
         await this._world.playAnimation(this._speakerAnimations.completed)
         engine.respawnVehicle(this._vehicleType)
-        switchWorld({ name: 'isle', spawn: getSpawnLocation(this._spawnLocation) })
+        void switchWorld({ name: 'isle', spawn: getSpawnLocation(this._spawnLocation) })
       } else {
         engine.currentSaveGame.setVehicleProgress(this._vehicleType, this._part)
       }
@@ -532,7 +530,7 @@ export class Carbuild {
       this._state = ShelfMovingState
       const shelfAnimationTimeStop = this.shelfAnimationTime + this._animation.interval
       console.log(`${this.shelfAnimationTime} -> ${shelfAnimationTimeStop}`)
-      this._world.playAnimationClip(this._world.scene, this._animation.clip, { startAtTime: this.shelfAnimationTime / 1000, stopAtTime: shelfAnimationTimeStop / 1000, loop: THREE.LoopRepeat }).then(() => {
+      void this._world.playAnimationClip(this._world.scene, this._animation.clip, { startAtTime: this.shelfAnimationTime / 1000, stopAtTime: shelfAnimationTimeStop / 1000, loop: THREE.LoopRepeat }).then(() => {
         this._state = IdleState
       })
       this.shelfAnimationTime = shelfAnimationTimeStop
@@ -609,7 +607,7 @@ export class Carbuild {
         if (index <= this._part && part.wired.getWorldBoundingSphere().intersect(part.clone.getWorldBoundingSphere())) {
           this._returnState()
           if (index === this._part) {
-            this.addPart()
+            void this.addPart()
           }
           this._placementSound.playAgain()
           break
@@ -694,7 +692,7 @@ export class Carbuild {
         this.rotating = true
         return true
       case 'ShelfUp_Ctl':
-        this.shelveUp()
+        void this.shelveUp()
         return true
       default: {
         const part: Part | undefined = this._currentPart

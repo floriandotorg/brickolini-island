@@ -75,7 +75,7 @@ export class Racecar extends World {
       return
     }
     this._carbuild?.pointerDown(event.normalizedX, event.normalizedY)
-    super.pointerDown(event)
+    await super.pointerDown(event)
   }
 
   public override pointerUp(_event: NormalizedMouseEvent): void {

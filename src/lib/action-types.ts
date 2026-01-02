@@ -88,8 +88,6 @@ export const getExtraValue = (action: { extra: string | null }, key: string): st
   return undefined
 }
 
-export const splitExtraValue = (value: string): string[] => {
-  return value.split(/[:;]/)
-}
+export const splitExtraValue = (value: string): string[] => value.split(/[:;]/)
 
 export const isAnimationPresenter = (presenter: string | null): boolean => presenter != null && (animationPresenters as readonly string[]).includes(presenter)

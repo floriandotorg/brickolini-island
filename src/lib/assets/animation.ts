@@ -272,13 +272,14 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
     getMorph(animation, time, morphValueMap, animation.name, true)
   }
 
-  const morphResult = Array.from(morphValueMap.entries()).map(([name, values]) => {
-    return new THREE.BooleanKeyframeTrack(
-      name,
-      morphTimes.map(t => t / 1_000),
-      values,
-    )
-  })
+  const morphResult = Array.from(morphValueMap.entries()).map(
+    ([name, values]) =>
+      new THREE.BooleanKeyframeTrack(
+        name,
+        morphTimes.map(t => t / 1_000),
+        values,
+      ),
+  )
 
   result.push(...morphResult)
 

@@ -69,33 +69,33 @@ export class Elevator extends IsleBase {
             this._exit()
             break
           case Floor.Second:
-            this._playRide(Elev1_2_Ride)
+            void this._playRide(Elev1_2_Ride)
             break
           case Floor.Third:
-            this._playRide(Elev1_3_Ride)
+            void this._playRide(Elev1_3_Ride)
             break
         }
         break
       case Floor.Second:
         switch (floor) {
           case Floor.First:
-            this._playRide(Elev2_1_Ride)
+            void this._playRide(Elev2_1_Ride)
             break
           case Floor.Second:
             // TODO
             break
           case Floor.Third:
-            this._playRide(Elev2_3_Ride)
+            void this._playRide(Elev2_3_Ride)
             break
         }
         break
       case Floor.Third:
         switch (floor) {
           case Floor.First:
-            this._playRide(Elev3_1_Ride)
+            void this._playRide(Elev3_1_Ride)
             break
           case Floor.Second:
-            this._playRide(Elev3_2_Ride)
+            void this._playRide(Elev3_2_Ride)
             break
           case Floor.Third:
             this._exit()
@@ -122,16 +122,16 @@ export class Elevator extends IsleBase {
   private _exit(): void {
     switch (this._floor) {
       case Floor.First:
-        switchWorld('infomain')
+        void switchWorld('infomain')
         break
       case Floor.Third:
-        switchWorld('elevopen')
+        void switchWorld('elevopen')
         break
     }
   }
 
   public override async activate(composer: Composer, param?: ElevatorEntrance): Promise<void> {
-    super.activate(composer)
+    await super.activate(composer)
     this._building.activate(composer)
 
     switch (param) {
@@ -153,7 +153,7 @@ export class Elevator extends IsleBase {
     if (this._building.pointerDown(event.normalizedX, event.normalizedY)) {
       return
     }
-    super.pointerDown(event)
+    await super.pointerDown(event)
   }
 
   public override pointerUp(_event: NormalizedMouseEvent): void {

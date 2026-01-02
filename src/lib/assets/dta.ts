@@ -28,16 +28,14 @@ export namespace DTA {
   }
 }
 
-const parseModelInfo = (reader: BinaryReader): DTA.ModelInfo => {
-  return {
-    name: reader.readString('u8'),
-    unknown1: reader.readUint8(),
-    location: reader.readVector3(),
-    direction: reader.readVector3(),
-    up: reader.readVector3(),
-    unknown2: reader.readUint8(),
-  }
-}
+const parseModelInfo = (reader: BinaryReader): DTA.ModelInfo => ({
+  name: reader.readString('u8'),
+  unknown1: reader.readUint8(),
+  location: reader.readVector3(),
+  direction: reader.readVector3(),
+  up: reader.readVector3(),
+  unknown2: reader.readUint8(),
+})
 
 const parseAnimation = (reader: BinaryReader): DTA.AnimationInfo => {
   const name = reader.readString('u8')

@@ -164,7 +164,7 @@ export class PizzaMission {
       const action = actions[this.playerState[engine.currentSaveGame.player]]
       this.playerState[engine.currentSaveGame.player] = Math.min(this.playerState[engine.currentSaveGame.player] + 1, actions.length - 1)
 
-      this.isle.playCameraAnimation(action).then(() => {
+      void this.isle.playCameraAnimation(action).then(() => {
         this._missionState = { state: 'waiting-for-accept-quest', timeout: engine.createTimeout(5_000) }
       })
 
@@ -185,19 +185,19 @@ export class PizzaMission {
         }
 
         this.isle.skipAllRunningAnimations(true)
-        engine.switchBackgroundMusic(PizzaMission_Music)
+        void engine.switchBackgroundMusic(PizzaMission_Music)
         void this.isle.playCameraAnimation(action).then(() => {
           this.isle.cameraAnimationTriggerEnabled = false
           this.isle.backgroundMusicTriggerEnabled = false
           this.isle.placeVehicle('skate', 'INT37', 2, 0.5, 3, 0.5, true)
-          this.isle.enterVehicle({ type: 'skate', showPizza: true })
+          void this.isle.enterVehicle({ type: 'skate', showPizza: true })
           this._helpAudioPlayed = false
           for (let n = 0; n < 4; ++n) {
             const action = missionAnimations[engine.currentSaveGame.player][n]
             if (action == null) {
               throw new Error('Action is null')
             }
-            this.isle.playAnimation(action)
+            void this.isle.playAnimation(action)
           }
         })
       }
@@ -239,25 +239,25 @@ export class PizzaMission {
         this._helpAudioPlayed = true
         switch (engine.currentSaveGame.player) {
           case 'pepper':
-            engine.playAudio(Avo914In_PlayWav, 'speech')
+            void engine.playAudio(Avo914In_PlayWav, 'speech')
             break
           case 'mama':
-            engine.playAudio(Avo910In_PlayWav, 'speech')
+            void engine.playAudio(Avo910In_PlayWav, 'speech')
             break
           case 'papa':
-            engine.playAudio(Avo912In_PlayWav, 'speech')
+            void engine.playAudio(Avo912In_PlayWav, 'speech')
             break
           case 'nick':
-            engine.playAudio(Avo911In_PlayWav, 'speech')
+            void engine.playAudio(Avo911In_PlayWav, 'speech')
             break
           case 'laura':
-            engine.playAudio(Avo913In_PlayWav, 'speech')
+            void engine.playAudio(Avo913In_PlayWav, 'speech')
             break
         }
       }
 
       if (this._missionState.missionTimeout.isExpired) {
-        engine.playAudio(Avo917In_PlayWav, 'speech')
+        void engine.playAudio(Avo917In_PlayWav, 'speech')
         this.abort()
       }
     }
@@ -274,11 +274,11 @@ export class PizzaMission {
 
     if (name === 'W' && data === 0x15e && engine.currentSaveGame.playerUnsafe === 'pepper' && !this._playedLocationAnimation) {
       this._playedLocationAnimation = true
-      this.isle.playAnimation(pns050p1_RunAnim)
+      void this.isle.playAnimation(pns050p1_RunAnim)
       return true
     } else if (name === 'W' && data === 0x15f && engine.currentSaveGame.playerUnsafe === 'papa' && !this._playedLocationAnimation) {
       this._playedLocationAnimation = true
-      this.isle.playAnimation(wns050p1_RunAnim)
+      void this.isle.playAnimation(wns050p1_RunAnim)
       return true
     } else if (
       (name === 'S' && data === 0x12e && engine.currentSaveGame.playerUnsafe === 'pepper') ||

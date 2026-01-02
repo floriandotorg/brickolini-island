@@ -235,7 +235,7 @@ export class RegBook extends World {
     if (!engine.currentSaveGame.isUnloaded) {
       void this.playAudio(iic008in_PlayWav, 'speech')
     } else {
-      this.playAnimation(iic006in_RunAnim)
+      void this.playAnimation(iic006in_RunAnim)
     }
   }
 
@@ -243,7 +243,7 @@ export class RegBook extends World {
     if (this._building.pointerDown(event.normalizedX, event.normalizedY)) {
       return
     }
-    super.pointerDown(event)
+    await super.pointerDown(event)
   }
 
   public override pointerUp(_event: NormalizedMouseEvent): void {

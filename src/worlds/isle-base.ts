@@ -366,6 +366,8 @@ export abstract class IsleBase extends World {
         return engine.currentSaveGame.sunPosition
       case 'modern':
         return Math.floor(this._modernDayTime * NUM_ORIGINAL_LIGHTS)
+      case 'none':
+        throw new Error('Invalid sun type')
     }
 
     throw new Error('Invalid sun type')
@@ -427,6 +429,8 @@ export abstract class IsleBase extends World {
         }
         break
       }
+      case 'none':
+        throw new Error('Invalid sun type')
     }
   }
 
@@ -435,7 +439,7 @@ export abstract class IsleBase extends World {
   }
 
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
-    super.pointerDown(event)
+    await super.pointerDown(event)
     this._dashboard.pointerDown(event.normalizedX, event.normalizedY)
   }
 

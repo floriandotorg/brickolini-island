@@ -44,7 +44,7 @@ export class GarDoor extends IsleBase {
   }
 
   public override async activate(composer: Composer): Promise<void> {
-    super.activate(composer)
+    await super.activate(composer)
     this._building.activate(composer)
   }
 
@@ -52,7 +52,7 @@ export class GarDoor extends IsleBase {
     if (this._building.pointerDown(event.normalizedX, event.normalizedY)) {
       return
     }
-    super.pointerDown(event)
+    await super.pointerDown(event)
   }
 
   public override pointerUp(_event: NormalizedMouseEvent): void {

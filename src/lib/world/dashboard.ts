@@ -155,41 +155,33 @@ const jetSkiDashboards: Record<DashboardColorName, Record<DashboardColorName, Im
   },
 }
 
-const leftToRight = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => {
-  return {
-    x: 0,
-    y: 0,
-    width: width * fill,
-    height: height,
-  }
-}
+const leftToRight = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => ({
+  x: 0,
+  y: 0,
+  width: width * fill,
+  height: height,
+})
 
-const rightToLeft = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => {
-  return {
-    x: width * (1 - fill),
-    y: 0,
-    width: width * fill,
-    height: height,
-  }
-}
+const rightToLeft = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => ({
+  x: width * (1 - fill),
+  y: 0,
+  width: width * fill,
+  height: height,
+})
 
-const bottomToTop = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => {
-  return {
-    x: 0,
-    y: height * (1 - fill),
-    width: width,
-    height: height * fill,
-  }
-}
+const bottomToTop = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => ({
+  x: 0,
+  y: height * (1 - fill),
+  width: width,
+  height: height * fill,
+})
 
-const topToBottom = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => {
-  return {
-    x: 0,
-    y: 0,
-    width: width,
-    height: height * fill,
-  }
-}
+const topToBottom = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => ({
+  x: 0,
+  y: 0,
+  width: width,
+  height: height * fill,
+})
 
 const parseDirection = (value: string): ((width: number, height: number, fill: number) => { x: number; y: number; width: number; height: number }) => {
   switch (value) {
@@ -273,7 +265,7 @@ export class Dashboard {
     }
 
     if (this._hornControl?.pointerDown(normalizedX, normalizedY) != null && this._hornSound != null) {
-      engine.playAudio(this._hornSound, 'effects')
+      void engine.playAudio(this._hornSound, 'effects')
     }
 
     if (this._infoControl?.pointerDown(normalizedX, normalizedY) != null) {

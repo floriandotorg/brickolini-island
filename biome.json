@@ -20,7 +20,10 @@
     "enabled": true,
     "rules": {
       "nursery": {
-        "useSortedClasses": "error"
+        "useSortedClasses": "error",
+        "useConsistentArrowReturn": "error",
+        "useSpread": "error",
+        "noUnusedExpressions": "error"
       },
       "suspicious": {
         "noIrregularWhitespace": "error",

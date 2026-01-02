@@ -51,7 +51,7 @@ export class Garage extends World {
     if (this._building.pointerDown(event.normalizedX, event.normalizedY)) {
       return
     }
-    super.pointerDown(event)
+    await super.pointerDown(event)
   }
 
   public override pointerUp(_event: NormalizedMouseEvent): void {

@@ -854,9 +854,9 @@ export class Isle extends IsleBase {
 
       if (name[2] === 'M' && this.backgroundMusicTriggerEnabled) {
         if (direction === 'inbound') {
-          engine.switchBackgroundMusic(music[triggers[data - 1][0] - 1])
+          void engine.switchBackgroundMusic(music[triggers[data - 1][0] - 1])
         } else {
-          engine.switchBackgroundMusic(music[triggers[data - 1][1] - 1])
+          void engine.switchBackgroundMusic(music[triggers[data - 1][1] - 1])
         }
       } else if (name[2] === 'C') {
         const location = locations.at(data)
@@ -902,7 +902,7 @@ export class Isle extends IsleBase {
               if (animationAction == null) {
                 throw new Error(`Animation action not found for animation info ${animationToPlay.name}`)
               }
-              this.playCameraAnimation(animationAction, animationToPlay, location)
+              void this.playCameraAnimation(animationAction, animationToPlay, location)
             }
           }
         }
@@ -1152,7 +1152,7 @@ export class Isle extends IsleBase {
       return
     }
 
-    this._dashboard.show(this._currentVehicle)
+    void this._dashboard.show(this._currentVehicle)
   }
 
   public hidePizzaIfOnSkateboard(): void {
@@ -1160,7 +1160,7 @@ export class Isle extends IsleBase {
       return
     }
     this._dashboard.clear()
-    this._dashboard.show({ type: 'skate', showPizza: false })
+    void this._dashboard.show({ type: 'skate', showPizza: false })
   }
 
   private _exitVehicle(): void {
@@ -1189,7 +1189,7 @@ export class Isle extends IsleBase {
   }
 
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
-    super.pointerDown(event)
+    await super.pointerDown(event)
     this._dashboard.pointerDown(event.normalizedX, event.normalizedY)
   }
 

@@ -511,7 +511,7 @@ export abstract class World {
     this.setupCameraForAnimation(animation.tree)
 
     for (const audio of audioActions) {
-      engine.playAudio(audio, 'animations')
+      void engine.playAudio(audio, 'animations')
     }
 
     const audios: THREE.PositionalAudio[] = await Promise.all(

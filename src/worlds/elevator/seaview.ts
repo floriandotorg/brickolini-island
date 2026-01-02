@@ -45,7 +45,7 @@ export class SeaView extends IsleBase {
   }
 
   public override async activate(composer: Composer, _param?: unknown): Promise<void> {
-    super.activate(composer)
+    await super.activate(composer)
     this._building.activate(composer)
   }
 
@@ -53,7 +53,7 @@ export class SeaView extends IsleBase {
     if (this._building.pointerDown(event.normalizedX, event.normalizedY)) {
       return
     }
-    super.pointerDown(event)
+    await super.pointerDown(event)
   }
 
   public override pointerUp(_event: NormalizedMouseEvent): void {
