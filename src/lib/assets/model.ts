@@ -216,7 +216,18 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
         continue
       }
 
-      const mesh = new THREE.Mesh(geometry, material)
+      let newMaterial: THREE.Material | null = null
+      if (getSettings().graphics.pbrMaterials && (parent.name === 'rcgreen' || parent.name === 'rcblack') && material.name === 'lego black') {
+        newMaterial = new THREE.MeshPhysicalMaterial({
+          color: 0x1a1a1a,
+          roughness: 0.7,
+          metalness: 0.0,
+          clearcoat: 0.1,
+          clearcoatRoughness: 0.5,
+        })
+      }
+
+      const mesh = new THREE.Mesh(geometry, newMaterial ?? material)
       mesh.name = `${parent.name}-${++n}`.toLowerCase()
       if (getSettings().graphics.shadows) {
         mesh.castShadow = true
