@@ -26,11 +26,6 @@ export type IsleParam = {
 const SECONDS_PER_DAY = 24 * 60
 
 export abstract class IsleBase extends World {
-  protected _slewMode: boolean = false
-  protected _linearVel = 0
-  protected _rotVel = 0
-  protected _verticalVel = 0
-  protected _pitchVel = 0
   protected _groundGroup: THREE.Object3D[] = []
   protected _plantGroup: THREE.Group = new THREE.Group()
   protected _boundaryManager = new BoundaryManager([], this)
@@ -230,28 +225,32 @@ export abstract class IsleBase extends World {
 
     this._boundaryManager = new BoundaryManager(await getBoundaries(IslePath), this)
 
-    // // spell-checker: ignore brdg jailbrdg racebrdg
-    // for (const name of ['isle_hi', 'inf-brdg', 'jailbrdg', 'racebrdg']) {
-    //   const object = this.scene.getObjectByName(name)
-    //   if (object == null || !(object instanceof THREE.Object3D)) {
-    //     throw new Error(`Mesh ${name} not found`)
-    //   }
-    //   this._groundGroup.push(object)
-    // }
+    // spell-checker: ignore brdg jailbrdg racebrdg
+    for (const name of ['isle_hi', 'inf-brdg', 'jailbrdg', 'racebrdg']) {
+      const object = this.scene.getObjectByName(name)
+      if (object == null || !(object instanceof THREE.Object3D)) {
+        continue
+      }
+      this._groundGroup.push(object)
+    }
 
-    // this._bikeMesh = this.scene.getObjectByName('bike') ?? null
-    // this._motobkMesh = this.scene.getObjectByName('motobk') ?? null
-    // this._skateMesh = this.scene.getObjectByName('skate') ?? null
-    // this._ambulanceMesh = this.getObjectsByPrefix('ambul') ?? []
-    // this._towtruckMesh = this.getObjectsByPrefix('towtk') ?? []
+    this._bikeMesh = this.scene.getObjectByName('bike') ?? null
+    this._motobkMesh = this.scene.getObjectByName('motobk') ?? null
+    this._skateMesh = this.scene.getObjectByName('skate') ?? null
+    this._ambulanceMesh = this.getObjectsByPrefix('ambul') ?? []
+    this._towtruckMesh = this.getObjectsByPrefix('towtk') ?? []
 
-    // if (this._bikeMesh == null || this._motobkMesh == null || this._skateMesh == null || this._ambulanceMesh.length < 1 || this._towtruckMesh.length < 1) {
-    //   throw new Error('Vehicle meshes not found')
-    // }
+    if (this._bikeMesh != null) {
+      this.placeVehicle('bike', 'INT44', 2, 0.5, 0, 0.5)
+    }
 
-    // this.placeVehicle('bike', 'INT44', 2, 0.5, 0, 0.5)
-    // this.placeVehicle('moto', 'INT43', 4, 0.5, 1, 0.5)
-    // this.placeVehicle('skate', 'EDG02_84', 4, 0.5, 0, 0.5)
+    if (this._motobkMesh != null) {
+      this.placeVehicle('moto', 'INT43', 4, 0.5, 1, 0.5)
+    }
+
+    if (this._skateMesh != null) {
+      this.placeVehicle('skate', 'EDG02_84', 4, 0.5, 0, 0.5)
+    }
   }
 
   public getVehicleMesh(vehicle: VehicleType): THREE.Object3D[] {
