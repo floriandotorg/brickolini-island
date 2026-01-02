@@ -3,7 +3,7 @@ import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerat
 import { type ActionBase, type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type RunAnimationAction, type SerialAction } from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
 import { createImageSprite } from '../assets/canvas-sprite'
-import { Control, type ControlEvent } from '../assets/control'
+import { type Control, type ControlEvent, ControlsCollection } from '../assets/control'
 import { getAction } from '../assets/load'
 import { getWorld } from '../assets/model'
 import { getSpawnLocation, type SpawnLocation } from '../assets/spawn-location'
@@ -19,7 +19,7 @@ export class Building {
   private _world: World | null = null
   private _backgroundMusic?: AudioAction
   private _render = new Render2D()
-  private _controls: Control[] = []
+  private _controls = new ControlsCollection(this._render)
   private _exitSpawnPoint?: {
     world: WorldSpawn
     control: string
@@ -28,17 +28,33 @@ export class Building {
 
   constructor() {
     this._render.addEffect(new TransparentEdgeBlurEffect())
+    this._controls.onButtonClicked = (buttonName, event) => {
+      if (this._exitSpawnPoint != null && buttonName.endsWith(this._exitSpawnPoint.control)) {
+        const spawn = this._exitSpawnPoint.world
+        const animationPromise = this._exitSpawnPoint.animation != null && this._world != null ? this._world.playAnimation(this._exitSpawnPoint.animation) : Promise.resolve()
+        animationPromise.then(() => {
+          void switchWorld(spawn)
+        })
+        return true
+      }
+
+      if (buttonName.endsWith('Radio_Ctl')) {
+        if (event.state === 1) {
+          engine.resumeBackgroundMusic()
+        } else {
+          engine.pauseBackgroundMusic()
+        }
+        return true
+      }
+
+      return this.onButtonClicked(buttonName, event)
+    }
   }
 
   public onButtonClicked: (buttonName: string, event: ControlEvent) => boolean = _buttonName => false
 
   public getControl(name: string): Control | null {
-    for (const control of this._controls) {
-      if (control.name === name) {
-        return control
-      }
-    }
-    return null
+    return this._controls.getControl(name)
   }
 
   public async init({
@@ -137,12 +153,7 @@ export class Building {
       }
 
       if (isControlAction(child)) {
-        initPromises.push(
-          Control.create(child).then(control => {
-            this._controls.push(control)
-            this._render.scene.add(control.sprite)
-          }),
-        )
+        initPromises.push(this._controls.addControl(child))
       }
     }
 
@@ -162,46 +173,10 @@ export class Building {
   }
 
   public pointerDown(normalizedX: number, normalizedY: number): boolean {
-    for (const control of this._controls.toSorted((a, b) => a.z - b.z)) {
-      const result = control.pointerDown(normalizedX, normalizedY)
-      if (result != null) {
-        if (engine.currentWorld.name !== 'infomain' && control.name === 'Info_Ctl') {
-          void switchWorld('infomain')
-          return true
-        }
-
-        if (this._exitSpawnPoint != null && control.name.endsWith(this._exitSpawnPoint.control)) {
-          const spawn = this._exitSpawnPoint.world
-          const animationPromise = this._exitSpawnPoint.animation != null && this._world != null ? this._world.playAnimation(this._exitSpawnPoint.animation) : Promise.resolve()
-          animationPromise.then(() => {
-            void switchWorld(spawn)
-          })
-          return true
-        }
-
-        if (control.name.endsWith('Radio_Ctl')) {
-          if (result.state === 1) {
-            engine.resumeBackgroundMusic()
-          } else {
-            engine.pauseBackgroundMusic()
-          }
-          return true
-        }
-
-        const controlHandled = this.onButtonClicked(control.name, result)
-        if (!controlHandled) {
-          console.warn(`Button ${control.name} not handled`)
-        }
-
-        return controlHandled
-      }
-    }
-    return false
+    return this._controls.pointerDown(normalizedX, normalizedY)
   }
 
   public pointerUp(): void {
-    for (const control of this._controls) {
-      control.pointerUp()
-    }
+    this._controls.pointerUp()
   }
 }

@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import { type ActionBase, type ControlAction, getExtraValue, type ImageAction, isImageAction, type ParallelActionTuple, splitExtraValue } from '../action-types'
-import { type NormalizedRect, normalizeRect } from '../engine'
+import type { Render2D } from '../effect/composer'
+import { engine, type NormalizedRect, normalizeRect } from '../engine'
+import { switchWorld } from '../switch-world'
 import { setImageSprite } from './canvas-sprite'
 import { getImage } from './image'
 
@@ -409,5 +411,58 @@ export class Control {
       this._sprite.position.z = Control.normalizeZ(this._z)
     }
     this._sprite.material.needsUpdate = true
+  }
+}
+
+export class ControlsCollection {
+  private readonly _render: Render2D
+  private readonly _controls: Control[] = []
+
+  public constructor(render: Render2D) {
+    this._render = render
+  }
+
+  public onButtonClicked: (buttonName: string, event: ControlEvent) => boolean = _buttonName => false
+
+  public async addControl(action: ControlAction): Promise<void> {
+    return Control.create(action).then(control => {
+      this._controls.push(control)
+      this._render.scene.add(control.sprite)
+    })
+  }
+
+  public getControl(name: string): Control | null {
+    for (const control of this._controls) {
+      if (control.name === name) {
+        return control
+      }
+    }
+    return null
+  }
+
+  public pointerDown(normalizedX: number, normalizedY: number): boolean {
+    for (const control of this._controls.toSorted((a, b) => a.z - b.z)) {
+      const result = control.pointerDown(normalizedX, normalizedY)
+      if (result != null) {
+        if (engine.currentWorld.name !== 'infomain' && control.name === 'Info_Ctl') {
+          void switchWorld('infomain')
+          return true
+        }
+
+        const controlHandled = this.onButtonClicked(control.name, result)
+        if (!controlHandled) {
+          console.warn(`Button ${control.name} not handled`)
+        }
+
+        return controlHandled
+      }
+    }
+    return false
+  }
+
+  public pointerUp(): void {
+    for (const control of this._controls) {
+      control.pointerUp()
+    }
   }
 }

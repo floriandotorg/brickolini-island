@@ -1,8 +1,9 @@
 import * as THREE from 'three'
-import { irtx08ra_PlayWav, Map_Down_Bitmap, Rhoda_Locator, Studs_Locator, srt001rh_RunAnim, srt001sl_RunAnim, srt002rh_RunAnim, srt002sl_RunAnim, srt003rh_RunAnim, srt003sl_RunAnim, srt004sl_RunAnim, srt005sl_RunAnim, User_Locator, UserCar_Actor } from '../actions/carrace'
+import { irtx08ra_PlayWav, Map_Ctl, Rhoda_Locator, Studs_Locator, srt001rh_RunAnim, srt001sl_RunAnim, srt002rh_RunAnim, srt002sl_RunAnim, srt003rh_RunAnim, srt003sl_RunAnim, srt004sl_RunAnim, srt005sl_RunAnim, User_Locator, UserCar_Actor } from '../actions/carrace'
 import { RaceTrackRoad_Music } from '../actions/jukebox'
 import { getExtraValue, type ImageAction, splitExtraValue } from '../lib/action-types'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
+import { ControlsCollection } from '../lib/assets/control'
 import { type Composer, Render2D } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizeRect } from '../lib/engine'
 import { PlayerMovement } from '../lib/world/player-movement'
@@ -94,10 +95,23 @@ export class CarRace extends IsleBase {
     () => this._isleMesh,
   )
   private readonly _controlsRender = new Render2D()
+  private readonly _controls = new ControlsCollection(this._controlsRender)
   private _raceMap: RaceMap | null = null
 
   constructor() {
     super('carrace', 'RACC')
+
+    this._controls.onButtonClicked = (buttonName, event) => {
+      switch (buttonName) {
+        case Map_Ctl.name:
+          if (this._raceMap != null) {
+            this._raceMap.group.visible = event.state > 0
+          }
+          return true
+        default:
+          return false
+      }
+    }
   }
 
   public override async activate(composer: Composer, _param?: unknown): Promise<void> {
@@ -110,6 +124,8 @@ export class CarRace extends IsleBase {
       void engine.playAudio(irtx08ra_PlayWav, 'speech')
     })
 
+    this._controls.addControl(Map_Ctl)
+
     const locatorImages = new Map<string, ImageAction>([
       [Rhoda_Locator.name, Rhoda_Locator],
       [Studs_Locator.name, Studs_Locator],
@@ -117,7 +133,6 @@ export class CarRace extends IsleBase {
     ])
     this._raceMap = new RaceMap(locatorImages)
     this._controlsRender.scene.add(this._raceMap.group)
-    this._controlsRender.scene.add(createImageSprite(Map_Down_Bitmap, -0.5))
     composer.add(this._controlsRender)
 
     const actor = UserCar_Actor
@@ -139,11 +154,13 @@ export class CarRace extends IsleBase {
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
     await super.pointerDown(event)
     this._dashboard.pointerDown(event.normalizedX, event.normalizedY)
+    this._controls.pointerDown(event.normalizedX, event.normalizedY)
   }
 
   public override pointerUp(event: NormalizedMouseEvent): void {
     super.pointerUp(event)
     this._dashboard.pointerUp()
+    this._controls.pointerUp()
   }
 
   public override update(delta: number): void {
