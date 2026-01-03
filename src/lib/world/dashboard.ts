@@ -287,7 +287,7 @@ const parseDirection = (value: string): ((width: number, height: number, fill: n
   }
 }
 
-class Meter {
+export class Meter {
   private readonly _fillColor: string
   private readonly _image: HTMLImageElement
   private readonly _sprite: CanvasSprite

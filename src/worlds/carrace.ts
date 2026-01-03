@@ -1,11 +1,12 @@
 import * as THREE from 'three'
-import { irtx08ra_PlayWav, Map_Ctl, RacePath, Rhoda_Locator, Studs_Locator, srt001rh_RunAnim, srt001sl_RunAnim, srt002rh_RunAnim, srt002sl_RunAnim, srt003rh_RunAnim, srt003sl_RunAnim, srt004sl_RunAnim, srt005sl_RunAnim, User_Locator, UserCar_Actor } from '../actions/carrace'
+import { _CarRace_World, CarLocator2, CarLocator3, irtx08ra_PlayWav, Map_Ctl, RacePath, Rhoda_Locator, Studs_Locator, srt001rh_RunAnim, srt001sl_RunAnim, srt002rh_RunAnim, srt002sl_RunAnim, srt003rh_RunAnim, srt003sl_RunAnim, srt004sl_RunAnim, srt005sl_RunAnim, User_Locator, UserCar_Actor } from '../actions/carrace'
 import { RaceTrackRoad_Music } from '../actions/jukebox'
-import { getExtraValue, type ImageAction, splitExtraValue } from '../lib/action-types'
+import { getExtraValue, type ImageAction, isControlAction, isMeterAction, splitExtraValue } from '../lib/action-types'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { ControlsCollection } from '../lib/assets/control'
 import { type Composer, Render2D } from '../lib/effect/composer'
-import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizeRect } from '../lib/engine'
+import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
+import { Meter } from '../lib/world/dashboard'
 import { PlayerMovement } from '../lib/world/player-movement'
 import { IsleBase } from './isle-base'
 
@@ -87,9 +88,49 @@ class MapLocator {
   }
 }
 
+const numberOfLaps = 2
+const numberOfWaypoints = 20
+
+class RaceProgress {
+  private _lastWaypointNo = 0
+  private _lap = 0
+
+  public get lastWaypointNo(): number {
+    return this._lastWaypointNo
+  }
+
+  public set lastWaypointNo(waypointNo: number) {
+    if (waypointNo <= 0 || waypointNo >= this._lastWaypointNo + 5) {
+      console.warn(`Got waypoint out of valid range: ${waypointNo} (last: ${this._lastWaypointNo})`)
+      return
+    }
+    if (waypointNo >= numberOfWaypoints) {
+      this._lastWaypointNo = 0
+      this._lap++
+      return
+    }
+    this._lastWaypointNo = waypointNo
+  }
+
+  public get lap(): number {
+    return this._lap
+  }
+
+  public get remainingLaps(): number {
+    return numberOfLaps - this._lap
+  }
+
+  public get progress(): number {
+    const waypoint = this._lastWaypointNo + this._lap * numberOfWaypoints
+    const totalWaypoints = numberOfLaps * numberOfWaypoints
+    return waypoint / totalWaypoints
+  }
+}
+
 export class CarRace extends IsleBase {
-  private _playerLastWaypointNo = 0
-  private _playerLapsLeft = 2
+  private _playerProgress = new RaceProgress()
+  private _opponent1Progress = new RaceProgress()
+  private _opponent2Progress = new RaceProgress()
 
   private _playerMovement = new PlayerMovement(
     this.camera,
@@ -100,9 +141,27 @@ export class CarRace extends IsleBase {
   private readonly _controlsRender = new Render2D()
   private readonly _controls = new ControlsCollection(this._controlsRender)
   private _raceMap: RaceMap | null = null
+  private _speedMeter: Meter | null = null
+  private _fuelMeter: Meter | null = null
+  private _distanceMeter: Meter | null = null
+  private _progressStart: THREE.Vector3
+  private _progressEnd: THREE.Vector3
+  private _opponent1ProgressLocator = createImageSprite(CarLocator2, -0.25)
+  private _opponent2ProgressLocator = createImageSprite(CarLocator3, -0.25)
 
   constructor() {
     super('carrace', { wdbWorldName: 'RACC', dtaWorldName: 'RACC', boundaryPathAction: RacePath })
+
+    // Rect as defined in carrace code
+    const progressRect = [364, 340, 492, 350]
+    // also the left-top-corner is offset +0.5 to the bottom right and each edge is +1 "longer"
+    progressRect[0] += 0.5
+    progressRect[1] += 0.5
+    progressRect[2] += 1.5
+    progressRect[3] += 1.5
+
+    this._progressStart = new THREE.Vector3(...normalizePoint(progressRect[0], progressRect[1]), 0)
+    this._progressEnd = new THREE.Vector3(...normalizePoint(progressRect[2], progressRect[3]), 0)
 
     this._controls.onButtonClicked = (buttonName, event) => {
       switch (buttonName) {
@@ -124,18 +183,9 @@ export class CarRace extends IsleBase {
       console.log(`Boundary trigger: ${name}, ${data}, ${direction}`)
 
       if (name[2] === 'D') {
-        if (data <= this._playerLastWaypointNo || data >= this._playerLastWaypointNo + 5) {
-          console.warn(`Got waypoint out of valid range: ${data} (last: ${this._playerLastWaypointNo})`)
-          return
-        }
-
-        this._playerLastWaypointNo = data
-        if (this._playerLastWaypointNo >= 20) {
-          this._playerLastWaypointNo = 0
-
-          if (--this._playerLapsLeft <= 0) {
-            console.log('Player finished race')
-          }
+        this._playerProgress.lastWaypointNo = data
+        if (this._playerProgress.remainingLaps <= 0) {
+          console.log('Player finished race')
         }
       }
     }
@@ -147,7 +197,31 @@ export class CarRace extends IsleBase {
       void engine.playAudio(irtx08ra_PlayWav, 'speech')
     })
 
-    this._controls.addControl(Map_Ctl)
+    for (const child of _CarRace_World.children) {
+      if (isControlAction(child)) {
+        this._controls.addControl(child)
+      } else if (isMeterAction(child)) {
+        const variable = getExtraValue(child, 'variable')?.toLowerCase()
+        if (variable == null) {
+          throw new Error('Meter without variable is not supported')
+        } else if (variable.endsWith('speed')) {
+          this._speedMeter = await Meter.create(child)
+          this._controlsRender.scene.add(this._speedMeter.sprite)
+        } else if (variable.endsWith('fuel')) {
+          this._fuelMeter = await Meter.create(child)
+          // For now to at least show something
+          this._fuelMeter.draw(0.5)
+          this._controlsRender.scene.add(this._fuelMeter.sprite)
+        } else if (variable.endsWith('distance')) {
+          this._distanceMeter = await Meter.create(child)
+          this._controlsRender.scene.add(this._distanceMeter.sprite)
+        }
+      }
+    }
+    CarRace.setTopLeft(this._opponent1ProgressLocator, this._progressStart)
+    this._controlsRender.scene.add(this._opponent1ProgressLocator)
+    CarRace.setTopLeft(this._opponent2ProgressLocator, this._progressStart)
+    this._controlsRender.scene.add(this._opponent2ProgressLocator)
 
     const locatorImages = new Map<string, ImageAction>([
       [Rhoda_Locator.name, Rhoda_Locator],
@@ -160,6 +234,11 @@ export class CarRace extends IsleBase {
 
     const actor = UserCar_Actor
     this._raceMap.addLocator(actor, this.camera)
+  }
+
+  private static setTopLeft(sprite: THREE.Sprite, pos: THREE.Vector3): void {
+    sprite.position.x = pos.x + sprite.scale.x / 2
+    sprite.position.y = pos.y - sprite.scale.y / 2
   }
 
   protected override get debugPositionDirection(): { position: THREE.Vector3; direction: THREE.Vector3; slewMode: boolean } | null {
@@ -195,7 +274,15 @@ export class CarRace extends IsleBase {
 
     const { normalizedSpeed, fromPos, toPos } = this._playerMovement.update(delta, 'racecar')
 
-    this._dashboard.update(normalizedSpeed)
+    this._speedMeter?.draw(normalizedSpeed)
+    const meterProgress = this._playerProgress.progress * 0.928 + 0.036
+    this._distanceMeter?.draw(meterProgress)
+
+    const lerped = new THREE.Vector3()
+    lerped.lerpVectors(this._progressStart, this._progressEnd, this._opponent1Progress.progress)
+    CarRace.setTopLeft(this._opponent1ProgressLocator, lerped)
+    lerped.lerpVectors(this._progressStart, this._progressEnd, this._opponent2Progress.progress)
+    CarRace.setTopLeft(this._opponent2ProgressLocator, lerped)
 
     this._raceMap?.update()
     this.boundaryManager.update(fromPos, toPos)
