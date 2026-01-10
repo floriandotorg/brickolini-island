@@ -2,7 +2,7 @@ import { Action } from '../actions/types'
 
 type Override<T, U> = Omit<T, keyof U> & U
 
-export const animationPresenters = ['LegoAnimPresenter', 'LegoLocomotionAnimPresenter', 'LegoCarBuildAnimPresenter', 'LegoAnimMMPresenter', 'LegoLoopingAnimPresenter'] as const
+export const animationPresenters = ['LegoAnimPresenter', 'LegoLocomotionAnimPresenter', 'LegoCarBuildAnimPresenter', 'LegoAnimMMPresenter', 'LegoLoopingAnimPresenter', 'LegoHideAnimPresenter'] as const
 
 export const modelPresenter = 'LegoModelPresenter'
 
@@ -12,7 +12,7 @@ export type FileActionBase = Override<ActionBase, { fileType: Action.FileType }>
 
 export type AudioActionBase = Override<FileActionBase, { fileType: Action.FileType.WAV; volume: number; startTime: number }>
 
-export type AudioAction = Override<AudioActionBase, { presenter: null; loops: number }>
+export type AudioAction = Override<AudioActionBase, { presenter: null | 'LegoLoadCacheSoundPresenter'; loops: number }>
 
 export type PositionalAudioAction = Override<AudioActionBase, { presenter: 'Lego3DWavePresenter'; extra: string }>
 
@@ -54,13 +54,15 @@ export type ControlAction = ParallelAction<ImageAction | ParallelActionTuple<rea
 
 export type MeterAction = Override<ImageAction, { extra: string; presenter: 'LegoMeterPresenter'; colorPalette: string[] }>
 
+export type EventAction = Override<ActionBase, { type: Action.Type.Event; presenter: null; fileType: Action.FileType.OBJ }>
+
 export const isAction = (action: unknown): action is ActionBase => action != null && typeof action === 'object' && 'id' in action && 'siFile' in action && 'type' in action && 'presenter' in action && 'extra' in action && 'name' in action
 
 export const isFileAction = (action: unknown): action is FileActionBase => isAction(action) && 'fileType' in action
 
 export const isImageAction = (action: unknown): action is ImageAction => isFileAction(action) && action.fileType === Action.FileType.STL
 
-export const isAudioAction = (action: unknown): action is AudioAction => isFileAction(action) && action.fileType === Action.FileType.WAV && action.presenter === null
+export const isAudioAction = (action: unknown): action is AudioAction => isFileAction(action) && action.fileType === Action.FileType.WAV && (action.presenter === null || action.presenter === 'LegoLoadCacheSoundPresenter')
 
 export const isAnimationAction = (action: unknown): action is AnimationAction => isAction(action) && isAnimationPresenter(action.presenter)
 
@@ -71,6 +73,8 @@ export const isMeterAction = (action: unknown): action is MeterAction => isImage
 export const isTextureAction = (action: unknown): action is TextureAction => isFileAction(action) && action.type === Action.Type.ObjectAction && action.presenter === 'LegoTexturePresenter'
 
 export const isModelAction = (action: unknown): action is ModelAction => isFileAction(action) && action.type === Action.Type.ObjectAction && action.presenter === modelPresenter
+
+export const isBoundaryAction = (action: unknown): action is BoundaryAction => isFileAction(action) && action.type === Action.Type.ObjectAction && action.presenter === 'LegoPathPresenter'
 
 export const getExtraValue = (action: { extra: string | null }, key: string): string | undefined => {
   if (action.extra != null) {

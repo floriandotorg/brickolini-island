@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
 import type { IsleParam } from '../../worlds/isle-base'
-import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
+import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, isAudioAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
 import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, createAnimationActor, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { type Audio, getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
@@ -407,7 +407,7 @@ export abstract class World {
     }
 
     const positionalAudioActions = children.filter(c => c.presenter === 'Lego3DWavePresenter')
-    const audioActions = children.filter(c => c.fileType === Action.FileType.WAV && c.presenter === null)
+    const audioActions = children.filter(c => isAudioAction(c))
 
     const pointAtCameraObjects: THREE.Object3D[] = []
     const extra = getExtraValue(animationAction, 'ptatcam')
