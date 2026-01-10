@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { CarLocator2, CarLocator3, irtx08ra_PlayWav, Map_Ctl, Rhoda_Locator, Studs_Locator, srt001rh_RunAnim, srt001sl_RunAnim, srt002rh_RunAnim, srt002sl_RunAnim, srt003rh_RunAnim, srt003sl_RunAnim, srt004sl_RunAnim, srt005sl_RunAnim, User_Locator, UserCar_Actor } from '../actions/carrace'
 import { RaceTrackRoad_Music } from '../actions/jukebox'
 import { type ActionBase, getExtraValue, type ImageAction, isAnimationAction, isBoundaryAction, isControlAction, isMeterAction, type SerialAction, splitExtraValue } from '../lib/action-types'
-import { parse3DAnimation } from '../lib/assets/animation'
+import { type Animation3D, type Animation3DNode, parse3DAnimation } from '../lib/assets/animation'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { ControlsCollection } from '../lib/assets/control'
 import type { DtaWorldName } from '../lib/assets/dta'
@@ -156,6 +156,7 @@ export abstract class Race extends IsleBase {
   private _opponent1ProgressLocator = createImageSprite(CarLocator2, -0.25)
   private _opponent2ProgressLocator = createImageSprite(CarLocator3, -0.25)
   private readonly _startUpAction: StartUpAction
+  private _hideAnimation: Animation3D | null = null
 
   constructor(name: WorldName, options: { wdbWorldName: WdbWorldName; dtaWorldName: DtaWorldName; startUpAction: StartUpAction }) {
     const boundaryPathAction = options.startUpAction.children.find(child => isBoundaryAction(child))
@@ -195,14 +196,39 @@ export abstract class Race extends IsleBase {
     }
   }
 
+  private _applyVisibility(time: number): void {
+    if (this._hideAnimation == null) {
+      throw new Error('Hide animation not initialized')
+    }
+
+    const applyVisibility = (children: Animation3DNode[], parentName: string | null = null) => {
+      for (const child of children) {
+        const childName = parentName != null ? `${parentName}_${child.name}` : child.name
+
+        const node = this.worldGroup.getObjectByName(childName)
+        if (node == null) {
+          console.warn(`Actor not found: ${childName}`)
+          continue
+        }
+
+        if (child.morphKeys.some(key => key.timeAndFlags.flags !== 0)) {
+          throw new Error(`Morph key flags not supported: ${child.name}`)
+        }
+
+        const morphKey = child.morphKeys.toReversed().find(key => key.timeAndFlags.time <= time * 100)
+        node.visible = morphKey?.visible ?? true
+
+        applyVisibility(child.children, childName)
+      }
+    }
+
+    applyVisibility(this._hideAnimation.tree.children)
+  }
+
   public override async init(): Promise<void> {
     await super.init()
 
-    const raceWorld = this.scene.getObjectByName('racc_world')
-    if (raceWorld == null) {
-      throw new Error('Race world not found')
-    }
-    this._groundGroup.push(...raceWorld.children.filter(child => child.name.startsWith('track')))
+    this._groundGroup.push(...this.worldGroup.children.filter(child => child.name.startsWith('track')))
 
     this.boundaryManager.onTrigger = (name, data, direction) => {
       console.log(`Boundary trigger: ${name}, ${data}, ${direction}`)
@@ -212,6 +238,8 @@ export abstract class Race extends IsleBase {
         if (this._playerProgress.remainingLaps <= 0) {
           console.log('Player finished race')
         }
+      } else if (name[2] === 'H') {
+        this._applyVisibility(data)
       }
     }
 
@@ -254,15 +282,18 @@ export abstract class Race extends IsleBase {
     const actor = UserCar_Actor
     this._raceMap.addLocator(actor, this.camera)
 
-    const hideAnimation = this._startUpAction.children.find(child => isAnimationAction(child))
-    if (hideAnimation == null) {
+    const hideAnimationAction = this._startUpAction.children.find(child => child.presenter === 'LegoHideAnimPresenter')
+    if (hideAnimationAction == null || !isAnimationAction(hideAnimationAction)) {
       throw new Error('No hide animation defined')
     }
-    console.log(parse3DAnimation(await getAction(hideAnimation)))
+
+    this._hideAnimation = parse3DAnimation(await getAction(hideAnimationAction))
   }
 
   public override async activate(composer: Composer, _param?: unknown): Promise<void> {
     await super.activate(composer)
+
+    this._applyVisibility(0)
 
     void engine.switchBackgroundMusic(RaceTrackRoad_Music)
     void this.playAnimation(introAnimations[Math.floor(Math.random() * introAnimations.length)]).then(() => {
