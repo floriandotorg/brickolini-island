@@ -198,6 +198,12 @@ export abstract class Race extends IsleBase {
   public override async init(): Promise<void> {
     await super.init()
 
+    const raceWorld = this.scene.getObjectByName('racc_world')
+    if (raceWorld == null) {
+      throw new Error('Race world not found')
+    }
+    this._groundGroup.push(...raceWorld.children.filter(child => child.name.startsWith('track')))
+
     this.boundaryManager.onTrigger = (name, data, direction) => {
       console.log(`Boundary trigger: ${name}, ${data}, ${direction}`)
 
