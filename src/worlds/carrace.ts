@@ -45,7 +45,28 @@ export class CarRace extends Race {
           throw new Error('Malformed variable table: missing value NUL')
         }
         const value = content.slice(valueStart, valueEnd)
+
         console.log(`Setting variable: ${name} = ${value}`)
+
+        if (name === 'tempBackgroundColor') {
+          const parts = value.trim().split(/\s+/)
+          if (parts.length === 4 && parts[0] === 'set') {
+            const h = parseFloat(parts[1])
+            const s = parseFloat(parts[2])
+            const l = parseFloat(parts[3])
+            if (!Number.isNaN(h) && !Number.isNaN(s) && !Number.isNaN(l)) {
+              this.setTemporarySkyColor({ h, s, l })
+            } else {
+              console.warn(`Failed to parse numbers from value: ${value}`)
+            }
+          } else {
+            console.warn(`Unexpected value format: ${value}`)
+          }
+        } else if (name === 'backgroundColor' && value === 'reset') {
+          this.resetTemporarySkyColor()
+        } else {
+          console.warn(`Unknown variable: ${name} = ${value}`)
+        }
       }
     } else if (isRunAnimationAction(action)) {
       void this.playAnimation(action)

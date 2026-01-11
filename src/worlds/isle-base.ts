@@ -61,6 +61,7 @@ export abstract class IsleBase extends World {
       } = { type: 'none' }
   protected _ambientLight: THREE.AmbientLight | null = null
   protected _water: Water | null = null
+  private _temporarySkyColor: { h: number; s: number; l: number } | null = null
   protected _isleMesh: THREE.Object3D | null = null
   protected _bikeMesh: THREE.Object3D | null = null
   protected _motobkMesh: THREE.Object3D | null = null
@@ -256,15 +257,6 @@ export abstract class IsleBase extends World {
       }
       this.scene.add(directionalLight)
 
-      const setSkyColor = (hsl: { h: number; s: number; l: number }) => {
-        const color = new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l).convertSRGBToLinear()
-        this.scene.background = color
-        const lightColor = new THREE.Color(Math.min(color.r * (1 / 0.23), 1), Math.min(color.g * (1 / 0.63), 1), Math.min(color.b * (1 / 0.85), 1))
-        directionalLight.color = lightColor
-        sunLight.color = lightColor
-      }
-      setSkyColor({ h: 0.56, s: 0.54, l: 0.68 })
-
       this._sun = {
         type: 'original',
         sunLight,
@@ -413,10 +405,17 @@ export abstract class IsleBase extends World {
   }
 
   protected _updateSun(): void {
+    if (this._temporarySkyColor != null) {
+      this._applySkyColor(this._temporarySkyColor)
+    }
+
     switch (this._sun.type) {
       case 'original': {
         const index = engine.currentSaveGame.sunPosition
         applyLights(index, this._sun.sunLight, this._sun.directionalLight)
+        if (this._temporarySkyColor == null) {
+          this._applySkyColor({ h: 0.56, s: 0.54, l: 0.68 })
+        }
         break
       }
       case 'modern': {
@@ -428,6 +427,7 @@ export abstract class IsleBase extends World {
         const sunDir = new THREE.Vector3().setFromSphericalCoords(1, phi, theta)
 
         this._sun.sky.material.uniforms.sunPosition.value.copy(sunDir)
+        this._sun.sky.visible = this._temporarySkyColor == null
 
         const intensity = 0.25 + 0.75 * Math.sin(Math.PI * dayTime) // 0.25-1-0.25
         const warm = new THREE.Color(0xff9f46) // ≈ 2500 K
@@ -470,6 +470,31 @@ export abstract class IsleBase extends World {
       }
       case 'none':
         throw new Error('Invalid sun type')
+    }
+  }
+
+  public setTemporarySkyColor(hsl: { h: number; s: number; l: number }): void {
+    this._temporarySkyColor = hsl
+    this._applySkyColor(hsl)
+  }
+
+  public resetTemporarySkyColor(): void {
+    this._temporarySkyColor = null
+    if (this._sun.type === 'original') {
+      this._applySkyColor({ h: 0.56, s: 0.54, l: 0.68 })
+    } else if (this._sun.type === 'modern') {
+      this._sun.sky.visible = true
+      this.scene.background = null
+    }
+  }
+
+  private _applySkyColor(hsl: { h: number; s: number; l: number }): void {
+    const color = new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l).convertSRGBToLinear()
+    this.scene.background = color
+    if (this._sun.type === 'original') {
+      const lightColor = new THREE.Color(Math.min(color.r * (1 / 0.23), 1), Math.min(color.g * (1 / 0.63), 1), Math.min(color.b * (1 / 0.85), 1))
+      this._sun.directionalLight.color = lightColor
+      this._sun.sunLight.color = lightColor
     }
   }
 
