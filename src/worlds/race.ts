@@ -225,6 +225,9 @@ export abstract class Race extends IsleBase {
     applyVisibility(this._hideAnimation.tree.children)
   }
 
+  abstract onEventStartWaypoint(data: number): void
+  abstract onEventEndWaypoint(data: number): void
+
   public override async init(): Promise<void> {
     await super.init()
 
@@ -240,6 +243,10 @@ export abstract class Race extends IsleBase {
         }
       } else if (name[2] === 'H') {
         this._applyVisibility(data)
+      } else if (name[2] === 'S') {
+        this.onEventStartWaypoint(data)
+      } else if (name[2] === 'E') {
+        this.onEventEndWaypoint(data)
       }
     }
 

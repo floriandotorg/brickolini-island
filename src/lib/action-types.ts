@@ -66,6 +66,12 @@ export const isAudioAction = (action: unknown): action is AudioAction => isFileA
 
 export const isAnimationAction = (action: unknown): action is AnimationAction => isAction(action) && isAnimationPresenter(action.presenter)
 
+export const isPhonemeAction = (action: unknown): action is PhonemeAction => isAction(action) && action.type === Action.Type.Anim && action.presenter === 'LegoPhonemePresenter'
+
+export const isParallelAction = (action: unknown): action is ParallelAction<unknown> => isAction(action) && action.type === Action.Type.ParallelAction
+
+export const isRunAnimationAction = (action: unknown): action is RunAnimationAction => isParallelAction(action) && action.presenter === null && action.children.length > 0 && action.children.every(child => isAnimationAction(child) || isAudioAction(child) || isPhonemeAction(child) || isAudioAction(child))
+
 export const isControlAction = (action: unknown): action is ControlAction => isAction(action) && action.presenter === 'MxControlPresenter'
 
 export const isMeterAction = (action: unknown): action is MeterAction => isImageAction(action) && action.presenter === 'LegoMeterPresenter'

@@ -1,5 +1,9 @@
 import { _CarRace_World, irtx08ra_PlayWav, srt001rh_RunAnim, srt001sl_RunAnim, srt002rh_RunAnim, srt002sl_RunAnim, srt003rh_RunAnim, srt003sl_RunAnim, srt004sl_RunAnim, srt005sl_RunAnim } from '../actions/carrace'
+import * as carracerActions from '../actions/carracer'
 import { RaceTrackRoad_Music } from '../actions/jukebox'
+import { Action } from '../actions/types'
+import { isRunAnimationAction } from '../lib/action-types'
+import { getAction } from '../lib/assets/load'
 import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
 import { Race } from './race'
@@ -20,5 +24,37 @@ export class CarRace extends Race {
     void this.playAnimation(introAnimations[Math.floor(Math.random() * introAnimations.length)]).then(() => {
       void engine.playAudio(irtx08ra_PlayWav, 'speech')
     })
+  }
+  public override async onEventStartWaypoint(data: number): Promise<void> {
+    const action = Object.values(carracerActions).find(action => action.id === data)
+    if (action == null) {
+      throw new Error(`Unknown waypoint action: ${data}`)
+    }
+    if (action.type === Action.Type.Event) {
+      const content = new TextDecoder().decode(await getAction(action))
+      if (content[12] === '\x02') {
+        const nameStart = 16
+        const nameEnd = content.indexOf('\x00', nameStart)
+        if (nameEnd === -1) {
+          throw new Error('Malformed variable table: missing name NUL')
+        }
+        const name = content.slice(nameStart, nameEnd)
+        const valueStart = nameEnd + 1
+        const valueEnd = content.indexOf('\x00', valueStart)
+        if (valueEnd === -1) {
+          throw new Error('Malformed variable table: missing value NUL')
+        }
+        const value = content.slice(valueStart, valueEnd)
+        console.log(`Setting variable: ${name} = ${value}`)
+      }
+    } else if (isRunAnimationAction(action)) {
+      void this.playAnimation(action)
+    } else {
+      console.log(action)
+    }
+  }
+
+  public override onEventEndWaypoint(data: number): void {
+    console.log(`End waypoint: ${data}`)
   }
 }
