@@ -60,7 +60,7 @@ export class BoundaryManager {
     position: THREE.Vector3
     quaternion: THREE.Quaternion
   } {
-    const boundary = this._boundaries.find(b => b.name === boundaryName)
+    const boundary = this._boundaries.find(b => b.name?.toLowerCase() === boundaryName.toLowerCase())
     if (boundary == null) {
       throw new Error(`Boundary ${boundaryName} not found`)
     }

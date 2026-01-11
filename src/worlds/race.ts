@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { CarLocator2, CarLocator3, irtx08ra_PlayWav, Map_Ctl, Rhoda_Locator, Studs_Locator, srt001rh_RunAnim, srt001sl_RunAnim, srt002rh_RunAnim, srt002sl_RunAnim, srt003rh_RunAnim, srt003sl_RunAnim, srt004sl_RunAnim, srt005sl_RunAnim, User_Locator, UserCar_Actor } from '../actions/carrace'
 import { RaceTrackRoad_Music } from '../actions/jukebox'
-import { type ActionBase, getExtraValue, type ImageAction, isAnimationAction, isBoundaryAction, isControlAction, isMeterAction, type SerialAction, splitExtraValue } from '../lib/action-types'
+import { type ActionBase, getExtraValue, type ImageAction, isActorAction, isAnimationAction, isBoundaryAction, isControlAction, isMeterAction, type SerialAction, splitExtraValue } from '../lib/action-types'
 import { type Animation3D, type Animation3DNode, parse3DAnimation } from '../lib/assets/animation'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { ControlsCollection } from '../lib/assets/control'
@@ -271,6 +271,8 @@ export abstract class Race extends IsleBase {
           this._distanceMeter = await Meter.create(child)
           this._controlsRender.scene.add(this._distanceMeter.sprite)
         }
+      } else if (isActorAction(child)) {
+        this.handleActorAction(child)
       }
     }
     Race.setTopLeft(this._opponent1ProgressLocator, this._progressStart)

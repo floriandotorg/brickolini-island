@@ -51,9 +51,9 @@ export class CarRace extends Race {
         if (name === 'tempBackgroundColor') {
           const parts = value.trim().split(/\s+/)
           if (parts.length === 4 && parts[0] === 'set') {
-            const h = parseFloat(parts[1])
-            const s = parseFloat(parts[2])
-            const l = parseFloat(parts[3])
+            const h = Number.parseFloat(parts[1])
+            const s = Number.parseFloat(parts[2])
+            const l = Number.parseFloat(parts[3])
             if (!Number.isNaN(h) && !Number.isNaN(s) && !Number.isNaN(l)) {
               this.setTemporarySkyColor({ h, s, l })
             } else {

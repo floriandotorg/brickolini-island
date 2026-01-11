@@ -6,7 +6,7 @@ import { Chptr_Model } from '../actions/copter'
 import { DuneBugy_Model } from '../actions/dunecar'
 import { Jsuser_Model } from '../actions/jetski'
 import { Rcuser_Model } from '../actions/racecar'
-import type { BoundaryAction, ModelAction } from '../lib/action-types'
+import { type ActorAction, type BoundaryAction, getExtraValue, type ModelAction } from '../lib/action-types'
 import { getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
@@ -495,6 +495,34 @@ export abstract class IsleBase extends World {
       const lightColor = new THREE.Color(Math.min(color.r * (1 / 0.23), 1), Math.min(color.g * (1 / 0.63), 1), Math.min(color.b * (1 / 0.85), 1))
       this._sun.directionalLight.color = lightColor
       this._sun.sunLight.color = lightColor
+    }
+  }
+
+  public handleActorAction(action: ActorAction): void {
+    const modelName = getExtraValue(action.children[0], 'DB_CREATE')
+    if (modelName == null) {
+      console.warn(`Actor action without db_create is not supported: ${action.extra}`)
+      return
+    }
+    const models = this.getObjectsByPrefix(modelName)
+    if (models.length === 0) {
+      console.warn(`Model not found: ${modelName}`)
+      return
+    }
+    const path = getExtraValue(action, 'Path')
+    if (path != null) {
+      const pathMatch = path.match(/^([^;]+);([^;]+);([^;]+);([^;]+);([^;]+)$/)
+      if (!pathMatch) {
+        console.warn(`Path string does not match expected format: ${path}`)
+        return
+      }
+      const pathId = pathMatch[1]
+      const src = Number.parseFloat(pathMatch[2])
+      const srcScale = Number.parseFloat(pathMatch[3])
+      const dst = Number.parseFloat(pathMatch[4])
+      const dstScale = Number.parseFloat(pathMatch[5])
+      const { position, quaternion } = this.boundaryManager.getObjectPlacement(pathId, src, srcScale, dst, dstScale)
+      this.moveObjectTo(models, position, quaternion)
     }
   }
 
