@@ -63,9 +63,21 @@ export class PlayerMovement {
 
     if (!this._slewMode) {
       this.resetVelocities()
-      this._camera.position.y = 100
-      this.placeOnGround(this._camera)
+      const currentPos = this._camera.position.clone()
+      const groundPos = this._tryGetGroundPosition(currentPos) ?? this._tryGetGroundPosition(currentPos.clone().setY(100))
+      if (groundPos != null) {
+        this._camera.position.copy(groundPos)
+      }
     }
+  }
+
+  private _tryGetGroundPosition(position: THREE.Vector3, offset = new THREE.Vector3(0, CAM_HEIGHT, 0)): THREE.Vector3 | null {
+    const downRay = new THREE.Raycaster(position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0), 0, 1000)
+    const hit = downRay.intersectObjects(this._groundGroup)[0]
+    if (hit) {
+      return hit.point.clone().add(offset)
+    }
+    return null
   }
 
   private _calculateNewVel(targetVel: number, currentVel: number, accel: number, delta: number): number {
