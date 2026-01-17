@@ -31,43 +31,45 @@ export class CarRace extends Race {
       throw new Error(`Unknown waypoint action: ${data}`)
     }
     if (action.type === Action.Type.Event) {
-      const content = new TextDecoder().decode(await getAction(action))
-      if (content[12] === '\x02') {
-        const nameStart = 16
-        const nameEnd = content.indexOf('\x00', nameStart)
-        if (nameEnd === -1) {
-          throw new Error('Malformed variable table: missing name NUL')
-        }
-        const name = content.slice(nameStart, nameEnd)
-        const valueStart = nameEnd + 1
-        const valueEnd = content.indexOf('\x00', valueStart)
-        if (valueEnd === -1) {
-          throw new Error('Malformed variable table: missing value NUL')
-        }
-        const value = content.slice(valueStart, valueEnd)
-
-        console.log(`Setting variable: ${name} = ${value}`)
-
-        if (name === 'tempBackgroundColor') {
-          const parts = value.trim().split(/\s+/)
-          if (parts.length === 4 && parts[0] === 'set') {
-            const h = Number.parseFloat(parts[1])
-            const s = Number.parseFloat(parts[2])
-            const l = Number.parseFloat(parts[3])
-            if (!Number.isNaN(h) && !Number.isNaN(s) && !Number.isNaN(l)) {
-              this.setTemporarySkyColor({ h, s, l })
-            } else {
-              console.warn(`Failed to parse numbers from value: ${value}`)
-            }
-          } else {
-            console.warn(`Unexpected value format: ${value}`)
+      void getAction(action).then(buffer => {
+        const content = new TextDecoder().decode(buffer)
+        if (content[12] === '\x02') {
+          const nameStart = 16
+          const nameEnd = content.indexOf('\x00', nameStart)
+          if (nameEnd === -1) {
+            throw new Error('Malformed variable table: missing name NUL')
           }
-        } else if (name === 'backgroundColor' && value === 'reset') {
-          this.resetTemporarySkyColor()
-        } else {
-          console.warn(`Unknown variable: ${name} = ${value}`)
+          const name = content.slice(nameStart, nameEnd)
+          const valueStart = nameEnd + 1
+          const valueEnd = content.indexOf('\x00', valueStart)
+          if (valueEnd === -1) {
+            throw new Error('Malformed variable table: missing value NUL')
+          }
+          const value = content.slice(valueStart, valueEnd)
+
+          console.log(`Setting variable: ${name} = ${value}`)
+
+          if (name === 'tempBackgroundColor') {
+            const parts = value.trim().split(/\s+/)
+            if (parts.length === 4 && parts[0] === 'set') {
+              const h = Number.parseFloat(parts[1])
+              const s = Number.parseFloat(parts[2])
+              const l = Number.parseFloat(parts[3])
+              if (!Number.isNaN(h) && !Number.isNaN(s) && !Number.isNaN(l)) {
+                this.setTemporarySkyColor({ h, s, l })
+              } else {
+                console.warn(`Failed to parse numbers from value: ${value}`)
+              }
+            } else {
+              console.warn(`Unexpected value format: ${value}`)
+            }
+          } else if (name === 'backgroundColor' && value === 'reset') {
+            this.resetTemporarySkyColor()
+          } else {
+            console.warn(`Unknown variable: ${name} = ${value}`)
+          }
         }
-      }
+      })
     } else if (isRunAnimationAction(action)) {
       void this.playAnimation(action)
     } else {

@@ -84,7 +84,7 @@ import {
 import { PizzaMission_Music } from '../../../actions/jukebox'
 import { TRS302_OpenJailDoor } from '../../../actions/sndanim'
 import { Action } from '../../../actions/types'
-import type { AnimationAction, RunAnimationAction } from '../../../lib/action-types'
+import { type AnimationAction, isRunAnimationAction, type RunAnimationAction } from '../../../lib/action-types'
 import { engine, type Timeout } from '../../../lib/engine'
 import type { PlayerCharacter } from '../../../lib/save-game'
 import type { Isle } from '../index'
@@ -223,10 +223,7 @@ export class PizzaMission {
     if (this._missionState.state === 'waiting-for-accept-quest' && this._missionState.timeout.isExpired) {
       this._missionState = { state: 'timeout-accept-quest' }
       const action = missionAnimations[engine.currentSaveGame.player][4 + 2]
-      if (action == null) {
-        throw new Error('Action is null')
-      }
-      if (action.type === Action.Type.ObjectAction) {
+      if (!isRunAnimationAction(action)) {
         throw new Error('Action is not a run animation action')
       }
       void this.isle.playCameraAnimation(action).then(() => {
