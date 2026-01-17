@@ -832,8 +832,8 @@ export abstract class World {
     return mesh
   }
 
-  public debugDrawDebugMesh(mesh: THREE.Mesh): void {
-    mesh.material = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5, side: THREE.DoubleSide })
+  public debugDrawDebugMesh(mesh: THREE.Mesh, color: string = '#00ff00'): void {
+    mesh.material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5, side: THREE.DoubleSide })
     this._debugGroup.add(mesh)
   }
 

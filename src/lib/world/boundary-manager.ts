@@ -3,6 +3,13 @@ import type { Boundary } from '../assets/boundary'
 import { engine } from '../engine'
 import type { World } from './world'
 
+const flagsColor = (edge: { flags: number }): string => {
+  const red = edge.flags & 0b001 ? 'ff' : '00'
+  const green = edge.flags & 0b010 ? 'ff' : '00'
+  const blue = edge.flags & 0b100 ? 'ff' : '00'
+  return `#${red}${green}${blue}`
+}
+
 export class BoundaryManager {
   private _boundaries: Boundary[]
   private _meshToBoundary = new Map<THREE.Mesh, { boundary: Boundary; debugMesh: THREE.Mesh }>()
@@ -19,13 +26,13 @@ export class BoundaryManager {
       const mesh = boundary.createMesh()
       const debugMesh = mesh.clone()
       debugMesh.position.y += 0.01
-      world.debugDrawDebugMesh(debugMesh)
+      world.debugDrawDebugMesh(debugMesh, flagsColor(boundary))
       this._boundaryGroup.add(mesh)
       this._meshToBoundary.set(mesh, { boundary, debugMesh })
 
       for (let n = 0; n < boundary.edges.length; ++n) {
         const edge = boundary.edges[n]
-        world.debugDrawArrow(edge.pointA, edge.pointB, edge.flags & 0x02 ? 'red' : 'blue')
+        world.debugDrawArrow(edge.pointA, edge.pointB, flagsColor(edge))
 
         if (!(edge.flags & 0x03)) {
           const p0 = edge.pointA.clone().sub(new THREE.Vector3(0, 1, 0))
