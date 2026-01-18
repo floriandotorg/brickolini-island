@@ -10,7 +10,7 @@ import { type ActorAction, type BoundaryAction, getExtraValue, type ModelAction 
 import { getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
-import { calculateTransformationMatrix, getModel, getWorld, type WdbWorldName } from '../lib/assets/model'
+import { calculateTransformationMatrix, getModel, getWorld, type Roi3D, type WdbWorldName } from '../lib/assets/model'
 import { getSpawnLocation, type SpawnLocation } from '../lib/assets/spawn-location'
 import type { Composer } from '../lib/effect/composer'
 import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
@@ -63,11 +63,11 @@ export abstract class IsleBase extends World {
   protected _water: Water | null = null
   private _temporarySkyColor: { h: number; s: number; l: number } | null = null
   protected _isleMesh: THREE.Object3D | null = null
-  protected _bikeMesh: THREE.Object3D | null = null
-  protected _motobkMesh: THREE.Object3D | null = null
-  protected _skateMesh: THREE.Object3D | null = null
-  protected _ambulanceMesh: THREE.Object3D[] = []
-  protected _towtruckMesh: THREE.Object3D[] = []
+  protected _bikeRoi: Roi3D | null = null
+  protected _motobkRoi: Roi3D | null = null
+  protected _skateRoi: Roi3D | null = null
+  protected _ambulanceRoi: Roi3D | null = null
+  protected _towtruckRoi: Roi3D | null = null
   private _buildMeshes = new Map<VehicleType, THREE.Object3D[]>()
   private _animationInfos: DTA.AnimationInfo[] = []
   private readonly _wdbWorldName: WdbWorldName | null
@@ -279,21 +279,19 @@ export abstract class IsleBase extends World {
       this._groundGroup.push(object)
     }
 
-    this._bikeMesh = this.scene.getObjectByName('bike') ?? null
-    this._motobkMesh = this.scene.getObjectByName('motobk') ?? null
-    this._skateMesh = this.scene.getObjectByName('skate') ?? null
-    this._ambulanceMesh = this.getObjectsByPrefix('ambul') ?? []
-    this._towtruckMesh = this.getObjectsByPrefix('towtk') ?? []
+    this._bikeRoi = this.findRoi('bike')
+    this._motobkRoi = this.findRoi('motobk')
+    this._skateRoi = this.findRoi('skate')
+    this._ambulanceRoi = this.findRoi('ambul')
+    this._towtruckRoi = this.findRoi('towtk')
 
-    if (this._bikeMesh != null) {
+    if (this._bikeRoi != null) {
       this.placeVehicle('bike', 'INT44', 2, 0.5, 0, 0.5)
     }
-
-    if (this._motobkMesh != null) {
+    if (this._motobkRoi != null) {
       this.placeVehicle('moto', 'INT43', 4, 0.5, 1, 0.5)
     }
-
-    if (this._skateMesh != null) {
+    if (this._skateRoi != null) {
       this.placeVehicle('skate', 'EDG02_84', 4, 0.5, 0, 0.5)
     }
   }
@@ -316,56 +314,38 @@ export abstract class IsleBase extends World {
         return engine.currentSaveGame.getVehiclePlacement(type)
       })()
       if (placement != null) {
-        const meshes = await getModel(model)
-        for (const mesh of meshes) {
-          this.scene.add(mesh)
+        const rootRoi = await getModel(model)
+        const allRois = rootRoi.getAllRois()
+        for (const roi of allRois) {
+          this.scene.add(roi)
         }
-        this._buildMeshes.set(type, meshes)
-        this.moveObjectTo(meshes, placement.position, placement.quaternion)
+        this._buildMeshes.set(type, allRois)
+        rootRoi.moveRoiTo(placement.position, placement.quaternion)
         engine.currentSaveGame.setVehiclePlacement(type, placement)
       }
     }
   }
 
-  public getVehicleMesh(vehicle: VehicleType): THREE.Object3D[] | null {
-    let result: THREE.Object3D[] | THREE.Object3D | null = null
-
+  public getVehicleRoi(vehicle: VehicleType): Roi3D | null {
     switch (vehicle) {
       case 'bike':
-        result = this._bikeMesh
-        break
+        return this._bikeRoi ?? null
       case 'moto':
-        result = this._motobkMesh
-        break
+        return this._motobkRoi ?? null
       case 'skate':
-        result = this._skateMesh
-        break
+        return this._skateRoi ?? null
       case 'ambul':
-        result = this._ambulanceMesh
-        break
+        return this._ambulanceRoi ?? null
       case 'towtk':
-        result = this._towtruckMesh
-        break
+        return this._towtruckRoi ?? null
       default:
-        for (const [type, meshes] of this._buildMeshes) {
-          if (vehicle === type) {
-            result = meshes
-            break
-          }
-        }
-        break
+        return null
     }
-
-    if (result == null) {
-      return null
-    }
-
-    return Array.isArray(result) ? result : [result]
   }
 
   public placeVehicle(vehicle: VehicleType, boundaryName: string, src: number, srcScale: number, dst: number, _dstScale: number, ignoreSave: boolean = false): void {
-    const vehicleMesh = this.getVehicleMesh(vehicle)
-    if (vehicleMesh == null) {
+    const vehicleRoi = this.getVehicleRoi(vehicle)
+    if (vehicleRoi == null) {
       return
     }
     const { position, quaternion } = (() => {
@@ -376,7 +356,7 @@ export abstract class IsleBase extends World {
         return this.boundaryManager.getObjectPlacement(boundaryName, src, srcScale, dst, _dstScale)
       }
     })()
-    this.moveObjectTo(vehicleMesh, position, quaternion)
+    vehicleRoi.moveRoiTo(position, quaternion)
   }
 
   protected _updateCameraProjection(position: [number, number, number], direction: [number, number, number], up: [number, number, number], fov: number) {
@@ -504,8 +484,8 @@ export abstract class IsleBase extends World {
       console.warn(`Actor action without db_create is not supported: ${action.extra}`)
       return
     }
-    const models = this.getObjectsByPrefix(modelName)
-    if (models.length === 0) {
+    const roi = this.findRoi(modelName)
+    if (roi == null) {
       console.warn(`Model not found: ${modelName}`)
       return
     }
@@ -522,7 +502,7 @@ export abstract class IsleBase extends World {
       const dst = Number.parseFloat(pathMatch[4])
       const dstScale = Number.parseFloat(pathMatch[5])
       const { position, quaternion } = this.boundaryManager.getObjectPlacement(pathId, src, srcScale, dst, dstScale)
-      this.moveObjectTo(models, position, quaternion)
+      roi.moveRoiTo(position, quaternion)
     }
   }
 

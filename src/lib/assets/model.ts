@@ -48,7 +48,7 @@ const getWdb = async (): Promise<WDB.File> => {
   return wdb
 }
 
-export const getModel = async (action: ModelAction): Promise<Roi3D[]> => {
+export const getModel = async (action: ModelAction): Promise<Roi3D> => {
   const model = await getAction(action)
   const reader = new BinaryReader(model)
   const { roi, animation } = WDB.readModel(reader)
@@ -99,6 +99,8 @@ export class Roi3D extends THREE.Group {
   public boundingSphere = new BoundingSphere(0, new THREE.Vector3(0, 0, 0))
   public offsetIndex = 0
   public ownName = ''
+  public roiChildren: Roi3D[] = []
+  public roiParent: Roi3D | null = null
 
   public getWorldBoundingSphere(): BoundingSphere {
     const worldCenter = this.getWorldPosition(new THREE.Vector3())
@@ -112,8 +114,145 @@ export class Roi3D extends THREE.Group {
       this.boundingSphere = object.boundingSphere
       this.offsetIndex = object.offsetIndex
       this.ownName = object.ownName
+      this.roiChildren = recursive ? object.roiChildren.map(c => c.clone(true)) : []
     }
     return this
+  }
+
+  public addRoiChild(child: Roi3D): void {
+    child.roiParent = this
+    this.roiChildren.push(child)
+  }
+
+  public removeRoiChild(child: Roi3D): boolean {
+    const index = this.roiChildren.indexOf(child)
+    if (index === -1) {
+      return false
+    }
+    child.roiParent = null
+    this.roiChildren.splice(index, 1)
+    return true
+  }
+
+  public getAllRoiDescendants(): Roi3D[] {
+    const result: Roi3D[] = []
+    for (const child of this.roiChildren) {
+      result.push(child)
+      result.push(...child.getAllRoiDescendants())
+    }
+    return result
+  }
+
+  public getAllRois(): Roi3D[] {
+    return [this, ...this.getAllRoiDescendants()]
+  }
+
+  public traverseRoi(callback: (roi: Roi3D) => void): void {
+    callback(this)
+    for (const child of this.roiChildren) {
+      child.traverseRoi(callback)
+    }
+  }
+
+  public findRoi(predicate: (roi: Roi3D) => boolean): Roi3D | null {
+    if (predicate(this)) {
+      return this
+    }
+    for (const child of this.roiChildren) {
+      const found = child.findRoi(predicate)
+      if (found) {
+        return found
+      }
+    }
+    return null
+  }
+
+  public findRoiByName(name: string): Roi3D | null {
+    return this.findRoi(roi => roi.ownName === name.toLowerCase())
+  }
+
+  public findAllRois(predicate: (roi: Roi3D) => boolean): Roi3D[] {
+    const result: Roi3D[] = []
+    this.traverseRoi(roi => {
+      if (predicate(roi)) {
+        result.push(roi)
+      }
+    })
+    return result
+  }
+
+  public setRoiVisibility(visibility: 'visible' | 'invisible'): void {
+    const isVisible = visibility === 'visible'
+    for (const roi of this.getAllRois()) {
+      roi.visible = isVisible
+      for (const child of roi.children) {
+        child.visible = isVisible
+      }
+    }
+  }
+
+  public moveRoiTo(targetPosition: THREE.Vector3, targetQuaternion?: THREE.Quaternion): void {
+    const objects = this.getAllRois()
+    for (const object of objects) {
+      object.updateMatrixWorld(true)
+    }
+
+    const baseWorldPosition = new THREE.Vector3()
+    const baseWorldQuaternion = new THREE.Quaternion()
+    this.getWorldPosition(baseWorldPosition)
+    this.getWorldQuaternion(baseWorldQuaternion)
+
+    const newBaseQuaternion = targetQuaternion ? targetQuaternion.clone() : baseWorldQuaternion.clone()
+    const inverseBaseQuaternion = baseWorldQuaternion.clone().invert()
+
+    const relativeTransforms: { object: THREE.Object3D; relativePosition: THREE.Vector3; relativeQuaternion: THREE.Quaternion }[] = []
+    for (const object of objects) {
+      const worldPosition = new THREE.Vector3()
+      const worldQuaternion = new THREE.Quaternion()
+      object.getWorldPosition(worldPosition)
+      object.getWorldQuaternion(worldQuaternion)
+
+      worldPosition.sub(baseWorldPosition).applyQuaternion(inverseBaseQuaternion)
+      worldQuaternion.premultiply(inverseBaseQuaternion)
+
+      relativeTransforms.push({ object, relativePosition: worldPosition, relativeQuaternion: worldQuaternion })
+    }
+
+    const setWorldTransform = (object: THREE.Object3D, worldPosition: THREE.Vector3, worldQuaternion: THREE.Quaternion) => {
+      const parent = object.parent
+      if (parent) {
+        parent.updateMatrixWorld(true)
+        const parentWorldPosition = new THREE.Vector3()
+        const parentWorldQuaternion = new THREE.Quaternion()
+        parent.getWorldPosition(parentWorldPosition)
+        parent.getWorldQuaternion(parentWorldQuaternion)
+        const inverseParentQuaternion = parentWorldQuaternion.clone().invert()
+
+        const localPosition = worldPosition.clone().sub(parentWorldPosition).applyQuaternion(inverseParentQuaternion)
+        const localQuaternion = inverseParentQuaternion.clone().multiply(worldQuaternion)
+
+        object.position.copy(localPosition)
+        object.quaternion.copy(localQuaternion)
+      } else {
+        object.position.copy(worldPosition)
+        object.quaternion.copy(worldQuaternion)
+      }
+      object.updateMatrix()
+    }
+
+    for (const { object, relativePosition, relativeQuaternion } of relativeTransforms) {
+      const worldPosition = targetPosition.clone().add(relativePosition.clone().applyQuaternion(newBaseQuaternion))
+      const worldQuaternion = newBaseQuaternion.clone().multiply(relativeQuaternion)
+      setWorldTransform(object, worldPosition, worldQuaternion)
+    }
+  }
+
+  public getRoiRoot(): Roi3D {
+    let current: Roi3D = this
+    while (current.roiParent) {
+      current = current.roiParent
+    }
+    return current
   }
 
   public static traverseWithOffset(object: THREE.Object3D, callback: (object: THREE.Object3D) => void): void {
@@ -129,14 +268,11 @@ export class Roi3D extends THREE.Group {
   }
 }
 
-const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animation.Node | undefined, path: string[] = []): Promise<Roi3D[]> => {
-  const result: Roi3D[] = []
-
-  const parent = new Roi3D()
-  parent.boundingSphere = new BoundingSphere(roi.boundingSphere.radius, new THREE.Vector3(...roi.boundingSphere.center))
-  parent.ownName = roi.name.toLowerCase()
-  parent.name = [...path, parent.ownName].join('_')
-  result.push(parent)
+const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animation.Node | undefined, path: string[] = []): Promise<Roi3D> => {
+  const roiNode = new Roi3D()
+  roiNode.boundingSphere = new BoundingSphere(roi.boundingSphere.radius, new THREE.Vector3(...roi.boundingSphere.center))
+  roiNode.ownName = roi.name.toLowerCase()
+  roiNode.name = [...path, roiNode.ownName].join('_')
 
   if (animation) {
     if (animation.translationKeys.length === 1) {
@@ -146,7 +282,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
       if (animation.translationKeys[0].timeAndFlags.flags !== 1) {
         console.warn(`Translation key for model ${roi.name} has non-standard flags of ${animation.translationKeys[0].timeAndFlags.flags}`)
       }
-      parent.position.set(...animation.translationKeys[0].vertex)
+      roiNode.position.set(...animation.translationKeys[0].vertex)
     } else if (animation.translationKeys.length > 1) {
       console.warn(`Model ${roi.name} has ${animation.translationKeys.length} translation keys`)
     }
@@ -157,7 +293,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
       if (animation.rotationKeys[0].timeAndFlags.flags !== 1) {
         console.warn(`Rotation key for model ${roi.name} has non-standard flags of ${animation.rotationKeys[0].timeAndFlags.flags}`)
       }
-      parent.quaternion.set(...animation.rotationKeys[0].quaternion)
+      roiNode.quaternion.set(...animation.rotationKeys[0].quaternion)
     } else if (animation.rotationKeys.length > 1) {
       console.warn(`Model ${roi.name} has ${animation.rotationKeys.length} rotation keys`)
     }
@@ -168,7 +304,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
       if (animation.scaleKeys[0].timeAndFlags.flags !== 1) {
         console.warn(`Scale key for model ${roi.name} has non-standard flags of ${animation.scaleKeys[0].timeAndFlags.flags}`)
       }
-      parent.scale.set(...animation.scaleKeys[0].vertex)
+      roiNode.scale.set(...animation.scaleKeys[0].vertex)
     } else if (animation.scaleKeys.length > 1) {
       console.warn(`Model ${roi.name} has ${animation.scaleKeys.length} scale keys`)
     }
@@ -193,7 +329,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
   })()
   const lod = lods?.at(-1)
   if (lod != null) {
-    parent.offsetIndex = lod.meshesBeforeOffset.length
+    roiNode.offsetIndex = lod.meshesBeforeOffset.length
     const customColor: WDB.Color | null = colorFromName(roi.textureName)
     const meshes: THREE.Mesh[] = []
     let n = 0
@@ -208,8 +344,8 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
           distortionScale: 5,
         })
         mesh.material.uniforms.size.value = 7
-        mesh.name = `${parent.name}-${++n}`.toLowerCase()
-        parent.add(mesh)
+        mesh.name = `${roiNode.name}-${++n}`.toLowerCase()
+        roiNode.add(mesh)
         if (engine.currentWorld instanceof Isle) {
           engine.currentWorld.water = mesh
         }
@@ -217,7 +353,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
       }
 
       let newMaterial: THREE.Material | null = null
-      if (getSettings().graphics.pbrMaterials && (parent.name === 'rcgreen' || parent.name === 'rcblack') && material.name === 'lego black') {
+      if (getSettings().graphics.pbrMaterials && (roiNode.name === 'rcgreen' || roiNode.name === 'rcblack') && material.name === 'lego black') {
         newMaterial = new THREE.MeshPhysicalMaterial({
           color: 0x1a1a1a,
           roughness: 0.7,
@@ -228,27 +364,28 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
       }
 
       const mesh = new THREE.Mesh(geometry, newMaterial ?? material)
-      mesh.name = `${parent.name}-${++n}`.toLowerCase()
+      mesh.name = `${roiNode.name}-${++n}`.toLowerCase()
       if (getSettings().graphics.shadows) {
         mesh.castShadow = true
         mesh.receiveShadow = true
       }
-      parent.add(mesh)
+      roiNode.add(mesh)
       meshes.push(mesh)
     }
     createdMeshes.push({ meshes, lod, texture: null, customColor })
   }
+
   for (const child of roi.children) {
-    result.push(
-      ...(await roiToMesh(
-        child,
-        parts,
-        animation?.children.find(n => n.name.toLowerCase() === child.name.toLowerCase()),
-        [...path, roi.name.toLowerCase()],
-      )),
+    const childRoi = await roiToMesh(
+      child,
+      parts,
+      animation?.children.find(n => n.name.toLowerCase() === child.name.toLowerCase()),
+      [...path, roi.name.toLowerCase()],
     )
+    roiNode.addRoiChild(childRoi)
   }
-  return result
+
+  return roiNode
 }
 
 export type WdbWorldName = 'BLDD' | 'BLDH' | 'BLDJ' | 'BLDR' | 'HOSP' | 'POLICE' | 'GMAIN' | 'ICUBE' | 'IELEV' | 'IISLE' | 'IMAIN' | 'IREG' | 'RACC' | 'RACJ' | 'ACT1' | 'ACT2' | 'ACT3' | 'TEST' | 'TestWorld' | 'Isle'
@@ -268,12 +405,12 @@ export const getWorld = async (name: WdbWorldName): Promise<THREE.Group> => {
 
     const matrix = calculateTransformationMatrix(model.position, model.rotation, model.up)
 
-    const models = await roiToMesh(model.roi, world.parts, model.animation.tree)
-    for (const object of models) {
-      object.applyMatrix4(matrix)
-      object.visible = model.visible
+    const rootRoi = await roiToMesh(model.roi, world.parts, model.animation.tree)
+    for (const roi of rootRoi.getAllRois()) {
+      roi.applyMatrix4(matrix)
+      roi.visible = model.visible
     }
-    group.add(...models)
+    group.add(...rootRoi.getAllRois())
   }
   for (const part of world.parts) {
     const mesh = await getWorldPart(world, part.name, null, null)

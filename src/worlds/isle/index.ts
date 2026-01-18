@@ -382,7 +382,7 @@ import {
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../../actions/jukebox'
 import { type AnimationAction, type AudioAction, getExtraValue, type ParallelAction, type PhonemeAction, type PositionalAudioAction, type RunAnimationAction } from '../../lib/action-types'
 import type { DTA } from '../../lib/assets/dta'
-import { calculateTransformationMatrix } from '../../lib/assets/model'
+import { calculateTransformationMatrix, type Roi3D } from '../../lib/assets/model'
 import { createTexture } from '../../lib/assets/texture'
 import type { Composer } from '../../lib/effect/composer'
 import { engine, type NormalizedMouseEvent } from '../../lib/engine'
@@ -787,15 +787,15 @@ export class Isle extends IsleBase {
 
   public backgroundMusicTriggerEnabled = true
 
-  private get _currentVehicleMesh(): THREE.Object3D[] {
+  private get _currentVehicleRoi(): Roi3D {
     if (this._currentVehicle == null) {
       throw new Error('No vehicle set')
     }
-    const vehicleMeshes = this.getVehicleMesh(this._currentVehicle.type)
-    if (vehicleMeshes == null) {
-      throw new Error(`Vehicle mesh not found for ${this._currentVehicle.type}`)
+    const vehicleRoi = this.getVehicleRoi(this._currentVehicle.type)
+    if (vehicleRoi == null) {
+      throw new Error(`Vehicle roi not found for ${this._currentVehicle.type}`)
     }
-    return vehicleMeshes
+    return vehicleRoi
   }
 
   constructor() {
@@ -925,11 +925,8 @@ export class Isle extends IsleBase {
       if (meshName == null) {
         throw new Error(`Found no valid mesh name for world ${worldName}`)
       }
-      const buildingMeshes = this.getObjectsByPrefix(meshName)
-      if (buildingMeshes.length < 1) {
-        throw new Error(`Mesh ${meshName} not found`)
-      }
-      this.addClickListener(buildingMeshes, async () => {
+      const buildingRoi = this.getRoi(meshName)
+      this.addClickListener(buildingRoi, async () => {
         if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
           return false
         }
@@ -988,7 +985,7 @@ export class Isle extends IsleBase {
   }
 
   private _addVehicleClickListener = (vehicle: Vehicle): void => {
-    const mesh = this.getVehicleMesh(vehicle.type)
+    const mesh = this.getVehicleRoi(vehicle.type)
     if (mesh != null) {
       this.addClickListener(mesh, async () => {
         if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
@@ -1005,11 +1002,9 @@ export class Isle extends IsleBase {
 
     this._currentVehicle = vehicle
 
-    for (const mesh of this._currentVehicleMesh) {
-      mesh.visible = false
-    }
-    this.camera.position.set(this._currentVehicleMesh[0].position.x, this._currentVehicleMesh[0].position.y, this._currentVehicleMesh[0].position.z)
-    this.camera.quaternion.copy(this._currentVehicleMesh[0].quaternion)
+    this._currentVehicleRoi.setRoiVisibility('invisible')
+    this.camera.position.set(this._currentVehicleRoi.position.x, this._currentVehicleRoi.position.y, this._currentVehicleRoi.position.z)
+    this.camera.quaternion.copy(this._currentVehicleRoi.quaternion)
     this._playerMovement.placeOnGround(this.camera)
 
     this._showDashboard()
@@ -1155,10 +1150,8 @@ export class Isle extends IsleBase {
 
     const groundPosition = this._playerMovement.getGroundPosition(this.camera.position, new THREE.Vector3(0, 0, 0))
     engine.currentSaveGame.setVehiclePlacement(this._currentVehicle.type, { position: groundPosition, quaternion: this.camera.quaternion })
-    this.moveObjectTo(this._currentVehicleMesh, groundPosition, this.camera.quaternion)
-    for (const mesh of this._currentVehicleMesh) {
-      mesh.visible = true
-    }
+    this._currentVehicleRoi.moveRoiTo(groundPosition, this.camera.quaternion)
+    this._currentVehicleRoi.setRoiVisibility('visible')
 
     this.camera.position.add(new THREE.Vector3(0, 0, -4).applyQuaternion(this.camera.quaternion))
     this._playerMovement.placeOnGround(this.camera)

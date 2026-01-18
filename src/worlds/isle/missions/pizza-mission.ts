@@ -151,7 +151,7 @@ export class PizzaMission {
   constructor(private readonly isle: Isle) {}
 
   async init(): Promise<void> {
-    this.isle.addClickListener(this.isle.getObjectsByPrefix('pizza'), async () => {
+    this.isle.addClickListener(this.isle.getRoi('pizza'), async () => {
       if (this._missionState.state !== 'not-started') {
         return false
       }
@@ -171,7 +171,7 @@ export class PizzaMission {
       return true
     })
 
-    this.isle.addClickListener(this.isle.getObjectsByPrefix('pizpie'), async () => {
+    this.isle.addClickListener(this.isle.getRoi('pizpie'), async () => {
       if (this._missionState.state === 'introduction' || this._missionState.state === 'waiting-for-accept-quest') {
         this._missionState = { state: 'delivering', helpAudioTimeout: engine.createTimeout(35_000), missionTimeout: engine.createTimeout(350_000) }
 

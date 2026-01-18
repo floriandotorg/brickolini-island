@@ -5,7 +5,7 @@ import { type AnimationAction, type AudioAction, getExtraValue, isAnimationActio
 import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, createAnimationActor, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { type Audio, getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
-import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
+import { calculateTransformationMatrix, getGlobalPart, Roi3D } from '../assets/model'
 import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
 import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
@@ -254,72 +254,23 @@ export abstract class World {
     }
   }
 
-  public getObjectsByPrefix(prefix: string, root: THREE.Object3D = this.scene): THREE.Object3D[] {
-    const objects: THREE.Object3D[] = []
-    for (const child of root.children) {
-      if (child.name === prefix || child.name.startsWith(`${prefix}_`)) {
-        objects.push(child)
-      }
-
-      objects.push(...this.getObjectsByPrefix(prefix, child))
+  public findRoi(name: string): Roi3D | null {
+    const roi = this.worldGroup.getObjectByName(name)
+    if (roi == null) {
+      return null
     }
-    return objects
+    if (!(roi instanceof Roi3D)) {
+      throw new Error(`Object "${name}" is not an ROI`)
+    }
+    return roi
   }
 
-  public moveObjectTo = (objects: THREE.Object3D[], targetPosition: THREE.Vector3, targetQuaternion?: THREE.Quaternion) => {
-    const baseObject = objects[0]
-    for (const object of objects) {
-      object.updateMatrixWorld(true)
+  public getRoi(name: string): Roi3D {
+    const roi = this.findRoi(name)
+    if (roi == null) {
+      throw new Error(`ROI not found: ${name}`)
     }
-
-    const baseWorldPosition = new THREE.Vector3()
-    const baseWorldQuaternion = new THREE.Quaternion()
-    baseObject.getWorldPosition(baseWorldPosition)
-    baseObject.getWorldQuaternion(baseWorldQuaternion)
-
-    const newBaseQuaternion = targetQuaternion ? targetQuaternion.clone() : baseWorldQuaternion.clone()
-    const inverseBaseQuaternion = baseWorldQuaternion.clone().invert()
-
-    const relativeTransforms = []
-    for (const object of objects) {
-      const worldPosition = new THREE.Vector3()
-      const worldQuaternion = new THREE.Quaternion()
-      object.getWorldPosition(worldPosition)
-      object.getWorldQuaternion(worldQuaternion)
-
-      worldPosition.sub(baseWorldPosition).applyQuaternion(inverseBaseQuaternion)
-      worldQuaternion.premultiply(inverseBaseQuaternion)
-
-      relativeTransforms.push({ object, relativePosition: worldPosition, relativeQuaternion: worldQuaternion })
-    }
-
-    const setWorldTransform = (object: THREE.Object3D, worldPosition: THREE.Vector3, worldQuaternion: THREE.Quaternion) => {
-      const parent = object.parent
-      if (parent) {
-        parent.updateMatrixWorld(true)
-        const parentWorldPosition = new THREE.Vector3()
-        const parentWorldQuaternion = new THREE.Quaternion()
-        parent.getWorldPosition(parentWorldPosition)
-        parent.getWorldQuaternion(parentWorldQuaternion)
-        const inverseParentQuaternion = parentWorldQuaternion.clone().invert()
-
-        const localPosition = worldPosition.clone().sub(parentWorldPosition).applyQuaternion(inverseParentQuaternion)
-        const localQuaternion = inverseParentQuaternion.clone().multiply(worldQuaternion)
-
-        object.position.copy(localPosition)
-        object.quaternion.copy(localQuaternion)
-      } else {
-        object.position.copy(worldPosition)
-        object.quaternion.copy(worldQuaternion)
-      }
-      object.updateMatrix()
-    }
-
-    for (const { object, relativePosition, relativeQuaternion } of relativeTransforms) {
-      const worldPosition = targetPosition.clone().add(relativePosition.clone().applyQuaternion(newBaseQuaternion))
-      const worldQuaternion = newBaseQuaternion.clone().multiply(relativeQuaternion)
-      setWorldTransform(object, worldPosition, worldQuaternion)
-    }
+    return roi
   }
 
   public async buildAnimation(action: RunAnimationAction | AnimationAction, { location, rotation, extraTracks }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<BuiltAnimation> {
@@ -602,6 +553,10 @@ export abstract class World {
   }
 
   public addClickListener(objects: THREE.Object3D | THREE.Object3D[], onClick: () => Promise<boolean>): void {
+    if (objects instanceof Roi3D) {
+      objects = objects.getAllRois()
+    }
+
     for (const object of Array.isArray(objects) ? objects : [objects]) {
       this._clickListeners.set(object, onClick)
     }
