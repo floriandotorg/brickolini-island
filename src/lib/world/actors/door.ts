@@ -1,54 +1,68 @@
 import * as THREE from 'three'
 import type { Roi3D } from '../../assets/model'
+import { engine } from '../../engine'
 import { Actor } from '../actor'
 
 export class Door extends Actor {
-  private _isOpen = false
-  private _animationProgress = 0
-  private _targetProgress = 0
-  private _originalQuaternion: THREE.Quaternion
+  private _lastHit: number | null = null
+  private readonly _leftDoor: { model: Roi3D; originalQuaternion: THREE.Quaternion }
+  private readonly _rightDoor: { model: Roi3D; originalQuaternion: THREE.Quaternion }
 
   constructor(roi: Roi3D) {
     super(roi)
-    this._originalQuaternion = roi.quaternion.clone()
+    let leftDoor = null
+    let rightDoor = null
+    for (const child of roi.roiChildren) {
+      if (child.ownName.startsWith('dor-lt') || child.ownName.startsWith('dor-sl')) {
+        leftDoor = child
+      } else if (child.ownName.startsWith('dor-rt') || child.ownName.startsWith('dor-sr')) {
+        rightDoor = child
+      }
+    }
+    if (leftDoor == null) {
+      throw new Error('No left door found')
+    }
+    if (rightDoor == null) {
+      throw new Error('No right door found')
+    }
+    this._leftDoor = { model: leftDoor, originalQuaternion: leftDoor.quaternion.clone() }
+    this._rightDoor = { model: rightDoor, originalQuaternion: rightDoor.quaternion.clone() }
+  }
+
+  // TODO: Major (!) refactor to be done here, works for now...
+  private getAngle(): number {
+    if (this._lastHit != null) {
+      const timeSinceHit = engine.elapsedTimeSeconds - this._lastHit
+      if (timeSinceHit >= 0 && timeSinceHit <= 1) {
+        return timeSinceHit
+      } else if (timeSinceHit >= 5 && timeSinceHit <= 6) {
+        return 6 - timeSinceHit
+      } else if (timeSinceHit > 6) {
+        this._lastHit = null
+        return 0
+      } else {
+        return 1
+      }
+    }
+    return 0
   }
 
   public get isOpen(): boolean {
-    return this._isOpen
+    return this.getAngle() > 0
   }
 
-  public open(): void {
-    this._isOpen = true
-    this._targetProgress = 1
-  }
-
-  public close(): void {
-    this._isOpen = false
-    this._targetProgress = 0
-  }
-
-  public toggle(): void {
-    if (this._isOpen) {
-      this.close()
-    } else {
-      this.open()
-    }
-  }
-
-  public override update(delta: number): void {
-    const speed = 2
-    if (this._animationProgress < this._targetProgress) {
-      this._animationProgress = Math.min(this._targetProgress, this._animationProgress + delta * speed)
-    } else if (this._animationProgress > this._targetProgress) {
-      this._animationProgress = Math.max(this._targetProgress, this._animationProgress - delta * speed)
-    }
-
-    const rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), (this._animationProgress * Math.PI) / 2)
-    this._roi.quaternion.copy(this._originalQuaternion).multiply(rotation)
+  public override update(_: number): void {
+    const angle = this.getAngle()
+    const tempQ = new THREE.Quaternion()
+    tempQ.setFromAxisAngle(new THREE.Vector3(0, 1, 0), (angle * Math.PI) / 2)
+    this._leftDoor.model.quaternion.copy(this._leftDoor.originalQuaternion).multiply(tempQ)
+    tempQ.setFromAxisAngle(new THREE.Vector3(0, 1, 0), (-angle * Math.PI) / 2)
+    this._rightDoor.model.quaternion.copy(this._rightDoor.originalQuaternion).multiply(tempQ)
   }
 
   public override onCollision(_from: THREE.Vector3, _to: THREE.Vector3): void {
-    console.log('Door collision detected!')
-    this.toggle()
+    if (this._lastHit == null) {
+      this._lastHit = engine.elapsedTimeSeconds
+    }
   }
 }
