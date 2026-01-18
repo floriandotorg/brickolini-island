@@ -36,7 +36,7 @@ export abstract class Actor {
   }
 
   private checkSphereCollision(from: THREE.Vector3, to: THREE.Vector3): boolean {
-    const sphere = this._roi.getWorldBoundingSphere()
+    const sphere = this._roi.model.getWorldBoundingSphere()
     const direction = to.clone().sub(from)
     const length = direction.length()
     if (length < 0.0001) {
@@ -52,7 +52,7 @@ export abstract class Actor {
   }
 
   private checkBoxCollision(from: THREE.Vector3, to: THREE.Vector3): boolean {
-    const box = this._roi.getWorldBoundingBox()
+    const box = this._roi.model.getWorldBoundingBox()
     if (box == null) {
       return false
     }

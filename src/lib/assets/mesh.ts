@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { engine } from '../engine'
 import { getSettings } from '../settings'
 import { getFileUrl, manager } from './load'
-import { Roi3D } from './model'
+import { RoiModel } from './model'
 import { WDB } from './wdb'
 
 export const textureLoader = new THREE.TextureLoader(manager)
@@ -178,7 +178,7 @@ export const colorFromName = (name: string): WDB.Color | null => {
 export const toThreeColor = (color: WDB.Color): THREE.Color => new THREE.Color(color.red / 255, color.green / 255, color.blue / 255).convertSRGBToLinear()
 
 export const colorMesh = (object: THREE.Object3D, color: THREE.Color): void =>
-  Roi3D.traverseWithOffset(object, object => {
+  RoiModel.traverseWithOffset(object, object => {
     if (object instanceof THREE.Mesh) {
       object.material.color = color
     }

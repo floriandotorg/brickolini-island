@@ -1,22 +1,37 @@
 import * as THREE from 'three'
-import type { Roi3D } from '../../assets/model'
+import type { Roi3D, RoiModel } from '../../assets/model'
 import { engine } from '../../engine'
 import { Actor } from '../actor'
 
+// type Closed = {
+//   readonly state: 'closed'
+// }
+
+// type MovingToState = {
+//   readonly state: 'opening' | 'closing'
+//   readonly time: number
+//   readonly next: States
+// }
+
+// type States = Closed | MovingToState
+
+// const IdleState: Idle = { state: 'idle' }
+// const ShelfMovingState: ShelfMoving = { state: 'shelfMoving' }
+
 export class Door extends Actor {
   private _lastHit: number | null = null
-  private readonly _leftDoor: { model: Roi3D; originalQuaternion: THREE.Quaternion }
-  private readonly _rightDoor: { model: Roi3D; originalQuaternion: THREE.Quaternion }
+  private readonly _leftDoor: { model: RoiModel; originalQuaternion: THREE.Quaternion }
+  private readonly _rightDoor: { model: RoiModel; originalQuaternion: THREE.Quaternion }
 
   constructor(roi: Roi3D) {
     super(roi)
     let leftDoor = null
     let rightDoor = null
-    for (const child of roi.roiChildren) {
-      if (child.ownName.startsWith('dor-lt') || child.ownName.startsWith('dor-sl')) {
-        leftDoor = child
-      } else if (child.ownName.startsWith('dor-rt') || child.ownName.startsWith('dor-sr')) {
-        rightDoor = child
+    for (const child of roi.children) {
+      if (child.name.startsWith('dor-lt') || child.name.startsWith('dor-sl')) {
+        leftDoor = child.model
+      } else if (child.name.startsWith('dor-rt') || child.name.startsWith('dor-sr')) {
+        rightDoor = child.model
       }
     }
     if (leftDoor == null) {

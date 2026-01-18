@@ -5,7 +5,7 @@ import type { Audio } from '../../lib/assets/audio'
 import { createImageSprite } from '../../lib/assets/canvas-sprite'
 import type { Control, ControlEvent } from '../../lib/assets/control'
 import { colorAliases, colorMesh, isColorTableName, toThreeColor } from '../../lib/assets/mesh'
-import { Roi3D } from '../../lib/assets/model'
+import { type Roi3D, RoiModel } from '../../lib/assets/model'
 import { getSpawnLocation, type SpawnLocation } from '../../lib/assets/spawn-location'
 import { createTexture } from '../../lib/assets/texture'
 import { engine } from '../../lib/engine'
@@ -15,7 +15,7 @@ import type { Building } from '../../lib/world/building'
 import type { VehicleType } from '../../lib/world/dashboard'
 import type { BuiltAnimation, World } from '../../lib/world/world'
 
-type Part = { readonly wired: Roi3D; readonly shelfPart: Roi3D; readonly shelfGroup: THREE.Group; readonly clone: Roi3D; readonly objectType: ObjectType; readonly basename: string }
+type Part = { readonly wired: Roi3D; readonly shelfPart: Roi3D; readonly shelfGroup: THREE.Group; readonly clone: RoiModel; readonly objectType: ObjectType; readonly basename: string }
 
 enum ObjectType {
   Shelf,
@@ -358,12 +358,16 @@ export class Carbuild {
           console.log(`Shelf ${numberOfShelves}'s uuid: ${child.uuid}`)
           break
         case ObjectType.Wired: {
-          if (!(child instanceof Roi3D)) {
-            throw new Error(`Object3D named '${child.name}' is not an instance of Roi3D`)
+          if (!(child instanceof RoiModel)) {
+            throw new Error(`Object3D named '${child.name}' is not an instance of RoiModel`)
           }
-          const wiredNode = findRecursively(platformNode, node => child.name.endsWith(node.name))?.at(-1)
+          const roi3d = child.roi3d
+          if (roi3d == null) {
+            throw new Error(`Object3D named '${child.name}' does not contain a Roi3d`)
+          }
+          const wiredNode = findRecursively(platformNode, node => roi3d.name.endsWith(node.name))?.at(-1)
           if (wiredNode == null) {
-            throw new Error(`Could not find animation node for ${child.name}`)
+            throw new Error(`Could not find animation node for ${roi3d.name}`)
           }
           animation.tracks = animation.tracks.filter(track => !track.name.startsWith(child.uuid))
           this._highlightPlatform.add(child)
@@ -373,7 +377,7 @@ export class Carbuild {
           }
           child.updateMatrix()
           child.offsetIndex = 0
-          Roi3D.traverseWithOffset(child, object => {
+          RoiModel.traverseWithOffset(child, object => {
             if (object instanceof THREE.Mesh) {
               if (getSettings().graphics.pbrMaterials) {
                 object.material = new THREE.MeshLambertMaterial({ flatShading: object.material.flatShading })
@@ -384,13 +388,17 @@ export class Carbuild {
             }
           })
           colorMesh(child, highlightColor)
-          wiredParts.push(child)
+          wiredParts.push(roi3d)
           break
         }
         case ObjectType.Colored:
         case ObjectType.Normal: {
-          if (!(child instanceof Roi3D)) {
-            throw new Error(`Object3D named '${child.name}' is not an instance of Roi3D`)
+          if (!(child instanceof RoiModel)) {
+            throw new Error(`Object3D named '${child.name}' is not an instance of RoiModel`)
+          }
+          const roi3d = child.roi3d
+          if (roi3d == null) {
+            throw new Error(`Object3D named '${child.name}' does not contain a Roi3d`)
           }
           // Wrap this object in another group to make it invisible without the animation interfering
           const shelfGroup = new THREE.Group()
@@ -398,11 +406,11 @@ export class Carbuild {
           shelfGroup.visible = true
           world.worldGroup.add(shelfGroup)
 
-          const basename = child.ownName.slice(0, -2).toLowerCase()
+          const basename = roi3d.name.slice(0, -2).toLowerCase()
           if (shelfParts.has(basename)) {
             throw new Error(`Shelf part for ${child.name} is already defined`)
           }
-          shelfParts.set(basename, { shelfPart: child, shelfGroup, objectType })
+          shelfParts.set(basename, { shelfPart: roi3d, shelfGroup, objectType })
           break
         }
       }
@@ -414,13 +422,13 @@ export class Carbuild {
     wiredParts.sort((a, b) => saveAt(a.name, -1).localeCompare(saveAt(b.name, -1)))
 
     for (const wired of wiredParts) {
-      const basename = wired.ownName.slice(0, -2).toLowerCase()
+      const basename = wired.name.slice(0, -2).toLowerCase()
       const shelfItem = shelfParts.get(basename)
       if (shelfItem == null) {
         throw new Error(`No shelf part for ${wired.name} found`)
       }
       const { shelfPart, shelfGroup, objectType } = shelfItem
-      const clone = shelfPart.clone()
+      const clone = shelfPart.model.clone()
       clone.visible = false
       shelfGroup.add(clone)
       const partObjects = { wired, shelfPart, shelfGroup, clone, objectType, basename }
@@ -474,8 +482,8 @@ export class Carbuild {
   private _displayPartModel(part: Part): void {
     part.shelfGroup.visible = false
     part.clone.visible = true
-    part.clone.quaternion.copy(part.shelfPart.quaternion)
-    part.clone.scale.copy(part.shelfPart.scale)
+    part.clone.quaternion.copy(part.shelfPart.model.quaternion)
+    part.clone.scale.copy(part.shelfPart.model.scale)
     part.clone.position.set(0, 0, 0)
     this._displayGroup.add(part.clone)
     this._displayGroup.position.copy(this._displayPosition)
@@ -557,7 +565,7 @@ export class Carbuild {
     part.shelfGroup.visible = !part.clone.visible
     part.wired.visible = index === this._part
     if (part.clone.visible) {
-      part.wired.matrix.decompose(part.clone.position, part.clone.quaternion, part.clone.scale)
+      part.wired.model.matrix.decompose(part.clone.position, part.clone.quaternion, part.clone.scale)
       this._buildPlatform.add(part.clone)
     } else {
       this._displayGroup.add(part.clone)
@@ -579,7 +587,7 @@ export class Carbuild {
   public pointerDown(normalizedX: number, normalizedY: number): void {
     let part = this._rayclick.pointerDown(normalizedX, normalizedY, this._parts, part => part.clone)
     if (part == null) {
-      part = this._rayclick.pointerDown(normalizedX, normalizedY, this._parts, part => part.shelfPart)
+      part = this._rayclick.pointerDown(normalizedX, normalizedY, this._parts, part => part.shelfPart.model)
       // The shelf part may be visible, but not the group
       if (part != null && !part.shelfGroup.visible) {
         return
@@ -604,7 +612,7 @@ export class Carbuild {
       case 'dragging': {
         const part = this._state.selectedPart
         const index = this._parts.indexOf(part)
-        if (index <= this._part && part.wired.getWorldBoundingSphere().intersect(part.clone.getWorldBoundingSphere())) {
+        if (index <= this._part && part.wired.model.getWorldBoundingSphere().intersect(part.clone.getWorldBoundingSphere())) {
           this._returnState()
           if (index === this._part) {
             void this.addPart()
@@ -628,11 +636,11 @@ export class Carbuild {
       }
       const partQuarternion = this._state.selectedPart.clone.quaternion.clone().invert()
       const startQuarternion = this._state.selectedPart.clone.getWorldQuaternion(new THREE.Quaternion()).multiply(partQuarternion)
-      const endQuarternion = this._state.selectedPart.wired.getWorldQuaternion(new THREE.Quaternion()).multiply(partQuarternion)
+      const endQuarternion = this._state.selectedPart.wired.model.getWorldQuaternion(new THREE.Quaternion()).multiply(partQuarternion)
       this._state = { state: 'dragging', selectedPart: this._state.selectedPart, startQuarternion, endQuarternion }
     }
     if (this._state.state === 'dragging') {
-      const targetScreenCoords = this._state.selectedPart.wired.getWorldPosition(new THREE.Vector3()).clone().project(this._world.camera)
+      const targetScreenCoords = this._state.selectedPart.wired.model.getWorldPosition(new THREE.Vector3()).clone().project(this._world.camera)
       const sourceScreenCoords = this._displayPosition.clone().project(this._world.camera)
       targetScreenCoords.z = 0
       sourceScreenCoords.z = 0
@@ -644,12 +652,12 @@ export class Carbuild {
         if (ratioY >= 0) {
           const alpha = Math.min(ratioY, 1)
           const normal = this._world.camera.getWorldDirection(new THREE.Vector3())
-          const targetPoint = this._state.selectedPart.wired.getWorldPosition(new THREE.Vector3())
+          const targetPoint = this._state.selectedPart.wired.model.getWorldPosition(new THREE.Vector3())
           const planePoint = targetPoint.clone().lerp(this._displayPosition, alpha)
           return new THREE.Plane().setFromNormalAndCoplanarPoint(normal, planePoint)
         } else {
           const normal = this._world.camera.up
-          const planePoint = this._state.selectedPart.wired.getWorldPosition(new THREE.Vector3())
+          const planePoint = this._state.selectedPart.wired.model.getWorldPosition(new THREE.Vector3())
           return new THREE.Plane().setFromNormalAndCoplanarPoint(normal, planePoint)
         }
       })()
@@ -671,7 +679,7 @@ export class Carbuild {
     }
   }
 
-  private _replaceTexture(event: ControlEvent, object: Roi3D): void {
+  private _replaceTexture(event: ControlEvent, object: RoiModel): void {
     if (!isTextureAction(event.otherAction)) {
       return
     }
@@ -698,19 +706,19 @@ export class Carbuild {
         const part: Part | undefined = this._currentPart
         if (part != null) {
           if (this._decalControls.isButton(buttonName)) {
-            this._replaceTexture(event, part.shelfPart)
+            this._replaceTexture(event, part.shelfPart.model)
             this._replaceTexture(event, part.clone)
             this._decalControls.sound.playAgain()
             return true
           }
           const customColor = this._colorControls.getColor(buttonName)
           if (customColor != null) {
-            const colorTableName = `c_${part.shelfPart.ownName}`
+            const colorTableName = `c_${part.shelfPart.name}`
             if (isColorTableName(colorTableName)) {
               engine.currentSaveGame.setColor(colorTableName, customColor)
             }
             const threeColor = toThreeColor(colorAliases[customColor])
-            colorMesh(part.shelfPart, threeColor)
+            colorMesh(part.shelfPart.model, threeColor)
             colorMesh(part.clone, threeColor)
             this._colorControls.sound.playAgain()
             return true

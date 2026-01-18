@@ -316,7 +316,7 @@ export abstract class IsleBase extends World {
       })()
       if (placement != null) {
         const rootRoi = await getModel(model)
-        const allRois = rootRoi.getAllRois()
+        const allRois = rootRoi.getAllModels()
         for (const roi of allRois) {
           this.scene.add(roi)
         }

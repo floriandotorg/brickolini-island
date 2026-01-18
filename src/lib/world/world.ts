@@ -5,7 +5,7 @@ import { type AnimationAction, type AudioAction, getExtraValue, isAnimationActio
 import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, createAnimationActor, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { type Audio, getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
-import { calculateTransformationMatrix, getGlobalPart, Roi3D } from '../assets/model'
+import { calculateTransformationMatrix, getGlobalPart, Roi3D, RoiModel } from '../assets/model'
 import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
 import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
@@ -261,10 +261,10 @@ export abstract class World {
     if (roi == null) {
       return null
     }
-    if (!(roi instanceof Roi3D)) {
+    if (!(roi instanceof RoiModel)) {
       throw new Error(`Object "${name}" is not an ROI`)
     }
-    return roi
+    return roi.roi3d
   }
 
   public getRoi(name: string): Roi3D {
@@ -572,9 +572,12 @@ export abstract class World {
     }
   }
 
-  public addClickListener(objects: THREE.Object3D | THREE.Object3D[], onClick: () => Promise<boolean>): void {
+  public addClickListener(objects: Roi3D | THREE.Object3D | THREE.Object3D[], onClick: () => Promise<boolean>): void {
+    if (objects instanceof RoiModel) {
+      throw new Error(`RoiModel ${objects.name} should not be added a click listener`)
+    }
     if (objects instanceof Roi3D) {
-      objects = objects.getAllRois()
+      objects = objects.getAllModels()
     }
 
     for (const object of Array.isArray(objects) ? objects : [objects]) {

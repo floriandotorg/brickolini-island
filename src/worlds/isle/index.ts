@@ -895,6 +895,7 @@ export class Isle extends IsleBase {
       }
     }
 
+    this.debugPrintSceneGraph()
     for (const child of [Gas, Police, InfoCenter_Entity, Beach, Racej, MedCtr]) {
       const entity = getExtraValue(child, 'Object')?.toLowerCase()
       const worldName: WorldName | undefined = (() => {
@@ -1002,9 +1003,9 @@ export class Isle extends IsleBase {
 
     this._currentVehicle = vehicle
 
-    this._currentVehicleRoi.setRoiVisibility('invisible')
-    this.camera.position.set(this._currentVehicleRoi.position.x, this._currentVehicleRoi.position.y, this._currentVehicleRoi.position.z)
-    this.camera.quaternion.copy(this._currentVehicleRoi.quaternion)
+    this._currentVehicleRoi.visible = false
+    this.camera.position.set(this._currentVehicleRoi.model.position.x, this._currentVehicleRoi.model.position.y, this._currentVehicleRoi.model.position.z)
+    this.camera.quaternion.copy(this._currentVehicleRoi.model.quaternion)
     this._playerMovement.placeOnGround(this.camera)
 
     this._showDashboard()
@@ -1151,7 +1152,7 @@ export class Isle extends IsleBase {
     const groundPosition = this._playerMovement.getGroundPosition(this.camera.position, new THREE.Vector3(0, 0, 0))
     engine.currentSaveGame.setVehiclePlacement(this._currentVehicle.type, { position: groundPosition, quaternion: this.camera.quaternion })
     this._currentVehicleRoi.moveRoiTo(groundPosition, this.camera.quaternion)
-    this._currentVehicleRoi.setRoiVisibility('visible')
+    this._currentVehicleRoi.visible = true
 
     this.camera.position.add(new THREE.Vector3(0, 0, -4).applyQuaternion(this.camera.quaternion))
     this._playerMovement.placeOnGround(this.camera)
