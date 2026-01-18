@@ -16,6 +16,7 @@ import type { Composer } from '../lib/effect/composer'
 import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
 import { applyLights, NUM_ORIGINAL_LIGHTS } from '../lib/original-lights'
 import { getSettings } from '../lib/settings'
+import { type Actor, ColliderType } from '../lib/world/actor'
 import { BoundaryManager } from '../lib/world/boundary-manager'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
 import { Plants } from '../lib/world/plants'
@@ -478,7 +479,7 @@ export abstract class IsleBase extends World {
     }
   }
 
-  public handleActorAction(action: ActorAction): void {
+  public async handleActorAction(action: ActorAction): Promise<void> {
     const modelName = getExtraValue(action.children[0], 'DB_CREATE')
     if (modelName == null) {
       console.warn(`Actor action without db_create is not supported: ${action.extra}`)
@@ -503,6 +504,25 @@ export abstract class IsleBase extends World {
       const dstScale = Number.parseFloat(pathMatch[5])
       const { position, quaternion } = this.boundaryManager.getObjectPlacement(pathId, src, srcScale, dst, dstScale)
       roi.moveRoiTo(position, quaternion)
+    }
+    const objectScript = getExtraValue(action, 'Object')
+    if (objectScript != null) {
+      let actor: Actor | null = null
+      switch (objectScript) {
+        case 'Doors':
+          actor = new (await import('../lib/world/actors/door')).Door(roi)
+          break
+        default:
+          console.warn(`Object script not supported: ${objectScript}`)
+          return
+      }
+      if (actor != null) {
+        if (getExtraValue(action, 'COLLIDE_BOX') != null) {
+          actor.colliderType = ColliderType.Box
+        }
+
+        this.registerActor(actor)
+      }
     }
   }
 

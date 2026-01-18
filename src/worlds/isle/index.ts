@@ -1208,6 +1208,8 @@ export class Isle extends IsleBase {
 
     const { fromPos, toPos, normalizedSpeed } = this._playerMovement.update(delta, this._currentVehicle?.type ?? null)
 
+    this.updateActors(delta, fromPos, toPos)
+
     this._dashboard.update(normalizedSpeed)
 
     this.boundaryManager.update(fromPos, toPos)

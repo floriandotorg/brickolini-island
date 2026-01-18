@@ -350,6 +350,8 @@ export abstract class Race extends IsleBase {
 
     const { normalizedSpeed, fromPos, toPos } = this._playerMovement.update(delta, 'racecar')
 
+    this.updateActors(delta, fromPos, toPos)
+
     this._speedMeter?.draw(normalizedSpeed)
     const meterProgress = this._playerProgress.progress * 0.928 + 0.036
     this._distanceMeter?.draw(meterProgress)
@@ -362,5 +364,6 @@ export abstract class Race extends IsleBase {
 
     this._raceMap?.update()
     this.boundaryManager.update(fromPos, toPos)
+    this.updateActors(delta, fromPos, toPos)
   }
 }

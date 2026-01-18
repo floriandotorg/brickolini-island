@@ -9,7 +9,8 @@ import { calculateTransformationMatrix, getGlobalPart, Roi3D } from '../assets/m
 import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
 import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
-import { Actor } from './actor'
+import type { Actor } from './actor'
+import { Character } from './character'
 
 export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevride' | 'elevopen' | 'seaview' | 'observe' | 'elevdown' | 'carrace' // jetrace
 
@@ -34,7 +35,7 @@ export type WorldSpawn =
     }
 
 type FaceAnimation = {
-  actor: Actor
+  character: Character
   currentVideoElement?: HTMLVideoElement
   animations: {
     start: number
@@ -71,6 +72,7 @@ export abstract class World {
 
   private _raycaster = new THREE.Raycaster()
   private _clickListeners = new Map<THREE.Object3D, () => Promise<boolean>>()
+  private _actors = new Set<Actor>()
   private _runningAnimations: {
     mixer: THREE.AnimationMixer
     clipAction: THREE.AnimationAction
@@ -84,7 +86,7 @@ export abstract class World {
     stopAtTime?: number
   }[] = []
   private _runningAudios: Audio[] = []
-  private _actors = new Map<string, { actor: Actor; refCount: number }>()
+  private _characters = new Map<string, { character: Character; refCount: number }>()
   private _worldGroup: THREE.Group | null = null
 
   constructor(public readonly name: WorldName) {
@@ -199,27 +201,27 @@ export abstract class World {
     this.camera.lookAt(pathToPosition(lookAtPositionPath))
   }
 
-  public async getActor(name: string): Promise<Actor> {
-    const existing = this._actors.get(name)
+  public async getActor(name: string): Promise<Character> {
+    const existing = this._characters.get(name)
     if (existing != null) {
       ++existing.refCount
-      return existing.actor
+      return existing.character
     }
-    const actor = await Actor.create(this, name)
-    this._actors.set(name, { actor, refCount: 1 })
+    const actor = await Character.create(this, name)
+    this._characters.set(name, { character: actor, refCount: 1 })
     return actor
   }
 
   public releaseActor(name: string): void {
-    const entry = this._actors.get(name)
+    const entry = this._characters.get(name)
     if (entry == null) {
       throw new Error(`Trying to release an actor that was already released: ${name}`)
     }
 
     --entry.refCount
     if (entry.refCount <= 0) {
-      entry.actor.removeFromParent()
-      this._actors.delete(name)
+      entry.character.removeFromParent()
+      this._characters.delete(name)
     }
   }
 
@@ -271,6 +273,24 @@ export abstract class World {
       throw new Error(`ROI not found: ${name}`)
     }
     return roi
+  }
+
+  public registerActor(actor: Actor): void {
+    this._actors.add(actor)
+  }
+
+  public unregisterCollisionActor(actor: Actor): void {
+    actor.dispose()
+    this._actors.delete(actor)
+  }
+
+  public updateActors(delta: number, from: THREE.Vector3, to: THREE.Vector3): void {
+    for (const actor of this._actors) {
+      actor.update(delta)
+      if (actor.checkCollision(from, to)) {
+        actor.onCollision(from, to)
+      }
+    }
   }
 
   public async buildAnimation(action: RunAnimationAction | AnimationAction, { location, rotation, extraTracks }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<BuiltAnimation> {
@@ -381,8 +401,8 @@ export abstract class World {
         if (phoneme.extra == null) {
           throw new Error('Phoneme extra is null')
         }
-        const actor = this.getObjectByNameRecursive(phoneme.extra)
-        if (actor == null || !(actor instanceof Actor)) {
+        const character = this.getObjectByNameRecursive(phoneme.extra)
+        if (character == null || !(character instanceof Character)) {
           throw new Error(`Actor not found: ${phoneme.extra}`)
         }
         const videoElement = document.createElement('video')
@@ -390,17 +410,17 @@ export abstract class World {
         const videoTexture = new THREE.VideoTexture(videoElement)
         videoTexture.colorSpace = THREE.SRGBColorSpace
         return {
-          actor,
+          character,
           videoElement,
           videoTexture,
           start: phoneme.startTime,
           duration: phoneme.duration,
         }
       })
-      .reduce((acc, { actor, ...rest }) => {
-        const existing = acc.find(a => a.actor === actor)
+      .reduce((acc, { character, ...rest }) => {
+        const existing = acc.find(a => a.character === character)
         if (existing == null) {
-          acc.push({ actor, animations: [rest] })
+          acc.push({ character, animations: [rest] })
         } else {
           existing.animations.push(rest)
         }
@@ -467,11 +487,11 @@ export abstract class World {
 
     const audios: THREE.PositionalAudio[] = await Promise.all(
       positionalAudioActions.map(async audio => {
-        const actor = this.getObjectByNameRecursive(audio.extra)
-        if (actor == null) {
+        const character = this.getObjectByNameRecursive(audio.extra)
+        if (character == null) {
           throw new Error(`Actor not found: ${audio.extra}`)
         }
-        return this.playPositionalAudio(audio, actor instanceof Actor ? actor.head : actor, audio.startTime / 1_000)
+        return this.playPositionalAudio(audio, character instanceof Character ? character.head : character, audio.startTime / 1_000)
       }),
     )
     const sentinel = audioActions.length > 0 || audios.length > 0 ? engine.lowerBackgroundMusic() : null
@@ -528,7 +548,7 @@ export abstract class World {
     return new Promise(resolve => {
       const removeMe = () => {
         for (const faceAnimation of faceAnimations) {
-          faceAnimation.actor.resetHeadTexture()
+          faceAnimation.character.resetHeadTexture()
         }
         for (const actor of objectsToHideOnStop) {
           actor.visible = false
@@ -658,8 +678,8 @@ export abstract class World {
         const { videoElement } = currentAnimation
         if (faceAnimation.currentVideoElement !== videoElement) {
           faceAnimation.currentVideoElement = videoElement
-          faceAnimation.actor.headMaterial.map = currentAnimation.videoTexture
-          faceAnimation.actor.headMaterial.needsUpdate = true
+          faceAnimation.character.headMaterial.map = currentAnimation.videoTexture
+          faceAnimation.character.headMaterial.needsUpdate = true
         }
         faceAnimation.currentVideoElement.currentTime = mixer.time - currentAnimation.start / 1_000
       }

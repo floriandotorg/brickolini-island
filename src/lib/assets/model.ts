@@ -4,6 +4,7 @@ import { Isle } from '../../worlds/isle'
 import type { ModelAction } from '../action-types'
 import { engine } from '../engine'
 import { getSettings } from '../settings'
+import type { Actor } from '../world/actor'
 import { BinaryReader } from './binary-reader'
 import { getAction, getFile, getFileUrl } from './load'
 import { colorFromName, createGeometryAndMaterials } from './mesh'
@@ -95,17 +96,41 @@ export class BoundingSphere {
   }
 }
 
+export class BoundingBox extends THREE.Box3 {
+  public constructor(min?: THREE.Vector3, max?: THREE.Vector3) {
+    super(min, max)
+  }
+
+  public static fromSphere(sphere: BoundingSphere): BoundingBox {
+    const min = sphere.center.clone().subScalar(sphere.radius)
+    const max = sphere.center.clone().addScalar(sphere.radius)
+    return new BoundingBox(min, max)
+  }
+}
+
 export class Roi3D extends THREE.Group {
   public boundingSphere = new BoundingSphere(0, new THREE.Vector3(0, 0, 0))
+  public boundingBox: BoundingBox | null = null
   public offsetIndex = 0
   public ownName = ''
   public roiChildren: Roi3D[] = []
   public roiParent: Roi3D | null = null
+  public actor: Actor | null = null
 
   public getWorldBoundingSphere(): BoundingSphere {
     const worldCenter = this.getWorldPosition(new THREE.Vector3())
     worldCenter.add(this.boundingSphere.center)
     return new BoundingSphere(this.boundingSphere.radius, worldCenter)
+  }
+
+  public getWorldBoundingBox(): THREE.Box3 | null {
+    if (this.boundingBox == null) {
+      return BoundingBox.fromSphere(this.getWorldBoundingSphere())
+    }
+    const worldPosition = this.getWorldPosition(new THREE.Vector3())
+    const min = this.boundingBox.min.clone().add(worldPosition)
+    const max = this.boundingBox.max.clone().add(worldPosition)
+    return new BoundingBox(min, max)
   }
 
   public override copy(object: THREE.Object3D, recursive?: boolean): this {
