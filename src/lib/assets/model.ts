@@ -97,10 +97,6 @@ export class BoundingSphere {
 }
 
 export class BoundingBox extends THREE.Box3 {
-  public constructor(min?: THREE.Vector3, max?: THREE.Vector3) {
-    super(min, max)
-  }
-
   public static fromSphere(sphere: BoundingSphere): BoundingBox {
     const min = sphere.center.clone().subScalar(sphere.radius)
     const max = sphere.center.clone().addScalar(sphere.radius)
