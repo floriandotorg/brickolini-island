@@ -216,7 +216,12 @@ export abstract class Race extends IsleBase {
         }
 
         const morphKey = child.morphKeys.toReversed().find(key => key.timeAndFlags.time <= time * 100)
-        node.visible = morphKey?.visible ?? true
+        const visible = morphKey?.visible ?? true
+        node.visible = visible
+
+        if (childName === 'isle_hi') {
+          this._plantGroup.visible = visible
+        }
 
         applyVisibility(child.children, childName)
       }
