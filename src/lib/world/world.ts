@@ -279,11 +279,6 @@ export abstract class World {
     this._actors.add(actor)
   }
 
-  public unregisterCollisionActor(actor: Actor): void {
-    actor.dispose()
-    this._actors.delete(actor)
-  }
-
   public updateActors(delta: number, from: THREE.Vector3, to: THREE.Vector3): void {
     for (const actor of this._actors) {
       actor.update(delta)
