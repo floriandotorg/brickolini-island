@@ -27,17 +27,29 @@
       },
       "suspicious": {
         "noIrregularWhitespace": "error",
-        "noGlobalIsNan": "error"
+        "noGlobalIsNan": "error",
+        "noExplicitAny": "error",
+        "noFocusedTests": "error"
       },
       "complexity": {
         "noUselessEscapeInRegex": "error",
-        "useOptionalChain": "error"
+        "useOptionalChain": "error",
+        "noUselessSwitchCase": "error"
       },
       "style": {
         "useCollapsedIf": "error",
         "useTrimStartEnd": "error",
         "noNonNullAssertion": "error",
-        "useTemplate": "error"
+        "useTemplate": "error",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error",
+        "noUselessElse": "error"
       },
       "correctness": {
         "noUnusedImports": "error",

@@ -72,9 +72,9 @@ import { Name } from './regbook'
 const ANIMATIONS = [iic019in_RunAnim, iic020in_RunAnim, iic021in_RunAnim, iic022in_RunAnim, iic023in_RunAnim, iic024in_RunAnim, iic025in_RunAnim, iic026in_RunAnim, iic027in_RunAnim, iica28in_RunAnim, iicb28in_RunAnim, iicc28in_RunAnim, iic029in_RunAnim, iic032in_RunAnim]
 
 enum CharacterMovieState {
-  idle,
-  playing,
-  cancelled,
+  idle = 0,
+  playing = 1,
+  cancelled = 2,
 }
 
 type Destination = {

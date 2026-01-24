@@ -178,7 +178,7 @@ export namespace WDB {
   }
 
   export class World {
-    public name: string = ''
+    public name = ''
     public parts: Part[] = []
     public models: Model[] = []
   }
@@ -227,10 +227,9 @@ export namespace WDB {
           reader.seek(offset + endComponentOffset)
         }
         return lods
-      } else {
-        const reference: Reference = { reference: modelName.replace(/[0-9]+$/, ''), type: 'reference' }
-        return reference
       }
+      const reference: Reference = { reference: modelName.replace(/[0-9]+$/, ''), type: 'reference' }
+      return reference
     })()
     const children: Roi[] = []
     const numRois = reader.readUint32()

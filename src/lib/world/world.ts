@@ -16,8 +16,8 @@ export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'regbook' 
 
 // you cannot enter the second floor
 export enum ElevatorEntrance {
-  First,
-  Third,
+  First = 0,
+  Third = 1,
 }
 
 export type NormalWorld = Exclude<WorldName, 'isle' | 'elevride'>
@@ -154,26 +154,26 @@ export abstract class World {
           throw new Error(`Expected at most one rotation key, got ${node.rotationKeys.length}`)
         }
         if (node.scaleKeys.length > 0) {
-          throw new Error(`Scale keys found`)
+          throw new Error('Scale keys found')
         }
         if (node.morphKeys.length > 0) {
-          throw new Error(`Morph keys found`)
+          throw new Error('Morph keys found')
         }
         if (node.translationKeys.length === 1) {
           if (node.translationKeys[0].timeAndFlags.time > 0) {
-            throw new Error(`Translation key has time > 0`)
+            throw new Error('Translation key has time > 0')
           }
           if (node.translationKeys[0].timeAndFlags.flags > 1) {
-            throw new Error(`Translation key has flags > 1`)
+            throw new Error('Translation key has flags > 1')
           }
           acc.add(node.translationKeys[0].vertex)
         }
         if (node.rotationKeys.length === 1) {
           if (node.rotationKeys[0].timeAndFlags.time > 0) {
-            throw new Error(`Rotation key has time > 0`)
+            throw new Error('Rotation key has time > 0')
           }
           if (node.rotationKeys[0].timeAndFlags.flags > 1) {
-            throw new Error(`Rotation key has flags > 1`)
+            throw new Error('Rotation key has flags > 1')
           }
           acc.applyQuaternion(node.rotationKeys[0].quaternion)
         }
@@ -805,7 +805,7 @@ export abstract class World {
     return mesh
   }
 
-  public debugDrawDebugMesh(mesh: THREE.Mesh, color: string = '#00ff00'): void {
+  public debugDrawDebugMesh(mesh: THREE.Mesh, color = '#00ff00'): void {
     mesh.material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5, side: THREE.DoubleSide })
     this._debugGroup.add(mesh)
   }

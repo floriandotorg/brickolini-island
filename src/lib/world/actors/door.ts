@@ -50,14 +50,15 @@ export class Door extends Actor {
       const timeSinceHit = engine.elapsedTimeSeconds - this._lastHit
       if (timeSinceHit >= 0 && timeSinceHit <= 1) {
         return timeSinceHit
-      } else if (timeSinceHit >= 5 && timeSinceHit <= 6) {
+      }
+      if (timeSinceHit >= 5 && timeSinceHit <= 6) {
         return 6 - timeSinceHit
-      } else if (timeSinceHit > 6) {
+      }
+      if (timeSinceHit > 6) {
         this._lastHit = null
         return 0
-      } else {
-        return 1
       }
+      return 1
     }
     return 0
   }

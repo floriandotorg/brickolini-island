@@ -68,7 +68,7 @@ class MapLocator {
     if (geometry == null) {
       throw new Error('No map geometry defined')
     }
-    const [worldXOffset, worldXLength, worldZOffset, worldZLength, mapWidth, mapHeight, mapXOffset, mapYOffset] = splitExtraValue(geometry).map(s => parseInt(s, 10))
+    const [worldXOffset, worldXLength, worldZOffset, worldZLength, mapWidth, mapHeight, mapXOffset, mapYOffset] = splitExtraValue(geometry).map(s => Number.parseInt(s, 10))
     this._worldXOffset = worldXOffset
     this._worldXLength = worldXLength
     this._worldZOffset = worldZOffset
@@ -264,7 +264,8 @@ export abstract class Race extends IsleBase {
         const variable = getExtraValue(child, 'variable')?.toLowerCase()
         if (variable == null) {
           throw new Error('Meter without variable is not supported')
-        } else if (variable.endsWith('speed')) {
+        }
+        if (variable.endsWith('speed')) {
           this._speedMeter = await Meter.create(child)
           this._controlsRender.scene.add(this._speedMeter.sprite)
         } else if (variable.endsWith('fuel')) {

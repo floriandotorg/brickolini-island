@@ -82,7 +82,7 @@ for (const [letter, action] of letterActions) {
 }
 
 export class Name {
-  private _name: string = ''
+  private _name = ''
   private _letters: THREE.Sprite[]
 
   constructor(scene: THREE.Scene, x: number, y: number, charWidth: number) {

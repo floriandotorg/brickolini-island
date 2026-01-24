@@ -292,10 +292,10 @@ export class Meter {
   private readonly _image: HTMLImageElement
   private readonly _sprite: CanvasSprite
   private readonly _direction: (width: number, height: number, fill: number) => { x: number; y: number; width: number; height: number }
-  private _fill: number = 0
+  private _fill = 0
 
   private constructor(action: MeterAction, image: HTMLImageElement) {
-    const fillerIndex = parseInt(getExtraValue(action, 'filler_index') ?? '', 10)
+    const fillerIndex = Number.parseInt(getExtraValue(action, 'filler_index') ?? '', 10)
     const fillColor = Number.isInteger(fillerIndex) && fillerIndex > 0 ? action.colorPalette.at(fillerIndex) : null
     if (fillColor == null) {
       throw new Error('The filler_index is not a valid index')
@@ -385,7 +385,8 @@ export class Dashboard {
         const variable = getExtraValue(child, 'variable')?.toLowerCase()
         if (variable == null) {
           throw new Error('Meter without variable is not supported')
-        } else if (variable.endsWith('speed')) {
+        }
+        if (variable.endsWith('speed')) {
           this._speedMeter = await Meter.create(child)
           this._render.scene.add(this._speedMeter.sprite)
         } else if (variable.endsWith('fuel')) {

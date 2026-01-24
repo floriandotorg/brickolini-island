@@ -104,7 +104,7 @@ class Engine {
   private _world: World | null = null
   private _keyStates: Set<string> = new Set()
   private _backgroundAudio: { actionId: number; audio: Audio } | null = null
-  private _transitionStart: number = 0
+  private _transitionStart = 0
   private _transitionPromiseResolve: (() => void) | null = null
   private _currentSaveGame = SaveGame.UnloadedSave
   private readonly _gains: Record<AudioType, GainNode>
@@ -112,7 +112,7 @@ class Engine {
   private readonly _backgroundLowerSentinels = new Set<Sentinel>()
   private readonly _respawnVehicle = new Set<VehicleType>()
 
-  public debugMode: boolean = false
+  public debugMode = false
   public readonly saveGameNames: string[]
 
   public get currentPlayerMask(): number {
@@ -227,7 +227,7 @@ class Engine {
     }
   }
 
-  public updateVolumes(fadeMusic: boolean = true): void {
+  public updateVolumes(fadeMusic = true): void {
     const volumes = getSettings().volume
     for (const audioType of AudioTypes) {
       const volume = volumes[audioType]

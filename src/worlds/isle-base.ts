@@ -344,7 +344,7 @@ export abstract class IsleBase extends World {
     }
   }
 
-  public placeVehicle(vehicle: VehicleType, boundaryName: string, src: number, srcScale: number, dst: number, _dstScale: number, ignoreSave: boolean = false): void {
+  public placeVehicle(vehicle: VehicleType, boundaryName: string, src: number, srcScale: number, dst: number, _dstScale: number, ignoreSave = false): void {
     const vehicleRoi = this.getVehicleRoi(vehicle)
     if (vehicleRoi == null) {
       return
@@ -353,9 +353,8 @@ export abstract class IsleBase extends World {
       const vehiclePlacement = ignoreSave ? null : engine.currentSaveGame.getVehiclePlacement(vehicle)
       if (vehiclePlacement != null) {
         return vehiclePlacement
-      } else {
-        return this.boundaryManager.getObjectPlacement(boundaryName, src, srcScale, dst, _dstScale)
       }
+      return this.boundaryManager.getObjectPlacement(boundaryName, src, srcScale, dst, _dstScale)
     })()
     vehicleRoi.moveRoiTo(position, quaternion)
   }

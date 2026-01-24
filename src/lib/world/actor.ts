@@ -2,8 +2,8 @@ import * as THREE from 'three'
 import type { Roi3D } from '../assets/model'
 
 export enum ColliderType {
-  Box,
-  Sphere,
+  Box = 0,
+  Sphere = 1,
 }
 
 export abstract class Actor {

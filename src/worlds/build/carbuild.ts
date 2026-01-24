@@ -18,11 +18,11 @@ import type { BuiltAnimation, World } from '../../lib/world/world'
 type Part = { readonly wired: Roi3D; readonly shelfPart: Roi3D; readonly shelfGroup: THREE.Group; readonly clone: RoiModel; readonly objectType: ObjectType; readonly basename: string }
 
 enum ObjectType {
-  Shelf,
-  Wired,
-  Normal,
-  Colored,
-  Other,
+  Shelf = 0,
+  Wired = 1,
+  Normal = 2,
+  Colored = 3,
+  Other = 4,
 }
 
 const determineObjectType = (name: string): ObjectType => {
@@ -83,9 +83,8 @@ export const buildDecalControls = async (background: ImageAction | null, sound: 
     const [partName, controlNames] = (() => {
       if (typeof item === 'string') {
         return [item, ['Decals_Ctl']]
-      } else {
-        return item
       }
+      return item
     })()
     const controls = controlNames.map(controlName => {
       const control = building.getControl(controlName)
@@ -117,7 +116,7 @@ export class CustomColorControls {
   public readonly background: THREE.Sprite
   public readonly sound: Audio
   private readonly _colors: CustomColorControl[]
-  private _visible: boolean = false
+  private _visible = false
 
   public constructor(background: ImageAction, sound: Audio, colors: CustomColorControl[]) {
     this.background = createImageSprite(background, -0.75)
@@ -152,7 +151,7 @@ export class CustomDecalControls {
   public readonly background: THREE.Sprite | null
   public readonly sound: Audio
   private readonly _decals: Map<string, Control[]>
-  private _partName: string = ''
+  private _partName = ''
 
   public constructor(background: ImageAction | null, sound: Audio, decals: Map<string, Control[]>) {
     this.background = background != null ? createImageSprite(background, -0.75) : null
@@ -253,9 +252,9 @@ export class Carbuild {
   private readonly _rotationSound: Audio
   private readonly _rayclick: RayClick
   private _state: States = IdleState
-  private _rotating: boolean = false
+  private _rotating = false
   private _animation: { duration: number; interval: number; clip: THREE.AnimationClip } | null = null
-  private shelfAnimationTime: number = 0
+  private shelfAnimationTime = 0
 
   public get rotating(): boolean {
     return this._rotating
@@ -655,11 +654,10 @@ export class Carbuild {
           const targetPoint = this._state.selectedPart.wired.model.getWorldPosition(new THREE.Vector3())
           const planePoint = targetPoint.clone().lerp(this._displayPosition, alpha)
           return new THREE.Plane().setFromNormalAndCoplanarPoint(normal, planePoint)
-        } else {
-          const normal = this._world.camera.up
-          const planePoint = this._state.selectedPart.wired.model.getWorldPosition(new THREE.Vector3())
-          return new THREE.Plane().setFromNormalAndCoplanarPoint(normal, planePoint)
         }
+        const normal = this._world.camera.up
+        const planePoint = this._state.selectedPart.wired.model.getWorldPosition(new THREE.Vector3())
+        return new THREE.Plane().setFromNormalAndCoplanarPoint(normal, planePoint)
       })()
 
       const ndc = new THREE.Vector3(normalizedX, normalizedY, 0.5).unproject(this._world.camera)

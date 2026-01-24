@@ -6,7 +6,7 @@ import { setScaleAndPosition } from './canvas-sprite'
 import { getActionFileUrl } from './load'
 
 export class MovieSprite {
-  private _hideAfterFinish: boolean = false
+  private _hideAfterFinish = false
 
   private constructor(
     private readonly _videoElement: HTMLVideoElement,

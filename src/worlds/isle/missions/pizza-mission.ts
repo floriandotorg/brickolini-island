@@ -140,9 +140,9 @@ export class PizzaMission {
       } = {
     state: 'not-started',
   }
-  private _helpAudioPlayed: boolean = false
-  private _playedLocationAnimation: boolean = false
-  private _pepperBroughtPizzaWithoutHelicopterCount: number = 0
+  private _helpAudioPlayed = false
+  private _playedLocationAnimation = false
+  private _pepperBroughtPizzaWithoutHelicopterCount = 0
 
   public get isActive(): boolean {
     return this._missionState.state !== 'not-started'
@@ -273,11 +273,13 @@ export class PizzaMission {
       this._playedLocationAnimation = true
       void this.isle.playAnimation(pns050p1_RunAnim)
       return true
-    } else if (name === 'W' && data === 0x15f && engine.currentSaveGame.playerUnsafe === 'papa' && !this._playedLocationAnimation) {
+    }
+    if (name === 'W' && data === 0x15f && engine.currentSaveGame.playerUnsafe === 'papa' && !this._playedLocationAnimation) {
       this._playedLocationAnimation = true
       void this.isle.playAnimation(wns050p1_RunAnim)
       return true
-    } else if (
+    }
+    if (
       (name === 'S' && data === 0x12e && engine.currentSaveGame.playerUnsafe === 'pepper') ||
       (name === 'C' &&
         (((data === 0x24 || data === 0x22) && engine.currentSaveGame.playerUnsafe === 'mama') ||

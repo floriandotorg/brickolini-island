@@ -39,7 +39,7 @@ const getImageAction = (action: ControlChild | undefined): ImageAndOtherAction =
   return { image, other }
 }
 
-const createPlacedImage = async (action: ImageAndOtherAction, willReadFrequently: boolean = false): Promise<PlacedImage> => {
+const createPlacedImage = async (action: ImageAndOtherAction, willReadFrequently = false): Promise<PlacedImage> => {
   const image = await getImage(action.image)
   const normalizedRect = normalizeRect(action.image.location[0], action.image.location[1], image.width, image.height)
   const canvas = document.createElement('canvas')
@@ -266,22 +266,22 @@ export class Control {
         case 'map': {
           const maskAction = getImageAction(action.children[0]).image
           if (maskAction.extra?.toLowerCase() !== 'bmp_ismap') {
-            throw new Error(`Unknown mask extra string`)
+            throw new Error('Unknown mask extra string')
           }
           const colorState: [number, number, number][] = []
           if (styleParams.length > 0 && styleParams[0].length > 0) {
-            const stateCount = parseInt(styleParams[0], 10)
+            const stateCount = Number.parseInt(styleParams[0], 10)
             if (!Number.isInteger(stateCount) || stateCount < 1) {
-              throw new Error(`State count in map-style is not a positive integer`)
+              throw new Error('State count in map-style is not a positive integer')
             }
             if (stateCount !== styleParams.length - 1) {
-              throw new Error(`Invalid state count in map`)
+              throw new Error('Invalid state count in map')
             }
             if (!isWithColorPalette(maskAction)) {
-              throw new Error(`Multiple states without color palette`)
+              throw new Error('Multiple states without color palette')
             }
             for (const param of styleParams.slice(1)) {
-              const state = parseInt(param, 10)
+              const state = Number.parseInt(param, 10)
               if (!Number.isInteger(state) || state < 1 || state >= maskAction.colorPalette.length) {
                 throw new Error('State in map-style is not a positive integer')
               }
@@ -290,9 +290,9 @@ export class Control {
               if (colorMatch == null) {
                 throw new Error(`Unknown color '${color}"`)
               }
-              const r = parseInt(colorMatch[1], 16)
-              const g = parseInt(colorMatch[2], 16)
-              const b = parseInt(colorMatch[3], 16)
+              const r = Number.parseInt(colorMatch[1], 16)
+              const g = Number.parseInt(colorMatch[2], 16)
+              const b = Number.parseInt(colorMatch[3], 16)
               colorState.push([r, g, b])
             }
           }
@@ -307,7 +307,7 @@ export class Control {
         case 'grid': {
           // The original did parse them but only checked if they are two, so it could be in either order
           for (const param of styleParams) {
-            const colsOrRows = parseInt(param, 10)
+            const colsOrRows = Number.parseInt(param, 10)
             if (!Number.isInteger(colsOrRows) || colsOrRows !== 2) {
               throw new Error(`Number of columns or rows is not exactly 2 but '${param}'`)
             }

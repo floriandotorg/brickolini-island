@@ -12,9 +12,9 @@ import { ElevatorEntrance } from '../../lib/world/world'
 import { IsleBase } from '../isle-base'
 
 enum Floor {
-  First,
-  Second,
-  Third,
+  First = 0,
+  Second = 1,
+  Third = 2,
 }
 
 export class Elevator extends IsleBase {
