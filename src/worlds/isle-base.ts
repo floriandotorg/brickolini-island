@@ -10,7 +10,7 @@ import { type ActorAction, type BoundaryAction, type EntityAction, getExtraValue
 import { getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
-import { calculateTransformationMatrix, getModel, getWorld, type Roi3D, type WdbWorldName } from '../lib/assets/model'
+import { calculateTransformationMatrix, getModel, getWorld, Roi3D, type WdbWorldName } from '../lib/assets/model'
 import { getSpawnLocation, type SpawnLocation } from '../lib/assets/spawn-location'
 import type { Composer } from '../lib/effect/composer'
 import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
@@ -19,6 +19,7 @@ import { getSettings } from '../lib/settings'
 import { type Actor, ColliderType } from '../lib/world/actor'
 import type { Vehicle } from '../lib/world/actors/vehicle'
 import { BoundaryManager } from '../lib/world/boundary-manager'
+import type { Character } from '../lib/world/character'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
 import type { Entity } from '../lib/world/entity'
 import { Plants } from '../lib/world/plants'
@@ -504,7 +505,7 @@ export abstract class IsleBase extends World {
   public async handleEntityAction(action: EntityAction): Promise<void> {
     const modelName = getExtraValue(action.children[0], 'DB_CREATE')
     if (modelName == null) {
-      console.warn(`Actor action without db_create is not supported: ${action.extra}`)
+      console.warn('Entity action without db_create is not supported', action)
       return
     }
     const roi = this.findRoi(modelName)
@@ -543,14 +544,22 @@ export abstract class IsleBase extends World {
   }
 
   public async handleActorAction(action: ActorAction): Promise<void> {
+    let model: Roi3D | Character | null = null
     const modelName = getExtraValue(action.children[0], 'DB_CREATE')
-    if (modelName == null) {
-      console.warn(`Actor action without db_create is not supported: ${action.extra}`)
-      return
+    if (modelName != null) {
+      const roi = this.findRoi(modelName)
+      if (roi == null) {
+        console.warn(`Model not found: ${modelName}`)
+        return
+      }
+      model = roi
     }
-    const roi = this.findRoi(modelName)
-    if (roi == null) {
-      console.warn(`Model not found: ${modelName}`)
+    const characterName = getExtraValue(action.children[0], 'AUTO_CREATE')
+    if (characterName != null) {
+      model = await this.getActor(characterName.toLowerCase())
+    }
+    if (model == null) {
+      console.warn('Actor action without model or character is not supported', action)
       return
     }
     const visibility = getExtraValue(action, 'Visibility')
@@ -558,7 +567,7 @@ export abstract class IsleBase extends World {
       if (visibility !== 'FALSE') {
         throw new Error('Visibility should only be FALSE')
       }
-      roi.visible = false
+      model.visible = false
     }
     const path = getExtraValue(action, 'Path')
     if (path != null) {
@@ -573,26 +582,36 @@ export abstract class IsleBase extends World {
       const dst = Number.parseFloat(pathMatch[4])
       const dstScale = Number.parseFloat(pathMatch[5])
       const { position, quaternion } = this.boundaryManager.getObjectPlacement(pathId, src, srcScale, dst, dstScale)
-      roi.moveRoiTo(position, quaternion)
+      if (model instanceof Roi3D) {
+        model.moveRoiTo(position, quaternion)
+      } else {
+        model.position.copy(position)
+        model.quaternion.copy(quaternion)
+      }
     }
     const objectScript = getExtraValue(action, 'Object')
     if (objectScript != null) {
+      if (!(model instanceof Roi3D)) {
+        console.warn('Cannot attach object script to character', action)
+        return
+      }
+
       let actor: Actor | null = null
       switch (objectScript) {
         case 'Doors':
-          actor = new (await import('../lib/world/actors/door')).Door(roi, this)
+          actor = new (await import('../lib/world/actors/door')).Door(model, this)
           break
         case 'Bike':
-          actor = new (await import('../lib/world/actors/bike')).Bike(roi, this)
+          actor = new (await import('../lib/world/actors/bike')).Bike(model, this)
           break
         case 'SkateBoard':
-          actor = new (await import('../lib/world/actors/skateboard')).Skateboard(roi, this)
+          actor = new (await import('../lib/world/actors/skateboard')).Skateboard(model, this)
           break
         case 'Motocycle':
-          actor = new (await import('../lib/world/actors/motocycle')).Motocycle(roi, this)
+          actor = new (await import('../lib/world/actors/motocycle')).Motocycle(model, this)
           break
         case 'Ambulance':
-          actor = new (await import('../lib/world/actors/ambulance')).Ambulance(roi, this)
+          actor = new (await import('../lib/world/actors/ambulance')).Ambulance(model, this)
           break
         default:
           console.warn(`Object script for actor not supported: ${objectScript}`)
