@@ -190,7 +190,7 @@ export class PizzaMission {
           this.isle.cameraAnimationTriggerEnabled = false
           this.isle.backgroundMusicTriggerEnabled = false
           this.isle.placeVehicle('skate', 'INT37', 2, 0.5, 3, 0.5, true)
-          void this.isle.enterVehicle({ type: 'skate', showPizza: true })
+          // void this.isle.enterVehicle({ type: 'skate', showPizza: true })
           this._helpAudioPlayed = false
           for (let n = 0; n < 4; ++n) {
             const action = missionAnimations[engine.currentSaveGame.player][n]
@@ -208,7 +208,7 @@ export class PizzaMission {
 
   private _reset(): void {
     this._missionState = { state: 'not-started' }
-    this.isle.hidePizzaIfOnSkateboard()
+    // this.isle.hidePizzaIfOnSkateboard()
     this.isle.cameraAnimationTriggerEnabled = true
     this.isle.backgroundMusicTriggerEnabled = true
     this._playedLocationAnimation = false

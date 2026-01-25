@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import {
-  Beach,
+  _Isle,
   bho142en_RunAnim,
   bic143sy_RunAnim,
   bjs009gd_RunAnim,
@@ -36,7 +36,6 @@ import {
   frt135df_RunAnim,
   frt137df_RunAnim,
   frt139df_RunAnim,
-  Gas,
   hho027en_RunAnim,
   hho142cl_RunAnim,
   hho143cl_RunAnim,
@@ -62,11 +61,8 @@ import {
   hpzx51gd_RunAnim,
   hpzy51gd_RunAnim,
   hpzz51gd_RunAnim,
-  InfoCenter_Entity,
-  IslePath,
   igs001na_RunAnim,
   igs008na_RunAnim,
-  ijs001sn_RunAnim,
   ijs006sn_RunAnim,
   ips001ro_RunAnim,
   ips002ro_RunAnim,
@@ -75,7 +71,6 @@ import {
   irt007in_RunAnim,
   irtx01sl_RunAnim,
   ivo918in_RunAnim,
-  MedCtr,
   NoPizaz_Texture,
   NoPizza_Texture,
   nca001ca_RunAnim,
@@ -144,7 +139,6 @@ import {
   npz006bd_RunAnim,
   npz007bd_RunAnim,
   nrtflag0_RunAnim,
-  Police,
   pgs050nu_RunAnim,
   pgs051nu_RunAnim,
   pgs052nu_RunAnim,
@@ -206,7 +200,6 @@ import {
   prt072sl_RunAnim,
   prt073sl_RunAnim,
   prt074sl_RunAnim,
-  Racej,
   sba001bu_RunAnim,
   sba002bu_RunAnim,
   sba003bu_RunAnim,
@@ -380,18 +373,15 @@ import {
 } from '../../actions/isle'
 // import { CNs001Pe, tns030bd_RunAnim } from '../actions/act2main'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../../actions/jukebox'
-import { type AnimationAction, type AudioAction, getExtraValue, type ParallelAction, type PhonemeAction, type PositionalAudioAction, type RunAnimationAction } from '../../lib/action-types'
+import { type AnimationAction, type AudioAction, isActorAction, isBoundaryAction, isEntityAction, type ParallelAction, type PhonemeAction, type PositionalAudioAction, type RunAnimationAction } from '../../lib/action-types'
 import type { DTA } from '../../lib/assets/dta'
-import { calculateTransformationMatrix, type Roi3D } from '../../lib/assets/model'
+import { calculateTransformationMatrix } from '../../lib/assets/model'
 import { createTexture } from '../../lib/assets/texture'
 import type { Composer } from '../../lib/effect/composer'
 import { engine, type NormalizedMouseEvent } from '../../lib/engine'
 import { type Location, locations } from '../../lib/locations'
-import { switchWorld } from '../../lib/switch-world'
-import type { Vehicle } from '../../lib/world/dashboard'
 import { PlayerMovement } from '../../lib/world/player-movement'
-import type { WorldName } from '../../lib/world/world'
-import { CAR_BUILD_VEHICLES, IsleBase, type IsleParam } from '../isle-base'
+import { IsleBase, type IsleParam } from '../isle-base'
 import { PizzaMission } from './missions/pizza-mission'
 
 const ANIMATIONS = [
@@ -438,7 +428,6 @@ const ANIMATIONS = [
   sja001br_RunAnim,
   sja002br_RunAnim,
   sja003br_RunAnim,
-  ijs001sn_RunAnim,
   fjs148gd_RunAnim,
   fjs149va_RunAnim,
   sjs001va_RunAnim,
@@ -781,28 +770,33 @@ export class Isle extends IsleBase {
     animation: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction>
   }> = []
 
-  private _currentVehicle: Vehicle | null = null
   private _cameraAnimationPlaying = false
   private readonly _pizzaMission = new PizzaMission(this)
 
   public backgroundMusicTriggerEnabled = true
 
-  private get _currentVehicleRoi(): Roi3D {
-    if (this._currentVehicle == null) {
-      throw new Error('No vehicle set')
-    }
-    const vehicleRoi = this.getVehicleRoi(this._currentVehicle.type)
-    if (vehicleRoi == null) {
-      throw new Error(`Vehicle roi not found for ${this._currentVehicle.type}`)
-    }
-    return vehicleRoi
+  constructor() {
+    super('isle', { wdbWorldName: 'ACT1', dtaWorldName: 'ACT1' })
   }
 
-  constructor() {
-    super('isle', { wdbWorldName: 'ACT1', dtaWorldName: 'ACT1', boundaryPathAction: IslePath })
-  }
   override async init(): Promise<void> {
     await super.init()
+
+    for (const child of _Isle.children) {
+      if (isBoundaryAction(child)) {
+        await this.loadBoundaries(child)
+      } else if (isActorAction(child)) {
+        await this.handleActorAction(child)
+      } else if (isEntityAction(child)) {
+        await this.handleEntityAction(child)
+      } else if (child.presenter === 'LegoLocomotionAnimPresenter') {
+        // Run animations, can be ignored
+      } else if (child.presenter === 'LegoLoadCacheSoundPresenter') {
+        // We don't need to cache
+      } else {
+        console.warn('Unknown action type:', child)
+      }
+    }
 
     this.boundaryManager.onTrigger = (name, data, direction) => {
       const music = [ResidentalArea_Music, BeachBlvd_Music, Cave_Music, CentralRoads_Music, Jail_Music, Hospital_Music, InformationCenter_Music, PoliceStation_Music, Park_Music, CentralNorthRoad_Music, GarageArea_Music, RaceTrackRoad_Music, Beach_Music, Quiet_Audio]
@@ -895,48 +889,6 @@ export class Isle extends IsleBase {
       }
     }
 
-    this.debugPrintSceneGraph()
-    for (const child of [Gas, Police, InfoCenter_Entity, Beach, Racej, MedCtr]) {
-      const entity = getExtraValue(child, 'Object')?.toLowerCase()
-      const worldName: WorldName | undefined = (() => {
-        switch (entity) {
-          case 'hospitalentity':
-            return 'hospital'
-          case 'gasstationentity':
-            return 'garage'
-          case 'infocenterentity':
-            return 'infomain'
-          case 'policeentity':
-            return 'police'
-          case 'beachhouseentity':
-            return 'jetski'
-          case 'racestandsentity':
-            return 'racecar'
-          default:
-            return undefined
-        }
-      })()
-      if (worldName == null) {
-        throw new Error(`World name not found for ${child.name}`)
-      }
-      if (child.children[0] == null) {
-        throw new Error(`Action for world ${worldName} has no children`)
-      }
-      const meshName = getExtraValue(child.children[0], 'DB_CREATE')?.toLowerCase()
-      if (meshName == null) {
-        throw new Error(`Found no valid mesh name for world ${worldName}`)
-      }
-      const buildingRoi = this.getRoi(meshName)
-      this.addClickListener(buildingRoi, async () => {
-        if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
-          return false
-        }
-        console.log(`switched to ${meshName}, ${worldName}`)
-        void switchWorld(worldName)
-        return true
-      })
-    }
-
     const isle = this.scene.getObjectByName('isle_hi')
     if (isle == null || !(isle instanceof THREE.Object3D)) {
       throw new Error('Isle mesh not found')
@@ -945,27 +897,8 @@ export class Isle extends IsleBase {
 
     await this._pizzaMission.init()
 
-    if (import.meta.hot) {
-      import.meta.hot.accept('../../lib/world/dashboard', newModule => {
-        if (newModule == null) {
-          return
-        }
-        this._dashboard = new newModule.Dashboard()
-        this._dashboard.onExit = () => {
-          this._exitVehicle()
-        }
-        this._showDashboard()
-      })
-    }
-
-    this._addVehicleClickListener({ type: 'bike' })
-    this._addVehicleClickListener({ type: 'moto' })
-    this._addVehicleClickListener({ type: 'skate', showPizza: false })
-    this._addVehicleClickListener({ type: 'ambul' })
-    this._addVehicleClickListener({ type: 'towtk' })
-
     this._dashboard.onExit = () => {
-      this._exitVehicle()
+      this.currentVehicle?.exit()
     }
 
     this.camera.position.set(9, 1.25, -47)
@@ -985,78 +918,6 @@ export class Isle extends IsleBase {
     // this.playAnimation(tns002br_RunAnim)
   }
 
-  private _addVehicleClickListener = (vehicle: Vehicle): void => {
-    const mesh = this.getVehicleRoi(vehicle.type)
-    if (mesh != null) {
-      this.addClickListener(mesh, async () => {
-        if (this._pizzaMission.isActive || this._cameraAnimationPlaying) {
-          return false
-        }
-        await this.enterVehicle(vehicle)
-        return true
-      })
-    }
-  }
-
-  public enterVehicle = async (vehicle: Vehicle): Promise<void> => {
-    await engine.transition()
-
-    this._currentVehicle = vehicle
-
-    this._currentVehicleRoi.visible = false
-    this.camera.position.set(this._currentVehicleRoi.model.position.x, this._currentVehicleRoi.model.position.y, this._currentVehicleRoi.model.position.z)
-    this.camera.quaternion.copy(this._currentVehicleRoi.model.quaternion)
-    this._playerMovement.placeOnGround(this.camera)
-
-    this._showDashboard()
-
-    const explanationAnimation = (() => {
-      switch (vehicle.type) {
-        case 'bike':
-          return {
-            animation: sns006in_RunAnim,
-            offset: new THREE.Vector3(2.5, 0.7, 2.5),
-          }
-        case 'moto':
-          return {
-            animation: sns006in_RunAnim,
-            offset: new THREE.Vector3(2.5, 0.7, 2.5),
-          }
-        case 'skate':
-          return {
-            animation: sns008in_RunAnim,
-            offset: new THREE.Vector3(2.5, 0.2, 2.5),
-          }
-        case 'dunecar':
-          return {
-            animation: sns005in_RunAnim,
-            offset: new THREE.Vector3(2.5, 0.7, 2.5),
-          }
-        case 'jetski':
-          return {
-            animation: sjs007in_RunAnim,
-            offset: new THREE.Vector3(2.5, 0.6, 2.5),
-          }
-        default:
-          return null
-      }
-    })()
-
-    if (explanationAnimation != null && !engine.currentSaveGame.playedExitExplanation) {
-      engine.currentSaveGame.playedExitExplanation = true
-
-      const forward = new THREE.Vector3()
-      this.camera.getWorldDirection(forward)
-
-      const offset = new THREE.Vector3(forward.x * explanationAnimation.offset.x, forward.y + explanationAnimation.offset.y - 1.25, forward.z * explanationAnimation.offset.z)
-
-      void this.playAnimation(explanationAnimation.animation, {
-        location: this.camera.position.clone().add(offset),
-        rotation: this.camera.quaternion.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)),
-      })
-    }
-  }
-
   public override async activate(composer: Composer, param?: IsleParam): Promise<void> {
     await super.activate(composer, param)
     if (param != null) {
@@ -1069,10 +930,14 @@ export class Isle extends IsleBase {
       throw new Error('No pizza sign found')
     }
     noPizzaSign.material.map = engine.currentSaveGame.player === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
+  }
 
-    for (const { type } of CAR_BUILD_VEHICLES) {
-      this._addVehicleClickListener({ type })
-    }
+  public override getGroundPosition(): THREE.Vector3 {
+    return this._playerMovement.getGroundPosition(this.camera.position, new THREE.Vector3(0, 0, 0))
+  }
+
+  public override placeOnGround(object: THREE.Object3D): void {
+    this._playerMovement.placeOnGround(object)
   }
 
   public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location): Promise<void> {
@@ -1128,41 +993,6 @@ export class Isle extends IsleBase {
     })
   }
 
-  private _showDashboard(): void {
-    if (this._currentVehicle == null) {
-      return
-    }
-
-    void this._dashboard.show(this._currentVehicle)
-  }
-
-  public hidePizzaIfOnSkateboard(): void {
-    if (this._currentVehicle == null) {
-      return
-    }
-    this._dashboard.clear()
-    void this._dashboard.show({ type: 'skate', showPizza: false })
-  }
-
-  private _exitVehicle(): void {
-    if (this._currentVehicle == null) {
-      return
-    }
-
-    const groundPosition = this._playerMovement.getGroundPosition(this.camera.position, new THREE.Vector3(0, 0, 0))
-    engine.currentSaveGame.setVehiclePlacement(this._currentVehicle.type, { position: groundPosition, quaternion: this.camera.quaternion })
-    this._currentVehicleRoi.moveRoiTo(groundPosition, this.camera.quaternion)
-    this._currentVehicleRoi.visible = true
-
-    this.camera.position.add(new THREE.Vector3(0, 0, -4).applyQuaternion(this.camera.quaternion))
-    this._playerMovement.placeOnGround(this.camera)
-
-    this._dashboard.clear()
-    this._currentVehicle = null
-
-    this._pizzaMission.abort()
-  }
-
   public override resize(width: number, height: number): void {
     super.resize(width, height)
   }
@@ -1207,7 +1037,7 @@ export class Isle extends IsleBase {
       return
     }
 
-    const { fromPos, toPos, normalizedSpeed } = this._playerMovement.update(delta, this._currentVehicle?.type ?? null)
+    const { fromPos, toPos, normalizedSpeed } = this._playerMovement.update(delta, this.currentVehicle?.type ?? null)
 
     this.updateActors(delta, fromPos, toPos)
 

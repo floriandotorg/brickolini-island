@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import type { IsleBase } from '../../../worlds/isle-base'
 import type { Roi3D, RoiModel } from '../../assets/model'
 import { engine } from '../../engine'
 import { Actor } from '../actor'
@@ -23,8 +24,8 @@ export class Door extends Actor {
   private readonly _leftDoor: { model: RoiModel; originalQuaternion: THREE.Quaternion }
   private readonly _rightDoor: { model: RoiModel; originalQuaternion: THREE.Quaternion }
 
-  constructor(roi: Roi3D) {
-    super(roi)
+  constructor(roi: Roi3D, isle: IsleBase) {
+    super(roi, isle)
     let leftDoor = null
     let rightDoor = null
     for (const child of roi.children) {

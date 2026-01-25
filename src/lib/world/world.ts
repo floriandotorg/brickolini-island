@@ -257,7 +257,7 @@ export abstract class World {
   }
 
   public findRoi(name: string): Roi3D | null {
-    const roi = this.worldGroup.getObjectByName(name)
+    const roi = this.worldGroup.getObjectByName(name.toLowerCase())
     if (roi == null) {
       return null
     }
@@ -279,7 +279,7 @@ export abstract class World {
     this._actors.add(actor)
   }
 
-  public updateActors(delta: number, from: THREE.Vector3, to: THREE.Vector3): void {
+  public async updateActors(delta: number, from: THREE.Vector3, to: THREE.Vector3): Promise<void> {
     for (const actor of this._actors) {
       actor.update(delta)
       if (actor.checkCollision(from, to)) {

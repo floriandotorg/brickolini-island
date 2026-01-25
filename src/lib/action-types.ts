@@ -82,6 +82,8 @@ export const isModelAction = (action: unknown): action is ModelAction => isFileA
 
 export const isActorAction = (action: unknown): action is ActorAction => isParallelAction(action) && action.presenter === 'LegoActorPresenter' && action.children.length === 1 && isModelAction(action.children[0])
 
+export const isEntityAction = (action: unknown): action is EntityAction => isParallelAction(action) && action.presenter === 'LegoEntityPresenter' && action.children.length === 1 && isModelAction(action.children[0])
+
 export const isBoundaryAction = (action: unknown): action is BoundaryAction => isFileAction(action) && action.type === Action.Type.ObjectAction && action.presenter === 'LegoPathPresenter'
 
 export const getExtraValue = (action: { extra: string | null }, key: string): string | undefined => {

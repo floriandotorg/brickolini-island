@@ -1,23 +1,23 @@
 import * as THREE from 'three'
+import type { IsleBase } from '../../worlds/isle-base'
 import type { Roi3D } from '../assets/model'
+import { Entity } from './entity'
 
 export enum ColliderType {
-  Box = 0,
+  None = 0,
   Sphere = 1,
+  Box = 2,
 }
 
-export abstract class Actor {
-  protected _roi: Roi3D
-  protected _colliderType: ColliderType
+export abstract class Actor extends Entity {
+  private _colliderType = ColliderType.None
 
-  constructor(roi: Roi3D) {
-    this._roi = roi
-    this._colliderType = ColliderType.Sphere
-    roi.actor = this
-  }
-
-  public get roi(): Roi3D {
-    return this._roi
+  constructor(
+    _roi: Roi3D,
+    protected readonly _isle: IsleBase,
+  ) {
+    super(_roi)
+    _roi.actor = this
   }
 
   public get colliderType(): ColliderType {
@@ -36,7 +36,7 @@ export abstract class Actor {
   }
 
   private checkSphereCollision(from: THREE.Vector3, to: THREE.Vector3): boolean {
-    const sphere = this._roi.model.getWorldBoundingSphere()
+    const sphere = this.roi.model.getWorldBoundingSphere()
     const direction = to.clone().sub(from)
     const length = direction.length()
     if (length < 0.0001) {
@@ -52,7 +52,7 @@ export abstract class Actor {
   }
 
   private checkBoxCollision(from: THREE.Vector3, to: THREE.Vector3): boolean {
-    const box = this._roi.model.getWorldBoundingBox()
+    const box = this.roi.model.getWorldBoundingBox()
     if (box == null) {
       return false
     }
@@ -64,10 +64,6 @@ export abstract class Actor {
     return from.distanceTo(intersection) <= from.distanceTo(to)
   }
 
-  public abstract update(delta: number): void
-  public abstract onCollision(from: THREE.Vector3, to: THREE.Vector3): void
-
-  public dispose(): void {
-    this._roi.actor = null
-  }
+  public update(_delta: number): void {}
+  public onCollision(_from: THREE.Vector3, _to: THREE.Vector3): void {}
 }

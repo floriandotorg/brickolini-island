@@ -6,7 +6,7 @@ import { Chptr_Model } from '../actions/copter'
 import { DuneBugy_Model } from '../actions/dunecar'
 import { Jsuser_Model } from '../actions/jetski'
 import { Rcuser_Model } from '../actions/racecar'
-import { type ActorAction, type BoundaryAction, getExtraValue, type ModelAction } from '../lib/action-types'
+import { type ActorAction, type BoundaryAction, type EntityAction, getExtraValue, type ModelAction } from '../lib/action-types'
 import { getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
@@ -17,8 +17,10 @@ import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
 import { applyLights, NUM_ORIGINAL_LIGHTS } from '../lib/original-lights'
 import { getSettings } from '../lib/settings'
 import { type Actor, ColliderType } from '../lib/world/actor'
+import type { Vehicle } from '../lib/world/actors/vehicle'
 import { BoundaryManager } from '../lib/world/boundary-manager'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
+import type { Entity } from '../lib/world/entity'
 import { Plants } from '../lib/world/plants'
 import { World, type WorldName } from '../lib/world/world'
 
@@ -73,7 +75,19 @@ export abstract class IsleBase extends World {
   private _animationInfos: DTA.AnimationInfo[] = []
   private readonly _wdbWorldName: WdbWorldName | null
   private readonly _dtaWorldName: DtaWorldName | null
-  private readonly _boundaryPathAction: BoundaryAction | null
+  private _currentVehicle: Vehicle | null = null
+
+  public get currentVehicle(): Vehicle | null {
+    return this._currentVehicle
+  }
+
+  public set currentVehicle(vehicle: Vehicle | null) {
+    this._currentVehicle = vehicle
+  }
+
+  public get dashboard(): Dashboard {
+    return this._dashboard
+  }
 
   public cameraAnimationTriggerEnabled = true
 
@@ -97,17 +111,22 @@ export abstract class IsleBase extends World {
     {
       wdbWorldName,
       dtaWorldName,
-      boundaryPathAction,
     }: {
       wdbWorldName?: WdbWorldName
       dtaWorldName?: DtaWorldName
-      boundaryPathAction?: BoundaryAction
     } = {},
   ) {
     super(name)
     this._wdbWorldName = wdbWorldName ?? null
     this._dtaWorldName = dtaWorldName ?? null
-    this._boundaryPathAction = boundaryPathAction ?? null
+  }
+
+  protected async loadBoundaries(action: BoundaryAction): Promise<void> {
+    if (this._boundaryManager != null) {
+      throw new Error('Boundaries already loaded')
+    }
+
+    this._boundaryManager = new BoundaryManager(await getBoundaries(action), this)
   }
 
   override async init(): Promise<void> {
@@ -267,10 +286,6 @@ export abstract class IsleBase extends World {
       this._updateSun()
     }
 
-    if (this._boundaryPathAction != null) {
-      this._boundaryManager = new BoundaryManager(await getBoundaries(this._boundaryPathAction), this)
-    }
-
     // spell-checker: ignore brdg jailbrdg racebrdg
     for (const name of ['isle_hi', 'inf-brdg', 'jailbrdg', 'racebrdg']) {
       const object = this.scene.getObjectByName(name)
@@ -279,6 +294,12 @@ export abstract class IsleBase extends World {
       }
       this._groundGroup.push(object)
     }
+  }
+
+  public override async activate(composer: Composer, _param?: unknown): Promise<void> {
+    super.activate(composer, _param)
+
+    this._dashboard.activate(composer)
 
     this._bikeRoi = this.findRoi('bike')
     this._motobkRoi = this.findRoi('motobk')
@@ -295,12 +316,6 @@ export abstract class IsleBase extends World {
     if (this._skateRoi != null) {
       this.placeVehicle('skate', 'EDG02_84', 4, 0.5, 0, 0.5)
     }
-  }
-
-  public override async activate(composer: Composer, _param?: unknown): Promise<void> {
-    super.activate(composer, _param)
-
-    this._dashboard.activate(composer)
 
     for (const { type, model, spawn } of CAR_BUILD_VEHICLES) {
       const previousMeshes = this._buildMeshes.get(type)
@@ -478,6 +493,55 @@ export abstract class IsleBase extends World {
     }
   }
 
+  public getGroundPosition(): THREE.Vector3 {
+    throw new Error('Not implemented')
+  }
+
+  public placeOnGround(_object: THREE.Object3D) {
+    throw new Error('Not implemented')
+  }
+
+  public async handleEntityAction(action: EntityAction): Promise<void> {
+    const modelName = getExtraValue(action.children[0], 'DB_CREATE')
+    if (modelName == null) {
+      console.warn(`Actor action without db_create is not supported: ${action.extra}`)
+      return
+    }
+    const roi = this.findRoi(modelName)
+    if (roi == null) {
+      console.warn(`Model not found: ${modelName}`)
+      return
+    }
+    const visibility = getExtraValue(action, 'Visibility')
+    if (visibility != null) {
+      throw new Error('Visibility is not supported for entities (yet)')
+    }
+    const objectScript = getExtraValue(action, 'Object')
+    if (objectScript != null) {
+      let entity: Entity | null = null
+      switch (objectScript) {
+        case 'GasStationEntity':
+          entity = new (await import('../lib/world/entities/gas-station')).GasStation(roi)
+          break
+        case 'InfoCenterEntity':
+          entity = new (await import('../lib/world/entities/info-center')).InfoCenter(roi)
+          break
+        case 'PoliceEntity':
+          entity = new (await import('../lib/world/entities/police')).Police(roi)
+          break
+        case 'HospitalEntity':
+          entity = new (await import('../lib/world/entities/hospital')).Hospital(roi)
+          break
+        default:
+          console.warn(`Object script for entity not supported: ${objectScript}`)
+          return
+      }
+      if (entity != null) {
+        this.addClickListener(entity.roi, async () => await entity.onClick())
+      }
+    }
+  }
+
   public async handleActorAction(action: ActorAction): Promise<void> {
     const modelName = getExtraValue(action.children[0], 'DB_CREATE')
     if (modelName == null) {
@@ -488,6 +552,13 @@ export abstract class IsleBase extends World {
     if (roi == null) {
       console.warn(`Model not found: ${modelName}`)
       return
+    }
+    const visibility = getExtraValue(action, 'Visibility')
+    if (visibility != null) {
+      if (visibility !== 'FALSE') {
+        throw new Error('Visibility should only be FALSE')
+      }
+      roi.visible = false
     }
     const path = getExtraValue(action, 'Path')
     if (path != null) {
@@ -509,10 +580,22 @@ export abstract class IsleBase extends World {
       let actor: Actor | null = null
       switch (objectScript) {
         case 'Doors':
-          actor = new (await import('../lib/world/actors/door')).Door(roi)
+          actor = new (await import('../lib/world/actors/door')).Door(roi, this)
+          break
+        case 'Bike':
+          actor = new (await import('../lib/world/actors/bike')).Bike(roi, this)
+          break
+        case 'SkateBoard':
+          actor = new (await import('../lib/world/actors/skateboard')).Skateboard(roi, this)
+          break
+        case 'Motocycle':
+          actor = new (await import('../lib/world/actors/motocycle')).Motocycle(roi, this)
+          break
+        case 'Ambulance':
+          actor = new (await import('../lib/world/actors/ambulance')).Ambulance(roi, this)
           break
         default:
-          console.warn(`Object script not supported: ${objectScript}`)
+          console.warn(`Object script for actor not supported: ${objectScript}`)
           return
       }
       if (actor != null) {
@@ -521,6 +604,7 @@ export abstract class IsleBase extends World {
         }
 
         this.registerActor(actor)
+        this.addClickListener(actor.roi, async () => await actor.onClick())
       }
     }
   }

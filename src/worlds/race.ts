@@ -167,7 +167,6 @@ export abstract class Race extends IsleBase {
     super(name, {
       wdbWorldName: options.wdbWorldName,
       dtaWorldName: options.dtaWorldName,
-      boundaryPathAction: boundaryPathAction,
     })
 
     this._startUpAction = options.startUpAction
