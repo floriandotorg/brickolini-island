@@ -237,27 +237,12 @@ export abstract class Race extends IsleBase {
 
     this._groundGroup.push(...this.worldGroup.children.filter(child => child.name.startsWith('track')))
 
-    this.boundaryManager.onTrigger = (name, data, direction) => {
-      console.log(`Boundary trigger: ${name}, ${data}, ${direction}`)
-
-      if (name[2] === 'D') {
-        this._playerProgress.lastWaypointNo = data
-        if (this._playerProgress.remainingLaps <= 0) {
-          console.log('Player finished race')
-        }
-      } else if (name[2] === 'H') {
-        this._applyVisibility(data)
-      } else if (name[2] === 'S') {
-        this.onEventStartWaypoint(data)
-      } else if (name[2] === 'E') {
-        this.onEventEndWaypoint(data)
-      }
-    }
-
     this._controls.addControl(Map_Ctl)
 
     for (const child of this._startUpAction.children) {
-      if (isControlAction(child)) {
+      if (isBoundaryAction(child)) {
+        await this.loadBoundaries(child)
+      } else if (isControlAction(child)) {
         this._controls.addControl(child)
       } else if (isMeterAction(child)) {
         const variable = getExtraValue(child, 'variable')?.toLowerCase()
@@ -280,6 +265,24 @@ export abstract class Race extends IsleBase {
         this.handleActorAction(child)
       }
     }
+
+    this.boundaryManager.onTrigger = (name, data, direction) => {
+      console.log(`Boundary trigger: ${name}, ${data}, ${direction}`)
+
+      if (name[2] === 'D') {
+        this._playerProgress.lastWaypointNo = data
+        if (this._playerProgress.remainingLaps <= 0) {
+          console.log('Player finished race')
+        }
+      } else if (name[2] === 'H') {
+        this._applyVisibility(data)
+      } else if (name[2] === 'S') {
+        this.onEventStartWaypoint(data)
+      } else if (name[2] === 'E') {
+        this.onEventEndWaypoint(data)
+      }
+    }
+
     Race.setTopLeft(this._opponent1ProgressLocator, this._progressStart)
     this._controlsRender.scene.add(this._opponent1ProgressLocator)
     Race.setTopLeft(this._opponent2ProgressLocator, this._progressStart)
