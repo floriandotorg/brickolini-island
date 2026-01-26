@@ -12,9 +12,9 @@ export type FileActionBase = Override<ActionBase, { fileType: Action.FileType }>
 
 export type AudioActionBase = Override<FileActionBase, { fileType: Action.FileType.WAV; volume: number; startTime: number }>
 
-export type AudioAction = Override<AudioActionBase, { presenter: null | 'LegoLoadCacheSoundPresenter'; loops: number }>
+export type AudioAction = Override<AudioActionBase, { presenter: null; loops: number }>
 
-export type PositionalAudioAction = Override<AudioActionBase, { presenter: 'Lego3DWavePresenter'; extra: string }>
+export type PositionalAudioAction = Override<AudioActionBase, { presenter: 'Lego3DWavePresenter' | 'LegoLoadCacheSoundPresenter'; extra: string; filename: string }>
 
 export type ParallelAction<T, P extends string | null = string | null> = Override<ActionBase, { type: Action.Type.ParallelAction; fileType?: Action.FileType; children: readonly T[]; presenter: P }>
 
@@ -62,7 +62,9 @@ export const isFileAction = (action: unknown): action is FileActionBase => isAct
 
 export const isImageAction = (action: unknown): action is ImageAction => isFileAction(action) && action.fileType === Action.FileType.STL
 
-export const isAudioAction = (action: unknown): action is AudioAction => isFileAction(action) && action.fileType === Action.FileType.WAV && (action.presenter === null || action.presenter === 'LegoLoadCacheSoundPresenter')
+export const isAudioAction = (action: unknown): action is AudioAction => isFileAction(action) && action.fileType === Action.FileType.WAV && action.presenter === null
+
+export const isPositionalAudioAction = (action: unknown): action is PositionalAudioAction => isFileAction(action) && action.fileType === Action.FileType.WAV && (action.presenter === 'Lego3DWavePresenter' || action.presenter === 'LegoLoadCacheSoundPresenter')
 
 export const isAnimationAction = (action: unknown): action is AnimationAction => isAction(action) && isAnimationPresenter(action.presenter)
 

@@ -6,7 +6,7 @@ import { Chptr_Model } from '../actions/copter'
 import { DuneBugy_Model } from '../actions/dunecar'
 import { Jsuser_Model } from '../actions/jetski'
 import { Rcuser_Model } from '../actions/racecar'
-import { type ActionBase, type ActorAction, type BoundaryAction, type EntityAction, getExtraValue, isActorAction, isBoundaryAction, isEntityAction, type ModelAction, type SerialAction } from '../lib/action-types'
+import { type ActionBase, type ActorAction, type BoundaryAction, type EntityAction, getExtraValue, isActorAction, isBoundaryAction, isEntityAction, isPositionalAudioAction, type ModelAction, type SerialAction } from '../lib/action-types'
 import { getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
@@ -144,8 +144,8 @@ export abstract class IsleBase extends World {
         await this.handleEntityAction(child)
       } else if (child.presenter === 'LegoLocomotionAnimPresenter') {
         // Run animations, can be ignored
-      } else if (child.presenter === 'LegoLoadCacheSoundPresenter') {
-        // We don't need to cache
+      } else if (child.presenter === 'LegoLoadCacheSoundPresenter' && isPositionalAudioAction(child)) {
+        await this.cachePositionalAudio(child)
       } else {
         console.warn('Unknown action type:', child)
       }
@@ -539,6 +539,10 @@ export abstract class IsleBase extends World {
     if (visibility != null) {
       throw new Error('Visibility is not supported for entities (yet)')
     }
+    const sound = getExtraValue(action, 'Sound')
+    if (sound != null) {
+      throw new Error('Sound is not supported for entities (yet)')
+    }
     const objectScript = getExtraValue(action, 'Object')
     if (objectScript != null) {
       let entity: Entity | null = null
@@ -590,6 +594,14 @@ export abstract class IsleBase extends World {
         throw new Error('Visibility should only be FALSE')
       }
       model.visible = false
+    }
+    const sound = getExtraValue(action, 'Sound')
+    if (sound != null) {
+      if (!(model instanceof Roi3D)) {
+        console.warn('Cannot attach sound to character', action)
+        return
+      }
+      void this.playPositionalAudio(sound.toLowerCase(), model.getAllModels()[0])
     }
     const path = getExtraValue(action, 'Path')
     if (path != null) {

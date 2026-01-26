@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
 import type { IsleParam } from '../../worlds/isle-base'
-import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, isAudioAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
+import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, isAudioAction, isPositionalAudioAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
 import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, createAnimationActor, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { type Audio, getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
@@ -372,7 +372,7 @@ export abstract class World {
       }
     }
 
-    const positionalAudioActions = children.filter(c => c.presenter === 'Lego3DWavePresenter')
+    const positionalAudioActions = children.filter(c => isPositionalAudioAction(c))
     const audioActions = children.filter(c => isAudioAction(c))
 
     const pointAtCameraObjects: THREE.Object3D[] = []
@@ -708,8 +708,17 @@ export abstract class World {
 
   public deactivate(): void {}
 
-  public async playPositionalAudio(action: PositionalAudioAction, parent: THREE.Object3D, delay?: number): Promise<THREE.PositionalAudio> {
-    const audio = await getPositionalAudio(engine.audioListener, action)
+  private readonly _cachedPositionalAudios = new Map<string, Promise<THREE.PositionalAudio>>()
+
+  public async cachePositionalAudio(action: PositionalAudioAction): Promise<void> {
+    this._cachedPositionalAudios.set((action.filename.split(/[\\/]/).pop() ?? '').replace(/\.wav$/i, '').toLowerCase(), getPositionalAudio(engine.audioListener, action))
+  }
+
+  public async playPositionalAudio(action: PositionalAudioAction | string, parent: THREE.Object3D, delay?: number): Promise<THREE.PositionalAudio> {
+    const audio = await (typeof action === 'string' ? this._cachedPositionalAudios.get(action) : getPositionalAudio(engine.audioListener, action))
+    if (audio == null) {
+      throw new Error(`Positional audio not found: ${action}`)
+    }
     parent.add(audio)
     audio.onEnded = () => {
       parent.remove(audio)
