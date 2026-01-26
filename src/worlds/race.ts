@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { CarLocator2, CarLocator3, irtx08ra_PlayWav, Map_Ctl, Rhoda_Locator, Studs_Locator, srt001rh_RunAnim, srt001sl_RunAnim, srt002rh_RunAnim, srt002sl_RunAnim, srt003rh_RunAnim, srt003sl_RunAnim, srt004sl_RunAnim, srt005sl_RunAnim, User_Locator, UserCar_Actor } from '../actions/carrace'
 import { RaceTrackRoad_Music } from '../actions/jukebox'
-import { type ActionBase, getExtraValue, type ImageAction, isActorAction, isAnimationAction, isBoundaryAction, isControlAction, isMeterAction, type SerialAction, splitExtraValue } from '../lib/action-types'
+import { type ActionBase, getExtraValue, type ImageAction, isAnimationAction, isBoundaryAction, isControlAction, isMeterAction, type SerialAction, splitExtraValue } from '../lib/action-types'
 import { type Animation3D, type Animation3DNode, parse3DAnimation } from '../lib/assets/animation'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { ControlsCollection } from '../lib/assets/control'
@@ -239,12 +239,13 @@ export abstract class Race extends IsleBase {
 
     this._controls.addControl(Map_Ctl)
 
-    for (const child of this._startUpAction.children) {
-      if (isBoundaryAction(child)) {
-        await this.loadBoundaries(child)
-      } else if (isControlAction(child)) {
+    await this.handleStartUpAction(this._startUpAction, async child => {
+      if (isControlAction(child)) {
         this._controls.addControl(child)
-      } else if (isMeterAction(child)) {
+        return true
+      }
+
+      if (isMeterAction(child)) {
         const variable = getExtraValue(child, 'variable')?.toLowerCase()
         if (variable == null) {
           throw new Error('Meter without variable is not supported')
@@ -261,10 +262,12 @@ export abstract class Race extends IsleBase {
           this._distanceMeter = await Meter.create(child)
           this._controlsRender.scene.add(this._distanceMeter.sprite)
         }
-      } else if (isActorAction(child)) {
-        this.handleActorAction(child)
+
+        return true
       }
-    }
+
+      return false
+    })
 
     this.boundaryManager.onTrigger = (name, data, direction) => {
       console.log(`Boundary trigger: ${name}, ${data}, ${direction}`)

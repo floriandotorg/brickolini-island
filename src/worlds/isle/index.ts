@@ -373,7 +373,7 @@ import {
 } from '../../actions/isle'
 // import { CNs001Pe, tns030bd_RunAnim } from '../actions/act2main'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../../actions/jukebox'
-import { type AnimationAction, type AudioAction, isActorAction, isBoundaryAction, isEntityAction, type ParallelAction, type PhonemeAction, type PositionalAudioAction, type RunAnimationAction } from '../../lib/action-types'
+import type { AnimationAction, AudioAction, ParallelAction, PhonemeAction, PositionalAudioAction, RunAnimationAction } from '../../lib/action-types'
 import type { DTA } from '../../lib/assets/dta'
 import { calculateTransformationMatrix } from '../../lib/assets/model'
 import { createTexture } from '../../lib/assets/texture'
@@ -782,21 +782,7 @@ export class Isle extends IsleBase {
   override async init(): Promise<void> {
     await super.init()
 
-    for (const child of _Isle.children) {
-      if (isBoundaryAction(child)) {
-        await this.loadBoundaries(child)
-      } else if (isActorAction(child)) {
-        await this.handleActorAction(child)
-      } else if (isEntityAction(child)) {
-        await this.handleEntityAction(child)
-      } else if (child.presenter === 'LegoLocomotionAnimPresenter') {
-        // Run animations, can be ignored
-      } else if (child.presenter === 'LegoLoadCacheSoundPresenter') {
-        // We don't need to cache
-      } else {
-        console.warn('Unknown action type:', child)
-      }
-    }
+    await this.handleStartUpAction(_Isle)
 
     this.boundaryManager.onTrigger = (name, data, direction) => {
       const music = [ResidentalArea_Music, BeachBlvd_Music, Cave_Music, CentralRoads_Music, Jail_Music, Hospital_Music, InformationCenter_Music, PoliceStation_Music, Park_Music, CentralNorthRoad_Music, GarageArea_Music, RaceTrackRoad_Music, Beach_Music, Quiet_Audio]

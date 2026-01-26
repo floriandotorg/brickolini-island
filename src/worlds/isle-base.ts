@@ -6,7 +6,7 @@ import { Chptr_Model } from '../actions/copter'
 import { DuneBugy_Model } from '../actions/dunecar'
 import { Jsuser_Model } from '../actions/jetski'
 import { Rcuser_Model } from '../actions/racecar'
-import { type ActorAction, type BoundaryAction, type EntityAction, getExtraValue, type ModelAction } from '../lib/action-types'
+import { type ActionBase, type ActorAction, type BoundaryAction, type EntityAction, getExtraValue, isActorAction, isBoundaryAction, isEntityAction, type ModelAction, type SerialAction } from '../lib/action-types'
 import { getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
@@ -128,6 +128,28 @@ export abstract class IsleBase extends World {
     }
 
     this._boundaryManager = new BoundaryManager(await getBoundaries(action), this)
+  }
+
+  protected async handleStartUpAction(action: SerialAction<ActionBase>, cb: ((child: ActionBase) => Promise<boolean>) | null = null): Promise<void> {
+    for (const child of action.children) {
+      if (cb != null && (await cb(child))) {
+        continue
+      }
+
+      if (isBoundaryAction(child)) {
+        await this.loadBoundaries(child)
+      } else if (isActorAction(child)) {
+        await this.handleActorAction(child)
+      } else if (isEntityAction(child)) {
+        await this.handleEntityAction(child)
+      } else if (child.presenter === 'LegoLocomotionAnimPresenter') {
+        // Run animations, can be ignored
+      } else if (child.presenter === 'LegoLoadCacheSoundPresenter') {
+        // We don't need to cache
+      } else {
+        console.warn('Unknown action type:', child)
+      }
+    }
   }
 
   override async init(): Promise<void> {
