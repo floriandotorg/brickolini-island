@@ -279,6 +279,10 @@ export abstract class World {
     this._actors.add(actor)
   }
 
+  public removeActor(actor: Actor): void {
+    this._actors.delete(actor)
+  }
+
   public async updateActors(delta: number, from: THREE.Vector3, to: THREE.Vector3): Promise<void> {
     for (const actor of this._actors) {
       actor.update(delta)

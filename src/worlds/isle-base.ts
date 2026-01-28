@@ -37,11 +37,31 @@ export type IsleParam = {
 const SECONDS_PER_DAY = 24 * 60
 
 export type CarBuildVehicleType = 'dunecar' | 'helicopter' | 'jetski' | 'racecar'
-export const CAR_BUILD_VEHICLES: { readonly type: CarBuildVehicleType; readonly model: ModelAction; readonly spawn: SpawnLocation }[] = [
-  { type: 'dunecar', model: DuneBugy_Model, spawn: 'dunebuggySpawn' },
-  { type: 'helicopter', model: Chptr_Model, spawn: 'helicopterSpawn' },
-  { type: 'jetski', model: Jsuser_Model, spawn: 'jetskiSpawn' },
-  { type: 'racecar', model: Rcuser_Model, spawn: 'racecarSpawn' },
+export const CAR_BUILD_VEHICLES: { readonly type: CarBuildVehicleType; readonly model: ModelAction; readonly spawn: SpawnLocation; readonly createActor: (model: Roi3D, islebase: IsleBase) => Promise<Actor> }[] = [
+  {
+    type: 'dunecar',
+    model: DuneBugy_Model,
+    spawn: 'dunebuggySpawn',
+    createActor: async (model: Roi3D, islebase: IsleBase) => new (await import('../lib/world/actors/dunebugy')).DuneBugy(model, islebase),
+  },
+  {
+    type: 'helicopter',
+    model: Chptr_Model,
+    spawn: 'helicopterSpawn',
+    createActor: async (model: Roi3D, islebase: IsleBase) => new (await import('../lib/world/actors/helicopter')).Helicopter(model, islebase),
+  },
+  {
+    type: 'jetski',
+    model: Jsuser_Model,
+    spawn: 'jetskiSpawn',
+    createActor: async (model: Roi3D, islebase: IsleBase) => new (await import('../lib/world/actors/jetski')).Jetski(model, islebase),
+  },
+  {
+    type: 'racecar',
+    model: Rcuser_Model,
+    spawn: 'racecarSpawn',
+    createActor: async (model: Roi3D, islebase: IsleBase) => new (await import('../lib/world/actors/racecar')).RaceCar(model, islebase),
+  },
 ]
 
 export abstract class IsleBase extends World {
@@ -72,7 +92,7 @@ export abstract class IsleBase extends World {
   protected _skateRoi: Roi3D | null = null
   protected _ambulanceRoi: Roi3D | null = null
   protected _towtruckRoi: Roi3D | null = null
-  private _buildMeshes = new Map<VehicleType, THREE.Object3D[]>()
+  private _buildMeshes = new Map<VehicleType, Actor>()
   private _animationInfos: DTA.AnimationInfo[] = []
   private readonly _wdbWorldName: WdbWorldName | null
   private readonly _dtaWorldName: DtaWorldName | null
@@ -340,10 +360,11 @@ export abstract class IsleBase extends World {
       this.placeVehicle('skate', 'EDG02_84', 4, 0.5, 0, 0.5)
     }
 
-    for (const { type, model, spawn } of CAR_BUILD_VEHICLES) {
-      const previousMeshes = this._buildMeshes.get(type)
-      if (previousMeshes != null) {
-        this.removeFromParents(previousMeshes)
+    for (const { type, model, spawn, createActor } of CAR_BUILD_VEHICLES) {
+      const previousActor = this._buildMeshes.get(type)
+      if (previousActor != null) {
+        this.removeFromParents(previousActor.roi.getAllModels())
+        this.removeActor(previousActor)
       }
       const placement = (() => {
         if (engine.resetVehicleRespawn(type)) {
@@ -358,7 +379,10 @@ export abstract class IsleBase extends World {
         for (const roi of allRois) {
           this.scene.add(roi)
         }
-        this._buildMeshes.set(type, allRois)
+        const actor = await createActor(rootRoi, this)
+        this.registerActor(actor)
+        this.addClickListener(actor.roi, async () => await actor.onClick())
+        this._buildMeshes.set(type, actor)
         rootRoi.moveRoiTo(placement.position, placement.quaternion)
         engine.currentSaveGame.setVehiclePlacement(type, placement)
       }
