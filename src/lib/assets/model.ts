@@ -180,6 +180,10 @@ export class Roi3D {
     return [this.model, ...this.children.flatMap(c => c.getAllModels())]
   }
 
+  public get position(): THREE.Vector3 {
+    return this.model.position
+  }
+
   public set visible(value: boolean) {
     this.model.visible = value
     for (const roi of this.children) {
