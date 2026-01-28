@@ -1,6 +1,5 @@
 import * as THREE from 'three'
-import { CarLocator2, CarLocator3, irtx08ra_PlayWav, Map_Ctl, Rhoda_Locator, Studs_Locator, srt001rh_RunAnim, srt001sl_RunAnim, srt002rh_RunAnim, srt002sl_RunAnim, srt003rh_RunAnim, srt003sl_RunAnim, srt004sl_RunAnim, srt005sl_RunAnim, User_Locator, UserCar_Actor } from '../actions/carrace'
-import { RaceTrackRoad_Music } from '../actions/jukebox'
+import { CarLocator2, CarLocator3, Map_Ctl, Rhoda_Locator, Studs_Locator, User_Locator, UserCar_Actor } from '../actions/carrace'
 import { type ActionBase, getExtraValue, type ImageAction, isAnimationAction, isBoundaryAction, isControlAction, isMeterAction, type SerialAction, splitExtraValue } from '../lib/action-types'
 import { type Animation3D, type Animation3DNode, parse3DAnimation } from '../lib/assets/animation'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
@@ -9,14 +8,12 @@ import type { DtaWorldName } from '../lib/assets/dta'
 import { getAction } from '../lib/assets/load'
 import type { WdbWorldName } from '../lib/assets/model'
 import { type Composer, Render2D } from '../lib/effect/composer'
-import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
+import { type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
 import { Meter } from '../lib/world/dashboard'
 import { PlayerMovement } from '../lib/world/player-movement'
 import type { WorldName } from '../lib/world/world'
 import { CarRace } from './carrace'
 import { IsleBase } from './isle-base'
-
-const introAnimations = [srt001sl_RunAnim, srt002sl_RunAnim, srt003sl_RunAnim, srt004sl_RunAnim, srt005sl_RunAnim, srt001rh_RunAnim, srt002rh_RunAnim, srt003rh_RunAnim]
 
 class RaceMap {
   private readonly _group: THREE.Group
@@ -314,11 +311,6 @@ export abstract class Race extends IsleBase {
     await super.activate(composer)
 
     this._applyVisibility(0)
-
-    void engine.switchBackgroundMusic(RaceTrackRoad_Music)
-    void this.playAnimation(introAnimations[Math.floor(Math.random() * introAnimations.length)]).then(() => {
-      void engine.playAudio(irtx08ra_PlayWav, 'speech')
-    })
 
     composer.add(this._controlsRender)
   }
