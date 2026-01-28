@@ -559,6 +559,12 @@ export abstract class IsleBase extends World {
         case 'HospitalEntity':
           entity = new (await import('../lib/world/entities/hospital')).Hospital(roi)
           break
+        case 'BeachHouseEntity':
+          entity = new (await import('../lib/world/entities/beach-house')).BeachHouseEntity(roi)
+          break
+        case 'RaceStandsEntity':
+          entity = new (await import('../lib/world/entities/race-stands')).RaceStandsEntity(roi)
+          break
         default:
           console.warn(`Object script for entity not supported: ${objectScript}`)
           return
