@@ -71,7 +71,7 @@ export class BoundaryManager {
     if (boundary == null) {
       throw new Error(`Boundary ${boundaryName} not found`)
     }
-    const matrix = boundary.getActorPlacement(src, srcScale, dst, _dstScale)
+    const { matrix } = boundary.getActorPlacement(src, srcScale, dst, _dstScale)
     const position = new THREE.Vector3()
     const quaternion = new THREE.Quaternion()
     const scale = new THREE.Vector3()
