@@ -21,9 +21,9 @@ export class CarRace extends Race {
     await this._dashboard.show({ type: 'racecar' })
 
     void engine.switchBackgroundMusic(RaceTrackRoad_Music)
-    void this.playAnimation(introAnimations[Math.floor(Math.random() * introAnimations.length)]).then(() => {
-      void engine.playAudio(irtx08ra_PlayWav, 'speech')
-    })
+    // void this.playAnimation(introAnimations[Math.floor(Math.random() * introAnimations.length)]).then(() => {
+    //   void engine.playAudio(irtx08ra_PlayWav, 'speech')
+    // })
   }
   public override async onEventStartWaypoint(data: number): Promise<void> {
     const action = Object.values(carracerActions).find(action => action.id === data)

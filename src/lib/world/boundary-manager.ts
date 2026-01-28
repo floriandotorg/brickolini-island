@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { Boundary } from '../assets/boundary'
+import type { Boundary, Edge } from '../assets/boundary'
 import { engine } from '../engine'
 import type { World } from './world'
 
@@ -30,6 +30,8 @@ export class BoundaryManager {
       this._boundaryGroup.add(mesh)
       this._meshToBoundary.set(mesh, { boundary, debugMesh })
 
+      world.debugDrawText(boundary.edges[0].pointA.clone().add(new THREE.Vector3(1, 1, 1)), boundary.name, 'white')
+
       for (let n = 0; n < boundary.edges.length; ++n) {
         const edge = boundary.edges[n]
         world.debugDrawArrow(edge.pointA, edge.pointB, flagsColor(edge))
@@ -57,6 +59,10 @@ export class BoundaryManager {
     return this._wallGroup
   }
 
+  public getBoundary(boundaryName: string): Boundary | null {
+    return this._boundaries.find(b => b.name?.toLowerCase() === boundaryName.toLowerCase()) ?? null
+  }
+
   public getObjectPlacement(
     boundaryName: string,
     src: number,
@@ -66,12 +72,14 @@ export class BoundaryManager {
   ): {
     position: THREE.Vector3
     quaternion: THREE.Quaternion
+    boundary: Boundary
+    destinationEdge: Edge
   } {
-    const boundary = this._boundaries.find(b => b.name?.toLowerCase() === boundaryName.toLowerCase())
+    const boundary = this.getBoundary(boundaryName)
     if (boundary == null) {
       throw new Error(`Boundary ${boundaryName} not found`)
     }
-    const matrix = boundary.getActorPlacement(src, srcScale, dst, _dstScale)
+    const { matrix, destinationEdge } = boundary.getActorPlacement(src, srcScale, dst, _dstScale)
     const position = new THREE.Vector3()
     const quaternion = new THREE.Quaternion()
     const scale = new THREE.Vector3()
@@ -79,7 +87,7 @@ export class BoundaryManager {
     if (scale.x > 1.001 || scale.x < 0.9999 || scale.y > 1.001 || scale.y < 0.9999 || scale.z > 1.001 || scale.z < 0.9999) {
       throw new Error('Object scale must be 1')
     }
-    return { position, quaternion }
+    return { position, quaternion, boundary, destinationEdge }
   }
 
   public update(fromPos: THREE.Vector3, toPos: THREE.Vector3): void {

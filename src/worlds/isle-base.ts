@@ -7,7 +7,7 @@ import { DuneBugy_Model } from '../actions/dunecar'
 import { Jsuser_Model } from '../actions/jetski'
 import { Rcuser_Model } from '../actions/racecar'
 import { type ActionBase, type ActorAction, type BoundaryAction, type EntityAction, getExtraValue, isActorAction, isBoundaryAction, isEntityAction, isPositionalAudioAction, type ModelAction, type SerialAction } from '../lib/action-types'
-import { getBoundaries } from '../lib/assets/boundary'
+import { type Boundary, type Edge, getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
 import { calculateTransformationMatrix, getModel, getWorld, Roi3D, type WdbWorldName } from '../lib/assets/model'
@@ -17,6 +17,7 @@ import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
 import { applyLights, NUM_ORIGINAL_LIGHTS } from '../lib/original-lights'
 import { getSettings } from '../lib/settings'
 import { type Actor, ColliderType } from '../lib/world/actor'
+import { PathActor } from '../lib/world/actors/path-actor'
 import type { Vehicle } from '../lib/world/actors/vehicle'
 import { BoundaryManager } from '../lib/world/boundary-manager'
 import type { Character } from '../lib/world/character'
@@ -584,6 +585,13 @@ export abstract class IsleBase extends World {
     if (characterName != null) {
       model = await this.getActor(characterName.toLowerCase())
     }
+    // if (characterName?.toLowerCase() === 'rhoda') {
+    //   model = this.findRoi('rcblue')
+    //   if (model == null) {
+    //     console.warn('Rhoda model not found')
+    //     return
+    //   }
+    // }
     if (model == null) {
       console.warn('Actor action without model or character is not supported', action)
       return
@@ -601,9 +609,14 @@ export abstract class IsleBase extends World {
         console.warn('Cannot attach sound to character', action)
         return
       }
-      void this.playPositionalAudio(sound.toLowerCase(), model.getAllModels()[0])
+      void this.playPositionalAudio(sound.toLowerCase(), model.model)
     }
     const path = getExtraValue(action, 'Path')
+    let destination: {
+      boundary: Boundary
+      edge: Edge
+      scale: number
+    } | null = null
     if (path != null) {
       const pathMatch = path.match(/^([^;]+);([^;]+);([^;]+);([^;]+);([^;]+)$/)
       if (!pathMatch) {
@@ -615,12 +628,17 @@ export abstract class IsleBase extends World {
       const srcScale = Number.parseFloat(pathMatch[3])
       const dst = Number.parseFloat(pathMatch[4])
       const dstScale = Number.parseFloat(pathMatch[5])
-      const { position, quaternion } = this.boundaryManager.getObjectPlacement(pathId, src, srcScale, dst, dstScale)
+      const { position, quaternion, ...rest } = this.boundaryManager.getObjectPlacement(pathId, src, srcScale, dst, dstScale)
       if (model instanceof Roi3D) {
         model.moveRoiTo(position, quaternion)
       } else {
         model.position.copy(position)
         model.quaternion.copy(quaternion)
+      }
+      destination = {
+        boundary: rest.boundary,
+        edge: rest.destinationEdge,
+        scale: dstScale,
       }
     }
     const objectScript = getExtraValue(action, 'Object')
@@ -647,10 +665,18 @@ export abstract class IsleBase extends World {
         case 'Ambulance':
           actor = new (await import('../lib/world/actors/ambulance')).Ambulance(model, this)
           break
+        case 'LegoRaceCar':
+          actor = new (await import('../lib/world/actors/race-car')).RaceCar(model, this)
+          break
         default:
           console.warn(`Object script for actor not supported: ${objectScript}`)
           return
       }
+
+      if (actor != null && actor instanceof PathActor && destination != null) {
+        actor.setCurrentDestination(destination)
+      }
+
       if (actor != null) {
         if (getExtraValue(action, 'COLLIDE_BOX') != null) {
           actor.colliderType = ColliderType.Box
