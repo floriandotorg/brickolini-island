@@ -91,8 +91,29 @@ export class Edge {
     throw new Error('getCCWEdge: Face not found')
   }
 
+  public getOtherBoundary(boundary: Boundary): Boundary {
+    let result: Boundary | undefined
+
+    if (this.faceA === boundary) {
+      result = this.faceB
+    }
+    if (this.faceB === boundary) {
+      result = this.faceA
+    }
+
+    if (result == null) {
+      throw new Error('getOtherBoundary: Face not found')
+    }
+
+    return result
+  }
+
+  public isTraversable(): boolean {
+    return (this.flags & 0x03) !== 0
+  }
+
   public connectFaces(edges: Edge[], boundaries: Boundary[]) {
-    if (this.faceInfoA) {
+    if (this.faceInfoA != null) {
       this.faceA = boundaries[this.faceInfoA.faceBoundaryIndex]
       this.ccwEdgeA = edges[this.faceInfoA.ccwEdgeIndex]
       this.cwEdgeA = edges[this.faceInfoA.cwEdgeIndex]
@@ -102,7 +123,7 @@ export class Edge {
       }
     }
 
-    if (this.faceInfoB) {
+    if (this.faceInfoB != null) {
       this.faceB = boundaries[this.faceInfoB.faceBoundaryIndex]
       this.ccwEdgeB = edges[this.faceInfoB.ccwEdgeIndex]
       this.cwEdgeB = edges[this.faceInfoB.cwEdgeIndex]
@@ -181,40 +202,33 @@ export class Boundary {
     return this.mesh
   }
 
-  public getActorPlacement(src: number, srcScale: number, dst: number, _dstScale: number): THREE.Matrix4 {
-    const srcEdge = this.edges[src]
-    const dstEdge = this.edges[dst]
-    if (srcEdge == null || dstEdge == null) {
+  public getActorPlacement(
+    src: number,
+    srcScale: number,
+    dst: number,
+    destScale: number,
+  ): {
+    matrix: THREE.Matrix4
+    destinationEdge: Edge
+  } {
+    const sourceEdge = this.edges[src]
+    const destinationEdge = this.edges[dst]
+    if (sourceEdge == null || destinationEdge == null) {
       throw new Error('Edge not found')
     }
 
-    const v1 = srcEdge?.pointA
-    const v2 = srcEdge?.pointB
-    const v3 = dstEdge?.pointA
-    const v4 = dstEdge?.pointB
-    if (v1 == null || v2 == null || v3 == null || v4 == null) {
-      throw new Error('Edge not found')
-    }
+    const start = sourceEdge.pointA.clone().lerp(sourceEdge.pointB, srcScale)
+    const end = destinationEdge.pointA.clone().lerp(destinationEdge.pointB, destScale)
 
-    const p1: THREE.Vector3 = v2.clone()
-    p1.sub(v1)
-    p1.multiplyScalar(srcScale)
-    p1.add(v1)
-
-    const p2: THREE.Vector3 = v4.clone()
-    p2.sub(v3)
-    p2.multiplyScalar(0.5)
-    p2.add(v3)
-
-    const dir = p2.clone()
-    dir.sub(p1)
+    const dir = start.clone()
+    dir.sub(end)
     dir.normalize()
-    dir.multiplyScalar(-1)
 
     const right = new THREE.Vector3(this.up.x, this.up.y, this.up.z).cross(dir)
     const matrix = new THREE.Matrix4()
-    matrix.set(right.x, this.up.x, dir.x, p1.x, right.y, this.up.y, dir.y, p1.y, right.z, this.up.z, dir.z, p1.z, 0, 0, 0, 1)
-    return matrix
+    matrix.set(right.x, this.up.x, dir.x, start.x, right.y, this.up.y, dir.y, start.y, right.z, this.up.z, dir.z, start.z, 0, 0, 0, 1)
+
+    return { matrix, destinationEdge }
   }
 }
 
