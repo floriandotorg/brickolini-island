@@ -108,6 +108,16 @@ export class Edge {
     return result
   }
 
+  public getFaceNormal(boundary: Boundary): THREE.Vector3 {
+    if (this.faceA === boundary) {
+      return this.direction.clone().negate()
+    }
+    if (this.faceB === boundary) {
+      return this.direction.clone()
+    }
+    throw new Error('getNormal: Face not found')
+  }
+
   public isTraversable(): boolean {
     return (this.flags & 0x03) !== 0
   }
