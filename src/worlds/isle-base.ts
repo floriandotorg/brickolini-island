@@ -612,7 +612,14 @@ export abstract class IsleBase extends World {
     }
     const characterName = getExtraValue(action.children[0], 'AUTO_CREATE')
     if (characterName != null) {
+      if (model != null) {
+        throw new Error('Actor action with both model and character is not supported')
+      }
+
       model = await this.getActor(characterName.toLowerCase())
+    }
+    if (model == null) {
+      model = await getModel(action.children[0])
     }
     if (model == null) {
       console.warn('Actor action without model or character is not supported', action)
