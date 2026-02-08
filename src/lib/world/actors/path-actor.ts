@@ -63,9 +63,12 @@ export class PathActor extends Actor {
 
   private _calculateSpline(): THREE.CubicBezierCurve3 {
     const start = this.roi.position
+    const boundaryUp = new THREE.Vector3(-this.destination.boundary.up.x, this.destination.boundary.up.y, this.destination.boundary.up.z)
     const startDirection = this.roi.model.getWorldDirection(new THREE.Vector3())
+    const startRight = new THREE.Vector3().crossVectors(boundaryUp, startDirection).normalize()
+    startDirection.crossVectors(startRight, boundaryUp).normalize()
     const destination = this.destination.edge.getCWVertex(this.destination.boundary).clone().lerp(this.destination.edge.getCCWVertex(this.destination.boundary), this.destination.scale)
-    const destinationDirection = new THREE.Vector3(this.destination.boundary.up.x, this.destination.boundary.up.y, this.destination.boundary.up.z).clone().cross(this.destination.edge.getFaceNormal(this.destination.boundary))
+    const destinationDirection = boundaryUp.clone().cross(this.destination.edge.getFaceNormal(this.destination.boundary))
     const distance = start.distanceTo(destination)
     const c1 = start.clone().sub(startDirection.divideScalar(3).multiplyScalar(distance))
     const c2 = destination.clone().add(destinationDirection.divideScalar(3).multiplyScalar(distance))
@@ -89,20 +92,22 @@ export class PathActor extends Actor {
     }
 
     this._distanceTraveled += (delta * this._speed) / this._spline.getLength()
-    if (this._distanceTraveled > 1) {
-      this._switchBoundary()
-    }
 
     if (this._spline != null) {
+      const distancedTraveledClamped = Math.min(this._distanceTraveled, 1)
       const matrix = new THREE.Matrix4()
-      const up = new THREE.Vector3(0, 1, 0)
-      const dir = this._spline.getTangent(this._distanceTraveled).multiplyScalar(-1).normalize()
-      const right = new THREE.Vector3().crossVectors(up, dir).normalize()
+      const worldUp = new THREE.Vector3(0, 1, 0)
+      const dir = this._spline.getTangentAt(distancedTraveledClamped).multiplyScalar(-1).normalize()
+      const right = new THREE.Vector3().crossVectors(worldUp, dir).normalize()
+      const up = new THREE.Vector3().crossVectors(dir, right).normalize()
       matrix.makeBasis(right, up, dir)
       const quaternion = new THREE.Quaternion()
       quaternion.setFromRotationMatrix(matrix)
-      quaternion.normalize()
-      this.roi.moveRoiTo(this._spline.getPoint(this._distanceTraveled), quaternion)
+      this.roi.moveRoiTo(this._spline.getPointAt(distancedTraveledClamped), quaternion)
+    }
+
+    if (this._distanceTraveled >= 1) {
+      this._switchBoundary()
     }
   }
 }
