@@ -1029,7 +1029,7 @@ export class Isle extends IsleBase {
 
     this._dashboard.update(normalizedSpeed)
 
-    this.boundaryManager.update(fromPos, toPos)
+    this.boundaryManager.update(fromPos, toPos, null)
     for (const trigger of this._animationTrigger) {
       const distance = toPos.distanceTo(trigger.center)
       if (distance <= trigger.radius && fromPos.distanceTo(trigger.center) > trigger.radius) {

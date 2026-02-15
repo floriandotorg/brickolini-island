@@ -266,15 +266,27 @@ export abstract class Race extends IsleBase {
       return false
     })
 
-    this.boundaryManager.onTrigger = (name, data, direction) => {
-      console.log(`Boundary trigger: ${name}, ${data}, ${direction}`)
+    this.boundaryManager.onTrigger = (name, data, direction, roi) => {
+      console.log(`Boundary trigger: ${name}, ${data}, ${direction}, ${roi?.name}`)
 
       if (name[2] === 'D') {
-        this._playerProgress.lastWaypointNo = data
-        if (this._playerProgress.remainingLaps <= 0) {
-          console.log('Player finished race')
+        if (roi == null) {
+          this._playerProgress.lastWaypointNo = data
+          if (this._playerProgress.remainingLaps <= 0) {
+            console.log('Player finished race')
+          }
+        } else if (roi.name === 'rhoda') {
+          this._opponent1Progress.lastWaypointNo = data
+        } else if (roi.name === 'studs') {
+          this._opponent2Progress.lastWaypointNo = data
         }
-      } else if (name[2] === 'H') {
+      }
+
+      if (roi != null) {
+        return
+      }
+
+      if (name[2] === 'H') {
         this._applyVisibility(data)
       } else if (name[2] === 'S') {
         this.onEventStartWaypoint(data)
@@ -366,7 +378,7 @@ export abstract class Race extends IsleBase {
     CarRace.setTopLeft(this._opponent2ProgressLocator, lerped)
 
     this._raceMap?.update()
-    this.boundaryManager.update(fromPos, toPos)
+    this.boundaryManager.update(fromPos, toPos, null)
     this.updateActors(delta, fromPos, toPos)
   }
 }

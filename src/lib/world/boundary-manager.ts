@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import type { Boundary, Edge } from '../assets/boundary'
+import type { Roi3D } from '../assets/model'
 import { engine } from '../engine'
 import type { World } from './world'
 
@@ -17,7 +18,7 @@ export class BoundaryManager {
   private _boundaryGroup = new THREE.Group()
   private _currentBoundary: Boundary | null = null
 
-  public onTrigger: (name: string, data: number, direction: 'inbound' | 'outbound') => void = () => {}
+  public onTrigger: (name: string, data: number, direction: 'inbound' | 'outbound', roi: Roi3D | null) => void = () => {}
 
   constructor(boundaries: Boundary[], world: World) {
     this._boundaries = boundaries
@@ -90,7 +91,7 @@ export class BoundaryManager {
     return { position, quaternion, boundary, destinationEdge }
   }
 
-  public update(fromPos: THREE.Vector3, toPos: THREE.Vector3): void {
+  public update(fromPos: THREE.Vector3, toPos: THREE.Vector3, roi: Roi3D | null): void {
     const downRay = new THREE.Raycaster(toPos, new THREE.Vector3(0, -1, 0), 0, 1000)
     const hit = downRay.intersectObject(this._boundaryGroup)[0]
     if (hit) {
@@ -116,11 +117,11 @@ export class BoundaryManager {
 
       for (const trigger of this._currentBoundary.triggers) {
         if (dot2 > dot1 && trigger.triggerProjection >= dot1 && trigger.triggerProjection < dot2) {
-          this.onTrigger(trigger.struct.name, trigger.data, 'inbound')
+          this.onTrigger(trigger.struct.name, trigger.data, 'inbound', roi)
         }
 
         if (dot2 < dot1 && trigger.triggerProjection >= dot2 && trigger.triggerProjection < dot1) {
-          this.onTrigger(trigger.struct.name, trigger.data, 'outbound')
+          this.onTrigger(trigger.struct.name, trigger.data, 'outbound', roi)
         }
       }
     }
