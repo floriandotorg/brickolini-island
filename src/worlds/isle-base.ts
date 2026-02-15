@@ -619,13 +619,6 @@ export abstract class IsleBase extends World {
 
       model = await this.getActor(characterName.toLowerCase())
     }
-    // if (characterName?.toLowerCase() === 'rhoda') {
-    //   model = this.findRoi('rcblue')
-    //   if (model == null) {
-    //     console.warn('Rhoda model not found')
-    //     return
-    //   }
-    // }
     if (model == null) {
       model = await getModel(action.children[0])
     }

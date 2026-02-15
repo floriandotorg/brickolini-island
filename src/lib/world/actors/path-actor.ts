@@ -9,13 +9,13 @@ type Destination = {
 }
 
 export class PathActor extends Actor {
-  private _destination: Destination | null = null
+  protected _destination: Destination | null = null
 
-  private _spline: THREE.CubicBezierCurve3 | null = null
-  private _distanceTraveled = 0
-  private _speed = 10
+  protected _spline: THREE.CubicBezierCurve3 | null = null
+  protected _distanceTraveled = 0
+  protected _speed = 5
 
-  private get destination() {
+  protected get destination() {
     if (this._destination == null) {
       throw new Error('Destination not set')
     }
@@ -26,7 +26,7 @@ export class PathActor extends Actor {
     this._destination = destination
   }
 
-  private _switchBoundary(): void {
+  protected _switchBoundary(): void {
     if (!this.destination.edge.isTraversable()) {
       throw new Error('Current edge is not traversable')
     }
@@ -54,15 +54,15 @@ export class PathActor extends Actor {
     this._destination = {
       boundary: nextBoundary,
       edge,
-      scale: 0.5,
+      scale: this.destination.scale,
     }
 
     this._spline = this._calculateSpline()
     this._distanceTraveled = 0
   }
 
-  private _calculateSpline(): THREE.CubicBezierCurve3 {
-    const start = this.roi.position
+  protected _calculateSpline(): THREE.CubicBezierCurve3 {
+    const start = this.roi.position.clone()
     const boundaryUp = new THREE.Vector3(-this.destination.boundary.up.x, this.destination.boundary.up.y, this.destination.boundary.up.z)
     const startDirection = this.roi.model.getWorldDirection(new THREE.Vector3())
     const startRight = new THREE.Vector3().crossVectors(boundaryUp, startDirection).normalize()
@@ -93,18 +93,16 @@ export class PathActor extends Actor {
 
     this._distanceTraveled += (delta * this._speed) / this._spline.getLength()
 
-    if (this._spline != null) {
-      const distancedTraveledClamped = Math.min(this._distanceTraveled, 1)
-      const matrix = new THREE.Matrix4()
-      const worldUp = new THREE.Vector3(0, 1, 0)
-      const dir = this._spline.getTangentAt(distancedTraveledClamped).multiplyScalar(-1).normalize()
-      const right = new THREE.Vector3().crossVectors(worldUp, dir).normalize()
-      const up = new THREE.Vector3().crossVectors(dir, right).normalize()
-      matrix.makeBasis(right, up, dir)
-      const quaternion = new THREE.Quaternion()
-      quaternion.setFromRotationMatrix(matrix)
-      this.roi.moveRoiTo(this._spline.getPointAt(distancedTraveledClamped), quaternion)
-    }
+    const distancedTraveledClamped = Math.min(this._distanceTraveled, 1)
+    const matrix = new THREE.Matrix4()
+    const worldUp = new THREE.Vector3(0, 1, 0)
+    const dir = this._spline.getTangentAt(distancedTraveledClamped).multiplyScalar(-1).normalize()
+    const right = new THREE.Vector3().crossVectors(worldUp, dir).normalize()
+    const up = new THREE.Vector3().crossVectors(dir, right).normalize()
+    matrix.makeBasis(right, up, dir)
+    const quaternion = new THREE.Quaternion()
+    quaternion.setFromRotationMatrix(matrix)
+    this.roi.moveRoiTo(this._spline.getPointAt(distancedTraveledClamped), quaternion)
 
     if (this._distanceTraveled >= 1) {
       this._switchBoundary()
