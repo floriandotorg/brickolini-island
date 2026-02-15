@@ -13,7 +13,6 @@ export class PathActor extends Actor {
 
   protected _spline: THREE.CubicBezierCurve3 | null = null
   protected _distanceTraveled = 0
-  protected _speed = 5
 
   protected get destination() {
     if (this._destination == null) {

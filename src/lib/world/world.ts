@@ -324,7 +324,7 @@ export abstract class World {
     for (const actor of animation.actors) {
       switch (actor.type) {
         case WDB.ActorType.Unknown: {
-          const node = this.worldGroup.getObjectByName(actor.name)
+          const node = this.getRoi(actor.name)
           if (node == null) {
             throw new Error(`Actor not found: ${actor.name}`)
           }
@@ -383,6 +383,8 @@ export abstract class World {
           throw new Error(`Unsupported actor type ${actor.type} for ${actor.name}`)
       }
     }
+
+    console.log(animationActors)
 
     const positionalAudioActions = children.filter(c => isPositionalAudioAction(c))
     const audioActions = children.filter(c => isAudioAction(c))
@@ -480,7 +482,20 @@ export abstract class World {
 
     const objectsToHideOnStop = getExtraValue(action, 'hide_on_stop') != null ? Array.from(animationActors.values()).flatMap(actor => [actor.object, ...actor.children.values()]) : []
 
-    return { animation, animationActors, managedActorNames, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, objectsToHideOnStop, location, loop: animationAction.presenter === 'LegoLoopingAnimPresenter' ? THREE.LoopRepeat : THREE.LoopOnce }
+    return {
+      animation,
+      animationActors,
+      managedActorNames,
+      positionalAudioActions,
+      audioActions,
+      tracks,
+      lookAtKeys,
+      faceAnimations,
+      pointAtCameraObjects,
+      objectsToHideOnStop,
+      location,
+      loop: animationAction.presenter === 'LegoLoopingAnimPresenter' || animationAction.presenter === 'LegoLocomotionAnimPresenter' ? THREE.LoopRepeat : THREE.LoopOnce,
+    }
   }
 
   public async playAnimation(action: RunAnimationAction | AnimationAction, { location, rotation, unskippable, lockCamera, extraTracks }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<void> {

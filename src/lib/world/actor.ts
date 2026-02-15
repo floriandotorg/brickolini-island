@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import type { IsleBase } from '../../worlds/isle-base'
+import type { AnimationAction } from '../action-types'
 import type { Roi3D } from '../assets/model'
 import { Entity } from './entity'
 
@@ -11,6 +12,8 @@ export enum ColliderType {
 
 export abstract class Actor extends Entity {
   private _colliderType = ColliderType.None
+  protected _animationActions: Map<number, AnimationAction> = new Map()
+  protected _speed = 0
 
   constructor(
     _roi: Roi3D,
@@ -26,6 +29,14 @@ export abstract class Actor extends Entity {
 
   public set colliderType(colliderType: ColliderType) {
     this._colliderType = colliderType
+  }
+
+  public addAnimationAction(speed: number, animation: AnimationAction) {
+    this._animationActions.set(speed, animation)
+  }
+
+  public set speed(speed: number) {
+    this._speed = speed
   }
 
   public checkCollision(from: THREE.Vector3, to: THREE.Vector3): boolean {

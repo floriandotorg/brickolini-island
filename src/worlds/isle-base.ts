@@ -6,7 +6,7 @@ import { Chptr_Model } from '../actions/copter'
 import { DuneBugy_Model } from '../actions/dunecar'
 import { Jsuser_Model } from '../actions/jetski'
 import { Rcuser_Model } from '../actions/racecar'
-import { type ActionBase, type ActorAction, type BoundaryAction, type EntityAction, getExtraValue, isActorAction, isBoundaryAction, isEntityAction, isPositionalAudioAction, type ModelAction, type SerialAction } from '../lib/action-types'
+import { type ActionBase, type ActorAction, type AnimationAction, type BoundaryAction, type EntityAction, getExtraValue, isActorAction, isAnimationAction, isBoundaryAction, isEntityAction, isPositionalAudioAction, type ModelAction, type SerialAction } from '../lib/action-types'
 import { type Boundary, type Edge, getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
@@ -98,6 +98,7 @@ export abstract class IsleBase extends World {
   private readonly _wdbWorldName: WdbWorldName | null
   private readonly _dtaWorldName: DtaWorldName | null
   private _currentVehicle: Vehicle | null = null
+  private _cachedAnimations = new Map<string, AnimationAction>()
 
   public get currentVehicle(): Vehicle | null {
     return this._currentVehicle
@@ -163,8 +164,8 @@ export abstract class IsleBase extends World {
         await this.handleActorAction(child)
       } else if (isEntityAction(child)) {
         await this.handleEntityAction(child)
-      } else if (child.presenter === 'LegoLocomotionAnimPresenter') {
-        // Run animations, can be ignored
+      } else if (isAnimationAction(child)) {
+        this._cachedAnimations.set(child.name.toLowerCase(), child)
       } else if (child.presenter === 'LegoLoadCacheSoundPresenter' && isPositionalAudioAction(child)) {
         await this.cachePositionalAudio(child)
       } else {
@@ -621,6 +622,9 @@ export abstract class IsleBase extends World {
     }
     if (model == null) {
       model = await getModel(action.children[0])
+      for (const subModel of model.getAllModels()) {
+        this.worldGroup.add(subModel)
+      }
     }
     if (model == null) {
       console.warn('Actor action without model or character is not supported', action)
@@ -693,6 +697,9 @@ export abstract class IsleBase extends World {
         case 'LegoRaceCar':
           actor = new (await import('../lib/world/actors/race-car')).RaceCar(model, this)
           break
+        case 'RaceSkel':
+          actor = new (await import('../lib/world/actors/race-skel')).RaceSkel(model, this)
+          break
         default:
           console.warn(`Object script for actor not supported: ${objectScript}`)
           return
@@ -705,6 +712,28 @@ export abstract class IsleBase extends World {
       if (actor != null) {
         if (getExtraValue(action, 'COLLIDE_BOX') != null) {
           actor.colliderType = ColliderType.Box
+        }
+
+        const speed = getExtraValue(action, 'Speed')
+        if (speed != null) {
+          actor.speed = Number.parseInt(speed, 10)
+        }
+
+        const animation = getExtraValue(action, 'Animation')
+        if (animation != null) {
+          const parts = animation.split(';')
+          if (parts.length % 2 !== 0) {
+            throw new Error('Animation must have an even number of parts')
+          }
+          for (let n = 0; n < parts.length; n += 2) {
+            const animationName = parts[n]
+            const speed = Number.parseInt(parts[n + 1], 10)
+            const animationAction = this._cachedAnimations.get(animationName.toLowerCase())
+            if (animationAction == null) {
+              throw new Error(`Animation not found: ${animationName}`)
+            }
+            actor.addAnimationAction(speed, animationAction)
+          }
         }
 
         this.registerActor(actor)
