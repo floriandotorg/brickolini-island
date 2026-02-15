@@ -27,8 +27,23 @@ export class PathActor extends Actor {
   }
 
   protected _switchBoundary(): void {
-    if (!this.destination.edge.isTraversable()) {
-      throw new Error('Current edge is not traversable')
+    if (!this.destination.edge.isTraversableFromFace(this.destination.boundary)) {
+      let edge = this.destination.edge
+      do {
+        edge = edge.getCCWEdge(this.destination.boundary)
+        if (edge.isTraversable()) {
+          this._destination = {
+            boundary: edge.getOtherBoundary(this.destination.boundary),
+            edge,
+            scale: this.destination.scale,
+          }
+          this._spline = this._calculateSpline()
+          this._distanceTraveled = 0
+          return
+        }
+      } while (edge !== this.destination.edge)
+
+      throw new Error(`${this.roi.name}: No traversable edge found`)
     }
 
     const nextBoundary = this.destination.edge.getOtherBoundary(this.destination.boundary)

@@ -122,6 +122,16 @@ export class Edge {
     return (this.flags & 0x03) !== 0
   }
 
+  public isTraversableFromFace(boundary: Boundary): boolean {
+    if (this.faceA === boundary) {
+      return (this.flags & 0x01) !== 0
+    }
+    if (this.faceB === boundary) {
+      return (this.flags & 0x02) !== 0
+    }
+    throw new Error('isTraversableToFace: Face not found')
+  }
+
   public connectFaces(edges: Edge[], boundaries: Boundary[]) {
     if (this.faceInfoA != null) {
       this.faceA = boundaries[this.faceInfoA.faceBoundaryIndex]
