@@ -220,7 +220,7 @@ export abstract class World {
 
     --entry.refCount
     if (entry.refCount <= 0) {
-      entry.character.removeFromParent()
+      entry.character.model.removeFromParent()
       this._characters.delete(name)
     }
   }
@@ -257,7 +257,7 @@ export abstract class World {
   }
 
   public findRoi(name: string): Roi3D | null {
-    const roi = this.worldGroup.getObjectByName(name.toLowerCase())
+    const roi = this.scene.getObjectByName(name.toLowerCase())
     if (roi == null) {
       return null
     }
@@ -309,8 +309,16 @@ export abstract class World {
     const animationActors = new Map<string, AnimationActor>()
     const managedActorNames: string[] = []
 
-    const addActorToList = (type: WDB.ActorType, actor: THREE.Object3D) => {
-      animationActors.set(actor.name, createAnimationActor(type, actor, this.worldGroup))
+    const addActorToList = (type: WDB.ActorType, actor: THREE.Object3D | Roi3D) => {
+      if (actor instanceof Roi3D) {
+        animationActors.set(actor.name, {
+          type,
+          object: actor.model,
+          children: new Map(actor.children.map(c => [c.name, c.model])),
+        })
+      } else {
+        animationActors.set(actor.name, createAnimationActor(type, actor, this.worldGroup))
+      }
     }
 
     for (const actor of animation.actors) {
@@ -331,7 +339,7 @@ export abstract class World {
           if (actor.name.startsWith('*')) {
             minifig.visible = false
           }
-          this.scene.add(minifig)
+          this.scene.add(minifig.model)
           addActorToList(actor.type, minifig)
           break
         }
@@ -400,7 +408,7 @@ export abstract class World {
         if (phoneme.extra == null) {
           throw new Error('Phoneme extra is null')
         }
-        const character = this.getObjectByNameRecursive(phoneme.extra)
+        const character = this.getRoi(phoneme.extra)
         if (character == null || !(character instanceof Character)) {
           throw new Error(`Actor not found: ${phoneme.extra}`)
         }

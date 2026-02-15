@@ -1,8 +1,6 @@
 import * as THREE from 'three'
 import { Water } from 'three/addons/objects/Water.js'
-import { Isle } from '../../worlds/isle'
 import type { ModelAction } from '../action-types'
-import { engine } from '../engine'
 import { getSettings } from '../settings'
 import type { Actor } from '../world/actor'
 import { BinaryReader } from './binary-reader'
@@ -327,9 +325,6 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
         mesh.material.uniforms.size.value = 7
         mesh.name = `${roiModel.name}-${++n}`.toLowerCase()
         roiModel.add(mesh)
-        if (engine.currentWorld instanceof Isle) {
-          engine.currentWorld.water = mesh
-        }
         continue
       }
 

@@ -659,12 +659,7 @@ export abstract class IsleBase extends World {
       const dst = Number.parseFloat(pathMatch[4])
       const dstScale = Number.parseFloat(pathMatch[5])
       const { position, quaternion, ...rest } = this.boundaryManager.getObjectPlacement(pathId, src, srcScale, dst, dstScale)
-      if (model instanceof Roi3D) {
-        model.moveRoiTo(position, quaternion)
-      } else {
-        model.position.copy(position)
-        model.quaternion.copy(quaternion)
-      }
+      model.moveRoiTo(position, quaternion)
       destination = {
         boundary: rest.boundary,
         edge: rest.destinationEdge,

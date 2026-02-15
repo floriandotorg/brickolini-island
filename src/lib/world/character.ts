@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Sound10 } from '../../actions/sndanim'
 import { colorAliases } from '../assets/mesh'
-import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
+import { calculateTransformationMatrix, getGlobalPart, Roi3D, RoiModel } from '../assets/model'
 import { engine } from '../engine'
 import type { World } from './world'
 
@@ -1338,7 +1338,7 @@ export const ACTORS: {
 
 // spellchecker: enable
 
-export class Character extends THREE.Group {
+export class Character extends Roi3D {
   private _headMaterial: THREE.MeshBasicMaterial | null = null
   private _head: THREE.Object3D | null = null
   private _originalHeadTexture: THREE.Texture | null = null
@@ -1359,8 +1359,13 @@ export class Character extends THREE.Group {
     return this._head
   }
 
-  private constructor(private _info: (typeof ACTORS)[keyof typeof ACTORS]) {
-    super()
+  private constructor(
+    name: string,
+    private _info: (typeof ACTORS)[keyof typeof ACTORS],
+  ) {
+    super(new RoiModel(), name)
+    this.model.name = name
+    this.model.roi3d = this
   }
 
   public resetHeadTexture(): void {
@@ -1372,8 +1377,7 @@ export class Character extends THREE.Group {
   }
 
   public static async create(world: World, name: string): Promise<Character> {
-    const actor = new Character(ACTORS[name as keyof typeof ACTORS])
-    actor.name = name.toLowerCase()
+    const actor = new Character(name, ACTORS[name as keyof typeof ACTORS])
 
     for (const [bodyPartName, part] of Object.entries(BODY_PARTS)) {
       if (bodyPartName === 'top') {
@@ -1423,7 +1427,7 @@ export class Character extends THREE.Group {
       parentMesh.name = bodyPartName.toLowerCase()
       parentMesh.add(mesh)
       mesh.name = `${mesh.name}-part`
-      actor.add(parentMesh)
+      actor.model.add(parentMesh)
 
       world.addClickListener(parentMesh, async () => {
         if (engine.currentSaveGame.player === 'nick') {
@@ -1433,7 +1437,7 @@ export class Character extends THREE.Group {
               actor._info.hatColor = nextColor(actor._info.hatColor)
               actor.children
                 .find(child => child.name === 'infohat')
-                ?.clear()
+                ?.model.clear()
                 .add(await getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null))
               break
             case 'body':
@@ -1441,7 +1445,7 @@ export class Character extends THREE.Group {
               actor._info.groinColor = nextColor(actor._info.groinColor)
               actor.children
                 .find(child => child.name === 'infogron')
-                ?.clear()
+                ?.model.clear()
                 .add(await getGlobalPart('infogron', colorAliases[actor._info.groinColor], null))
               break
             case 'claw-lft':
@@ -1449,7 +1453,7 @@ export class Character extends THREE.Group {
               actor._info.leftArmColor = nextColor(actor._info.leftArmColor)
               actor.children
                 .find(child => child.name === 'arm-lft')
-                ?.clear()
+                ?.model.clear()
                 .add(await getGlobalPart('arm-lft', colorAliases[actor._info.leftArmColor], null))
               break
             case 'claw-rt':
@@ -1457,21 +1461,21 @@ export class Character extends THREE.Group {
               actor._info.rightArmColor = nextColor(actor._info.rightArmColor)
               actor.children
                 .find(child => child.name === 'arm-rt')
-                ?.clear()
+                ?.model.clear()
                 .add(await getGlobalPart('arm-rt', colorAliases[actor._info.rightArmColor], null))
               break
             case 'leg-lft':
               actor._info.leftLegColor = nextColor(actor._info.leftLegColor)
               actor.children
                 .find(child => child.name === 'leg-lft')
-                ?.clear()
+                ?.model.clear()
                 .add(await getGlobalPart('leg', colorAliases[actor._info.leftLegColor], null))
               break
             case 'leg-rt':
               actor._info.rightLegColor = nextColor(actor._info.rightLegColor)
               actor.children
                 .find(child => child.name === 'leg-rt')
-                ?.clear()
+                ?.model.clear()
                 .add(await getGlobalPart('leg', colorAliases[actor._info.rightLegColor], null))
               break
             default:
@@ -1503,10 +1507,10 @@ export class Character extends THREE.Group {
           return true
         }
 
-        hatParentMesh.clear()
+        hatParentMesh.model.clear()
         const mesh = await getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null)
         mesh.name = `${mesh.name}-part`
-        hatParentMesh.add(mesh)
+        hatParentMesh.model.add(mesh)
 
         return true
       }
