@@ -68,13 +68,17 @@ export class Door extends Actor {
     return this.getAngle() > 0
   }
 
-  public override update(_: number): void {
+  public override update(delta: number): { from: THREE.Vector3; to: THREE.Vector3 } {
+    const result = super.update(delta)
+
     const angle = this.getAngle()
     const tempQ = new THREE.Quaternion()
     tempQ.setFromAxisAngle(new THREE.Vector3(0, 1, 0), (angle * Math.PI) / 2)
     this._leftDoor.model.quaternion.copy(this._leftDoor.originalQuaternion).multiply(tempQ)
     tempQ.setFromAxisAngle(new THREE.Vector3(0, 1, 0), (-angle * Math.PI) / 2)
     this._rightDoor.model.quaternion.copy(this._rightDoor.originalQuaternion).multiply(tempQ)
+
+    return result
   }
 
   public override onCollision(_from: THREE.Vector3, _to: THREE.Vector3): void {

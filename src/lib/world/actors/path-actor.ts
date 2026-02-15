@@ -95,7 +95,7 @@ export class PathActor extends Actor {
     return curve
   }
 
-  public override update(delta: number): void {
+  public override update(delta: number): { from: THREE.Vector3; to: THREE.Vector3 } {
     super.update(delta)
 
     this.roi.visible = true
@@ -105,7 +105,7 @@ export class PathActor extends Actor {
       this._distanceTraveled = 0
     }
 
-    this._distanceTraveled += (delta * this._speed) / this._spline.getLength()
+    this._distanceTraveled += (delta * this._speed * 0.1) / this._spline.getLength()
 
     const distancedTraveledClamped = Math.min(this._distanceTraveled, 1)
     const matrix = new THREE.Matrix4()
@@ -125,5 +125,7 @@ export class PathActor extends Actor {
     if (this._distanceTraveled >= 1) {
       this._switchBoundary()
     }
+
+    return { from, to }
   }
 }

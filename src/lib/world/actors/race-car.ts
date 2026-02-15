@@ -38,10 +38,6 @@ export class RaceCar extends PathActor {
     this.addJumpEdge('edg03_112', 2, 'edg03_113', 2)
   }
 
-  public override update(_delta: number): void {
-    super.update(_delta)
-  }
-
   protected override _switchBoundary(): void {
     const jumpEdge = this._jumpEdges.get(this.destination.edge)
     if (jumpEdge != null) {

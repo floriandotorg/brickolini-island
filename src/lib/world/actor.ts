@@ -75,6 +75,8 @@ export abstract class Actor extends Entity {
     return from.distanceTo(intersection) <= from.distanceTo(to)
   }
 
-  public update(_delta: number): void {}
+  public update(_delta: number): { from: THREE.Vector3; to: THREE.Vector3 } {
+    return { from: this.roi.position.clone(), to: this.roi.position.clone() }
+  }
   public onCollision(_from: THREE.Vector3, _to: THREE.Vector3): void {}
 }

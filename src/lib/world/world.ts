@@ -283,11 +283,16 @@ export abstract class World {
     this._actors.delete(actor)
   }
 
-  public async updateActors(delta: number, from: THREE.Vector3, to: THREE.Vector3): Promise<void> {
+  public async updateActors(delta: number, playerFrom: THREE.Vector3, playerTo: THREE.Vector3): Promise<void> {
     for (const actor of this._actors) {
-      actor.update(delta)
-      if (actor.checkCollision(from, to)) {
-        actor.onCollision(from, to)
+      const { from: actorFrom, to: actorTo } = actor.update(delta)
+      for (const actor of this._actors) {
+        if (actor.checkCollision(actorFrom, actorTo)) {
+          actor.onCollision(actorFrom, actorTo)
+        }
+      }
+      if (actor.checkCollision(playerFrom, playerTo)) {
+        actor.onCollision(playerFrom, playerTo)
       }
     }
   }
@@ -383,8 +388,6 @@ export abstract class World {
           throw new Error(`Unsupported actor type ${actor.type} for ${actor.name}`)
       }
     }
-
-    console.log(animationActors)
 
     const positionalAudioActions = children.filter(c => isPositionalAudioAction(c))
     const audioActions = children.filter(c => isAudioAction(c))
