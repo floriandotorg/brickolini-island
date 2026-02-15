@@ -237,6 +237,10 @@ export abstract class Race extends IsleBase {
     this._controls.addControl(Map_Ctl)
 
     await this.handleStartUpAction(this._startUpAction, async child => {
+      if (child.name === 'UserCar_Actor') {
+        return true
+      }
+
       if (isControlAction(child)) {
         this._controls.addControl(child)
         return true
