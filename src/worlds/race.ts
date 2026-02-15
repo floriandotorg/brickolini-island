@@ -1,6 +1,6 @@
 import * as THREE from 'three'
-import { CarLocator2, CarLocator3, Map_Ctl, Rhoda_Locator, Studs_Locator, User_Locator, UserCar_Actor } from '../actions/carrace'
-import { type ActionBase, getExtraValue, type ImageAction, isAnimationAction, isBoundaryAction, isControlAction, isMeterAction, type SerialAction, splitExtraValue } from '../lib/action-types'
+import { CarLocator2, CarLocator3, Map_Ctl } from '../actions/carrace'
+import { type ActionBase, type ActorAction, getExtraValue, type ImageAction, isAnimationAction, isBoundaryAction, isControlAction, isImageAction, isMeterAction, type SerialAction, splitExtraValue } from '../lib/action-types'
 import { type Animation3D, type Animation3DNode, parse3DAnimation } from '../lib/assets/animation'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { ControlsCollection } from '../lib/assets/control'
@@ -9,27 +9,35 @@ import { getAction } from '../lib/assets/load'
 import type { WdbWorldName } from '../lib/assets/model'
 import { type Composer, Render2D } from '../lib/effect/composer'
 import { type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
+import type { Actor } from '../lib/world/actor'
 import { Meter } from '../lib/world/dashboard'
 import { PlayerMovement } from '../lib/world/player-movement'
 import type { WorldName } from '../lib/world/world'
-import { CarRace } from './carrace'
 import { IsleBase } from './isle-base'
 
 class RaceMap {
   private readonly _group: THREE.Group
-  private readonly _locatorMap: Map<string, ImageAction>
   private readonly _locators: MapLocator[] = []
 
-  public constructor(locatorMap: Map<string, ImageAction>) {
-    this._locatorMap = locatorMap
+  public constructor() {
     this._group = new THREE.Group()
     this._group.visible = false
   }
 
-  public addLocator(action: { extra: string }, object: THREE.Object3D) {
-    const locator = new MapLocator(action, this._locatorMap, object)
-    this._group.add(locator.sprite)
-    this._locators.push(locator)
+  public addLocator(action: { extra: string | null }, object: THREE.Object3D) {
+    const mapLocator = getExtraValue(action, 'Map_Locator')
+    const mapGeometry = getExtraValue(action, 'Map_Geometry')
+    if (mapLocator != null && mapGeometry != null) {
+      const locator = new MapLocator(mapLocator, mapGeometry, object)
+      this._locators.push(locator)
+    }
+  }
+
+  public createSprites(imageActions: ImageAction[]) {
+    console.log(`${imageActions.length} image sprites and ${this._locators.length} locators`)
+    for (const locator of this._locators) {
+      locator.createSprite(imageActions, this._group)
+    }
   }
 
   public update() {
@@ -49,22 +57,11 @@ class MapLocator {
   private readonly _worldZOffset: number
   private readonly _worldZLength: number
   private readonly _mapRect: NormalizedRect
-  private readonly _sprite: THREE.Sprite
+  private readonly _locator: string
+  private _sprite: THREE.Sprite | null = null
   private readonly _object: THREE.Object3D
 
-  public constructor(action: { extra: string }, locatorMap: Map<string, ImageAction>, object: THREE.Object3D) {
-    const locatorName = getExtraValue(action, 'Map_Locator')
-    if (locatorName == null) {
-      throw new Error('No map locator defined')
-    }
-    const locatorImage = locatorMap.get(locatorName)
-    if (locatorImage == null) {
-      throw new Error('No map locator defined')
-    }
-    const geometry = getExtraValue(action, 'Map_Geometry')
-    if (geometry == null) {
-      throw new Error('No map geometry defined')
-    }
+  public constructor(locator: string, geometry: string, object: THREE.Object3D) {
     const [worldXOffset, worldXLength, worldZOffset, worldZLength, mapWidth, mapHeight, mapXOffset, mapYOffset] = splitExtraValue(geometry).map(s => Number.parseInt(s, 10))
     this._worldXOffset = worldXOffset
     this._worldXLength = worldXLength
@@ -72,19 +69,29 @@ class MapLocator {
     this._worldZLength = worldZLength
     this._mapRect = normalizeRect(mapXOffset, mapYOffset, mapWidth, mapHeight)
 
-    this._sprite = createImageSprite(locatorImage, -0.25)
+    this._locator = locator
     this._object = object
   }
 
-  public get sprite(): THREE.Sprite {
-    return this._sprite
+  public createSprite(imageActions: ImageAction[], parent: THREE.Group): void {
+    if (this._sprite != null) {
+      return
+    }
+
+    for (const imageAction of imageActions) {
+      if (imageAction.name === this._locator) {
+        this._sprite = createImageSprite(imageAction, -0.25)
+        parent.add(this._sprite)
+        break
+      }
+    }
   }
 
   public update(): void {
     const worldPosition = this._object.getWorldPosition(new THREE.Vector3())
     const x = (-worldPosition.x - this._worldXOffset) / this._worldXLength
     const z = -(worldPosition.z - this._worldZOffset) / this._worldZLength
-    if (x >= 0 && x <= 1 && z >= 0 && z <= 1) {
+    if (this._sprite != null && x >= 0 && x <= 1 && z >= 0 && z <= 1) {
       this._sprite.position.x = this._mapRect.normalizedX + x * this._mapRect.normalizedWidth
       this._sprite.position.y = this._mapRect.normalizedY - z * this._mapRect.normalizedHeight
     }
@@ -234,11 +241,19 @@ export abstract class Race extends IsleBase {
 
     this._groundGroup.push(...this.worldGroup.children.filter(child => child.name.startsWith('track')))
 
-    this._controls.addControl(Map_Ctl)
+    this._raceMap = new RaceMap()
+    this._controlsRender.scene.add(this._raceMap.group)
+
+    const imageActions: ImageAction[] = []
 
     await this.handleStartUpAction(this._startUpAction, async child => {
       if (child.name === 'UserCar_Actor') {
+        this._raceMap?.addLocator(child, this.camera)
         return true
+      }
+
+      if (isImageAction(child)) {
+        imageActions.push(child)
       }
 
       if (isControlAction(child)) {
@@ -269,6 +284,8 @@ export abstract class Race extends IsleBase {
 
       return false
     })
+
+    this._raceMap.createSprites(imageActions)
 
     this.boundaryManager.onTrigger = (name, data, direction, roi) => {
       console.log(`Boundary trigger: ${name}, ${data}, ${direction}, ${roi?.name}`)
@@ -304,23 +321,20 @@ export abstract class Race extends IsleBase {
     Race.setTopLeft(this._opponent2ProgressLocator, this._progressStart)
     this._controlsRender.scene.add(this._opponent2ProgressLocator)
 
-    const locatorImages = new Map<string, ImageAction>([
-      [Rhoda_Locator.name, Rhoda_Locator],
-      [Studs_Locator.name, Studs_Locator],
-      [User_Locator.name, User_Locator],
-    ])
-    this._raceMap = new RaceMap(locatorImages)
-    this._controlsRender.scene.add(this._raceMap.group)
-
-    const actor = UserCar_Actor
-    this._raceMap.addLocator(actor, this.camera)
-
     const hideAnimationAction = this._startUpAction.children.find(child => child.presenter === 'LegoHideAnimPresenter')
     if (hideAnimationAction == null || !isAnimationAction(hideAnimationAction)) {
       throw new Error('No hide animation defined')
     }
 
     this._hideAnimation = parse3DAnimation(await getAction(hideAnimationAction))
+  }
+
+  public override async handleActorAction(action: ActorAction): Promise<Actor | null> {
+    const actor = await super.handleActorAction(action)
+    if (actor != null && this._raceMap != null) {
+      this._raceMap.addLocator(action, actor.roi.model)
+    }
+    return actor
   }
 
   public override async activate(composer: Composer, _param?: unknown): Promise<void> {
@@ -377,9 +391,9 @@ export abstract class Race extends IsleBase {
 
     const lerped = new THREE.Vector3()
     lerped.lerpVectors(this._progressStart, this._progressEnd, this._opponent1Progress.progress)
-    CarRace.setTopLeft(this._opponent1ProgressLocator, lerped)
+    Race.setTopLeft(this._opponent1ProgressLocator, lerped)
     lerped.lerpVectors(this._progressStart, this._progressEnd, this._opponent2Progress.progress)
-    CarRace.setTopLeft(this._opponent2ProgressLocator, lerped)
+    Race.setTopLeft(this._opponent2ProgressLocator, lerped)
 
     this._raceMap?.update()
     this.boundaryManager.update(fromPos, toPos, null)

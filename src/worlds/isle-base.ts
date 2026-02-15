@@ -601,14 +601,14 @@ export abstract class IsleBase extends World {
     }
   }
 
-  public async handleActorAction(action: ActorAction): Promise<void> {
+  public async handleActorAction(action: ActorAction): Promise<Actor | null> {
     let model: Roi3D | Character | null = null
     const modelName = getExtraValue(action.children[0], 'DB_CREATE')
     if (modelName != null) {
       const roi = this.findRoi(modelName)
       if (roi == null) {
         console.warn(`Model not found: ${modelName}`)
-        return
+        return null
       }
       model = roi
     }
@@ -628,7 +628,7 @@ export abstract class IsleBase extends World {
     }
     if (model == null) {
       console.warn('Actor action without model or character is not supported', action)
-      return
+      return null
     }
     const visibility = getExtraValue(action, 'Visibility')
     if (visibility != null) {
@@ -641,7 +641,7 @@ export abstract class IsleBase extends World {
     if (sound != null) {
       if (!(model instanceof Roi3D)) {
         console.warn('Cannot attach sound to character', action)
-        return
+        return null
       }
       void this.playPositionalAudio(sound.toLowerCase(), model.model)
     }
@@ -655,7 +655,7 @@ export abstract class IsleBase extends World {
       const pathMatch = path.match(/^([^;]+);([^;]+);([^;]+);([^;]+);([^;]+)$/)
       if (!pathMatch) {
         console.warn(`Path string does not match expected format: ${path}`)
-        return
+        return null
       }
       const pathId = pathMatch[1]
       const src = Number.parseFloat(pathMatch[2])
@@ -671,75 +671,75 @@ export abstract class IsleBase extends World {
       }
     }
     const objectScript = getExtraValue(action, 'Object')
-    if (objectScript != null) {
-      if (!(model instanceof Roi3D)) {
-        console.warn('Cannot attach object script to character', action)
-        return
+    if (objectScript == null) {
+      return null
+    }
+    if (!(model instanceof Roi3D)) {
+      console.warn('Cannot attach object script to character', action)
+      return null
+    }
+
+    let actor: Actor
+    switch (objectScript) {
+      case 'Doors':
+        actor = new (await import('../lib/world/actors/door')).Door(model, this)
+        break
+      case 'Bike':
+        actor = new (await import('../lib/world/actors/bike')).Bike(model, this)
+        break
+      case 'SkateBoard':
+        actor = new (await import('../lib/world/actors/skateboard')).Skateboard(model, this)
+        break
+      case 'Motocycle':
+        actor = new (await import('../lib/world/actors/motocycle')).Motocycle(model, this)
+        break
+      case 'Ambulance':
+        actor = new (await import('../lib/world/actors/ambulance')).Ambulance(model, this)
+        break
+      case 'LegoRaceCar':
+        actor = new (await import('../lib/world/actors/race-car')).RaceCar(model, this)
+        break
+      case 'RaceSkel':
+        actor = new (await import('../lib/world/actors/race-skel')).RaceSkel(model, this)
+        break
+      default:
+        console.warn(`Object script for actor not supported: ${objectScript}`)
+        return null
+    }
+
+    if (actor instanceof PathActor && destination != null) {
+      actor.setCurrentDestination(destination)
+    }
+
+    if (getExtraValue(action, 'COLLIDE_BOX') != null) {
+      actor.colliderType = ColliderType.Box
+    }
+
+    const speed = getExtraValue(action, 'Speed')
+    if (speed != null) {
+      actor.speed = Number.parseInt(speed, 10)
+    }
+
+    const animation = getExtraValue(action, 'Animation')
+    if (animation != null) {
+      const parts = animation.split(';')
+      if (parts.length % 2 !== 0) {
+        throw new Error('Animation must have an even number of parts')
       }
-
-      let actor: Actor | null = null
-      switch (objectScript) {
-        case 'Doors':
-          actor = new (await import('../lib/world/actors/door')).Door(model, this)
-          break
-        case 'Bike':
-          actor = new (await import('../lib/world/actors/bike')).Bike(model, this)
-          break
-        case 'SkateBoard':
-          actor = new (await import('../lib/world/actors/skateboard')).Skateboard(model, this)
-          break
-        case 'Motocycle':
-          actor = new (await import('../lib/world/actors/motocycle')).Motocycle(model, this)
-          break
-        case 'Ambulance':
-          actor = new (await import('../lib/world/actors/ambulance')).Ambulance(model, this)
-          break
-        case 'LegoRaceCar':
-          actor = new (await import('../lib/world/actors/race-car')).RaceCar(model, this)
-          break
-        case 'RaceSkel':
-          actor = new (await import('../lib/world/actors/race-skel')).RaceSkel(model, this)
-          break
-        default:
-          console.warn(`Object script for actor not supported: ${objectScript}`)
-          return
-      }
-
-      if (actor != null && actor instanceof PathActor && destination != null) {
-        actor.setCurrentDestination(destination)
-      }
-
-      if (actor != null) {
-        if (getExtraValue(action, 'COLLIDE_BOX') != null) {
-          actor.colliderType = ColliderType.Box
+      for (let n = 0; n < parts.length; n += 2) {
+        const animationName = parts[n]
+        const speed = Number.parseInt(parts[n + 1], 10)
+        const animationAction = this._cachedAnimations.get(animationName.toLowerCase())
+        if (animationAction == null) {
+          throw new Error(`Animation not found: ${animationName}`)
         }
-
-        const speed = getExtraValue(action, 'Speed')
-        if (speed != null) {
-          actor.speed = Number.parseInt(speed, 10)
-        }
-
-        const animation = getExtraValue(action, 'Animation')
-        if (animation != null) {
-          const parts = animation.split(';')
-          if (parts.length % 2 !== 0) {
-            throw new Error('Animation must have an even number of parts')
-          }
-          for (let n = 0; n < parts.length; n += 2) {
-            const animationName = parts[n]
-            const speed = Number.parseInt(parts[n + 1], 10)
-            const animationAction = this._cachedAnimations.get(animationName.toLowerCase())
-            if (animationAction == null) {
-              throw new Error(`Animation not found: ${animationName}`)
-            }
-            actor.addAnimationAction(speed, animationAction)
-          }
-        }
-
-        this.registerActor(actor)
-        this.addClickListener(actor.roi, async () => await actor.onClick())
+        actor.addAnimationAction(speed, animationAction)
       }
     }
+
+    this.registerActor(actor)
+    this.addClickListener(actor.roi, async () => await actor.onClick())
+    return actor
   }
 
   public override resize(width: number, height: number): void {
