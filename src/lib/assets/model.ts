@@ -166,7 +166,7 @@ export class Roi3D {
 
   public constructor(
     public readonly model: RoiModel,
-    public readonly name: string,
+    public name: string,
   ) {}
 
   public addRoiChild(child: Roi3D): void {
@@ -187,6 +187,12 @@ export class Roi3D {
     for (const roi of this.children) {
       roi.visible = value
     }
+  }
+
+  public clone(): Roi3D {
+    const roi3d = new Roi3D(this.model.clone(), this.name)
+    roi3d.children = this.children.map(c => c.clone())
+    return roi3d
   }
 
   public moveRoiTo(targetPosition: THREE.Vector3, targetQuaternion?: THREE.Quaternion): void {
@@ -392,17 +398,17 @@ export const getWorld = async (name: WdbWorldName): Promise<THREE.Group> => {
     const mesh = await getWorldPart(world, part.name, null, null)
     mesh.name = part.name.toLowerCase()
     mesh.visible = false
-    group.add(mesh)
+    group.add(mesh.model)
   }
   return group
 }
 
-const getPart = async (name: string, part: WDB.Part, color: WDB.Color | null, texture: string | THREE.Texture | null): Promise<THREE.Group> => {
+const getPart = async (name: string, part: WDB.Part, color: WDB.Color | null, texture: string | THREE.Texture | null): Promise<Roi3D> => {
   const lod = part.lods.at(-1)
   if (!lod) {
     throw new Error(`Couldn't find lod and children for part ${name}`)
   }
-  const result = new THREE.Group()
+  const result = new Roi3D(new RoiModel(), name)
   const meshes: THREE.Mesh[] = []
   result.name = name.toLowerCase()
   let n = 0
@@ -413,14 +419,14 @@ const getPart = async (name: string, part: WDB.Part, color: WDB.Color | null, te
       mesh.castShadow = true
       mesh.receiveShadow = true
     }
-    result.add(mesh)
+    result.model.add(mesh)
     meshes.push(mesh)
   }
   createdMeshes.push({ meshes, lod, texture, customColor: color })
   return result
 }
 
-export const getGlobalPart = async (name: string, color: WDB.Color | null, texture: string | THREE.Texture | null): Promise<THREE.Group> => {
+export const getGlobalPart = async (name: string, color: WDB.Color | null, texture: string | THREE.Texture | null): Promise<Roi3D> => {
   const part = (await getWdb()).globalParts.find(p => p.name.toLowerCase() === name.toLowerCase())
   if (!part) {
     throw new Error(`Part ${name} not found`)
@@ -428,7 +434,7 @@ export const getGlobalPart = async (name: string, color: WDB.Color | null, textu
   return await getPart(name, part, color, texture)
 }
 
-export const getWorldPart = async (world: WDB.World, name: string, color: WDB.Color | null, texture: string | THREE.Texture | null): Promise<THREE.Group> => {
+export const getWorldPart = async (world: WDB.World, name: string, color: WDB.Color | null, texture: string | THREE.Texture | null): Promise<Roi3D> => {
   const part = world.parts.find(p => p.name.toLowerCase() === name.toLowerCase())
   if (!part) {
     throw new Error(`Part ${name} not found`)

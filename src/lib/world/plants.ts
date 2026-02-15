@@ -249,7 +249,7 @@ export namespace Plants {
       const animationRoot = new THREE.Group()
       animationRoot.name = 'animation'
       mesh.add(animationRoot)
-      animationRoot.add(await getGlobalPart(plantName, null, null))
+      animationRoot.add((await getGlobalPart(plantName, null, null)).model)
       group.add(mesh)
       world.addClickListener(mesh, async () => {
         switch (engine.currentSaveGame.player) {
@@ -271,7 +271,7 @@ export namespace Plants {
         const animationRoot = new THREE.Group()
         animationRoot.name = 'animation'
         mesh.add(animationRoot)
-        animationRoot.add(await getGlobalPart(partName(plantState.variant, plantState.color), null, null))
+        animationRoot.add((await getGlobalPart(partName(plantState.variant, plantState.color), null, null)).model)
         const animation = await getAnimation(
           animations[plantState.variant][plantState.animationIndex],
           new Map([

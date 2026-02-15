@@ -1340,7 +1340,7 @@ export const ACTORS: {
 
 export class Character extends Roi3D {
   private _headMaterial: THREE.MeshBasicMaterial | null = null
-  private _head: THREE.Object3D | null = null
+  private _head: Roi3D | null = null
   private _originalHeadTexture: THREE.Texture | null = null
 
   public onClicked: () => boolean = () => false
@@ -1352,7 +1352,7 @@ export class Character extends Roi3D {
     return this._headMaterial
   }
 
-  public get head(): THREE.Object3D {
+  public get head(): Roi3D {
     if (this._head == null) {
       throw new Error('Head mesh not found')
     }
@@ -1388,7 +1388,7 @@ export class Character extends Roi3D {
         continue
       }
 
-      const mesh = await (async () => {
+      const partRoi = await (async () => {
         switch (bodyPartName) {
           case 'infohat':
             return getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null)
@@ -1399,7 +1399,7 @@ export class Character extends Roi3D {
             return getGlobalPart('infogron', colorAliases[actor._info.groinColor], null)
           case 'head': {
             actor._head = await getGlobalPart('head', null, actor._info.faceTexture)
-            const faceMesh = actor._head.children.find(child => child instanceof THREE.Mesh && child.material.map != null)
+            const faceMesh = actor._head.model.children.find(child => child instanceof THREE.Mesh && child.material.map != null)
             if (faceMesh == null || !(faceMesh instanceof THREE.Mesh)) {
               throw new Error('Head material not found')
             }
@@ -1423,13 +1423,15 @@ export class Character extends Roi3D {
         throw new Error(`Unknown part: ${bodyPartName}`)
       })()
 
-      const parentMesh = new THREE.Group()
-      parentMesh.name = bodyPartName.toLowerCase()
-      parentMesh.add(mesh)
-      mesh.name = `${mesh.name}-part`
-      actor.model.add(parentMesh)
+      const bodyPartModel = new RoiModel()
+      bodyPartModel.name = bodyPartName.toLowerCase()
+      bodyPartModel.add(partRoi.model)
+      partRoi.model.name = `${partRoi.model.name}-part`
+      actor.model.add(bodyPartModel)
+      const bodyPartRoi = new Roi3D(bodyPartModel, bodyPartName)
+      actor.children.push(bodyPartRoi)
 
-      world.addClickListener(parentMesh, async () => {
+      world.addClickListener(bodyPartRoi, async () => {
         if (engine.currentSaveGame.player === 'nick') {
           switch (bodyPartName) {
             case 'head':
@@ -1438,7 +1440,7 @@ export class Character extends Roi3D {
               actor.children
                 .find(child => child.name === 'infohat')
                 ?.model.clear()
-                .add(await getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null))
+                .add((await getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null)).model)
               break
             case 'body':
             case 'infogron':
@@ -1446,7 +1448,7 @@ export class Character extends Roi3D {
               actor.children
                 .find(child => child.name === 'infogron')
                 ?.model.clear()
-                .add(await getGlobalPart('infogron', colorAliases[actor._info.groinColor], null))
+                .add((await getGlobalPart('infogron', colorAliases[actor._info.groinColor], null)).model)
               break
             case 'claw-lft':
             case 'arm-lft':
@@ -1454,7 +1456,7 @@ export class Character extends Roi3D {
               actor.children
                 .find(child => child.name === 'arm-lft')
                 ?.model.clear()
-                .add(await getGlobalPart('arm-lft', colorAliases[actor._info.leftArmColor], null))
+                .add((await getGlobalPart('arm-lft', colorAliases[actor._info.leftArmColor], null)).model)
               break
             case 'claw-rt':
             case 'arm-rt':
@@ -1462,27 +1464,27 @@ export class Character extends Roi3D {
               actor.children
                 .find(child => child.name === 'arm-rt')
                 ?.model.clear()
-                .add(await getGlobalPart('arm-rt', colorAliases[actor._info.rightArmColor], null))
+                .add((await getGlobalPart('arm-rt', colorAliases[actor._info.rightArmColor], null)).model)
               break
             case 'leg-lft':
               actor._info.leftLegColor = nextColor(actor._info.leftLegColor)
               actor.children
                 .find(child => child.name === 'leg-lft')
                 ?.model.clear()
-                .add(await getGlobalPart('leg', colorAliases[actor._info.leftLegColor], null))
+                .add((await getGlobalPart('leg', colorAliases[actor._info.leftLegColor], null)).model)
               break
             case 'leg-rt':
               actor._info.rightLegColor = nextColor(actor._info.rightLegColor)
               actor.children
                 .find(child => child.name === 'leg-rt')
                 ?.model.clear()
-                .add(await getGlobalPart('leg', colorAliases[actor._info.rightLegColor], null))
+                .add((await getGlobalPart('leg', colorAliases[actor._info.rightLegColor], null)).model)
               break
             default:
               throw new Error(`Unknown part: ${bodyPartName}`)
           }
 
-          void world.playPositionalAudio(Sound10, parentMesh)
+          void world.playPositionalAudio(Sound10, bodyPartModel)
 
           return true
         }
@@ -1491,7 +1493,7 @@ export class Character extends Roi3D {
       })
 
       const matrix = calculateTransformationMatrix(part.pos, part.dir, part.up)
-      matrix.decompose(parentMesh.position, parentMesh.quaternion, parentMesh.scale)
+      matrix.decompose(bodyPartModel.position, bodyPartModel.quaternion, bodyPartModel.scale)
     }
 
     world.addClickListener(actor, async (): Promise<boolean> => {
@@ -1509,8 +1511,8 @@ export class Character extends Roi3D {
 
         hatParentMesh.model.clear()
         const mesh = await getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null)
-        mesh.name = `${mesh.name}-part`
-        hatParentMesh.model.add(mesh)
+        mesh.model.name = `${mesh.model.name}-part`
+        hatParentMesh.model.add(mesh.model)
 
         return true
       }

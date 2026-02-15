@@ -65,15 +65,6 @@ export const getBeforeAndAfter = <T extends { timeAndFlags: { time: number } }>(
 
 export type AnimationActor = { type: WDB.ActorType; object: THREE.Object3D; children: Map<string, THREE.Object3D> }
 
-export const createAnimationActor = (type: WDB.ActorType, actor: THREE.Object3D, worldGroup: THREE.Group): AnimationActor => {
-  const children = type !== WDB.ActorType.ManagedActor ? new Map(worldGroup.children.filter(child => child.name.startsWith(actor.name)).map(c => [c.name.split('_').at(-1) ?? '', c])) : new Map(actor.children.filter(c => !(c instanceof THREE.Mesh)).map(c => [c.name, c]))
-  return {
-    type,
-    object: actor,
-    children,
-  }
-}
-
 export const animationToTracks = (animation: Animation3DNode, actors: Map<string, AnimationActor>, baseTransform = new THREE.Matrix4()): THREE.KeyframeTrack[] => {
   const position = new THREE.Vector3()
   const quaternion = new THREE.Quaternion()

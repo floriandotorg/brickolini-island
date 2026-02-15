@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { Action } from '../../actions/types'
 import type { IsleParam } from '../../worlds/isle-base'
 import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, isAudioAction, isPositionalAudioAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
-import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, createAnimationActor, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
+import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { type Audio, getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
 import { calculateTransformationMatrix, getGlobalPart, Roi3D, RoiModel } from '../assets/model'
@@ -209,6 +209,7 @@ export abstract class World {
     }
     const actor = await Character.create(this, name)
     this._characters.set(name, { character: actor, refCount: 1 })
+    this.scene.add(actor.model)
     return actor
   }
 
@@ -223,26 +224,6 @@ export abstract class World {
       entry.character.model.removeFromParent()
       this._characters.delete(name)
     }
-  }
-
-  public getObjectByNameRecursive(name: string, root: THREE.Object3D = this.scene): THREE.Object3D | null {
-    let found: THREE.Object3D | null = null
-    for (const child of root.children) {
-      if (child.name.toLowerCase() === name.toLowerCase()) {
-        if (found != null) {
-          throw new Error(`Multiple objects found with name ${name}`)
-        }
-        found = child
-      }
-      const result = this.getObjectByNameRecursive(name, child)
-      if (result != null) {
-        if (found != null) {
-          throw new Error(`Multiple objects found with name ${name}`)
-        }
-        found = result
-      }
-    }
-    return found
   }
 
   public async playAudio(action: AudioAction, audioType: AudioType): Promise<void> {
@@ -314,16 +295,12 @@ export abstract class World {
     const animationActors = new Map<string, AnimationActor>()
     const managedActorNames: string[] = []
 
-    const addActorToList = (type: WDB.ActorType, actor: THREE.Object3D | Roi3D) => {
-      if (actor instanceof Roi3D) {
-        animationActors.set(actor.name, {
-          type,
-          object: actor.model,
-          children: new Map(actor.children.map(c => [c.name, c.model])),
-        })
-      } else {
-        animationActors.set(actor.name, createAnimationActor(type, actor, this.worldGroup))
-      }
+    const addActorToList = (type: WDB.ActorType, actor: Roi3D) => {
+      animationActors.set(actor.name, {
+        type,
+        object: actor.model,
+        children: new Map(actor.children.map(c => [c.name, c.model])),
+      })
     }
 
     for (const actor of animation.actors) {
@@ -344,43 +321,42 @@ export abstract class World {
           if (actor.name.startsWith('*')) {
             minifig.visible = false
           }
-          this.scene.add(minifig.model)
           addActorToList(actor.type, minifig)
           break
         }
         case WDB.ActorType.ManagedInvisibleRoi: {
           const name = actor.name.slice(1)
-          const node = this.worldGroup.getObjectByName(name)?.clone()
+          const node = this.getRoi(name)?.clone()
           if (node == null) {
             throw new Error(`Actor not found: ${name} (ManagedInvisibleRoi)`)
           }
           node.name = actor.name.toLowerCase()
           node.visible = false
-          this.scene.add(node)
+          this.scene.add(node.model)
           addActorToList(actor.type, node)
           break
         }
         case WDB.ActorType.ManagedInvisibleRoiTrimmed: {
           const name = actor.name.slice(1).replace(/[0-9_]*$/, '')
-          const node = this.worldGroup.getObjectByName(name)?.clone()
+          const node = this.getRoi(name)?.clone()
           if (node == null) {
             throw new Error(`ROI not found: ${name} (ManagedInvisibleRoiTrimmed)`)
           }
           node.name = actor.name.toLowerCase()
           node.visible = false
-          this.scene.add(node)
+          this.scene.add(node.model)
           addActorToList(actor.type, node)
           break
         }
         case WDB.ActorType.SceneRoi1:
         case WDB.ActorType.SceneRoi2: {
           const name = actor.name.replace(/[0-9_]*$/, '')
-          const node = (this.worldGroup.getObjectByName(name) ?? (await getGlobalPart(name, null, null)))?.clone()
+          const node = (this.getRoi(name) ?? (await getGlobalPart(name, null, null)))?.clone()
           if (node == null) {
             throw new Error(`ROI not found: ${actor.name} (SceneRoi)`)
           }
           node.name = actor.name.toLowerCase()
-          this.scene.add(node)
+          this.scene.add(node.model)
           addActorToList(actor.type, node)
           break
         }
@@ -512,11 +488,11 @@ export abstract class World {
 
     const audios: THREE.PositionalAudio[] = await Promise.all(
       positionalAudioActions.map(async audio => {
-        const character = this.getObjectByNameRecursive(audio.extra)
+        const character = this.getRoi(audio.extra)
         if (character == null) {
           throw new Error(`Actor not found: ${audio.extra}`)
         }
-        return this.playPositionalAudio(audio, character instanceof Character ? character.head : character, audio.startTime / 1_000)
+        return this.playPositionalAudio(audio, character instanceof Character ? character.head.model : character.model, audio.startTime / 1_000)
       }),
     )
     const sentinel = audioActions.length > 0 || audios.length > 0 ? engine.lowerBackgroundMusic() : null
