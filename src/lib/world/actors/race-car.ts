@@ -47,7 +47,7 @@ export class RaceCar extends PathActor {
         scale: this.destination.scale,
       }
 
-      this._spline = this._calculateSpline()
+      this._spline = this._calculateSpline({ forceDistance: 5 })
       this._distanceTraveled = 0
       return
     }

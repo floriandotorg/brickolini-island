@@ -75,7 +75,7 @@ export class PathActor extends Actor {
     this._distanceTraveled = 0
   }
 
-  protected _calculateSpline(): THREE.CubicBezierCurve3 {
+  protected _calculateSpline({ forceDistance }: { forceDistance?: number } = {}): THREE.CubicBezierCurve3 {
     const start = this.roi.position.clone()
     const boundaryUp = new THREE.Vector3(-this.destination.boundary.up.x, this.destination.boundary.up.y, this.destination.boundary.up.z)
     const startDirection = this.roi.model.getWorldDirection(new THREE.Vector3())
@@ -84,8 +84,8 @@ export class PathActor extends Actor {
     const destination = this.destination.edge.getCWVertex(this.destination.boundary).clone().lerp(this.destination.edge.getCCWVertex(this.destination.boundary), this.destination.scale)
     const destinationDirection = boundaryUp.clone().cross(this.destination.edge.getFaceNormal(this.destination.boundary))
     const distance = start.distanceTo(destination)
-    const c1 = start.clone().sub(startDirection.divideScalar(3).multiplyScalar(distance))
-    const c2 = destination.clone().add(destinationDirection.divideScalar(3).multiplyScalar(distance))
+    const c1 = start.clone().sub(startDirection.divideScalar(3).multiplyScalar(forceDistance ?? distance))
+    const c2 = destination.clone().add(destinationDirection.divideScalar(3).multiplyScalar(forceDistance ?? distance))
     const curve = new THREE.CubicBezierCurve3(start, c1, c2, destination)
 
     if (start.distanceTo(destination) < 0.5) {
@@ -105,7 +105,7 @@ export class PathActor extends Actor {
       this._distanceTraveled = 0
     }
 
-    this._distanceTraveled += (delta * this._speed * 0.1) / this._spline.getLength()
+    this._distanceTraveled += (delta * this._speed) / this._spline.getLength()
 
     const distancedTraveledClamped = Math.min(this._distanceTraveled, 1)
     const matrix = new THREE.Matrix4()
