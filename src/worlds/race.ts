@@ -1,6 +1,6 @@
 import * as THREE from 'three'
-import { CarLocator2, CarLocator3, Map_Ctl } from '../actions/carrace'
-import { type ActionBase, type ActorAction, getExtraValue, type ImageAction, isAnimationAction, isBoundaryAction, isControlAction, isImageAction, isMeterAction, type SerialAction, splitExtraValue } from '../lib/action-types'
+import { CarLocator2, CarLocator3, Horn_Ctl, Map_Ctl } from '../actions/carrace'
+import { type ActionBase, type ActorAction, getExtraValue, type ImageAction, isAnimationAction, isAudioAction, isBoundaryAction, isControlAction, isImageAction, isMeterAction, type SerialAction, splitExtraValue } from '../lib/action-types'
 import { type Animation3D, type Animation3DNode, parse3DAnimation } from '../lib/assets/animation'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { ControlsCollection } from '../lib/assets/control'
@@ -8,7 +8,7 @@ import type { DtaWorldName } from '../lib/assets/dta'
 import { getAction } from '../lib/assets/load'
 import type { WdbWorldName } from '../lib/assets/model'
 import { type Composer, Render2D } from '../lib/effect/composer'
-import { type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
+import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
 import type { Actor } from '../lib/world/actor'
 import { Meter } from '../lib/world/dashboard'
 import { PlayerMovement } from '../lib/world/player-movement'
@@ -110,6 +110,9 @@ class RaceProgress {
   }
 
   public set lastWaypointNo(waypointNo: number) {
+    if (this._lap >= numberOfLaps) {
+      return
+    }
     if (waypointNo <= 0 || waypointNo >= this._lastWaypointNo + 5) {
       console.warn(`Got waypoint out of valid range: ${waypointNo} (last: ${this._lastWaypointNo})`)
       return
@@ -191,6 +194,11 @@ export abstract class Race extends IsleBase {
         case Map_Ctl.name:
           if (this._raceMap != null) {
             this._raceMap.group.visible = event.state > 0
+          }
+          return true
+        case Horn_Ctl.name:
+          if (isAudioAction(event.otherAction)) {
+            void engine.playAudio(event.otherAction, 'effects')
           }
           return true
         default:
