@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { AudioAction, CompositeMediaAction } from './action-types'
+import type { AudioAction, CompositeMediaAction, ImageAction } from './action-types'
 import { type Audio, getAudio } from './assets/audio'
 import { getActionFileUrl } from './assets/load'
 import { Composer, Render2D } from './effect/composer'
@@ -23,6 +23,17 @@ export const normalizePoint = (x: number, y: number, totalSize: [number, number]
   const normalizedX = (x / totalSize[0]) * 2 - 1
   const normalizedY = -((y / totalSize[1]) * 2 - 1)
   return [normalizedX, normalizedY]
+}
+
+function sigmoid(z: number): number {
+  return 1 / (1 + Math.exp(-z))
+}
+
+export const normalizeZ = (z: number | ImageAction): number => {
+  const center = -0.5
+  const spread = 1 / 2
+  const actualZ = typeof z === 'number' ? z : z.location[2]
+  return center - (sigmoid(actualZ) - 0.5) * spread
 }
 
 export class NormalizedRect {

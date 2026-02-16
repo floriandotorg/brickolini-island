@@ -80,7 +80,7 @@ class MapLocator {
 
     for (const imageAction of imageActions) {
       if (imageAction.name === this._locator) {
-        this._sprite = createImageSprite(imageAction, -0.25)
+        this._sprite = createImageSprite(imageAction)
         parent.add(this._sprite)
         break
       }
@@ -157,8 +157,8 @@ export abstract class Race extends IsleBase {
   private _distanceMeter: Meter | null = null
   private _progressStart: THREE.Vector3
   private _progressEnd: THREE.Vector3
-  private _opponent1ProgressLocator = createImageSprite(CarLocator2, -0.25)
-  private _opponent2ProgressLocator = createImageSprite(CarLocator3, -0.25)
+  private _opponent1ProgressLocator = createImageSprite(CarLocator2)
+  private _opponent2ProgressLocator = createImageSprite(CarLocator3)
   private readonly _startUpAction: StartUpAction
   private _hideAnimation: Animation3D | null = null
 

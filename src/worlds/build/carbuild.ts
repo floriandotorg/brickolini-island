@@ -119,7 +119,7 @@ export class CustomColorControls {
   private _visible = false
 
   public constructor(background: ImageAction, sound: Audio, colors: CustomColorControl[]) {
-    this.background = createImageSprite(background, -0.75)
+    this.background = createImageSprite(background)
     this.sound = sound
     this._colors = colors
     this.visible = false
@@ -154,7 +154,7 @@ export class CustomDecalControls {
   private _partName = ''
 
   public constructor(background: ImageAction | null, sound: Audio, decals: Map<string, Control[]>) {
-    this.background = background != null ? createImageSprite(background, -0.75) : null
+    this.background = background != null ? createImageSprite(background) : null
     this.sound = sound
     this._decals = decals
     this.hide()

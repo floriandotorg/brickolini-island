@@ -88,7 +88,7 @@ export class Name {
   constructor(scene: THREE.Scene, x: number, y: number, charWidth: number) {
     this._letters = []
     for (let i = 0; i < MAX_LENGTH; i++) {
-      const sprite = createNormalizedSprite(x + charWidth * i, y, -0.25, A_Bitmap.dimensions.width, A_Bitmap.dimensions.height)
+      const sprite = createNormalizedSprite(x + charWidth * i, y, A_Bitmap.location[2], A_Bitmap.dimensions.width, A_Bitmap.dimensions.height)
       sprite.name = `letter_${i}`
       sprite.visible = false
       scene.add(sprite)
@@ -142,7 +142,7 @@ export class RegBook extends World {
   constructor() {
     super('regbook')
 
-    this._highLightSprite = createImageSprite(CheckHiLite_Bitmap, -0.1)
+    this._highLightSprite = createImageSprite(CheckHiLite_Bitmap)
     this._building.scene.add(this._highLightSprite)
     this._highLightSprite.visible = false
   }

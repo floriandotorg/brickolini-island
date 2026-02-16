@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { type ActionBase, type ControlAction, getExtraValue, type ImageAction, isImageAction, type ParallelActionTuple, splitExtraValue } from '../action-types'
 import type { Render2D } from '../effect/composer'
-import { engine, type NormalizedRect, normalizeRect } from '../engine'
+import { engine, type NormalizedRect, normalizeRect, normalizeZ } from '../engine'
 import { switchWorld } from '../switch-world'
 import { setImageSprite } from './canvas-sprite'
 import { getImage } from './image'
@@ -245,12 +245,6 @@ const isWithColorPalette = (action: unknown): action is WithColorPalette => acti
 
 export type ControlEvent = { state: number; otherAction?: ActionBase }
 
-function sigmoid(z: number): number {
-  return 1 / (1 + Math.exp(-z))
-}
-
-export const normalizeZ = (z: number, center: number, spread: number): number => center - (sigmoid(z) - 0.5) * spread
-
 export class Control {
   private readonly _action: ControlAction
   private readonly _sprite: THREE.Sprite
@@ -345,11 +339,6 @@ export class Control {
     }
   }
 
-  public static normalizeZ(z: number | ImageAction) {
-    const actualZ = typeof z === 'number' ? z : z.location[2]
-    return normalizeZ(actualZ, -0.5, 1 / 20)
-  }
-
   private constructor(action: ControlAction, handler: Handler) {
     this._action = action
     this._handler = handler
@@ -402,13 +391,14 @@ export class Control {
   public draw(): void {
     const image = this._handler.image
     if (image == null) {
+      this._sprite.material.map?.dispose()
       this._sprite.material.map = null
       this._sprite.scale.set(0, 0, 0)
       this._z = 0
     } else {
       setImageSprite(this._sprite, image)
       this._z = image.location[2]
-      this._sprite.position.z = Control.normalizeZ(this._z)
+      this._sprite.position.z = normalizeZ(this._z)
     }
     this._sprite.material.needsUpdate = true
   }

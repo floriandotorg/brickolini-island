@@ -84,7 +84,7 @@ type Destination = {
 }
 
 const createDestination = (image: ImageAction, parent: THREE.Scene, location: SpawnLocation | null): Destination => {
-  const sprite = createImageSprite(image, -0.45)
+  const sprite = createImageSprite(image)
   sprite.visible = false
   parent.add(sprite)
   const normalizedRect = normalizeRect(image.location[0], image.location[1], image.dimensions.width, image.dimensions.height)
@@ -142,7 +142,7 @@ export class InfoMain extends World {
 
   constructor() {
     super('infomain')
-    this._characterFrame = createImageSprite(FrameHot_Bitmap, -0.4)
+    this._characterFrame = createImageSprite(FrameHot_Bitmap)
     this._building.scene.add(this._characterFrame)
     this._characterFrame.visible = false
     this._name = new Name(this._building.scene, 223, 45, 29)
@@ -388,7 +388,7 @@ export class InfoMain extends World {
             return LauraHot_Bitmap
         }
       })()
-      const sprite = createImageSprite(image, -0.4)
+      const sprite = createImageSprite(image)
       this._building.scene.add(sprite)
       this._selectedCharacter = { state: 'dragging', character: this._selectedCharacter.character, sprite }
     }

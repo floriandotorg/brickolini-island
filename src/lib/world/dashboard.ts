@@ -303,7 +303,7 @@ export class Meter {
     this._fillColor = fillColor
 
     this._image = image
-    this._sprite = new CanvasSprite(action.location[0], action.location[1], image.width, image.height)
+    this._sprite = new CanvasSprite(action.location, image.width, image.height)
 
     const directionType = getExtraValue(action, 'type')
     this._direction = directionType != null ? parseDirection(directionType) : leftToRight
@@ -426,7 +426,7 @@ export class Dashboard {
       }
     })()
     if (dashboardAction != null && isImageAction(dashboardAction)) {
-      this._background = createImageSprite(dashboardAction, -1)
+      this._background = createImageSprite(dashboardAction)
       this._render.scene.add(this._background)
     }
 

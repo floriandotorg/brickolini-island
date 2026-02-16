@@ -126,7 +126,8 @@ export class Building {
     const initPromises: Promise<void>[] = []
     for (const child of startUpAction.children) {
       if (isImageAction(child) && (child.name.endsWith('Background_Bitmap') || child.name.endsWith('Background'))) {
-        const background = createImageSprite(child, -1)
+        const background = createImageSprite(child)
+        background.position.z = -1
         background.material.transparent = true
         this._render.scene.add(background)
 

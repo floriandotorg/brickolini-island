@@ -2,7 +2,6 @@ import * as THREE from 'three'
 import { Observe_Globe1_Bitmap, Observe_Globe2_Bitmap, Observe_Globe3_Bitmap, Observe_Globe4_Bitmap, Observe_Globe5_Bitmap, Observe_Globe6_Bitmap, Observe as Observe_StartUp } from '../../actions/isle'
 import { InfoCenter_3rd_Floor_Music } from '../../actions/jukebox'
 import { createImageSprite } from '../../lib/assets/canvas-sprite'
-import { Control } from '../../lib/assets/control'
 import type { Composer } from '../../lib/effect/composer'
 import { engine, type NormalizedMouseEvent } from '../../lib/engine'
 import { switchWorld } from '../../lib/switch-world'
@@ -17,7 +16,7 @@ export class Observe extends IsleBase {
     super('observe', { wdbWorldName: 'Isle' })
 
     for (const imageAction of [Observe_Globe1_Bitmap, Observe_Globe2_Bitmap, Observe_Globe3_Bitmap, Observe_Globe4_Bitmap, Observe_Globe5_Bitmap, Observe_Globe6_Bitmap]) {
-      const globeSprite = createImageSprite(imageAction, Control.normalizeZ(imageAction))
+      const globeSprite = createImageSprite(imageAction)
       globeSprite.visible = false
       this._building.scene.add(globeSprite)
       this._globeSprites.push(globeSprite)

@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import type { ImageAction } from '../action-types'
-import { normalizeRect } from '../engine'
+import { normalizeRect, normalizeZ } from '../engine'
 import { createTexture } from './texture'
 
 export const setScaleAndPosition = (sprite: THREE.Sprite, originalActionWidth: number, originalActionHeight: number, x: number, y: number, z?: number) => {
@@ -17,14 +17,14 @@ export const setImageSprite = (sprite: THREE.Sprite, bitmap: ImageAction, z?: nu
 
 export const createNormalizedSprite = (x: number, y: number, z: number, originalActionWidth: number, originalActionHeight: number): THREE.Sprite => {
   const sprite = new THREE.Sprite()
-  setScaleAndPosition(sprite, originalActionWidth, originalActionHeight, x, y, z)
+  setScaleAndPosition(sprite, originalActionWidth, originalActionHeight, x, y, normalizeZ(z))
   return sprite
 }
 
-export const createImageSprite = (bitmap: ImageAction, z: number): THREE.Sprite => {
+export const createImageSprite = (bitmap: ImageAction): THREE.Sprite => {
   const sprite = new THREE.Sprite()
   sprite.name = `image_${bitmap.siFile}.${bitmap.id}`
-  setImageSprite(sprite, bitmap, z)
+  setImageSprite(sprite, bitmap, normalizeZ(bitmap))
   return sprite
 }
 
@@ -34,7 +34,7 @@ export class CanvasSprite {
   private readonly _texture: THREE.CanvasTexture
   private readonly _sprite: THREE.Sprite
 
-  public constructor(x: number, y: number, originalActionWidth: number, originalActionHeight: number) {
+  public constructor(location: readonly [number, number, number], originalActionWidth: number, originalActionHeight: number) {
     this._canvas = document.createElement('canvas')
     this._canvas.width = originalActionWidth
     this._canvas.height = originalActionHeight
@@ -45,7 +45,7 @@ export class CanvasSprite {
     this._context = context
     this._texture = new THREE.CanvasTexture(this._canvas)
     this._texture.colorSpace = THREE.SRGBColorSpace
-    this._sprite = createNormalizedSprite(x, y, -0.5, originalActionWidth, originalActionHeight)
+    this._sprite = createNormalizedSprite(location[0], location[1], location[2], originalActionWidth, originalActionHeight)
     this._sprite.material = new THREE.SpriteMaterial({ map: this._texture, transparent: true })
   }
 
