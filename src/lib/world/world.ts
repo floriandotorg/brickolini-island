@@ -810,6 +810,15 @@ export abstract class World {
     return mesh
   }
 
+  public debugDrawBox(box: THREE.Box3, color: string): THREE.Mesh {
+    const geometry = new THREE.BoxGeometry(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z)
+    const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5, side: THREE.DoubleSide })
+    const mesh = new THREE.Mesh(geometry, material)
+    mesh.position.copy(box.getCenter(new THREE.Vector3()))
+    this._debugGroup.add(mesh)
+    return mesh
+  }
+
   public debugDrawPlane(anchor: THREE.Vector3, normal: THREE.Vector3, color: string): THREE.Mesh {
     const planeGeometry = new THREE.PlaneGeometry(1, 1)
     const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5, side: THREE.DoubleSide })

@@ -82,31 +82,11 @@ export const calculateTransformationMatrix = (location: readonly [number, number
   return transformationMatrix
 }
 
-export class BoundingSphere {
-  public constructor(
-    public readonly radius: number,
-    public readonly center: THREE.Vector3,
-  ) {}
-
-  public intersect(other: BoundingSphere): boolean {
-    const distanceSquared = other.center.distanceToSquared(this.center)
-    return distanceSquared < this.radius * this.radius
-  }
-}
-
-export class BoundingBox extends THREE.Box3 {
-  public static fromSphere(sphere: BoundingSphere): BoundingBox {
-    const min = sphere.center.clone().subScalar(sphere.radius)
-    const max = sphere.center.clone().addScalar(sphere.radius)
-    return new BoundingBox(min, max)
-  }
-}
-
 export class RoiModel extends THREE.Group {
   private _roi3d: Roi3D | null = null
   public offsetIndex = 0
-  public boundingSphere = new BoundingSphere(0, new THREE.Vector3(0, 0, 0))
-  public boundingBox: BoundingBox | null = null
+  public boundingSphere = new THREE.Sphere(new THREE.Vector3(), 0)
+  public boundingBox: THREE.Box3 = new THREE.Box3()
 
   public set roi3d(value: Roi3D) {
     this._roi3d = value
@@ -119,28 +99,23 @@ export class RoiModel extends THREE.Group {
     return this._roi3d
   }
 
-  public getWorldBoundingSphere(): BoundingSphere {
+  public getWorldBoundingSphere(): THREE.Sphere {
     const worldCenter = this.getWorldPosition(new THREE.Vector3())
     worldCenter.add(this.boundingSphere.center)
-    return new BoundingSphere(this.boundingSphere.radius, worldCenter)
+    return new THREE.Sphere(worldCenter, this.boundingSphere.radius)
   }
 
-  public getWorldBoundingBox(): THREE.Box3 | null {
-    if (this.boundingBox == null) {
-      return BoundingBox.fromSphere(this.getWorldBoundingSphere())
-    }
+  public getWorldBoundingBox(): THREE.Box3 {
     const worldPosition = this.getWorldPosition(new THREE.Vector3())
-    const min = this.boundingBox.min.clone().add(worldPosition)
-    const max = this.boundingBox.max.clone().add(worldPosition)
-    return new BoundingBox(min, max)
+    return new THREE.Box3(this.boundingBox.min.clone().add(worldPosition), this.boundingBox.max.clone().add(worldPosition))
   }
 
   public override copy(object: THREE.Object3D, recursive?: boolean): this {
     super.copy(object, recursive)
     if (object instanceof RoiModel) {
       this.offsetIndex = object.offsetIndex
-      this.boundingSphere = object.boundingSphere
-      this.boundingBox = object.boundingBox
+      this.boundingSphere = object.boundingSphere.clone()
+      this.boundingBox = object.boundingBox.clone()
       this._roi3d = null
     }
     return this
@@ -255,7 +230,8 @@ export class Roi3D {
 const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animation.Node | undefined, path: string[] = []): Promise<Roi3D> => {
   const roiModel = new RoiModel()
   const roi3d = new Roi3D(roiModel, roi.name.toLowerCase())
-  roiModel.boundingSphere = new BoundingSphere(roi.boundingSphere.radius, new THREE.Vector3(...roi.boundingSphere.center))
+  roiModel.boundingSphere = new THREE.Sphere(new THREE.Vector3(...roi.boundingSphere.center), roi.boundingSphere.radius)
+  roiModel.boundingBox = new THREE.Box3(new THREE.Vector3(...roi.boundingBox.min), new THREE.Vector3(...roi.boundingBox.max))
   roiModel.name = [...path, roi3d.name].join('_')
   roiModel.roi3d = roi3d
 

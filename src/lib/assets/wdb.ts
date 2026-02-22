@@ -30,7 +30,7 @@ export namespace WDB {
     type: 'reference'
     reference: string
   }
-  export type Roi = { name: string; data: Lods | Reference; children: Roi[]; textureName: string; boundingSphere: { radius: number; center: [number, number, number] } }
+  export type Roi = { name: string; data: Lods | Reference; children: Roi[]; textureName: string; boundingSphere: { radius: number; center: [number, number, number] }; boundingBox: { min: [number, number, number]; max: [number, number, number] } }
   export class Lod {
     public constructor(
       public readonly meshesBeforeOffset: Mesh[],
@@ -211,8 +211,8 @@ export namespace WDB {
     const modelName = reader.readString()
     const center = reader.readVector3()
     const radius = reader.readFloat32()
-    const _boxMin = reader.readVector3()
-    const _boxMax = reader.readVector3()
+    const boxMin = reader.readVector3()
+    const boxMax = reader.readVector3()
     const textureName = reader.readString()
     const definedElsewhere = reader.readInt8()
     const data = (() => {
@@ -236,7 +236,7 @@ export namespace WDB {
     for (let n = 0; n < numRois; ++n) {
       children.push(readRoi(reader, offset))
     }
-    return { name: modelName, data, children, textureName, boundingSphere: { radius, center } }
+    return { name: modelName, data, children, textureName, boundingSphere: { radius, center }, boundingBox: { min: [boxMax[0], boxMin[1], boxMin[2]], max: [boxMin[0], boxMax[1], boxMax[2]] } }
   }
 
   const readLod = (reader: BinaryReader): Lod => {

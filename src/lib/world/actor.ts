@@ -64,9 +64,6 @@ export abstract class Actor extends Entity {
 
   private checkBoxCollision(from: THREE.Vector3, to: THREE.Vector3): boolean {
     const box = this.roi.model.getWorldBoundingBox()
-    if (box == null) {
-      return false
-    }
     const ray = new THREE.Ray(from, to.clone().sub(from).normalize())
     const intersection = ray.intersectBox(box, new THREE.Vector3())
     if (intersection == null) {

@@ -611,7 +611,7 @@ export class Carbuild {
       case 'dragging': {
         const part = this._state.selectedPart
         const index = this._parts.indexOf(part)
-        if (index <= this._part && part.wired.model.getWorldBoundingSphere().intersect(part.clone.getWorldBoundingSphere())) {
+        if (index <= this._part && part.wired.model.getWorldBoundingSphere().intersectsSphere(part.clone.getWorldBoundingSphere())) {
           this._returnState()
           if (index === this._part) {
             void this.addPart()
