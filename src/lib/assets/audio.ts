@@ -12,7 +12,7 @@ export class Audio {
     this._action = action
     this._audio = audio
     this._audio.gain.gain.value = action.volume / 100
-    this._audio.loop = action.loops > 1
+    this._audio.setLoop(action.loops > 1)
     this._audio.onEnded = () => this.onEnded()
   }
 
@@ -25,7 +25,7 @@ export class Audio {
   }
 
   public set loop(looping: boolean) {
-    this._audio.loop = looping
+    this._audio.setLoop(looping)
   }
 
   public play(): void {
