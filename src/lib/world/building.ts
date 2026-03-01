@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator.js'
-import { type ActionBase, type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type RunAnimationAction, type SerialAction } from '../action-types'
+import { type ActionBase, type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isActorAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type RunAnimationAction, type SerialAction } from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
 import { createImageSprite } from '../assets/canvas-sprite'
 import { type Control, type ControlEvent, ControlsCollection } from '../assets/control'
@@ -155,6 +155,14 @@ export class Building {
 
       if (isControlAction(child)) {
         initPromises.push(this._controls.addControl(child))
+      }
+
+      if (isActorAction(child)) {
+        const actorName = getExtraValue(child.children[0], 'AUTO_CREATE')
+        if (actorName != null) {
+          const actor = await this._world.getActor(actorName.toLowerCase())
+          actor.visible = getExtraValue(child.children[0], 'Visibility')?.toLowerCase() !== 'false'
+        }
       }
     }
 
