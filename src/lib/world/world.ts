@@ -258,6 +258,7 @@ export abstract class World {
 
   public registerActor(actor: Actor): void {
     this._actors.add(actor)
+    this.addClickListener(actor.roi, async () => await actor.onClick())
   }
 
   public removeActor(actor: Actor): void {

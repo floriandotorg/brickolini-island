@@ -383,7 +383,6 @@ export abstract class IsleBase extends World {
         }
         const actor = await createActor(rootRoi, this)
         this.registerActor(actor)
-        this.addClickListener(actor.roi, async () => await actor.onClick())
         this._buildMeshes.set(type, actor)
         rootRoi.moveRoiTo(placement.position, placement.quaternion)
         engine.currentSaveGame.setVehiclePlacement(type, placement)
@@ -637,13 +636,26 @@ export abstract class IsleBase extends World {
       }
       model.visible = false
     }
+    let positionalAudio: THREE.PositionalAudio | null = null
     const sound = getExtraValue(action, 'Sound')
     if (sound != null) {
       if (!(model instanceof Roi3D)) {
         console.warn('Cannot attach sound to character', action)
         return null
       }
-      void this.playPositionalAudio(sound.toLowerCase(), model.model)
+      try {
+        positionalAudio = await this.playPositionalAudio(sound.toLowerCase(), model.model)
+      } catch (error) {
+        console.warn('Failed to play sound', error)
+        return null
+      }
+    }
+    const mute = getExtraValue(action, 'Mute')
+    if (mute != null) {
+      if (positionalAudio == null) {
+        throw new Error('Mute can only be used with Sound')
+      }
+      positionalAudio.gain.gain.value = 0
     }
     const path = getExtraValue(action, 'Path')
     let destination: {
@@ -738,7 +750,6 @@ export abstract class IsleBase extends World {
     }
 
     this.registerActor(actor)
-    this.addClickListener(actor.roi, async () => await actor.onClick())
     return actor
   }
 
