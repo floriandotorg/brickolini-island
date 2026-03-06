@@ -101,7 +101,7 @@ const createNormalizedMouseEvent = (event: MouseEvent, canvas: HTMLCanvasElement
 
 class Engine {
   private _state: 'cutscene' | 'transition' | 'game' = 'game'
-  private _clock: THREE.Clock = new THREE.Clock()
+  private _timer = new THREE.Timer()
   private _cutsceneVideo: HTMLVideoElement
   private _cutsceneAudio: Audio | null = null
   private _canvas: HTMLCanvasElement
@@ -279,7 +279,7 @@ class Engine {
   }
 
   public get elapsedTimeSeconds(): number {
-    return this._clock.elapsedTime
+    return this._timer.getElapsed()
   }
 
   public get elapsedTimeMilliseconds(): number {
@@ -447,7 +447,8 @@ class Engine {
   }
 
   public start() {
-    this._clock.start()
+    this._timer.connect(document)
+    this._timer.reset()
     this.renderer.setAnimationLoop(() => this._render())
   }
 
@@ -461,7 +462,7 @@ class Engine {
 
   public async transition(): Promise<void> {
     this._state = 'transition'
-    this._transitionStart = this._clock.elapsedTime
+    this._transitionStart = this._timer.getElapsed()
     this._mosaicEffect.tileSize = Math.ceil(Math.max(this._canvas.clientWidth / ORIGINAL_TOTAL_WIDTH, this._canvas.clientHeight / ORIGINAL_TOTAL_HEIGHT) * 10)
     this._mosaicEffect.progress = 0.0
     return new Promise(resolve => {
@@ -525,15 +526,15 @@ class Engine {
   }
 
   private _render() {
-    const delta = this._clock.getDelta()
+    this._timer.update()
 
     if (this._state === 'game') {
-      this._world?.updateWorld(delta)
+      this._world?.updateWorld(this._timer.getDelta())
     }
 
     if (this._state === 'transition') {
       const progressPerTick = 1 / 16
-      const ticks = Math.floor(((this._clock.elapsedTime - this._transitionStart) * 1000) / 50)
+      const ticks = Math.floor(((this._timer.getElapsed() - this._transitionStart) * 1000) / 50)
       this._mosaicEffect.progress = progressPerTick * ticks
       if (this._mosaicEffect.progress >= 1.0) {
         this._mosaicEffect.progress = 0.0
@@ -544,9 +545,9 @@ class Engine {
     }
 
     if (this._state === 'cutscene') {
-      this._cutsceneComposer.render(this._clock.elapsedTime)
+      this._cutsceneComposer.render(this._timer.getElapsed())
     } else {
-      this._composer.render(this._clock.elapsedTime)
+      this._composer.render(this._timer.getElapsed())
     }
   }
 }
