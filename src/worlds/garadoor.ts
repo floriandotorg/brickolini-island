@@ -1,16 +1,17 @@
-import { GaraDoor as GaraDoor_StartUp } from '../actions/isle'
+import { _Isle, GaraDoor as GaraDoor_StartUp } from '../actions/isle'
 import { GarageArea_Music } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
 import type { NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
-import { IsleBase } from './isle-base'
+import { Isle } from './isle'
 
-export class GarDoor extends IsleBase {
+export class GarDoor extends Isle {
   private readonly _building = new Building()
 
   constructor() {
-    super('garadoor', { wdbWorldName: 'Isle' })
+    super('garadoor')
+    this._playerMovement.canMove = false
   }
 
   public override async init(): Promise<void> {
@@ -22,6 +23,8 @@ export class GarDoor extends IsleBase {
       backgroundMusic: GarageArea_Music,
       exitSpawnPoint: { spawn: 'garageExited' },
     })
+
+    this.handleStartUpAction(_Isle)
 
     this._building.onButtonClicked = buttonName => {
       switch (buttonName) {

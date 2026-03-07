@@ -381,6 +381,7 @@ import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { type Location, locations } from '../lib/locations'
 import { PlayerMovement } from '../lib/world/player-movement'
+import type { WorldName } from '../lib/world/world'
 import { IsleBase, type IsleParam } from './isle-base'
 
 const ANIMATIONS = [
@@ -756,7 +757,7 @@ const ANIMATIONS = [
 // import { tns002br_RunAnim } from '../actions/act2main'
 
 export class Isle extends IsleBase {
-  private readonly _playerMovement = new PlayerMovement(
+  protected readonly _playerMovement = new PlayerMovement(
     this.camera,
     this._groundGroup,
     () => this.boundaryManager.walls,
@@ -773,8 +774,8 @@ export class Isle extends IsleBase {
 
   public backgroundMusicTriggerEnabled = true
 
-  constructor() {
-    super('isle', { wdbWorldName: 'ACT1', dtaWorldName: 'ACT1' })
+  constructor(name?: WorldName) {
+    super(name ?? 'isle', { wdbWorldName: 'ACT1', dtaWorldName: 'ACT1' })
   }
 
   override async init(): Promise<void> {

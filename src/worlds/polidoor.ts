@@ -4,15 +4,14 @@ import type { Composer } from '../lib/effect/composer'
 import type { NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
-import { IsleBase } from './isle-base'
+import { Isle } from './isle'
 
-export class PoliDoor extends IsleBase {
+export class PoliDoor extends Isle {
   private readonly _building = new Building()
 
   constructor() {
-    super('polidoor', {
-      wdbWorldName: 'Isle',
-    })
+    super('polidoor')
+    this._playerMovement.canMove = false
   }
 
   public override async init(): Promise<void> {

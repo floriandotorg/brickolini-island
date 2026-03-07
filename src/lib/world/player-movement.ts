@@ -32,6 +32,8 @@ export class PlayerMovement {
   private _pitchVel = 0
   private _slewMode = false
 
+  public canMove = true
+
   constructor(
     private readonly _camera: THREE.PerspectiveCamera,
     private readonly _groundGroup: THREE.Object3D[],
@@ -167,6 +169,10 @@ export class PlayerMovement {
   }
 
   update(delta: number, vehicleType: VehicleType | null): { fromPos: THREE.Vector3; toPos: THREE.Vector3; normalizedSpeed: number } {
+    if (!this.canMove) {
+      return { fromPos: this._camera.position.clone(), toPos: this._camera.position.clone(), normalizedSpeed: 0 }
+    }
+
     const speedMultiplier = this._slewMode ? 4 : 1
     const maxLinearVel = vehicleType != null ? VEHICLE_MAX_LINEAR_VEL[vehicleType] : WALK_SPEED
 
