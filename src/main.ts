@@ -11,6 +11,8 @@ if (playButton == null || !(playButton instanceof HTMLButtonElement)) {
   throw new Error('Play button not found')
 }
 
+const printSceneGraph = document.getElementById('print-scene-graph')
+
 const start = async () => {
   playButton.disabled = true
   document.getElementById('menu')?.classList.add('hidden')
@@ -41,6 +43,12 @@ const start = async () => {
 }
 
 playButton.addEventListener('click', start)
+
+printSceneGraph?.addEventListener('click', () => {
+  if (engine.hasWorld) {
+    engine.currentWorld.debugPrintSceneGraph()
+  }
+})
 
 if (import.meta.env.DEV) {
   void start()
