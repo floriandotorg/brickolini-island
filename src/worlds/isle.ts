@@ -780,7 +780,11 @@ export class Isle extends IsleBase {
 
     await this.handleStartUpAction(_Isle)
 
-    this.boundaryManager.onTrigger((name, data, direction) => {
+    this.boundaryManager.onTrigger((name, data, direction, roi) => {
+      if (roi != null) {
+        return
+      }
+
       const music = [ResidentalArea_Music, BeachBlvd_Music, Cave_Music, CentralRoads_Music, Jail_Music, Hospital_Music, InformationCenter_Music, PoliceStation_Music, Park_Music, CentralNorthRoad_Music, GarageArea_Music, RaceTrackRoad_Music, Beach_Music, Quiet_Audio]
 
       const triggers: [number, number][] = [
