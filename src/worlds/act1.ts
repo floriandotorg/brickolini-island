@@ -371,7 +371,6 @@ import {
 } from '../actions/isle'
 // import { CNs001Pe, tns030bd_RunAnim } from '../actions/act2main'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../actions/jukebox'
-import type { RunAnimationAction } from '../lib/action-types'
 import type { DTA } from '../lib/assets/dta'
 import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
@@ -764,12 +763,6 @@ export class Act1 extends Isle {
     return this._playerMovement
   }
 
-  private _animationTrigger: Array<{
-    center: THREE.Vector3
-    radius: number
-    animation: RunAnimationAction
-  }> = []
-
   public backgroundMusicTriggerEnabled = true
 
   constructor() {
@@ -872,8 +865,6 @@ export class Act1 extends Isle {
       }
     })
 
-    // await this._pizzaMission.init()
-
     this._dashboard.onExit = () => {
       this.currentVehicle?.exit()
     }
@@ -932,8 +923,6 @@ export class Act1 extends Isle {
   public override update(delta: number): void {
     super.update(delta)
 
-    // this._pizzaMission.update()
-
     if (this._water != null) {
       this._water.material.uniforms.time.value += delta * 0.1
     }
@@ -949,12 +938,5 @@ export class Act1 extends Isle {
     this._dashboard.update(normalizedSpeed)
 
     this.boundaryManager.update(fromPos, toPos, null)
-    for (const trigger of this._animationTrigger) {
-      const distance = toPos.distanceTo(trigger.center)
-      if (distance <= trigger.radius && fromPos.distanceTo(trigger.center) > trigger.radius) {
-        console.log(`Playing animation ${trigger.animation.name}`)
-        void this.playAnimation(trigger.animation)
-      }
-    }
   }
 }

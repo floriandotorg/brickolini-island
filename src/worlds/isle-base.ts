@@ -12,7 +12,7 @@ import { type Boundary, type Edge, getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
 import { calculateTransformationMatrix, getModel, getWorld, Roi3D, type WdbWorldName } from '../lib/assets/model'
-import { getSpawnLocation, type SpawnLocation } from '../lib/assets/spawn-location'
+import type { SpawnLocation } from '../lib/assets/spawn-location'
 import { createTexture } from '../lib/assets/texture'
 import type { Composer } from '../lib/effect/composer'
 import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
@@ -95,7 +95,6 @@ export abstract class IsleBase extends World {
   protected _skateRoi: Roi3D | null = null
   protected _ambulanceRoi: Roi3D | null = null
   protected _towtruckRoi: Roi3D | null = null
-  private _buildMeshes = new Map<VehicleType, Actor>()
   private _animationInfos: DTA.AnimationInfo[] = []
   private readonly _wdbWorldName: WdbWorldName | null
   private readonly _dtaWorldName: DtaWorldName | null
@@ -339,33 +338,6 @@ export abstract class IsleBase extends World {
       throw new Error('No pizza sign found')
     }
     noPizzaSign.material.map = engine.currentSaveGame.player === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
-
-    for (const { type, model, spawn, createActor } of CAR_BUILD_VEHICLES) {
-      const previousActor = this._buildMeshes.get(type)
-      if (previousActor != null) {
-        this.removeFromParents(previousActor.roi.getAllModels())
-        this.removeActor(previousActor)
-      }
-      const placement = (() => {
-        if (engine.resetVehicleRespawn(type)) {
-          const spawnPosition = getSpawnLocation(spawn).position
-          return this.boundaryManager.getObjectPlacement(spawnPosition.boundaryName, spawnPosition.source, spawnPosition.sourceScale, spawnPosition.destination, spawnPosition.destinationScale)
-        }
-        return engine.currentSaveGame.getVehiclePlacement(type)
-      })()
-      if (placement != null) {
-        const rootRoi = await getModel(model)
-        const allRois = rootRoi.getAllModels()
-        for (const roi of allRois) {
-          this.scene.add(roi)
-        }
-        const actor = await createActor(rootRoi, this)
-        await this.registerActor(actor)
-        this._buildMeshes.set(type, actor)
-        rootRoi.moveRoiTo(placement.position, placement.quaternion)
-        engine.currentSaveGame.setVehiclePlacement(type, placement)
-      }
-    }
   }
 
   public getVehicleRoi(vehicle: VehicleType): Roi3D | null {

@@ -1,9 +1,16 @@
 import * as THREE from 'three'
+import { getModel } from '../lib/assets/model'
+import { getSpawnLocation } from '../lib/assets/spawn-location'
 import type { Composer } from '../lib/effect/composer'
+import { engine } from '../lib/engine'
+import type { Actor } from '../lib/world/actor'
+import type { VehicleType } from '../lib/world/dashboard'
 import type { WorldName } from '../lib/world/world'
-import { IsleBase } from './isle-base'
+import { CAR_BUILD_VEHICLES, IsleBase } from './isle-base'
 
 export class Isle extends IsleBase {
+  private _buildMeshes = new Map<VehicleType, Actor>()
+
   constructor(worldName: WorldName) {
     super(worldName, { wdbWorldName: 'ACT1', dtaWorldName: 'ACT1' })
   }
@@ -20,6 +27,33 @@ export class Isle extends IsleBase {
 
   public override async activate(composer: Composer, _param?: unknown): Promise<void> {
     await super.activate(composer, _param)
+
+    for (const { type, model, spawn, createActor } of CAR_BUILD_VEHICLES) {
+      const previousActor = this._buildMeshes.get(type)
+      if (previousActor != null) {
+        this.removeFromParents(previousActor.roi.getAllModels())
+        this.removeActor(previousActor)
+      }
+      const placement = (() => {
+        if (engine.resetVehicleRespawn(type)) {
+          const spawnPosition = getSpawnLocation(spawn).position
+          return this.boundaryManager.getObjectPlacement(spawnPosition.boundaryName, spawnPosition.source, spawnPosition.sourceScale, spawnPosition.destination, spawnPosition.destinationScale)
+        }
+        return engine.currentSaveGame.getVehiclePlacement(type)
+      })()
+      if (placement != null) {
+        const rootRoi = await getModel(model)
+        const allRois = rootRoi.getAllModels()
+        for (const roi of allRois) {
+          this.scene.add(roi)
+        }
+        const actor = await createActor(rootRoi, this)
+        await this.registerActor(actor)
+        this._buildMeshes.set(type, actor)
+        rootRoi.moveRoiTo(placement.position, placement.quaternion)
+        engine.currentSaveGame.setVehiclePlacement(type, placement)
+      }
+    }
 
     this._bikeRoi = this.findRoi('bike')
     this._motobkRoi = this.findRoi('motobk')
