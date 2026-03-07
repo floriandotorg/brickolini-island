@@ -1,4 +1,3 @@
-import * as THREE from 'three'
 import { PoliDoor as PoliDoor_StartUp } from '../actions/isle'
 import { PoliceStation_Music } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
@@ -36,11 +35,7 @@ export class PoliDoor extends IsleBase {
       return false
     }
 
-    const policeStation = this.scene.getObjectByName('policsta')
-    if (policeStation == null || !(policeStation instanceof THREE.Group)) {
-      throw new Error('Police station mesh not found')
-    }
-    policeStation.visible = false
+    this.getRoi('policsta').visible = false
 
     this._updateCameraProjection([-73.70144, 2.25, -88.91317], [0.911398, 0.0, 0.411526], [0.0, 1.0, 0.0], 90)
   }

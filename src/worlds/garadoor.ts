@@ -1,4 +1,3 @@
-import * as THREE from 'three'
 import { GaraDoor as GaraDoor_StartUp } from '../actions/isle'
 import { GarageArea_Music } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
@@ -34,11 +33,7 @@ export class GarDoor extends IsleBase {
       return false
     }
 
-    const gas = this.scene.getObjectByName('gas')
-    if (gas == null || !(gas instanceof THREE.Group)) {
-      throw new Error('Gas mesh not found')
-    }
-    gas.visible = false
+    this.getRoi('gas').visible = false
 
     this._updateCameraProjection([-31.694365, 1.25, -2.814015], [0.650445, 0.0, 0.759553], [0.0, 1.0, 0.0], 90)
   }
