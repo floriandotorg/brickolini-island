@@ -1336,12 +1336,16 @@ export const ACTORS: {
   },
 }
 
+export type CharacterName = keyof typeof ACTORS
+
 // spellchecker: enable
 
 export class Character extends Roi3D {
   private _headMaterial: THREE.MeshBasicMaterial | null = null
   private _head: Roi3D | null = null
   private _originalHeadTexture: THREE.Texture | null = null
+  private _worldPosition = new THREE.Vector3()
+  private _worldQuaternion = new THREE.Quaternion()
 
   public onClicked: () => boolean = () => false
 
@@ -1359,13 +1363,37 @@ export class Character extends Roi3D {
     return this._head
   }
 
+  public override get position(): THREE.Vector3 {
+    return this._worldPosition
+  }
+
   private constructor(
-    name: string,
+    name: CharacterName,
     private _info: (typeof ACTORS)[keyof typeof ACTORS],
   ) {
     super(new RoiModel(), name)
     this.model.name = name
     this.model.roi3d = this
+  }
+
+  public override moveRoiTo(targetPosition: THREE.Vector3, targetQuaternion?: THREE.Quaternion): void {
+    const inverseOldQuaternion = this._worldQuaternion.clone().invert()
+    const newQuaternion = targetQuaternion ?? this._worldQuaternion.clone()
+
+    for (const object of this.getAllModels()) {
+      if (object === this.model) {
+        continue
+      }
+      const relativePosition = object.position.clone().sub(this._worldPosition).applyQuaternion(inverseOldQuaternion)
+      const relativeQuaternion = inverseOldQuaternion.clone().multiply(object.quaternion)
+
+      object.position.copy(targetPosition.clone().add(relativePosition.applyQuaternion(newQuaternion)))
+      object.quaternion.copy(newQuaternion.clone().multiply(relativeQuaternion))
+      object.updateMatrix()
+    }
+
+    this._worldPosition.copy(targetPosition)
+    this._worldQuaternion.copy(newQuaternion)
   }
 
   public resetHeadTexture(): void {
@@ -1376,7 +1404,7 @@ export class Character extends Roi3D {
     this.headMaterial.needsUpdate = true
   }
 
-  public static async create(world: World, name: string): Promise<Character> {
+  public static async create(world: World, name: CharacterName): Promise<Character> {
     const actor = new Character(name, ACTORS[name as keyof typeof ACTORS])
 
     for (const [bodyPartName, part] of Object.entries(BODY_PARTS)) {

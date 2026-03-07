@@ -21,7 +21,7 @@ import { getSettings } from '../lib/settings'
 import { type Actor, ColliderType } from '../lib/world/actor'
 import { PathActor } from '../lib/world/actors/path-actor'
 import type { Vehicle } from '../lib/world/actors/vehicle'
-import type { Character } from '../lib/world/character'
+import type { Character, CharacterName } from '../lib/world/character'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
 import type { Entity } from '../lib/world/entity'
 import { Plants } from '../lib/world/plants'
@@ -337,6 +337,18 @@ export abstract class IsleBase extends World {
     this._ambulanceRoi = this.findRoi('ambul')
     this._towtruckRoi = this.findRoi('towtk')
 
+    const mama = await this.getActor('mama')
+    const mamaPlacement = this.boundaryManager.getObjectPlacement('USR00_47', 1, 0.43, 3, 0.84)
+    mama.moveRoiTo(mamaPlacement.position, mamaPlacement.quaternion)
+
+    const papa = await this.getActor('papa')
+    const papaPlacement = this.boundaryManager.getObjectPlacement('USR00_193', 3, 0.55, 1, 0.4)
+    papa.moveRoiTo(papaPlacement.position, papaPlacement.quaternion)
+
+    const brickstr = await this.getActor('brickstr')
+    const brickstrPlacement = this.boundaryManager.getObjectPlacement('EDG02_95', 1, 0.5, 3, 0.5)
+    brickstr.moveRoiTo(brickstrPlacement.position, brickstrPlacement.quaternion)
+
     if (this._bikeRoi != null) {
       this.placeVehicle('bike', 'INT44', 2, 0.5, 0, 0.5)
     }
@@ -608,7 +620,7 @@ export abstract class IsleBase extends World {
         throw new Error('Actor action with both model and character is not supported')
       }
 
-      model = await this.getActor(characterName.toLowerCase())
+      model = await this.getActor(characterName.toLowerCase() as CharacterName)
     }
     if (model == null) {
       model = await getModel(action.children[0])

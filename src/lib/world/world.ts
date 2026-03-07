@@ -11,7 +11,7 @@ import { type Composer, Render3D } from '../effect/composer'
 import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
 import type { Actor } from './actor'
 import { BoundaryManager } from './boundary-manager'
-import { Character } from './character'
+import { Character, type CharacterName } from './character'
 
 // you cannot enter the second floor
 export enum ElevatorEntrance {
@@ -204,7 +204,7 @@ export abstract class World {
     this.camera.lookAt(pathToPosition(lookAtPositionPath))
   }
 
-  public async getActor(name: string): Promise<Character> {
+  public async getActor(name: CharacterName): Promise<Character> {
     const existing = this._characters.get(name)
     if (existing != null) {
       ++existing.refCount
@@ -324,7 +324,7 @@ export abstract class World {
         }
         case WDB.ActorType.ManagedActor: {
           const actorName = actor.name.replace(/^\*/, '')
-          const minifig = await this.getActor(actorName)
+          const minifig = await this.getActor(actorName as CharacterName)
           managedActorNames.push(actorName)
           if (actor.name.startsWith('*')) {
             minifig.visible = false
