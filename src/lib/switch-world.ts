@@ -1,10 +1,25 @@
+import type { IsleParam } from '../worlds/isle-base'
+import { getSpawnLocation } from './assets/spawn-location'
 import { engine } from './engine'
-import type { NormalWorld, World, WorldName, WorldSpawn } from './world/world'
+import type { ElevatorEntrance, NormalWorld, World, WorldName, WorldSpawn } from './world/world'
 
 const worlds = new Map<WorldName, World>()
 
-let lastWorld: WorldSpawn | null = null
-let currentWorld: WorldSpawn | null = null
+let lastWorld: WorldSpawnInner | null = null
+let currentWorld: WorldSpawnInner | null = null
+
+type WorldSpawnInner =
+  | {
+      name: NormalWorld
+    }
+  | {
+      name: 'elevride'
+      floor: ElevatorEntrance
+    }
+  | {
+      name: 'isle'
+      spawn: IsleParam
+    }
 
 export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
   if (engine.hasWorld) {
@@ -13,8 +28,24 @@ export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
 
   lastWorld = currentWorld
 
+  if (typeof spawn === 'string') {
+    return await switchWorldInner({ name: spawn })
+  }
+  if ('world' in spawn) {
+    return await switchWorldInner({ name: spawn.world })
+  }
+  if ('floor' in spawn) {
+    return await switchWorldInner({ name: 'elevride', floor: spawn.floor })
+  }
+  if ('spawn' in spawn) {
+    return await switchWorldInner({ name: 'isle', spawn: getSpawnLocation(spawn.spawn) })
+  }
+  const _exhaustiveCheck: never = spawn
+  throw new Error(`Unknown world spawn ${spawn}`)
+}
+
+const switchWorldInner = async (normalizedSpawn: WorldSpawnInner) => {
   const transition = engine.hasWorld ? engine.transition() : Promise.resolve()
-  const normalizedSpawn: WorldSpawn = typeof spawn === 'string' ? { name: spawn } : spawn
 
   if (!worlds.has(normalizedSpawn.name)) {
     const newWorld = await (() => {
@@ -101,7 +132,7 @@ const invalidPreviousWorlds: WorldName[] = ['elevbott', 'elevride', 'elevopen', 
 
 export const switchToPreviousWorld = (): Promise<void> => {
   if (lastWorld != null && !invalidPreviousWorlds.includes(lastWorld.name)) {
-    return switchWorld(lastWorld)
+    return switchWorldInner(lastWorld)
   }
   return Promise.resolve()
 }

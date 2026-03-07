@@ -1,5 +1,5 @@
 import { EnterableBuilding } from './enterable-building'
 
 export class InfoCenter extends EnterableBuilding {
-  protected override world = { name: 'infomain' } as const
+  protected override world = { world: 'infomain' } as const
 }

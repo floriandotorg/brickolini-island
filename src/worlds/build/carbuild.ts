@@ -6,14 +6,13 @@ import { createImageSprite } from '../../lib/assets/canvas-sprite'
 import type { Control, ControlEvent } from '../../lib/assets/control'
 import { colorAliases, colorMesh, isColorTableName, toThreeColor } from '../../lib/assets/mesh'
 import { type Roi3D, RoiModel } from '../../lib/assets/model'
-import { getSpawnLocation, type SpawnLocation } from '../../lib/assets/spawn-location'
 import { createTexture } from '../../lib/assets/texture'
 import { engine } from '../../lib/engine'
 import { getSettings } from '../../lib/settings'
 import { switchWorld } from '../../lib/switch-world'
 import type { Building } from '../../lib/world/building'
 import type { VehicleType } from '../../lib/world/dashboard'
-import type { BuiltAnimation, World } from '../../lib/world/world'
+import type { BuiltAnimation, NormalWorld, World, WorldSpawn } from '../../lib/world/world'
 
 type Part = { readonly wired: Roi3D; readonly shelfPart: Roi3D; readonly shelfGroup: THREE.Group; readonly clone: RoiModel; readonly objectType: ObjectType; readonly basename: string }
 
@@ -239,7 +238,7 @@ export class Carbuild {
   private _part = 0
   private readonly _colorControls: CustomColorControls
   private readonly _decalControls: CustomDecalControls
-  private readonly _spawnLocation: SpawnLocation
+  private readonly _spawnLocation: WorldSpawn | NormalWorld
   private readonly _vehicleType: VehicleType
   private readonly _speakerAnimations: SpeakerAnimations
   private readonly _buildPlatform = new THREE.Group()
@@ -279,7 +278,7 @@ export class Carbuild {
     rotationSound: AudioAction,
     colorControls: CustomColorControls,
     decalControls: CustomDecalControls,
-    spawnLocation: SpawnLocation,
+    spawnLocation: WorldSpawn | NormalWorld,
     vehicleType: VehicleType,
     speakerAnimations: SpeakerAnimations,
     ...animations: AnimationAction[]
@@ -302,7 +301,7 @@ export class Carbuild {
     rotationSound: Audio,
     colorControls: CustomColorControls,
     decalControls: CustomDecalControls,
-    spawnLocation: SpawnLocation,
+    spawnLocation: WorldSpawn | NormalWorld,
     vehicleType: VehicleType,
     speakerAnimations: SpeakerAnimations,
     animation: BuiltAnimation,
@@ -512,7 +511,7 @@ export class Carbuild {
         engine.currentSaveGame.setVehicleProgress(this._vehicleType, 0)
         await this._world.playAnimation(this._speakerAnimations.completed)
         engine.respawnVehicle(this._vehicleType)
-        void switchWorld({ name: 'isle', spawn: getSpawnLocation(this._spawnLocation) })
+        void switchWorld(this._spawnLocation)
       } else {
         engine.currentSaveGame.setVehicleProgress(this._vehicleType, this._part)
       }

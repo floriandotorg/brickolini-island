@@ -1,6 +1,5 @@
 import { _StartUp, iic007in_PlayWav, iic037in_PlayWav } from '../actions/infodoor'
 import { InformationCenter_Music } from '../actions/jukebox'
-import { getSpawnLocation } from '../lib/assets/spawn-location'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
@@ -30,7 +29,7 @@ export class InfoDoor extends World {
           } else if (engine.currentSaveGame.isUnloaded) {
             void this.playAudio(iic007in_PlayWav, 'speech')
           } else {
-            void switchWorld({ name: 'isle', spawn: getSpawnLocation('infocenterExited') })
+            void switchWorld({ spawn: 'infocenterExited' })
           }
           return true
         case 'LeftArrow_Ctl':

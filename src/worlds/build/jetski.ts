@@ -58,7 +58,7 @@ export class Jetski extends World {
     const speakerAnimations: SpeakerAnimations = {
       completed: ijs004d4_RunAnim,
     }
-    this._carbuild = await Carbuild.create(this, this._building, displayPosition, Shelf_Sound, GetBrick_Sound, PlaceBrick_Sound, Rotate_Sound, colorControls, decalControls, 'jetskibuildExited', 'jetski', speakerAnimations, Build_Anim0, Build_Anim1, Build_Anim2)
+    this._carbuild = await Carbuild.create(this, this._building, displayPosition, Shelf_Sound, GetBrick_Sound, PlaceBrick_Sound, Rotate_Sound, colorControls, decalControls, { spawn: 'jetskibuildExited' }, 'jetski', speakerAnimations, Build_Anim0, Build_Anim1, Build_Anim2)
 
     this._building.onButtonClicked = (buttonName, event) => {
       if (this._carbuild == null) {

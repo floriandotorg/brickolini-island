@@ -1,11 +1,11 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
-import type { IsleParam } from '../../worlds/isle-base'
 import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, isAudioAction, isPositionalAudioAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
 import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { type Audio, getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
 import { calculateTransformationMatrix, getGlobalPart, Roi3D, RoiModel } from '../assets/model'
+import type { SpawnLocation } from '../assets/spawn-location'
 import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
 import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
@@ -24,15 +24,13 @@ export enum ElevatorEntrance {
 export type NormalWorld = Exclude<WorldName, 'isle' | 'elevride'>
 export type WorldSpawn =
   | {
-      name: NormalWorld
+      world: NormalWorld
     }
   | {
-      name: 'elevride'
       floor: ElevatorEntrance
     }
   | {
-      name: 'isle'
-      spawn: IsleParam
+      spawn: SpawnLocation
     }
 
 type FaceAnimation = {

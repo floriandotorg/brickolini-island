@@ -23,7 +23,7 @@ import { createImageSprite } from '../assets/canvas-sprite'
 import { type Control, type ControlEvent, ControlsCollection } from '../assets/control'
 import { getAction } from '../assets/load'
 import { getWorld } from '../assets/model'
-import { getSpawnLocation, type SpawnLocation } from '../assets/spawn-location'
+import type { SpawnLocation } from '../assets/spawn-location'
 import { createTextureAsync } from '../assets/texture'
 import { type Composer, Render2D } from '../effect/composer'
 import { TransparentEdgeBlurEffect } from '../effect/transparent-edge-blur'
@@ -105,8 +105,7 @@ export class Building {
         ? undefined
         : (() => {
             const control = exitSpawnPoint?.control ?? 'Door_Ctl'
-            const world: WorldSpawn = 'world' in exitSpawnPoint ? { name: exitSpawnPoint.world } : { name: 'isle', spawn: getSpawnLocation(exitSpawnPoint.spawn) }
-            return { world, control, animation: exitSpawnPoint.animation }
+            return { world: exitSpawnPoint, control, animation: exitSpawnPoint.animation }
           })()
 
     this._world = world

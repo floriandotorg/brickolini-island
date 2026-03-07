@@ -57,7 +57,7 @@ import { BookWig_Flic } from '../actions/sndanim'
 import type { CharacterMovieAction, ImageAction, RunAnimationAction } from '../lib/action-types'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { MovieSprite } from '../lib/assets/movie-sprite'
-import { getSpawnLocation, type SpawnLocation } from '../lib/assets/spawn-location'
+import type { SpawnLocation } from '../lib/assets/spawn-location'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect, type Timeout } from '../lib/engine'
 import { type PlayerCharacter, PlayerCharacters } from '../lib/save-game'
@@ -65,8 +65,7 @@ import { getSettings } from '../lib/settings'
 import { switchToPreviousWorld, switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
-import { World } from '../lib/world/world'
-import type { IsleParam } from './isle-base'
+import { World, type WorldSpawn } from '../lib/world/world'
 import { Name } from './regbook'
 
 const ANIMATIONS = [iic019in_RunAnim, iic020in_RunAnim, iic021in_RunAnim, iic022in_RunAnim, iic023in_RunAnim, iic024in_RunAnim, iic025in_RunAnim, iic026in_RunAnim, iic027in_RunAnim, iica28in_RunAnim, iicb28in_RunAnim, iicc28in_RunAnim, iic029in_RunAnim, iic032in_RunAnim]
@@ -80,7 +79,7 @@ enum CharacterMovieState {
 type Destination = {
   sprite: THREE.Sprite
   normalizedRect: NormalizedRect
-  destination: IsleParam | null
+  destination: WorldSpawn | null
 }
 
 const createDestination = (image: ImageAction, parent: THREE.Scene, location: SpawnLocation | null): Destination => {
@@ -88,7 +87,7 @@ const createDestination = (image: ImageAction, parent: THREE.Scene, location: Sp
   sprite.visible = false
   parent.add(sprite)
   const normalizedRect = normalizeRect(image.location[0], image.location[1], image.dimensions.width, image.dimensions.height)
-  const destination = location != null ? getSpawnLocation(location) : null
+  const destination = location != null ? { spawn: location } : null
   return { sprite, normalizedRect, destination }
 }
 
@@ -357,7 +356,7 @@ export class InfoMain extends World {
               const selectionAnimation = getSelectionAnimation(character)
               void this.playAnimation(selectionAnimation).then(() => {
                 if (dest.destination != null) {
-                  void switchWorld({ name: 'isle', spawn: dest.destination })
+                  void switchWorld(dest.destination)
                 }
               })
             }

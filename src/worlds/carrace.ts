@@ -4,7 +4,6 @@ import { RaceTrackRoad_Music } from '../actions/jukebox'
 import { Action } from '../actions/types'
 import { isRunAnimationAction } from '../lib/action-types'
 import { getAction } from '../lib/assets/load'
-import { getSpawnLocation } from '../lib/assets/spawn-location'
 import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
@@ -23,7 +22,7 @@ export class CarRace extends Race {
     await this._dashboard.show({ type: 'racecar' })
 
     this._dashboard.onExit = () => {
-      switchWorld({ name: 'isle', spawn: getSpawnLocation('carraceExterior') })
+      switchWorld({ spawn: 'carraceExterior' })
     }
 
     void engine.switchBackgroundMusic(RaceTrackRoad_Music)

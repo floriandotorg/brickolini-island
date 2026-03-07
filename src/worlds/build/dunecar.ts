@@ -51,7 +51,7 @@ export class Dunecar extends World {
     const speakerAnimations: SpeakerAnimations = {
       completed: igs003d3_RunAnim,
     }
-    this._carbuild = await Carbuild.create(this, this._building, displayPosition, Shelf_Sound, GetBrick_Sound, PlaceBrick_Sound, Rotate_Sound, colorControls, decalControls, 'garageExited', 'dunecar', speakerAnimations, Build_Anim0, Build_Anim1, Build_Anim2)
+    this._carbuild = await Carbuild.create(this, this._building, displayPosition, Shelf_Sound, GetBrick_Sound, PlaceBrick_Sound, Rotate_Sound, colorControls, decalControls, 'garadoor', 'dunecar', speakerAnimations, Build_Anim0, Build_Anim1, Build_Anim2)
 
     this._building.onButtonClicked = (buttonName, event) => {
       if (this._carbuild == null) {

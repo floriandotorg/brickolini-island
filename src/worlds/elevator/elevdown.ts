@@ -27,7 +27,7 @@ export class ElevDown extends IsleBase {
     this._building.onButtonClicked = buttonName => {
       switch (buttonName) {
         case 'ElevDown_Elevator_Ctl':
-          void switchWorld({ name: 'elevride', floor: ElevatorEntrance.Third })
+          void switchWorld({ floor: ElevatorEntrance.Third })
           return true
         case 'ElevDown_RightArrow_Ctl':
           void switchWorld('seaview')
