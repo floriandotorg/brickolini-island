@@ -71,8 +71,6 @@ import {
   irt007in_RunAnim,
   irtx01sl_RunAnim,
   ivo918in_RunAnim,
-  NoPizaz_Texture,
-  NoPizza_Texture,
   nca001ca_RunAnim,
   nca003gh_RunAnim,
   nic002pr_RunAnim,
@@ -376,9 +374,8 @@ import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, Centr
 import type { RunAnimationAction } from '../lib/action-types'
 import type { DTA } from '../lib/assets/dta'
 import { calculateTransformationMatrix } from '../lib/assets/model'
-import { createTexture } from '../lib/assets/texture'
 import type { Composer } from '../lib/effect/composer'
-import { engine, type NormalizedMouseEvent } from '../lib/engine'
+import { engine } from '../lib/engine'
 import { type Location, locations } from '../lib/locations'
 import { PlayerMovement } from '../lib/world/player-movement'
 import type { WorldName } from '../lib/world/world'
@@ -906,11 +903,6 @@ export class Isle extends IsleBase {
       this.camera.position.copy(position)
       this.camera.quaternion.copy(quaternion)
     }
-    const noPizzaSign = this.scene.getObjectByName('nopizza')?.children[0]
-    if (noPizzaSign == null || !(noPizzaSign instanceof THREE.Mesh)) {
-      throw new Error('No pizza sign found')
-    }
-    noPizzaSign.material.map = engine.currentSaveGame.player === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
   }
 
   public override getGroundPosition(): THREE.Vector3 {
@@ -976,16 +968,6 @@ export class Isle extends IsleBase {
 
   public override resize(width: number, height: number): void {
     super.resize(width, height)
-  }
-
-  public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
-    await super.pointerDown(event)
-    this._dashboard.pointerDown(event.normalizedX, event.normalizedY)
-  }
-
-  public override pointerUp(event: NormalizedMouseEvent): void {
-    super.pointerUp(event)
-    this._dashboard.pointerUp()
   }
 
   public override keyPressed(key: string): void {

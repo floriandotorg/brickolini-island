@@ -4,6 +4,7 @@ import type { Water } from 'three/addons/objects/Water.js'
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator.js'
 import { Chptr_Model } from '../actions/copter'
 import { DuneBugy_Model } from '../actions/dunecar'
+import { NoPizaz_Texture, NoPizza_Texture } from '../actions/isle'
 import { Jsuser_Model } from '../actions/jetski'
 import { Rcuser_Model } from '../actions/racecar'
 import { type ActionBase, type ActorAction, type AnimationAction, type EntityAction, getExtraValue, isActorAction, isAnimationAction, isBoundaryAction, isEntityAction, isPositionalAudioAction, type ModelAction, type SerialAction } from '../lib/action-types'
@@ -12,6 +13,7 @@ import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/as
 import { manager } from '../lib/assets/load'
 import { calculateTransformationMatrix, getModel, getWorld, Roi3D, type WdbWorldName } from '../lib/assets/model'
 import { getSpawnLocation, type SpawnLocation } from '../lib/assets/spawn-location'
+import { createTexture } from '../lib/assets/texture'
 import type { Composer } from '../lib/effect/composer'
 import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
 import { applyLights, NUM_ORIGINAL_LIGHTS } from '../lib/original-lights'
@@ -344,6 +346,12 @@ export abstract class IsleBase extends World {
     if (this._skateRoi != null) {
       this.placeVehicle('skate', 'EDG02_84', 4, 0.5, 0, 0.5)
     }
+
+    const noPizzaSign = this.scene.getObjectByName('nopizza')?.children[0]
+    if (noPizzaSign == null || !(noPizzaSign instanceof THREE.Mesh)) {
+      throw new Error('No pizza sign found')
+    }
+    noPizzaSign.material.map = engine.currentSaveGame.player === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
 
     for (const { type, model, spawn, createActor } of CAR_BUILD_VEHICLES) {
       const previousActor = this._buildMeshes.get(type)
