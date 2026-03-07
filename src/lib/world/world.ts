@@ -75,6 +75,7 @@ export abstract class World {
     mixer: THREE.AnimationMixer
     clipAction: THREE.AnimationAction
     audios: THREE.PositionalAudio[]
+    nonPositionalAudios: Audio[]
     resolve: () => void
     lookAtKeys?: WDB.Animation.VertexKey[]
     lockCamera?: boolean
@@ -484,9 +485,7 @@ export abstract class World {
 
     this.setupCameraForAnimation(animation.tree)
 
-    for (const audio of audioActions) {
-      void engine.playAudio(audio, 'animations')
-    }
+    const nonPositionalAudios = await Promise.all(audioActions.map(audio => engine.playAudio(audio, 'animations')))
 
     const audios: THREE.PositionalAudio[] = await Promise.all(
       positionalAudioActions.map(async audio => {
@@ -500,7 +499,7 @@ export abstract class World {
     const sentinel = audioActions.length > 0 || audios.length > 0 ? engine.lowerBackgroundMusic() : null
 
     const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
-    await this.playAnimationClip(this.scene, clip, { audios, lookAtKeys, faceAnimations, pointAtCameraObjects, roisToHideOnStop, managedActorNames, lockCamera, unskippable, loop })
+    await this.playAnimationClip(this.scene, clip, { audios, nonPositionalAudios, lookAtKeys, faceAnimations, pointAtCameraObjects, roisToHideOnStop, managedActorNames, lockCamera, unskippable, loop })
     if (sentinel != null) {
       engine.raiseBackgroundMusic(sentinel)
     }
@@ -511,6 +510,7 @@ export abstract class World {
     clip: THREE.AnimationClip,
     {
       audios = [],
+      nonPositionalAudios = [],
       lookAtKeys,
       faceAnimations = [],
       pointAtCameraObjects = [],
@@ -523,6 +523,7 @@ export abstract class World {
       loop,
     }: {
       audios?: THREE.PositionalAudio[]
+      nonPositionalAudios?: Audio[]
       lookAtKeys?: WDB.Animation.VertexKey[]
       faceAnimations?: FaceAnimation[]
       pointAtCameraObjects?: THREE.Object3D[]
@@ -563,7 +564,7 @@ export abstract class World {
         resolve()
       }
 
-      this._runningAnimations.push({ mixer, clipAction, audios, resolve: removeMe, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, stopAtTime })
+      this._runningAnimations.push({ mixer, clipAction, audios, nonPositionalAudios, resolve: removeMe, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, stopAtTime })
       mixer.addEventListener('finished', removeMe)
     })
   }
@@ -786,6 +787,9 @@ export abstract class World {
       }
 
       for (const audio of runningAnimation.audios) {
+        audio.stop()
+      }
+      for (const audio of runningAnimation.nonPositionalAudios) {
         audio.stop()
       }
     }
