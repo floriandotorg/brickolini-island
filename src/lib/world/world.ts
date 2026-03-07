@@ -13,15 +13,14 @@ import type { Actor } from './actor'
 import { BoundaryManager } from './boundary-manager'
 import { Character } from './character'
 
-export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevride' | 'elevopen' | 'seaview' | 'observe' | 'elevdown' | 'carrace' // jetrace
-
 // you cannot enter the second floor
 export enum ElevatorEntrance {
   First = 0,
   Third = 1,
 }
 
-export type NormalWorld = Exclude<WorldName, 'isle' | 'elevride'>
+export type NormalWorld = 'hospital' | 'garage' | 'infomain' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevopen' | 'seaview' | 'observe' | 'elevdown' | 'carrace'
+export type WorldName = NormalWorld | 'isle' | 'elevride'
 export type WorldSpawn =
   | {
       world: NormalWorld
