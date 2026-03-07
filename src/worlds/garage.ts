@@ -1,14 +1,16 @@
 import * as THREE from 'three'
-import { _StartUp, wgs023nu_RunAnim } from '../actions/garage'
+import { _StartUp, TrackLed_Bitmap, wgs023nu_RunAnim } from '../actions/garage'
 import { GarageArea_Music } from '../actions/jukebox'
+import { createImageSprite } from '../lib/assets/canvas-sprite'
 import type { Composer } from '../lib/effect/composer'
-import type { NormalizedMouseEvent } from '../lib/engine'
+import { engine, type Interval, type NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { World } from '../lib/world/world'
 
 export class Garage extends World {
   private readonly _building = new Building()
+  private _led: { sprite: THREE.Sprite; interval: Interval } | null = null
 
   constructor() {
     super('garage')
@@ -21,6 +23,10 @@ export class Garage extends World {
       startUpAction: _StartUp,
       backgroundMusic: GarageArea_Music,
     })
+
+    this._led = { sprite: createImageSprite(TrackLed_Bitmap), interval: engine.createInterval(300) }
+    this._led.sprite.visible = false
+    this._building.scene.add(this._led.sprite)
 
     this._building.onButtonClicked = buttonName => {
       switch (buttonName) {
@@ -56,5 +62,12 @@ export class Garage extends World {
 
   public override pointerUp(_event: NormalizedMouseEvent): void {
     this._building.pointerUp()
+  }
+
+  protected override update(delta: number): void {
+    super.update(delta)
+    if (this._led?.interval.resetExpired()) {
+      this._led.sprite.visible = !this._led.sprite.visible
+    }
   }
 }
