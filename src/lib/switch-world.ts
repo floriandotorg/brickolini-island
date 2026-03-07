@@ -17,7 +17,7 @@ type WorldSpawnInner =
       floor: ElevatorEntrance
     }
   | {
-      name: 'isle'
+      name: 'act1'
       spawn: IsleParam
     }
 
@@ -38,7 +38,7 @@ export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
     return await switchWorldInner({ name: 'elevride', floor: spawn.floor })
   }
   if ('spawn' in spawn) {
-    return await switchWorldInner({ name: 'isle', spawn: getSpawnLocation(spawn.spawn) })
+    return await switchWorldInner({ name: 'act1', spawn: getSpawnLocation(spawn.spawn) })
   }
   const _exhaustiveCheck: never = spawn
   throw new Error(`Unknown world spawn ${spawn}`)
@@ -50,8 +50,8 @@ const switchWorldInner = async (normalizedSpawn: WorldSpawnInner) => {
   if (!worlds.has(normalizedSpawn.name)) {
     const newWorld = await (() => {
       switch (normalizedSpawn.name) {
-        case 'isle':
-          return import('../worlds/isle').then(m => new m.Isle())
+        case 'act1':
+          return import('../worlds/act1').then(m => new m.Act1())
         case 'hospital':
           return import('../worlds/hospital').then(m => new m.Hospital())
         case 'garage':
@@ -92,6 +92,8 @@ const switchWorldInner = async (normalizedSpawn: WorldSpawnInner) => {
           return import('../worlds/elevator/elevdown').then(m => new m.ElevDown())
         case 'carrace':
           return import('../worlds/carrace').then(m => new m.CarRace())
+        case 'act2':
+          return import('../worlds/act2').then(m => new m.Act2())
         default: {
           const _exhaustiveCheck: never = normalizedSpawn
           throw new Error(`Unhandled world: ${normalizedSpawn}`)
@@ -118,7 +120,7 @@ const switchWorldInner = async (normalizedSpawn: WorldSpawnInner) => {
     switch (normalizedSpawn.name) {
       case 'elevride':
         return normalizedSpawn.floor
-      case 'isle':
+      case 'act1':
         return normalizedSpawn.spawn
       default:
         return undefined

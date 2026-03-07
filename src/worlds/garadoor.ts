@@ -11,7 +11,6 @@ export class GarDoor extends Isle {
 
   constructor() {
     super('garadoor')
-    this._playerMovement.canMove = false
   }
 
   public override async init(): Promise<void> {

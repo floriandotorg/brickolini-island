@@ -28,7 +28,7 @@ const start = async () => {
   const world = (getURLParam('world') ?? ('infomain' satisfies WorldName)) as WorldName
   const spawn: WorldSpawn = (() => {
     switch (world) {
-      case 'isle': {
+      case 'act1': {
         const spawnParam = getURLParam('spawn')
         const spawnLocation: SpawnLocation = spawnParam != null && isSpawnLocation(spawnParam) ? spawnParam : 'pizzeriaExterior'
         return { spawn: spawnLocation }

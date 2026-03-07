@@ -87,7 +87,8 @@ import { TRS302_OpenJailDoor } from '../../../actions/sndanim'
 import { type AnimationAction, isPlayableAnimationAction, isRunAnimationAction, type RunAnimationAction } from '../../../lib/action-types'
 import { engine, type Timeout } from '../../../lib/engine'
 import type { PlayerCharacter } from '../../../lib/save-game'
-import { Isle } from '../../../worlds/isle'
+import { Act1 } from '../../../worlds/act1'
+import { switchWorld } from '../../switch-world'
 import { Actor } from '../actor'
 import { Skateboard } from './skateboard'
 
@@ -150,15 +151,15 @@ export class Pizzeria extends Actor {
     return this._missionState.state !== 'not-started'
   }
 
-  private get isle(): Isle {
-    if (!(this._isle instanceof Isle)) {
-      throw new Error('Isle is not a Isle')
+  private get act1(): Act1 {
+    if (!(this._isle instanceof Act1)) {
+      throw new Error('Act1 is not a Act1')
     }
     return this._isle
   }
 
   public override async init(): Promise<void> {
-    this.isle.boundaryManager.onTrigger((name, data, _direction, roi) => {
+    this.act1.boundaryManager.onTrigger((name, data, _direction, roi) => {
       if (roi != null) {
         return
       }
@@ -169,12 +170,12 @@ export class Pizzeria extends Actor {
 
       if (name[2] === 'W' && data === 0x15e && engine.currentSaveGame.player === 'pepper' && !this._playedLocationAnimation) {
         this._playedLocationAnimation = true
-        void this.isle.playAnimation(pns050p1_RunAnim)
+        void this.act1.playAnimation(pns050p1_RunAnim)
         return
       }
       if (name[2] === 'W' && data === 0x15f && engine.currentSaveGame.player === 'papa' && !this._playedLocationAnimation) {
         this._playedLocationAnimation = true
-        void this.isle.playAnimation(wns050p1_RunAnim)
+        void this.act1.playAnimation(wns050p1_RunAnim)
         return true
       }
       if (
@@ -217,44 +218,45 @@ export class Pizzeria extends Actor {
           if (!isRunAnimationAction(animation)) {
             throw new Error('Action is not a run animation action')
           }
-          void this.isle.playCameraAnimation(animation).then(() => {
-            this.isle.skipAllRunningAnimations(true)
+          void this.act1.playCameraAnimation(animation).then(() => {
+            this.act1.skipAllRunningAnimations(true)
           })
 
           this._missionState = { state: 'arrived-at-destination', removePizzaTimeout: engine.createTimeout(millisecondsUntilRemovePizza) }
         } else {
-          void this.isle.playAnimation(TRS302_OpenJailDoor).then(() => {
+          void this.act1.playAnimation(TRS302_OpenJailDoor).then(() => {
             if (engine.currentSaveGame.getVehiclePlacement('helicopter') == null) {
               switch (this._pepperBroughtPizzaWithoutHelicopterCount) {
                 case 0:
                   ++this._pepperBroughtPizzaWithoutHelicopterCount
-                  void this.isle.playCameraAnimation(pja126br_RunAnim).then(() => {
+                  void this.act1.playCameraAnimation(pja126br_RunAnim).then(() => {
                     this._missionState = { state: 'arrived-at-destination', removePizzaTimeout: engine.createTimeout(700) }
-                    void this.isle.playCameraAnimation(pja127br_RunAnim).then(() => {
-                      this.isle.skipAllRunningAnimations(true)
+                    void this.act1.playCameraAnimation(pja127br_RunAnim).then(() => {
+                      this.act1.skipAllRunningAnimations(true)
                     })
                   })
                   break
                 case 1:
                   ++this._pepperBroughtPizzaWithoutHelicopterCount
                   this._missionState = { state: 'arrived-at-destination', removePizzaTimeout: engine.createTimeout(500) }
-                  void this.isle.playCameraAnimation(pja129br_RunAnim).then(() => {
-                    void this.isle.playCameraAnimation(pja130br_RunAnim).then(() => {
-                      this.isle.skipAllRunningAnimations(true)
+                  void this.act1.playCameraAnimation(pja129br_RunAnim).then(() => {
+                    void this.act1.playCameraAnimation(pja130br_RunAnim).then(() => {
+                      this.act1.skipAllRunningAnimations(true)
                     })
                   })
                   break
                 case 2:
                   this._missionState = { state: 'arrived-at-destination', removePizzaTimeout: engine.createTimeout(500) }
-                  void this.isle.playCameraAnimation(pja131br_RunAnim).then(() => {
-                    this.isle.skipAllRunningAnimations(true)
+                  void this.act1.playCameraAnimation(pja131br_RunAnim).then(() => {
+                    this.act1.skipAllRunningAnimations(true)
                   })
                   break
               }
             } else {
               this._missionState = { state: 'arrived-at-destination', removePizzaTimeout: engine.createTimeout(2_300) }
-              void this.isle.playCameraAnimation(pja132br_RunAnim).then(() => {
-                this.isle.skipAllRunningAnimations(true)
+              void this.act1.playCameraAnimation(pja132br_RunAnim).then(() => {
+                this.act1.skipAllRunningAnimations(true)
+                void switchWorld('act2')
               })
             }
           })
@@ -269,18 +271,18 @@ export class Pizzeria extends Actor {
 
   private _reset(): void {
     this._missionState = { state: 'not-started' }
-    const skateboard = this.isle.getRoi('skate').actor
+    const skateboard = this.act1.getRoi('skate').actor
     if (!(skateboard instanceof Skateboard)) {
       throw new Error('Skateboard is not a Skateboard')
     }
     skateboard.showPizza = false
-    this.isle.cameraAnimationTriggerEnabled = true
-    this.isle.backgroundMusicTriggerEnabled = true
+    this.act1.cameraAnimationTriggerEnabled = true
+    this.act1.backgroundMusicTriggerEnabled = true
     this._playedLocationAnimation = false
   }
 
   public abort(): void {
-    this.isle.skipAllRunningAnimations(true)
+    this.act1.skipAllRunningAnimations(true)
     this._reset()
   }
 
@@ -289,7 +291,7 @@ export class Pizzeria extends Actor {
       return false
     }
 
-    this.isle.skipAllRunningAnimations(true)
+    this.act1.skipAllRunningAnimations(true)
 
     this._missionState = { state: 'introduction' }
 
@@ -297,7 +299,7 @@ export class Pizzeria extends Actor {
     const action = actions[this.playerState[engine.currentSaveGame.player]]
     this.playerState[engine.currentSaveGame.player] = Math.min(this.playerState[engine.currentSaveGame.player] + 1, actions.length - 1)
 
-    void this.isle.playCameraAnimation(action).then(() => {
+    void this.act1.playCameraAnimation(action).then(() => {
       if (this._missionState.state === 'introduction') {
         this._missionState = { state: 'waiting-for-accept-quest', timeout: engine.createTimeout(5_000) }
       }
@@ -316,13 +318,13 @@ export class Pizzeria extends Actor {
         throw new Error('Action is not a run animation action')
       }
 
-      this.isle.skipAllRunningAnimations(true)
+      this.act1.skipAllRunningAnimations(true)
       void engine.switchBackgroundMusic(PizzaMission_Music)
-      void this.isle.playCameraAnimation(action).then(() => {
-        this.isle.cameraAnimationTriggerEnabled = false
-        this.isle.backgroundMusicTriggerEnabled = false
-        this.isle.placeVehicle('skate', 'INT37', 2, 0.5, 3, 0.5, true)
-        const skateboard = this.isle.getRoi('skate').actor
+      void this.act1.playCameraAnimation(action).then(() => {
+        this.act1.cameraAnimationTriggerEnabled = false
+        this.act1.backgroundMusicTriggerEnabled = false
+        this.act1.placeVehicle('skate', 'INT37', 2, 0.5, 3, 0.5, true)
+        const skateboard = this.act1.getRoi('skate').actor
         if (!(skateboard instanceof Skateboard)) {
           throw new Error('Skateboard is not a Skateboard')
         }
@@ -335,7 +337,7 @@ export class Pizzeria extends Actor {
             console.log(action)
             throw new Error('Action is not an animation action')
           }
-          void this.isle.playAnimation(action)
+          void this.act1.playAnimation(action)
         }
       })
     }
@@ -348,7 +350,7 @@ export class Pizzeria extends Actor {
       if (!isRunAnimationAction(action)) {
         throw new Error('Action is not a run animation action')
       }
-      void this.isle.playCameraAnimation(action).then(() => {
+      void this.act1.playCameraAnimation(action).then(() => {
         this.abort()
       })
     }

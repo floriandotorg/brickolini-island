@@ -11,7 +11,6 @@ export class PoliDoor extends Isle {
 
   constructor() {
     super('polidoor')
-    this._playerMovement.canMove = false
   }
 
   public override async init(): Promise<void> {

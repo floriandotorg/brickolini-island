@@ -3,7 +3,6 @@ import type { RunAnimationAction } from '../../action-types'
 import { engine } from '../../engine'
 import { Actor } from '../actor'
 import type { Vehicle as DashboardVehicle, VehicleType } from '../dashboard'
-import { Pizzeria } from './pizzeria'
 
 export abstract class Vehicle extends Actor {
   public abstract readonly type: VehicleType
@@ -33,10 +32,9 @@ export abstract class Vehicle extends Actor {
     this._isle.currentVehicle = null
 
     const pizzeria = this._isle.getRoi('pizza').actor
-    if (!(pizzeria instanceof Pizzeria)) {
-      throw new Error('Pizzeria is not a Pizzeria')
+    if (pizzeria != null && 'abort' in pizzeria && typeof pizzeria.abort === 'function') {
+      pizzeria.abort()
     }
-    pizzeria.abort()
   }
 
   public async enter(): Promise<void> {

@@ -7,7 +7,7 @@ import { DuneBugy_Model } from '../actions/dunecar'
 import { NoPizaz_Texture, NoPizza_Texture } from '../actions/isle'
 import { Jsuser_Model } from '../actions/jetski'
 import { Rcuser_Model } from '../actions/racecar'
-import { type ActionBase, type ActorAction, type AnimationAction, type EntityAction, getExtraValue, isActorAction, isAnimationAction, isBoundaryAction, isEntityAction, isPositionalAudioAction, type ModelAction, type SerialAction } from '../lib/action-types'
+import { type ActionBase, type ActorAction, type AnimationAction, type EntityAction, getExtraValue, isActorAction, isAnimationAction, isBoundaryAction, isEntityAction, isPositionalAudioAction, type ModelAction, type RunAnimationAction, type SerialAction } from '../lib/action-types'
 import { type Boundary, type Edge, getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
@@ -16,6 +16,7 @@ import { getSpawnLocation, type SpawnLocation } from '../lib/assets/spawn-locati
 import { createTexture } from '../lib/assets/texture'
 import type { Composer } from '../lib/effect/composer'
 import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
+import { type Location, locations } from '../lib/locations'
 import { applyLights, NUM_ORIGINAL_LIGHTS } from '../lib/original-lights'
 import { getSettings } from '../lib/settings'
 import { type Actor, ColliderType } from '../lib/world/actor'
@@ -25,6 +26,7 @@ import type { Character, CharacterName } from '../lib/world/character'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
 import type { Entity } from '../lib/world/entity'
 import { Plants } from '../lib/world/plants'
+import type { PlayerMovement } from '../lib/world/player-movement'
 import { World, type WorldName } from '../lib/world/world'
 
 export type IsleParam = {
@@ -99,6 +101,7 @@ export abstract class IsleBase extends World {
   private readonly _dtaWorldName: DtaWorldName | null
   private _currentVehicle: Vehicle | null = null
   private _cachedAnimations = new Map<string, AnimationAction>()
+  protected _cameraAnimationPlaying = false
 
   public get currentVehicle(): Vehicle | null {
     return this._currentVehicle
@@ -330,34 +333,6 @@ export abstract class IsleBase extends World {
     super.activate(composer, _param)
 
     this._dashboard.activate(composer)
-
-    this._bikeRoi = this.findRoi('bike')
-    this._motobkRoi = this.findRoi('motobk')
-    this._skateRoi = this.findRoi('skate')
-    this._ambulanceRoi = this.findRoi('ambul')
-    this._towtruckRoi = this.findRoi('towtk')
-
-    const mama = await this.getActor('mama')
-    const mamaPlacement = this.boundaryManager.getObjectPlacement('USR00_47', 1, 0.43, 3, 0.84)
-    mama.moveRoiTo(mamaPlacement.position, mamaPlacement.quaternion)
-
-    const papa = await this.getActor('papa')
-    const papaPlacement = this.boundaryManager.getObjectPlacement('USR00_193', 3, 0.55, 1, 0.4)
-    papa.moveRoiTo(papaPlacement.position, papaPlacement.quaternion)
-
-    const brickstr = await this.getActor('brickstr')
-    const brickstrPlacement = this.boundaryManager.getObjectPlacement('EDG02_95', 1, 0.5, 3, 0.5)
-    brickstr.moveRoiTo(brickstrPlacement.position, brickstrPlacement.quaternion)
-
-    if (this._bikeRoi != null) {
-      this.placeVehicle('bike', 'INT44', 2, 0.5, 0, 0.5)
-    }
-    if (this._motobkRoi != null) {
-      this.placeVehicle('moto', 'INT43', 4, 0.5, 1, 0.5)
-    }
-    if (this._skateRoi != null) {
-      this.placeVehicle('skate', 'EDG02_84', 4, 0.5, 0, 0.5)
-    }
 
     const noPizzaSign = this.scene.getObjectByName('nopizza')?.children[0]
     if (noPizzaSign == null || !(noPizzaSign instanceof THREE.Mesh)) {
@@ -601,6 +576,63 @@ export abstract class IsleBase extends World {
         this.addClickListener(entity.roi, async () => await entity.onClick())
       }
     }
+  }
+
+  protected get playerMovement(): PlayerMovement | null {
+    return null
+  }
+
+  public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location): Promise<void> {
+    if (animationInfo == null) {
+      animationInfo = this.animationInfos.find(a => a.objectId === action.id)
+      if (animationInfo == null) {
+        throw new Error(`Animation info not found for action ${action.name}`)
+      }
+      location = locations.at(animationInfo.location)
+    }
+
+    this.playerMovement?.resetVelocities()
+
+    this._cameraAnimationPlaying = true
+    ++animationInfo.numPlayed
+    if (location != null) {
+      location.animationPlayedAtLocation = true
+    }
+    const extraTracks = (() => {
+      if (location == null || !animationInfo.hasCameraAnimation) {
+        return undefined
+      }
+      const matrix = calculateTransformationMatrix(location.position, location.direction, location.up)
+      const position = new THREE.Vector3()
+      const quaternion = new THREE.Quaternion()
+      matrix.decompose(position, quaternion, new THREE.Vector3())
+      // for some reason we need to rotate yaw by 180 degrees
+      const rotationQuaternion = new THREE.Quaternion()
+      rotationQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
+      quaternion.premultiply(rotationQuaternion)
+      quaternion.normalize()
+      const cameraQuaternion = new THREE.Quaternion()
+      cameraQuaternion.copy(this.camera.quaternion)
+      cameraQuaternion.normalize()
+      // ensure shortest path
+      if (cameraQuaternion.dot(quaternion) < 0) {
+        quaternion.x *= -1
+        quaternion.y *= -1
+        quaternion.z *= -1
+        quaternion.w *= -1
+      }
+      return [
+        new THREE.VectorKeyframeTrack('camera.position', [0, 1], [this.camera.position.x, this.camera.position.y, this.camera.position.z, position.x, position.y, position.z]),
+        new THREE.QuaternionKeyframeTrack('camera.quaternion', [0, 1], [this.camera.quaternion.x, this.camera.quaternion.y, this.camera.quaternion.z, this.camera.quaternion.w, quaternion.x, quaternion.y, quaternion.z, quaternion.w]),
+      ]
+    })()
+    return this.playAnimation(action, {
+      extraTracks,
+      unskippable: extraTracks != null,
+      lockCamera: extraTracks != null,
+    }).then(() => {
+      this._cameraAnimationPlaying = false
+    })
   }
 
   public async handleActorAction(action: ActorAction): Promise<Actor | null> {
