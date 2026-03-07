@@ -155,10 +155,6 @@ class Engine {
     throw new Error('Invalid player character')
   }
 
-  public get hasBuiltHelicopter(): boolean {
-    return false
-  }
-
   public get currentSaveGame(): SaveGame {
     return this._currentSaveGame
   }

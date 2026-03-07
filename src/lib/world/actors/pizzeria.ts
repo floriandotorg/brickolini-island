@@ -168,7 +168,6 @@ export class Pizzeria extends Actor {
       }
 
       if (name[2] === 'W' && data === 0x15e && engine.currentSaveGame.player === 'pepper' && !this._playedLocationAnimation) {
-        console.log('pepper location animation')
         this._playedLocationAnimation = true
         void this.isle.playAnimation(pns050p1_RunAnim)
         return
@@ -225,7 +224,7 @@ export class Pizzeria extends Actor {
           this._missionState = { state: 'arrived-at-destination', removePizzaTimeout: engine.createTimeout(millisecondsUntilRemovePizza) }
         } else {
           void this.isle.playAnimation(TRS302_OpenJailDoor).then(() => {
-            if (!engine.hasBuiltHelicopter) {
+            if (engine.currentSaveGame.getVehiclePlacement('helicopter') == null) {
               switch (this._pepperBroughtPizzaWithoutHelicopterCount) {
                 case 0:
                   ++this._pepperBroughtPizzaWithoutHelicopterCount
