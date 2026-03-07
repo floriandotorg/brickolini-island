@@ -195,12 +195,17 @@ class Engine {
       return
     }
 
-    this._backgroundAudio.audio.gain.setTargetAtTime(0, this._audioListener.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
-    this._backgroundAudio.audio.stop(this._audioListener.context.currentTime + BACKGROUND_MUSIC_FADE_TIME)
+    const now = this._audioListener.context.currentTime
+    const fadeEnd = now + BACKGROUND_MUSIC_FADE_TIME
+
+    this._backgroundAudio.audio.gain.cancelScheduledValues(now)
+    this._backgroundAudio.audio.gain.setValueAtTime(this._backgroundAudio.audio.gain.value, now)
+    this._backgroundAudio.audio.gain.linearRampToValueAtTime(0, fadeEnd)
+    this._backgroundAudio.audio.stop(BACKGROUND_MUSIC_FADE_TIME)
 
     this._backgroundAudio = { actionId: action.id, audio }
-    this._backgroundAudio.audio.gain.value = 0
-    this._backgroundAudio.audio.gain.setTargetAtTime(sourceVolume, this._audioListener.context.currentTime, BACKGROUND_MUSIC_FADE_TIME / 3)
+    this._backgroundAudio.audio.gain.setValueAtTime(0, now)
+    this._backgroundAudio.audio.gain.linearRampToValueAtTime(sourceVolume, fadeEnd)
     this._backgroundAudio.audio.play()
   }
 

@@ -8,12 +8,21 @@ export class Audio {
   private readonly _action: AudioAction
   private readonly _audio: THREE.Audio<GainNode>
 
-  public constructor(action: AudioAction, audio: THREE.Audio<GainNode>) {
+  public constructor(action: AudioAction, audio: THREE.Audio<GainNode>, gains: GainNode[] = []) {
     this._action = action
     this._audio = audio
     this._audio.gain.gain.value = action.volume / 100
     this._audio.setLoop(action.loops > 1)
     this._audio.onEnded = () => this.onEnded()
+
+    if (gains.length > 0) {
+      this._audio.gain.disconnect()
+      this._audio.gain.connect(gains[0])
+      for (let n = 1; n < gains.length; ++n) {
+        gains[n - 1].connect(gains[n])
+      }
+      gains[gains.length - 1].connect(audio.listener.getInput())
+    }
   }
 
   public get gain(): AudioParam {
@@ -51,8 +60,7 @@ export class Audio {
 export const getAudio = async (listener: THREE.AudioListener, action: AudioAction, gains: GainNode[]): Promise<Audio> => {
   const audio = new THREE.Audio(listener)
   audio.setBuffer(await audioLoader.loadAsync(getActionFileUrl(action)))
-  audio.setFilters(gains)
-  return new Audio(action, audio)
+  return new Audio(action, audio, gains)
 }
 
 export const getPositionalAudio = async (listener: THREE.AudioListener, action: PositionalAudioAction): Promise<THREE.PositionalAudio> => {

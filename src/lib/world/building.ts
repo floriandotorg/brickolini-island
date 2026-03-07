@@ -30,6 +30,7 @@ import { TransparentEdgeBlurEffect } from '../effect/transparent-edge-blur'
 import { engine } from '../engine'
 import { getSettings } from '../settings'
 import { switchWorld } from '../switch-world'
+import type { CharacterName } from './character'
 import type { NormalWorld, World, WorldSpawn } from './world'
 
 export class Building {
@@ -183,7 +184,7 @@ export class Building {
           throw new Error(`Invalid keys for actor ${child.children[0]} found`)
         }
         if (actorName != null) {
-          const actor = await this._world.getActor(actorName.toLowerCase())
+          const actor = await this._world.getActor(actorName.toLowerCase() as CharacterName)
           actor.visible = visibility?.toLowerCase() !== 'false'
         }
       }
