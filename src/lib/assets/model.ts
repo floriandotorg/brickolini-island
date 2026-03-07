@@ -387,6 +387,8 @@ const getPart = async (name: string, part: WDB.Part, color: WDB.Color | null, te
   const result = new Roi3D(new RoiModel(), name)
   const meshes: THREE.Mesh[] = []
   result.name = name.toLowerCase()
+  result.model.name = name.toLowerCase()
+  result.model.roi3d = result
   let n = 0
   for (const [geometry, material] of createGeometryAndMaterials(lod, color, texture, 'part')) {
     const mesh = new THREE.Mesh(geometry, material)
