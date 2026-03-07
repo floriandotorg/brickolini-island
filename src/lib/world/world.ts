@@ -337,10 +337,7 @@ export abstract class World {
         }
         case WDB.ActorType.ManagedInvisibleRoi: {
           const name = actor.name.slice(1)
-          const node = this.getRoi(name)?.clone()
-          if (node == null) {
-            throw new Error(`Actor not found: ${name} (ManagedInvisibleRoi)`)
-          }
+          const node = this.getRoi(name).clone()
           node.name = actor.name.toLowerCase()
           node.visible = false
           this.scene.add(node.model)
@@ -349,10 +346,7 @@ export abstract class World {
         }
         case WDB.ActorType.ManagedInvisibleRoiTrimmed: {
           const name = actor.name.slice(1).replace(/[0-9_]*$/, '')
-          const node = this.getRoi(name)?.clone()
-          if (node == null) {
-            throw new Error(`ROI not found: ${name} (ManagedInvisibleRoiTrimmed)`)
-          }
+          const node = this.getRoi(name).clone()
           node.name = actor.name.toLowerCase()
           node.visible = false
           this.scene.add(node.model)
@@ -362,10 +356,7 @@ export abstract class World {
         case WDB.ActorType.SceneRoi1:
         case WDB.ActorType.SceneRoi2: {
           const name = actor.name.replace(/[0-9_]*$/, '')
-          const node = (this.getRoi(name) ?? (await getGlobalPart(name, null, null)))?.clone()
-          if (node == null) {
-            throw new Error(`ROI not found: ${actor.name} (SceneRoi)`)
-          }
+          const node = (this.findRoi(name) ?? (await getGlobalPart(name, null, null))).clone()
           node.name = actor.name.toLowerCase()
           this.scene.add(node.model)
           addActorToList(actor.type, node)
