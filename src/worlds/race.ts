@@ -295,7 +295,7 @@ export abstract class Race extends IsleBase {
 
     this._raceMap.createSprites(imageActions)
 
-    this.boundaryManager.onTrigger = (name, data, direction, roi) => {
+    this.boundaryManager.onTrigger((name, data, direction, roi) => {
       console.log(`Boundary trigger: ${name}, ${data}, ${direction}, ${roi?.name}`)
 
       if (name[2] === 'D') {
@@ -322,7 +322,7 @@ export abstract class Race extends IsleBase {
       } else if (name[2] === 'E') {
         this.onEventEndWaypoint(data)
       }
-    }
+    })
 
     Race.setTopLeft(this._opponent1ProgressLocator, this._progressStart)
     this._controlsRender.scene.add(this._opponent1ProgressLocator)

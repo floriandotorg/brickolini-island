@@ -10,6 +10,7 @@ import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
 import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
 import type { Actor } from './actor'
+import { BoundaryManager } from './boundary-manager'
 import { Character } from './character'
 
 export type WorldName = 'isle' | 'hospital' | 'garage' | 'infomain' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevride' | 'elevopen' | 'seaview' | 'observe' | 'elevdown' | 'carrace' // jetrace
@@ -88,6 +89,11 @@ export abstract class World {
   private _runningAudios: Audio[] = []
   private _characters = new Map<string, { character: Character; refCount: number }>()
   private _worldGroup: THREE.Group | null = null
+  private _boundaryManager = new BoundaryManager(this)
+
+  public get boundaryManager(): BoundaryManager {
+    return this._boundaryManager
+  }
 
   constructor(public readonly name: WorldName) {
     const getElement = (id: string): HTMLElement => {
@@ -256,7 +262,8 @@ export abstract class World {
     return roi
   }
 
-  public registerActor(actor: Actor): void {
+  public async registerActor(actor: Actor): Promise<void> {
+    await actor.init()
     this._actors.add(actor)
     this.addClickListener(actor.roi, async () => await actor.onClick())
   }
@@ -267,7 +274,11 @@ export abstract class World {
 
   public async updateActors(delta: number, playerFrom: THREE.Vector3, playerTo: THREE.Vector3): Promise<void> {
     for (const actor of this._actors) {
-      const { from: actorFrom, to: actorTo } = actor.update(delta)
+      const result = actor.update(delta)
+      if (result == null) {
+        continue
+      }
+      const { from: actorFrom, to: actorTo } = result
       for (const actor of this._actors) {
         if (actor.checkCollision(actorFrom, actorTo)) {
           actor.onCollision(actorFrom, actorTo)
@@ -276,6 +287,7 @@ export abstract class World {
       if (actor.checkCollision(playerFrom, playerTo)) {
         actor.onCollision(playerFrom, playerTo)
       }
+      this.boundaryManager.update(actorFrom, actorTo, actor.roi)
     }
   }
 

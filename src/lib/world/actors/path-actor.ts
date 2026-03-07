@@ -120,8 +120,6 @@ export class PathActor extends Actor {
     const to = this._spline.getPointAt(distancedTraveledClamped)
     this.roi.moveRoiTo(to, quaternion)
 
-    this._isle.boundaryManager.update(from, to, this.roi)
-
     if (this._distanceTraveled >= 1) {
       this._switchBoundary()
     }

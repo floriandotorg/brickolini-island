@@ -68,7 +68,7 @@ export class Door extends Actor {
     return this.getAngle() > 0
   }
 
-  public override update(delta: number): { from: THREE.Vector3; to: THREE.Vector3 } {
+  public override update(delta: number): { from: THREE.Vector3; to: THREE.Vector3 } | null {
     const result = super.update(delta)
 
     const angle = this.getAngle()

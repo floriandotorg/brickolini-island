@@ -4,7 +4,7 @@ import { Actor } from '../actor'
 export class RaceSkel extends Actor {
   private _animation = false
 
-  public override update(delta: number): { from: THREE.Vector3; to: THREE.Vector3 } {
+  public override update(delta: number): { from: THREE.Vector3; to: THREE.Vector3 } | null {
     const result = super.update(delta)
 
     if (!this._animation) {

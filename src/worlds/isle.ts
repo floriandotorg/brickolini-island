@@ -370,19 +370,18 @@ import {
   wrt076df_RunAnim,
   wrt078ni_RunAnim,
   wrt079bm_RunAnim,
-} from '../../actions/isle'
+} from '../actions/isle'
 // import { CNs001Pe, tns030bd_RunAnim } from '../actions/act2main'
-import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../../actions/jukebox'
-import type { AnimationAction, AudioAction, ParallelAction, PhonemeAction, PositionalAudioAction, RunAnimationAction } from '../../lib/action-types'
-import type { DTA } from '../../lib/assets/dta'
-import { calculateTransformationMatrix } from '../../lib/assets/model'
-import { createTexture } from '../../lib/assets/texture'
-import type { Composer } from '../../lib/effect/composer'
-import { engine, type NormalizedMouseEvent } from '../../lib/engine'
-import { type Location, locations } from '../../lib/locations'
-import { PlayerMovement } from '../../lib/world/player-movement'
-import { IsleBase, type IsleParam } from '../isle-base'
-import { PizzaMission } from './missions/pizza-mission'
+import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../actions/jukebox'
+import type { AnimationAction, AudioAction, ParallelAction, PhonemeAction, PositionalAudioAction, RunAnimationAction } from '../lib/action-types'
+import type { DTA } from '../lib/assets/dta'
+import { calculateTransformationMatrix } from '../lib/assets/model'
+import { createTexture } from '../lib/assets/texture'
+import type { Composer } from '../lib/effect/composer'
+import { engine, type NormalizedMouseEvent } from '../lib/engine'
+import { type Location, locations } from '../lib/locations'
+import { PlayerMovement } from '../lib/world/player-movement'
+import { IsleBase, type IsleParam } from './isle-base'
 
 const ANIMATIONS = [
   sba001bu_RunAnim,
@@ -771,7 +770,6 @@ export class Isle extends IsleBase {
   }> = []
 
   private _cameraAnimationPlaying = false
-  private readonly _pizzaMission = new PizzaMission(this)
 
   public backgroundMusicTriggerEnabled = true
 
@@ -784,7 +782,7 @@ export class Isle extends IsleBase {
 
     await this.handleStartUpAction(_Isle)
 
-    this.boundaryManager.onTrigger = (name, data, direction) => {
+    this.boundaryManager.onTrigger((name, data, direction) => {
       const music = [ResidentalArea_Music, BeachBlvd_Music, Cave_Music, CentralRoads_Music, Jail_Music, Hospital_Music, InformationCenter_Music, PoliceStation_Music, Park_Music, CentralNorthRoad_Music, GarageArea_Music, RaceTrackRoad_Music, Beach_Music, Quiet_Audio]
 
       const triggers: [number, number][] = [
@@ -813,10 +811,6 @@ export class Isle extends IsleBase {
         [14, 2],
         [14, 2],
       ]
-
-      if (this._pizzaMission.handleTrigger(name[2], data)) {
-        return
-      }
 
       if (name[2] === 'M' && this.backgroundMusicTriggerEnabled) {
         if (direction === 'inbound') {
@@ -873,7 +867,7 @@ export class Isle extends IsleBase {
           }
         }
       }
-    }
+    })
 
     const isle = this.scene.getObjectByName('isle_hi')
     if (isle == null || !(isle instanceof THREE.Object3D)) {
@@ -881,7 +875,7 @@ export class Isle extends IsleBase {
     }
     this._isleMesh = isle
 
-    await this._pizzaMission.init()
+    // await this._pizzaMission.init()
 
     this._dashboard.onExit = () => {
       this.currentVehicle?.exit()
@@ -1013,7 +1007,7 @@ export class Isle extends IsleBase {
   public override update(delta: number): void {
     super.update(delta)
 
-    this._pizzaMission.update()
+    // this._pizzaMission.update()
 
     if (this._water != null) {
       this._water.material.uniforms.time.value += delta * 0.1

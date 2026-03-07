@@ -6,7 +6,7 @@ import { Chptr_Model } from '../actions/copter'
 import { DuneBugy_Model } from '../actions/dunecar'
 import { Jsuser_Model } from '../actions/jetski'
 import { Rcuser_Model } from '../actions/racecar'
-import { type ActionBase, type ActorAction, type AnimationAction, type BoundaryAction, type EntityAction, getExtraValue, isActorAction, isAnimationAction, isBoundaryAction, isEntityAction, isPositionalAudioAction, type ModelAction, type SerialAction } from '../lib/action-types'
+import { type ActionBase, type ActorAction, type AnimationAction, type EntityAction, getExtraValue, isActorAction, isAnimationAction, isBoundaryAction, isEntityAction, isPositionalAudioAction, type ModelAction, type SerialAction } from '../lib/action-types'
 import { type Boundary, type Edge, getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
@@ -19,7 +19,6 @@ import { getSettings } from '../lib/settings'
 import { type Actor, ColliderType } from '../lib/world/actor'
 import { PathActor } from '../lib/world/actors/path-actor'
 import type { Vehicle } from '../lib/world/actors/vehicle'
-import { BoundaryManager } from '../lib/world/boundary-manager'
 import type { Character } from '../lib/world/character'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
 import type { Entity } from '../lib/world/entity'
@@ -68,7 +67,6 @@ export const CAR_BUILD_VEHICLES: { readonly type: CarBuildVehicleType; readonly 
 export abstract class IsleBase extends World {
   protected _groundGroup: THREE.Object3D[] = []
   protected _plantGroup: THREE.Group = new THREE.Group()
-  private _boundaryManager: BoundaryManager | null = null
   protected _dashboard = new Dashboard()
   protected _sun:
     | {
@@ -122,13 +120,6 @@ export abstract class IsleBase extends World {
     return this._animationInfos
   }
 
-  public get boundaryManager(): BoundaryManager {
-    if (this._boundaryManager == null) {
-      throw new Error('Boundary manager not initialized')
-    }
-    return this._boundaryManager
-  }
-
   constructor(
     name: WorldName,
     {
@@ -144,14 +135,6 @@ export abstract class IsleBase extends World {
     this._dtaWorldName = dtaWorldName ?? null
   }
 
-  protected async loadBoundaries(action: BoundaryAction): Promise<void> {
-    if (this._boundaryManager != null) {
-      throw new Error('Boundaries already loaded')
-    }
-
-    this._boundaryManager = new BoundaryManager(await getBoundaries(action), this)
-  }
-
   protected async handleStartUpAction(action: SerialAction<ActionBase>, cb: ((child: ActionBase) => Promise<boolean>) | null = null): Promise<void> {
     for (const child of action.children) {
       if (cb != null && (await cb(child))) {
@@ -159,7 +142,7 @@ export abstract class IsleBase extends World {
       }
 
       if (isBoundaryAction(child)) {
-        await this.loadBoundaries(child)
+        this.boundaryManager.loadBoundaries(await getBoundaries(child))
       } else if (isActorAction(child)) {
         await this.handleActorAction(child)
       } else if (isEntityAction(child)) {
@@ -382,7 +365,7 @@ export abstract class IsleBase extends World {
           this.scene.add(roi)
         }
         const actor = await createActor(rootRoi, this)
-        this.registerActor(actor)
+        await this.registerActor(actor)
         this._buildMeshes.set(type, actor)
         rootRoi.moveRoiTo(placement.position, placement.quaternion)
         engine.currentSaveGame.setVehiclePlacement(type, placement)
@@ -714,6 +697,12 @@ export abstract class IsleBase extends World {
       case 'RaceSkel':
         actor = new (await import('../lib/world/actors/race-skel')).RaceSkel(model, this)
         break
+      case 'Pizzeria':
+        actor = new (await import('../lib/world/actors/pizzeria')).Pizzeria(model, this)
+        break
+      case 'Pizza':
+        actor = new (await import('../lib/world/actors/pizza')).Pizza(model, this)
+        break
       default:
         console.warn(`Object script for actor not supported: ${objectScript}`)
         return null
@@ -749,7 +738,7 @@ export abstract class IsleBase extends World {
       }
     }
 
-    this.registerActor(actor)
+    await this.registerActor(actor)
     return actor
   }
 

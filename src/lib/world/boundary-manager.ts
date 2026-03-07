@@ -12,30 +12,36 @@ const flagsColor = (edge: { flags: number }): string => {
 }
 
 export class BoundaryManager {
-  private _boundaries: Boundary[]
+  private _boundaries: Boundary[] = []
   private _meshToBoundary = new Map<THREE.Mesh, { boundary: Boundary; debugMesh: THREE.Mesh }>()
   private _wallGroup = new THREE.Group()
   private _boundaryGroup = new THREE.Group()
   private _currentBoundary: Boundary | null = null
 
-  public onTrigger: (name: string, data: number, direction: 'inbound' | 'outbound', roi: Roi3D | null) => void = () => {}
+  private _triggerListeners: Array<(name: string, data: number, direction: 'inbound' | 'outbound', roi: Roi3D | null) => void> = []
 
-  constructor(boundaries: Boundary[], world: World) {
+  public onTrigger(listener: (name: string, data: number, direction: 'inbound' | 'outbound', roi: Roi3D | null) => void): void {
+    this._triggerListeners.push(listener)
+  }
+
+  constructor(private readonly _world: World) {}
+
+  public loadBoundaries(boundaries: Boundary[]): void {
     this._boundaries = boundaries
 
     for (const boundary of this._boundaries) {
       const mesh = boundary.createMesh()
       const debugMesh = mesh.clone()
       debugMesh.position.y += 0.01
-      world.debugDrawDebugMesh(debugMesh, flagsColor(boundary))
+      this._world.debugDrawDebugMesh(debugMesh, flagsColor(boundary))
       this._boundaryGroup.add(mesh)
       this._meshToBoundary.set(mesh, { boundary, debugMesh })
 
-      world.debugDrawText(boundary.edges[0].pointA.clone().add(new THREE.Vector3(1, 1, 1)), boundary.name, 'white')
+      this._world.debugDrawText(boundary.edges[0].pointA.clone().add(new THREE.Vector3(1, 1, 1)), boundary.name, 'white')
 
       for (let n = 0; n < boundary.edges.length; ++n) {
         const edge = boundary.edges[n]
-        world.debugDrawArrow(edge.pointA, edge.pointB, flagsColor(edge))
+        this._world.debugDrawArrow(edge.pointA, edge.pointB, flagsColor(edge))
 
         if (!(edge.flags & 0x03)) {
           const p0 = edge.pointA.clone().sub(new THREE.Vector3(0, 1, 0))
@@ -117,11 +123,15 @@ export class BoundaryManager {
 
       for (const trigger of this._currentBoundary.triggers) {
         if (dot2 > dot1 && trigger.triggerProjection >= dot1 && trigger.triggerProjection < dot2) {
-          this.onTrigger(trigger.struct.name, trigger.data, 'inbound', roi)
+          for (const listener of this._triggerListeners) {
+            listener(trigger.struct.name, trigger.data, 'inbound', roi)
+          }
         }
 
         if (dot2 < dot1 && trigger.triggerProjection >= dot2 && trigger.triggerProjection < dot1) {
-          this.onTrigger(trigger.struct.name, trigger.data, 'outbound', roi)
+          for (const listener of this._triggerListeners) {
+            listener(trigger.struct.name, trigger.data, 'outbound', roi)
+          }
         }
       }
     }
