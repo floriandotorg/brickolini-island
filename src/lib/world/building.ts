@@ -1,6 +1,23 @@
 import * as THREE from 'three'
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator.js'
-import { type ActionBase, type ActorAction, type AnimationAction, type AudioAction, type ControlAction, type EntityAction, getExtraValue, type ImageAction, isActorAction, isAnimationAction, isControlAction, isImageAction, type ParallelAction, type RunAnimationAction, type SerialAction } from '../action-types'
+import {
+  type ActionBase,
+  type ActorAction,
+  type AnimationAction,
+  type AudioAction,
+  type ControlAction,
+  type EntityAction,
+  getExtraValue,
+  getExtraValues,
+  type ImageAction,
+  isActorAction,
+  isAnimationAction,
+  isControlAction,
+  isImageAction,
+  type ParallelAction,
+  type RunAnimationAction,
+  type SerialAction,
+} from '../action-types'
 import { parse3DAnimation } from '../assets/animation'
 import { createImageSprite } from '../assets/canvas-sprite'
 import { type Control, type ControlEvent, ControlsCollection } from '../assets/control'
@@ -158,10 +175,17 @@ export class Building {
       }
 
       if (isActorAction(child)) {
-        const actorName = getExtraValue(child.children[0], 'AUTO_CREATE')
+        const extraValues = getExtraValues(child.children[0])
+        const actorName = extraValues.get('AUTO_CREATE')
+        extraValues.delete('AUTO_CREATE')
+        const visibility = extraValues.get('Visibility')
+        extraValues.delete('Visibility')
+        if (extraValues.size > 0) {
+          throw new Error(`Invalid keys for actor ${child.children[0]} found`)
+        }
         if (actorName != null) {
           const actor = await this._world.getActor(actorName.toLowerCase())
-          actor.visible = getExtraValue(child.children[0], 'Visibility')?.toLowerCase() !== 'false'
+          actor.visible = visibility?.toLowerCase() !== 'false'
         }
       }
     }
@@ -171,6 +195,16 @@ export class Building {
 
   public get scene(): THREE.Scene {
     return this._render.scene
+  }
+
+  public get exitAnimation(): RunAnimationAction | undefined {
+    return this._exitSpawnPoint?.animation
+  }
+
+  public set exitAnimation(value: RunAnimationAction | undefined) {
+    if (this._exitSpawnPoint != null) {
+      this._exitSpawnPoint.animation = value
+    }
   }
 
   public activate(composer: Composer): void {

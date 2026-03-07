@@ -88,17 +88,45 @@ export const isEntityAction = (action: unknown): action is EntityAction => isPar
 
 export const isBoundaryAction = (action: unknown): action is BoundaryAction => isFileAction(action) && action.type === Action.Type.ObjectAction && action.presenter === 'LegoPathPresenter'
 
+function* generateExtraValues(action: { extra: string | null }): Generator<[string, string]> {
+  if (action.extra == null) {
+    return
+  }
+
+  for (const part of action.extra.split(/[, \t\r\n]+/)) {
+    const delim = part.indexOf(':')
+    const partKey = delim > 0 ? part.slice(0, delim) : part
+    const partValue = delim < 0 ? '' : part.slice(delim + 1)
+
+    yield [partKey.toLowerCase(), partValue]
+  }
+}
+
+export type ExtraValues = {
+  get(key: string): string | undefined
+  delete(key: string): void
+  get size(): number
+}
+
+export const getExtraValues = (action: { extra: string | null }): ExtraValues => {
+  const mapping = new Map(generateExtraValues(action))
+  return {
+    get(key: string): string | undefined {
+      return mapping.get(key.toLowerCase())
+    },
+    delete(key: string): void {
+      mapping.delete(key.toLowerCase())
+    },
+    get size(): number {
+      return mapping.size
+    },
+  }
+}
+
 export const getExtraValue = (action: { extra: string | null }, key: string): string | undefined => {
-  if (action.extra != null) {
-    for (const part of action.extra.split(/[, \t\r\n]+/)) {
-      const delim = part.indexOf(':')
-      const partKey = delim > 0 ? part.slice(0, delim) : part
-      if (partKey.toLowerCase() === key.toLowerCase()) {
-        if (delim < 0) {
-          return ''
-        }
-        return part.slice(delim + 1)
-      }
+  for (const [partKey, partValue] of generateExtraValues(action)) {
+    if (partKey === key.toLowerCase()) {
+      return partValue
     }
   }
   return undefined
