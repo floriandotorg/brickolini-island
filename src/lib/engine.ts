@@ -401,6 +401,14 @@ class Engine {
       }
     })
 
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        this._audioListener.context.suspend()
+      } else {
+        this._audioListener.context.resume()
+      }
+    })
+
     window.addEventListener('resize', this._setRendererSize)
     this._setRendererSize()
 
