@@ -373,7 +373,7 @@ import {
 } from '../actions/isle'
 // import { CNs001Pe, tns030bd_RunAnim } from '../actions/act2main'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../actions/jukebox'
-import type { AnimationAction, AudioAction, ParallelAction, PhonemeAction, PositionalAudioAction, RunAnimationAction } from '../lib/action-types'
+import type { RunAnimationAction } from '../lib/action-types'
 import type { DTA } from '../lib/assets/dta'
 import { calculateTransformationMatrix } from '../lib/assets/model'
 import { createTexture } from '../lib/assets/texture'
@@ -767,7 +767,7 @@ export class Isle extends IsleBase {
   private _animationTrigger: Array<{
     center: THREE.Vector3
     radius: number
-    animation: ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction>
+    animation: RunAnimationAction
   }> = []
 
   private _cameraAnimationPlaying = false

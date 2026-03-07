@@ -271,15 +271,16 @@ export namespace Plants {
         const animationRoot = new THREE.Group()
         animationRoot.name = 'animation'
         mesh.add(animationRoot)
-        animationRoot.add((await getGlobalPart(partName(plantState.variant, plantState.color), null, null)).model)
+        const roi = await getGlobalPart(partName(plantState.variant, plantState.color), null, null)
+        animationRoot.add(roi.model)
         const animation = await getAnimation(
           animations[plantState.variant][plantState.animationIndex],
           new Map([
-            ['flwrred', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map() }],
-            ['flwgrn', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map() }],
-            ['tree', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map() }],
-            ['bush', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map() }],
-            ['palm', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map() }],
+            ['flwrred', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map(), roi }],
+            ['flwgrn', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map(), roi }],
+            ['tree', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map(), roi }],
+            ['bush', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map(), roi }],
+            ['palm', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map(), roi }],
           ]),
         )
         if (engine.currentSaveGame.player === 'laura') {

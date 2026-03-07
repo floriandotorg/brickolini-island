@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import type { AnimationAction } from '../action-types'
 import { BinaryReader } from './binary-reader'
 import { getAction } from './load'
+import type { Roi3D } from './model'
 import { WDB } from './wdb'
 
 export type TimeAndFlags = { time: number; flags: number }
@@ -63,7 +64,7 @@ export const getBeforeAndAfter = <T extends { timeAndFlags: { time: number } }>(
   return { before, after: keys[idx] }
 }
 
-export type AnimationActor = { type: WDB.ActorType; object: THREE.Object3D; children: Map<string, THREE.Object3D> }
+export type AnimationActor = { type: WDB.ActorType; object: THREE.Object3D; children: Map<string, THREE.Object3D>; roi: Roi3D }
 
 export const animationToTracks = (animation: Animation3DNode, actors: Map<string, AnimationActor>, baseTransform = new THREE.Matrix4()): THREE.KeyframeTrack[] => {
   const position = new THREE.Vector3()
@@ -277,7 +278,7 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
   return result
 }
 
-export const getAnimation = async (action: AnimationAction, actors: Map<string, { type: WDB.ActorType; object: THREE.Object3D; children: Map<string, THREE.Object3D> }>): Promise<THREE.AnimationClip> => {
+export const getAnimation = async (action: AnimationAction, actors: Map<string, AnimationActor>): Promise<THREE.AnimationClip> => {
   const animation = parse3DAnimation(await getAction(action))
   return new THREE.AnimationClip(action.name, -1, animationToTracks(animation.tree, actors))
 }

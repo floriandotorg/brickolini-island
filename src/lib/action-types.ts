@@ -24,7 +24,11 @@ export type SerialAction<T, P extends string | null = string | null> = Override<
 
 export type AnimationAction = Override<FileActionBase, { type: Action.Type.ObjectAction; presenter: (typeof animationPresenters)[number]; location: readonly [number, number, number]; direction: readonly [number, number, number]; up: readonly [number, number, number] }>
 
-export type RunAnimationAction = ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction>
+export type NestedAnimationAction = Override<ActionBase, { type: Action.Type.ObjectAction; presenter: null; children: readonly [AnimationAction] }>
+
+export type RunAnimationAction = ParallelAction<AnimationAction | PositionalAudioAction | PhonemeAction | AudioAction | PositionalAudioAction, null | 'LegoAnimMMPresenter'>
+
+export type PlayableAnimationAction = RunAnimationAction | NestedAnimationAction | AnimationAction
 
 export type BoundaryAction = Override<ActionBase, { presenter: 'LegoPathPresenter'; fileType: Action.FileType; location: readonly [number, number, number] }>
 
@@ -68,11 +72,16 @@ export const isPositionalAudioAction = (action: unknown): action is PositionalAu
 
 export const isAnimationAction = (action: unknown): action is AnimationAction => isAction(action) && isAnimationPresenter(action.presenter)
 
+export const isNestedAnimationAction = (action: unknown): action is AnimationAction => isAction(action) && action.presenter === null && 'children' in action && Array.isArray(action.children) && action.children.length === 1 && isAnimationAction(action.children[0])
+
 export const isPhonemeAction = (action: unknown): action is PhonemeAction => isAction(action) && action.type === Action.Type.Anim && action.presenter === 'LegoPhonemePresenter'
 
 export const isParallelAction = (action: unknown): action is ParallelAction<unknown> => isAction(action) && action.type === Action.Type.ParallelAction
 
-export const isRunAnimationAction = (action: unknown): action is RunAnimationAction => isParallelAction(action) && action.presenter === null && action.children.length > 0 && action.children.every(child => isAnimationAction(child) || isAudioAction(child) || isPhonemeAction(child) || isAudioAction(child))
+export const isRunAnimationAction = (action: unknown): action is RunAnimationAction =>
+  isParallelAction(action) && (action.presenter === null || action.presenter === 'LegoAnimMMPresenter') && action.children.length > 0 && action.children.every(child => isAnimationAction(child) || isAudioAction(child) || isPositionalAudioAction(child) || isPhonemeAction(child) || isAudioAction(child))
+
+export const isPlayableAnimationAction = (action: unknown): action is PlayableAnimationAction => isRunAnimationAction(action) || isNestedAnimationAction(action) || isAnimationAction(action)
 
 export const isControlAction = (action: unknown): action is ControlAction => isAction(action) && action.presenter === 'MxControlPresenter'
 

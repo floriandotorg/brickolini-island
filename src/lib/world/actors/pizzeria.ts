@@ -84,8 +84,7 @@ import {
 } from '../../../actions/isle'
 import { PizzaMission_Music } from '../../../actions/jukebox'
 import { TRS302_OpenJailDoor } from '../../../actions/sndanim'
-import { Action } from '../../../actions/types'
-import { type AnimationAction, isAnimationAction, type RunAnimationAction } from '../../../lib/action-types'
+import { type AnimationAction, isPlayableAnimationAction, isRunAnimationAction, type RunAnimationAction } from '../../../lib/action-types'
 import { engine, type Timeout } from '../../../lib/engine'
 import type { PlayerCharacter } from '../../../lib/save-game'
 import { Isle } from '../../../worlds/isle'
@@ -216,7 +215,7 @@ export class Pizzeria extends Actor {
             throw new Error('Invalid animation id')
           })()
 
-          if (animation.type === Action.Type.ObjectAction) {
+          if (!isRunAnimationAction(animation)) {
             throw new Error('Action is not a run animation action')
           }
           void this.isle.playCameraAnimation(animation).then(() => {
@@ -313,11 +312,8 @@ export class Pizzeria extends Actor {
       this._missionState = { state: 'delivering', helpAudioTimeout: engine.createTimeout(35_000), missionTimeout: engine.createTimeout(350_000) }
 
       const action = missionAnimations[engine.currentSaveGame.player][7 + this.playerState[engine.currentSaveGame.player]]
-      if (action == null) {
-        throw new Error('Action is null')
-      }
 
-      if (action.type === Action.Type.ObjectAction) {
+      if (!isRunAnimationAction(action)) {
         throw new Error('Action is not a run animation action')
       }
 
@@ -336,8 +332,9 @@ export class Pizzeria extends Actor {
         this._helpAudioPlayed = false
         for (let n = 0; n < 4; ++n) {
           const action = missionAnimations[engine.currentSaveGame.player][n]
-          if (action == null) {
-            throw new Error('Action is null')
+          if (!isPlayableAnimationAction(action)) {
+            console.log(action)
+            throw new Error('Action is not an animation action')
           }
           void this.isle.playAnimation(action)
         }
@@ -349,10 +346,10 @@ export class Pizzeria extends Actor {
     if (this._missionState.state === 'waiting-for-accept-quest' && this._missionState.timeout.isExpired) {
       this._missionState = { state: 'timeout-accept-quest' }
       const action = missionAnimations[engine.currentSaveGame.player][4 + 2]
-      if (!isAnimationAction(action)) {
+      if (!isRunAnimationAction(action)) {
         throw new Error('Action is not a run animation action')
       }
-      void this.isle.playAnimation(action).then(() => {
+      void this.isle.playCameraAnimation(action).then(() => {
         this.abort()
       })
     }
