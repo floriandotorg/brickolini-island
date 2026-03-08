@@ -159,6 +159,9 @@ export class Pizzeria extends Actor {
   }
 
   public override async init(): Promise<void> {
+    if (!(this._isle instanceof Act1)) {
+      return
+    }
     this.act1.boundaryManager.onTrigger((name, data, _direction, roi) => {
       if (roi != null) {
         return

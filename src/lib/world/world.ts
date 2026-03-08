@@ -96,7 +96,10 @@ export abstract class World {
     return this._boundaryManager
   }
 
-  constructor(public readonly name: WorldName) {
+  constructor(
+    public readonly name: WorldName,
+    public readonly ignoreEntityClick: boolean = false,
+  ) {
     const getElement = (id: string): HTMLElement => {
       const element = document.getElementById(id)
       if (element == null) {
@@ -266,7 +269,12 @@ export abstract class World {
   public async registerActor(actor: Actor): Promise<void> {
     await actor.init()
     this._actors.add(actor)
-    this.addClickListener(actor.roi, async () => await actor.onClick())
+    this.addClickListener(actor.roi, async () => {
+      if (!this.ignoreEntityClick) {
+        return await actor.onClick()
+      }
+      return false
+    })
   }
 
   public removeActor(actor: Actor): void {

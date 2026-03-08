@@ -9,7 +9,7 @@ import type { NormalizedMouseEvent } from '../../lib/engine'
 import { switchWorld } from '../../lib/switch-world'
 import { Building } from '../../lib/world/building'
 import { ElevatorEntrance } from '../../lib/world/world'
-import { IsleBase } from '../isle-base'
+import { Isle } from '../isle'
 
 enum Floor {
   First = 0,
@@ -17,13 +17,13 @@ enum Floor {
   Third = 2,
 }
 
-export class Elevator extends IsleBase {
+export class Elevator extends Isle {
   private readonly _building = new Building()
   private _meterSprite = new THREE.Sprite()
   private _floor = Floor.First
 
   constructor() {
-    super('elevride', { wdbWorldName: 'Isle' })
+    super('elevride', true)
   }
 
   public override async init(): Promise<void> {

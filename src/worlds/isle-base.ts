@@ -129,12 +129,14 @@ export abstract class IsleBase extends World {
     {
       wdbWorldName,
       dtaWorldName,
+      ignoreEntityClick,
     }: {
       wdbWorldName?: WdbWorldName
       dtaWorldName?: DtaWorldName
+      ignoreEntityClick?: boolean
     } = {},
   ) {
-    super(name)
+    super(name, ignoreEntityClick ?? false)
     this._wdbWorldName = wdbWorldName ?? null
     this._dtaWorldName = dtaWorldName ?? null
   }
@@ -666,7 +668,12 @@ export abstract class IsleBase extends World {
         break
     }
     if (entity != null) {
-      this.addClickListener(entity.roi, async () => await entity.onClick())
+      this.addClickListener(entity.roi, async () => {
+        if (!this.ignoreEntityClick) {
+          return await entity.onClick()
+        }
+        return false
+      })
     }
 
     let actor: Actor | null = null

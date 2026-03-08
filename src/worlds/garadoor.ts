@@ -1,4 +1,4 @@
-import { _Isle, GaraDoor as GaraDoor_StartUp } from '../actions/isle'
+import { GaraDoor as GaraDoor_StartUp } from '../actions/isle'
 import { GarageArea_Music } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
 import type { NormalizedMouseEvent } from '../lib/engine'
@@ -10,7 +10,7 @@ export class GarDoor extends Isle {
   private readonly _building = new Building()
 
   constructor() {
-    super('garadoor')
+    super('garadoor', true)
   }
 
   public override async init(): Promise<void> {
@@ -22,8 +22,6 @@ export class GarDoor extends Isle {
       backgroundMusic: GarageArea_Music,
       exitSpawnPoint: { spawn: 'garageExited' },
     })
-
-    this.handleStartUpAction(_Isle)
 
     this._building.onButtonClicked = buttonName => {
       switch (buttonName) {

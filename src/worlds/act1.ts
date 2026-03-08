@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import {
-  _Isle,
   bho142en_RunAnim,
   bic143sy_RunAnim,
   bjs009gd_RunAnim,
@@ -766,13 +765,11 @@ export class Act1 extends Isle {
   public backgroundMusicTriggerEnabled = true
 
   constructor() {
-    super('act1')
+    super('act1', false)
   }
 
   override async init(): Promise<void> {
     await super.init()
-
-    await this.handleStartUpAction(_Isle)
 
     this.boundaryManager.onTrigger((name, data, direction, roi) => {
       if (roi != null) {

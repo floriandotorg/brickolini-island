@@ -6,13 +6,13 @@ import type { NormalizedMouseEvent } from '../../lib/engine'
 import { switchWorld } from '../../lib/switch-world'
 import { Building } from '../../lib/world/building'
 import { ElevatorEntrance } from '../../lib/world/world'
-import { IsleBase } from '../isle-base'
+import { Isle } from '../isle'
 
-export class ElevDown extends IsleBase {
+export class ElevDown extends Isle {
   private readonly _building = new Building()
 
   constructor() {
-    super('elevdown', { wdbWorldName: 'Isle' })
+    super('elevdown', true)
   }
 
   public override async init(): Promise<void> {

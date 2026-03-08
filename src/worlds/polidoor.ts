@@ -10,7 +10,7 @@ export class PoliDoor extends Isle {
   private readonly _building = new Building()
 
   constructor() {
-    super('polidoor')
+    super('polidoor', true)
   }
 
   public override async init(): Promise<void> {

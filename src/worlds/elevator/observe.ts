@@ -6,14 +6,14 @@ import type { Composer } from '../../lib/effect/composer'
 import { engine, type NormalizedMouseEvent } from '../../lib/engine'
 import { switchWorld } from '../../lib/switch-world'
 import { Building } from '../../lib/world/building'
-import { IsleBase } from '../isle-base'
+import { Isle } from '../isle'
 
-export class Observe extends IsleBase {
+export class Observe extends Isle {
   private readonly _building = new Building()
   private readonly _globeSprites: THREE.Sprite[] = []
 
   constructor() {
-    super('observe', { wdbWorldName: 'Isle' })
+    super('observe', true)
 
     for (const imageAction of [Observe_Globe1_Bitmap, Observe_Globe2_Bitmap, Observe_Globe3_Bitmap, Observe_Globe4_Bitmap, Observe_Globe5_Bitmap, Observe_Globe6_Bitmap]) {
       const globeSprite = createImageSprite(imageAction)

@@ -5,13 +5,13 @@ import type { Composer } from '../../lib/effect/composer'
 import type { NormalizedMouseEvent } from '../../lib/engine'
 import { switchWorld } from '../../lib/switch-world'
 import { Building } from '../../lib/world/building'
-import { IsleBase } from '../isle-base'
+import { Isle } from '../isle'
 
-export class ElevOpen extends IsleBase {
+export class ElevOpen extends Isle {
   private readonly _building = new Building()
 
   constructor() {
-    super('elevopen', { wdbWorldName: 'Isle' })
+    super('elevopen', true)
   }
 
   public override async init(): Promise<void> {

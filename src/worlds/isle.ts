@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { _Isle } from '../actions/isle'
 import { getModel } from '../lib/assets/model'
 import { getSpawnLocation } from '../lib/assets/spawn-location'
 import type { Composer } from '../lib/effect/composer'
@@ -11,12 +12,14 @@ import { CAR_BUILD_VEHICLES, IsleBase } from './isle-base'
 export class Isle extends IsleBase {
   private _buildMeshes = new Map<VehicleType, Actor>()
 
-  constructor(worldName: WorldName) {
-    super(worldName, { wdbWorldName: 'ACT1', dtaWorldName: 'ACT1' })
+  constructor(worldName: WorldName, ignoreEntityClick: boolean) {
+    super(worldName, { wdbWorldName: 'ACT1', dtaWorldName: 'ACT1', ignoreEntityClick })
   }
 
   public override async init(): Promise<void> {
     await super.init()
+
+    await this.handleStartUpAction(_Isle)
 
     const isle = this.scene.getObjectByName('isle_hi')
     if (isle == null || !(isle instanceof THREE.Object3D)) {
