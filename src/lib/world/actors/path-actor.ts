@@ -98,6 +98,10 @@ export class PathActor extends Actor {
   public override update(delta: number): { from: THREE.Vector3; to: THREE.Vector3 } {
     super.update(delta)
 
+    if (this._speed <= 0) {
+      return { from: this.roi.position.clone(), to: this.roi.position.clone() }
+    }
+
     this.roi.visible = true
 
     if (this._spline == null) {

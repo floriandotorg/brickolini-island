@@ -5,13 +5,12 @@ import type { Roi3D } from '../assets/model'
 import { Entity } from './entity'
 
 export enum ColliderType {
-  None = 0,
   Sphere = 1,
   Box = 2,
 }
 
 export abstract class Actor extends Entity {
-  private _colliderType = ColliderType.None
+  private _colliderType = ColliderType.Sphere
   protected _animationActions: Map<number, AnimationAction> = new Map()
   protected _speed = 0
 
@@ -53,7 +52,10 @@ export abstract class Actor extends Entity {
     const direction = to.clone().sub(from)
     const length = direction.length()
     if (length < 0.0001) {
-      return sphere.center.distanceTo(from) <= sphere.radius
+      return false
+    }
+    if (from.distanceTo(sphere.center) <= sphere.radius) {
+      return false
     }
     direction.normalize()
 
@@ -66,17 +68,25 @@ export abstract class Actor extends Entity {
 
   private checkBoxCollision(from: THREE.Vector3, to: THREE.Vector3): boolean {
     const box = this.roi.model.getWorldBoundingBox()
-    const ray = new THREE.Ray(from, to.clone().sub(from).normalize())
+    const direction = to.clone().sub(from)
+    const length = direction.length()
+    if (length < 0.0001) {
+      return false
+    }
+    if (box.containsPoint(from)) {
+      return false
+    }
+    const ray = new THREE.Ray(from, direction.normalize())
     const intersection = ray.intersectBox(box, new THREE.Vector3())
     if (intersection == null) {
       return false
     }
-    return from.distanceTo(intersection) <= from.distanceTo(to)
+    return from.distanceTo(intersection) <= length
   }
 
   public update(_delta: number): { from: THREE.Vector3; to: THREE.Vector3 } | null {
     return null
   }
 
-  public onCollision(_from: THREE.Vector3, _to: THREE.Vector3): void {}
+  public onCollision(_roi: Roi3D | null): void {}
 }

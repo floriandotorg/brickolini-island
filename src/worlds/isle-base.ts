@@ -147,10 +147,8 @@ export abstract class IsleBase extends World {
 
       if (isBoundaryAction(child)) {
         this.boundaryManager.loadBoundaries(await getBoundaries(child))
-      } else if (isActorAction(child)) {
+      } else if (isActorAction(child) || isEntityAction(child)) {
         await this.handleActorAction(child)
-      } else if (isEntityAction(child)) {
-        await this.handleEntityAction(child)
       } else if (isAnimationAction(child)) {
         this._cachedAnimations.set(child.name.toLowerCase(), child)
       } else if (child.presenter === 'LegoLoadCacheSoundPresenter' && isPositionalAudioAction(child)) {
@@ -499,57 +497,6 @@ export abstract class IsleBase extends World {
     throw new Error('Not implemented')
   }
 
-  public async handleEntityAction(action: EntityAction): Promise<void> {
-    const modelName = getExtraValue(action.children[0], 'DB_CREATE')
-    if (modelName == null) {
-      console.warn('Entity action without db_create is not supported', action)
-      return
-    }
-    const roi = this.findRoi(modelName)
-    if (roi == null) {
-      console.warn(`Model not found: ${modelName}`)
-      return
-    }
-    const visibility = getExtraValue(action, 'Visibility')
-    if (visibility != null) {
-      throw new Error('Visibility is not supported for entities (yet)')
-    }
-    const sound = getExtraValue(action, 'Sound')
-    if (sound != null) {
-      throw new Error('Sound is not supported for entities (yet)')
-    }
-    const objectScript = getExtraValue(action, 'Object')
-    if (objectScript != null) {
-      let entity: Entity | null = null
-      switch (objectScript) {
-        case 'GasStationEntity':
-          entity = new (await import('../lib/world/entities/gas-station')).GasStation(roi)
-          break
-        case 'InfoCenterEntity':
-          entity = new (await import('../lib/world/entities/info-center')).InfoCenter(roi)
-          break
-        case 'PoliceEntity':
-          entity = new (await import('../lib/world/entities/police')).Police(roi)
-          break
-        case 'HospitalEntity':
-          entity = new (await import('../lib/world/entities/hospital')).Hospital(roi)
-          break
-        case 'BeachHouseEntity':
-          entity = new (await import('../lib/world/entities/beach-house')).BeachHouseEntity(roi)
-          break
-        case 'RaceStandsEntity':
-          entity = new (await import('../lib/world/entities/race-stands')).RaceStandsEntity(roi)
-          break
-        default:
-          console.warn(`Object script for entity not supported: ${objectScript}`)
-          return
-      }
-      if (entity != null) {
-        this.addClickListener(entity.roi, async () => await entity.onClick())
-      }
-    }
-  }
-
   protected get playerMovement(): PlayerMovement | null {
     return null
   }
@@ -607,7 +554,7 @@ export abstract class IsleBase extends World {
     })
   }
 
-  public async handleActorAction(action: ActorAction): Promise<Actor | null> {
+  public async handleActorAction(action: ActorAction | EntityAction): Promise<Actor | null> {
     let model: Roi3D | Character | null = null
     const modelName = getExtraValue(action.children[0], 'DB_CREATE')
     if (modelName != null) {
@@ -623,7 +570,6 @@ export abstract class IsleBase extends World {
       if (model != null) {
         throw new Error('Actor action with both model and character is not supported')
       }
-
       model = await this.getActor(characterName.toLowerCase() as CharacterName)
     }
     if (model == null) {
@@ -633,7 +579,7 @@ export abstract class IsleBase extends World {
       }
     }
     if (model == null) {
-      console.warn('Actor action without model or character is not supported', action)
+      console.warn('Action without model is not supported', action)
       return null
     }
     const visibility = getExtraValue(action, 'Visibility')
@@ -698,7 +644,32 @@ export abstract class IsleBase extends World {
       return null
     }
 
-    let actor: Actor
+    let entity: Entity | null = null
+    switch (objectScript) {
+      case 'GasStationEntity':
+        entity = new (await import('../lib/world/entities/gas-station')).GasStation(model)
+        break
+      case 'InfoCenterEntity':
+        entity = new (await import('../lib/world/entities/info-center')).InfoCenter(model)
+        break
+      case 'PoliceEntity':
+        entity = new (await import('../lib/world/entities/police')).Police(model)
+        break
+      case 'HospitalEntity':
+        entity = new (await import('../lib/world/entities/hospital')).Hospital(model)
+        break
+      case 'BeachHouseEntity':
+        entity = new (await import('../lib/world/entities/beach-house')).BeachHouseEntity(model)
+        break
+      case 'RaceStandsEntity':
+        entity = new (await import('../lib/world/entities/race-stands')).RaceStandsEntity(model)
+        break
+    }
+    if (entity != null) {
+      this.addClickListener(entity.roi, async () => await entity.onClick())
+    }
+
+    let actor: Actor | null = null
     switch (objectScript) {
       case 'Doors':
         actor = new (await import('../lib/world/actors/door')).Door(model, this)
@@ -727,9 +698,17 @@ export abstract class IsleBase extends World {
       case 'Pizza':
         actor = new (await import('../lib/world/actors/pizza')).Pizza(model, this)
         break
-      default:
-        console.warn(`Object script for actor not supported: ${objectScript}`)
-        return null
+      case 'Act2Actor':
+        actor = new (await import('../lib/world/actors/act2actor')).Act2Actor(model, this)
+        break
+      case 'Act2GenActor':
+        actor = new (await import('../lib/world/actors/act2gen')).Act2Gen(model, this)
+        break
+    }
+
+    if (actor == null && entity == null) {
+      console.warn(`Actor or entity not found: ${objectScript}`)
+      return null
     }
 
     if (actor instanceof PathActor && destination != null) {
@@ -737,16 +716,25 @@ export abstract class IsleBase extends World {
     }
 
     if (getExtraValue(action, 'COLLIDE_BOX') != null) {
+      if (actor == null) {
+        throw new Error('COLLIDE_BOX can only be used with actors')
+      }
       actor.colliderType = ColliderType.Box
     }
 
     const speed = getExtraValue(action, 'Speed')
     if (speed != null) {
+      if (actor == null) {
+        throw new Error('Speed can only be used with actors')
+      }
       actor.speed = Number.parseInt(speed, 10)
     }
 
     const animation = getExtraValue(action, 'Animation')
     if (animation != null) {
+      if (actor == null) {
+        throw new Error('Animation can only be used with actors')
+      }
       const parts = animation.split(';')
       if (parts.length % 2 !== 0) {
         throw new Error('Animation must have an even number of parts')
@@ -762,7 +750,10 @@ export abstract class IsleBase extends World {
       }
     }
 
-    await this.registerActor(actor)
+    if (actor != null) {
+      await this.registerActor(actor)
+    }
+
     return actor
   }
 

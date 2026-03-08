@@ -81,7 +81,7 @@ export class Door extends Actor {
     return result
   }
 
-  public override onCollision(_from: THREE.Vector3, _to: THREE.Vector3): void {
+  public override onCollision(): void {
     if (this._lastHit == null) {
       this._lastHit = engine.elapsedTimeSeconds
     }

@@ -273,17 +273,17 @@ export abstract class World {
   public async updateActors(delta: number, playerFrom: THREE.Vector3, playerTo: THREE.Vector3): Promise<void> {
     for (const actor of this._actors) {
       const result = actor.update(delta)
+      if (actor.checkCollision(playerFrom, playerTo)) {
+        actor.onCollision(null)
+      }
       if (result == null) {
         continue
       }
       const { from: actorFrom, to: actorTo } = result
       for (const actor of this._actors) {
         if (actor.checkCollision(actorFrom, actorTo)) {
-          actor.onCollision(actorFrom, actorTo)
+          actor.onCollision(actor.roi)
         }
-      }
-      if (actor.checkCollision(playerFrom, playerTo)) {
-        actor.onCollision(playerFrom, playerTo)
       }
       this.boundaryManager.update(actorFrom, actorTo, actor.roi)
     }
@@ -724,7 +724,7 @@ export abstract class World {
   }
 
   public async playPositionalAudio(action: PositionalAudioAction | string, parent: THREE.Object3D, delay?: number): Promise<THREE.PositionalAudio> {
-    const audio = await (typeof action === 'string' ? this._cachedPositionalAudios.get(action) : getPositionalAudio(engine.audioListener, action))
+    const audio = await (typeof action === 'string' ? (await this._cachedPositionalAudios.get(action))?.clone() : getPositionalAudio(engine.audioListener, action))
     if (audio == null) {
       throw new Error(`Positional audio not found: ${action}`)
     }

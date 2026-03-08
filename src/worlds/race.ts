@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { CarLocator2, CarLocator3, Horn_Ctl, Map_Ctl } from '../actions/carrace'
-import { type ActionBase, type ActorAction, getExtraValue, type ImageAction, isAnimationAction, isAudioAction, isBoundaryAction, isControlAction, isImageAction, isMeterAction, type SerialAction, splitExtraValue } from '../lib/action-types'
+import { type ActionBase, type ActorAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isAudioAction, isBoundaryAction, isControlAction, isImageAction, isMeterAction, type SerialAction, splitExtraValue } from '../lib/action-types'
 import { type Animation3D, type Animation3DNode, parse3DAnimation } from '../lib/assets/animation'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { ControlsCollection } from '../lib/assets/control'
@@ -337,7 +337,7 @@ export abstract class Race extends IsleBase {
     this._hideAnimation = parse3DAnimation(await getAction(hideAnimationAction))
   }
 
-  public override async handleActorAction(action: ActorAction): Promise<Actor | null> {
+  public override async handleActorAction(action: ActorAction | EntityAction): Promise<Actor | null> {
     const actor = await super.handleActorAction(action)
     if (actor != null && this._raceMap != null) {
       this._raceMap.addLocator(action, actor.roi.model)
