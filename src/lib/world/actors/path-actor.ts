@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import type { Boundary, Edge } from '../../assets/boundary'
 import { Actor } from '../actor'
+import type { BoundaryGraphNode } from '../boundary-manager'
 
 type Destination = {
   boundary: Boundary
@@ -14,6 +15,12 @@ export class PathActor extends Actor {
   protected _spline: THREE.CubicBezierCurve3 | null = null
   protected _distanceTraveled = 0
 
+  private _path: {
+    destinations: Destination[]
+    finalPosition: THREE.Vector3
+    finalDirection: THREE.Vector3
+  } | null = null
+
   protected get destination() {
     if (this._destination == null) {
       throw new Error('Destination not set')
@@ -25,7 +32,88 @@ export class PathActor extends Actor {
     this._destination = destination
   }
 
+  public navigateTo(boundaryName: string, position: THREE.Vector3, direction: THREE.Vector3): void {
+    const startBoundary = this._isle.boundaryManager.getBoundaryFromPosition(this.roi.position.clone().add(new THREE.Vector3(0, 1, 0)))
+    if (startBoundary == null) {
+      throw new Error('No start boundary found')
+    }
+    const destinationBoundary = this._isle.boundaryManager.getBoundary(boundaryName)
+    if (destinationBoundary == null) {
+      throw new Error('No destination boundary found')
+    }
+    const graph = this._isle.boundaryManager.generateGraph()
+    const startNode = graph.get(startBoundary)
+    if (startNode == null) {
+      throw new Error('No start node found')
+    }
+    const endNode = graph.get(destinationBoundary)
+    if (endNode == null) {
+      throw new Error('No end node found')
+    }
+    const queue: BoundaryGraphNode[] = [startNode]
+    startNode.cost = { parent: startNode, cost: 0 }
+    while (queue.length > 0) {
+      const currentNode = queue.shift()
+      if (currentNode?.cost == null) {
+        throw new Error('No current node found or has no cost')
+      }
+      for (const neighbor of currentNode.neighbors) {
+        if (neighbor.node.cost == null || neighbor.node.cost.cost > currentNode.cost.cost + 1) {
+          neighbor.node.cost = { parent: currentNode, cost: currentNode.cost.cost + 1 }
+          if (!queue.includes(neighbor.node)) {
+            queue.push(neighbor.node)
+          }
+        }
+      }
+    }
+    const path: BoundaryGraphNode[] = []
+    let currentNode: BoundaryGraphNode = endNode
+    while (currentNode !== startNode) {
+      path.unshift(currentNode)
+      if (currentNode.cost == null) {
+        throw new Error('No parent node found')
+      }
+      currentNode = currentNode.cost.parent
+    }
+    this._path = {
+      destinations: [],
+      finalPosition: position,
+      finalDirection: direction,
+    }
+    let previousNode = startNode
+    for (const node of path) {
+      const edge = node.neighbors.find(n => n.node === previousNode)?.edge
+      if (edge == null) {
+        throw new Error('No edge found')
+      }
+      this._path.destinations.push({
+        boundary: previousNode.boundary,
+        edge,
+        scale: 0.5,
+      })
+      previousNode = node
+    }
+    const nextDestination = this._path.destinations.shift()
+    if (nextDestination == null) {
+      throw new Error('No next destination found')
+    }
+    this._destination = nextDestination
+  }
+
   protected _switchBoundary(): void {
+    if (this._path != null) {
+      const nextDestination = this._path.destinations.shift()
+      if (nextDestination == null) {
+        this._spline = this._calculateSpline({ forceDestination: this._path.finalPosition, forceDirection: this._path.finalDirection })
+        this._distanceTraveled = 0
+        return
+      }
+      this._destination = nextDestination
+      this._spline = this._calculateSpline()
+      this._distanceTraveled = 0
+      return
+    }
+
     if (!this.destination.edge.isTraversableFromFace(this.destination.boundary)) {
       let edge = this.destination.edge
       do {
@@ -75,14 +163,20 @@ export class PathActor extends Actor {
     this._distanceTraveled = 0
   }
 
-  protected _calculateSpline({ forceDistance }: { forceDistance?: number } = {}): THREE.CubicBezierCurve3 {
-    const start = this.roi.position.clone()
+  protected _calculateSpline({ forceDistance, forceDestination, forceDirection }: { forceDistance?: number; forceDestination?: THREE.Vector3; forceDirection?: THREE.Vector3 } = {}): THREE.CubicBezierCurve3 {
     const boundaryUp = new THREE.Vector3(-this.destination.boundary.up.x, this.destination.boundary.up.y, this.destination.boundary.up.z)
     const startDirection = this.roi.model.getWorldDirection(new THREE.Vector3())
-    const startRight = new THREE.Vector3().crossVectors(boundaryUp, startDirection).normalize()
-    startDirection.crossVectors(startRight, boundaryUp).normalize()
-    const destination = this.destination.edge.getCWVertex(this.destination.boundary).clone().lerp(this.destination.edge.getCCWVertex(this.destination.boundary), this.destination.scale)
-    const destinationDirection = boundaryUp.clone().cross(this.destination.edge.getFaceNormal(this.destination.boundary))
+    let destination = forceDestination
+    if (forceDestination == null) {
+      const startRight = new THREE.Vector3().crossVectors(boundaryUp, startDirection).normalize()
+      startDirection.crossVectors(startRight, boundaryUp).normalize()
+      destination = this.destination.edge.getCWVertex(this.destination.boundary).clone().lerp(this.destination.edge.getCCWVertex(this.destination.boundary), this.destination.scale)
+    }
+    if (destination == null) {
+      throw new Error('Destination not set')
+    }
+    const start = this.roi.position.clone()
+    const destinationDirection = forceDirection == null ? boundaryUp.clone().cross(this.destination.edge.getFaceNormal(this.destination.boundary)) : forceDirection.clone()
     const distance = start.distanceTo(destination)
     const c1 = start.clone().sub(startDirection.divideScalar(3).multiplyScalar(forceDistance ?? distance))
     const c2 = destination.clone().add(destinationDirection.divideScalar(3).multiplyScalar(forceDistance ?? distance))

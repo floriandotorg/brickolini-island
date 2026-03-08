@@ -11,6 +11,14 @@ const flagsColor = (edge: { flags: number }): string => {
   return `#${red}${green}${blue}`
 }
 
+export type BoundaryGraphNode = {
+  boundary: Boundary
+  neighbors: { node: BoundaryGraphNode; edge: Edge }[]
+  cost: { parent: BoundaryGraphNode; cost: number } | null
+}
+
+export type BoundaryGraph = Map<Boundary, BoundaryGraphNode>
+
 export class BoundaryManager {
   private _boundaries: Boundary[] = []
   private _meshToBoundary = new Map<THREE.Mesh, { boundary: Boundary; debugMesh: THREE.Mesh }>()
@@ -66,6 +74,32 @@ export class BoundaryManager {
     return this._wallGroup
   }
 
+  public generateGraph(): BoundaryGraph {
+    const graph: BoundaryGraph = new Map()
+
+    for (const boundary of this._boundaries) {
+      graph.set(boundary, { boundary, neighbors: [], cost: null })
+    }
+
+    for (const boundary of this._boundaries) {
+      const node = graph.get(boundary)
+      if (node == null) {
+        continue
+      }
+      for (const edge of boundary.edges) {
+        if (edge.faceA != null && edge.faceB != null) {
+          const neighbor = edge.faceA === boundary ? edge.faceB : edge.faceA
+          const neighborNode = graph.get(neighbor)
+          if (neighborNode != null && !node.neighbors.some(n => n.node === neighborNode)) {
+            node.neighbors.push({ node: neighborNode, edge })
+          }
+        }
+      }
+    }
+
+    return graph
+  }
+
   public getBoundary(boundaryName: string): Boundary | null {
     return this._boundaries.find(b => b.name?.toLowerCase() === boundaryName.toLowerCase()) ?? null
   }
@@ -95,6 +129,16 @@ export class BoundaryManager {
       throw new Error('Object scale must be 1')
     }
     return { position, quaternion, boundary, destinationEdge }
+  }
+
+  public getBoundaryFromPosition(position: THREE.Vector3): Boundary | null {
+    const downRay = new THREE.Raycaster(position, new THREE.Vector3(0, -1, 0), 0, 1000)
+    const hit = downRay.intersectObject(this._boundaryGroup)[0]
+    if (hit == null) {
+      return null
+    }
+    const { boundary } = this._meshToBoundary.get(hit.object as THREE.Mesh) ?? {}
+    return boundary ?? null
   }
 
   public update(fromPos: THREE.Vector3, toPos: THREE.Vector3, roi: Roi3D | null): void {
