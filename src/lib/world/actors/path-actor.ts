@@ -15,6 +15,10 @@ export class PathActor extends Actor {
   protected _spline: THREE.CubicBezierCurve3 | null = null
   protected _distanceTraveled = 0
 
+  public get isFollowingPath(): boolean {
+    return this._path != null
+  }
+
   private _path: {
     destinations: Destination[]
     finalPosition: THREE.Vector3
@@ -106,6 +110,7 @@ export class PathActor extends Actor {
       if (nextDestination == null) {
         this._spline = this._calculateSpline({ forceDestination: this._path.finalPosition, forceDirection: this._path.finalDirection })
         this._distanceTraveled = 0
+        this._path = null
         return
       }
       this._destination = nextDestination
