@@ -342,6 +342,7 @@ class Engine {
     this._cutsceneComposer.add(this._cutsceneRender)
 
     this._cutsceneVideo = document.createElement('video')
+    this._cutsceneMesh.position.z = -1
     this._cutsceneRender.scene.add(this._cutsceneMesh)
 
     canvas.addEventListener('pointerdown', event => {
@@ -493,6 +494,20 @@ class Engine {
 
   public async playCutscene(action: CompositeMediaAction): Promise<void> {
     this._state = 'cutscene'
+
+    const savedGains: Partial<Record<AudioType, number>> = {}
+    for (const type of AudioTypes) {
+      if (type === 'cutscene') continue
+      savedGains[type] = this._gains[type].gain.value
+      this._gains[type].gain.value = 0
+    }
+    const restoreAudio = () => {
+      for (const type of AudioTypes) {
+        if (type === 'cutscene') continue
+        this._gains[type].gain.value = savedGains[type] ?? 1
+      }
+    }
+
     this._cutsceneAudio = await this.getAudio(action.children[1], 'cutscene')
     this._cutsceneVideo.src = getActionFileUrl(action.children[0])
     const map = new THREE.VideoTexture(this._cutsceneVideo)
@@ -501,17 +516,15 @@ class Engine {
     this._cutsceneVideo.play()
     this._cutsceneAudio.play()
     return new Promise(resolve => {
-      this._cutsceneVideo.onended = () => {
+      const end = () => {
         this._state = 'game'
         this._cutsceneAudio?.stop()
+        restoreAudio()
         resolve()
       }
 
-      this._cutsceneVideo.onpause = () => {
-        this._state = 'game'
-        this._cutsceneAudio?.stop()
-        resolve()
-      }
+      this._cutsceneVideo.onended = end
+      this._cutsceneVideo.onpause = end
     })
   }
 
@@ -531,6 +544,7 @@ class Engine {
 
     this._renderer.setSize(width, height, false)
     this._composer.resize(width, height)
+    this._cutsceneComposer.resize(width, height)
     this._world?.resize(width, height)
   }
 
