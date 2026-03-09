@@ -153,7 +153,7 @@ export class PlayerMovement {
 
   private _calculateSlopeTilt(): number {
     if (this._flightMode) {
-      return 0
+      return -(Math.PI / 6)
     }
 
     const downRay = new THREE.Raycaster(this._camera.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0), 0, 10)
@@ -241,7 +241,7 @@ export class PlayerMovement {
 
     const forward = new THREE.Vector3()
     this._camera.getWorldDirection(forward)
-    if (this._slewMode) {
+    if (this._slewMode || this._flightMode) {
       forward.y = 0
       forward.normalize()
     }

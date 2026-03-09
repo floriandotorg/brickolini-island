@@ -35,6 +35,8 @@ import {
   frt135df_RunAnim,
   frt137df_RunAnim,
   frt139df_RunAnim,
+  HelicopterLand_Anim,
+  HelicopterTakeOff_Anim,
   hho027en_RunAnim,
   hho142cl_RunAnim,
   hho143cl_RunAnim,
@@ -872,8 +874,14 @@ export class Act1 extends Isle {
       }
     }
 
-    this._dashboard.onFlightModeClick = (mode: 'taking-off' | 'landing') => {
-      this._playerMovement.flightMode = mode === 'taking-off'
+    this._dashboard.onFlightModeClick = async (mode: 'taking-off' | 'landing') => {
+      const flightMode = mode === 'taking-off'
+      if (this._playerMovement.flightMode === flightMode) {
+        return
+      }
+      const animation = flightMode ? HelicopterTakeOff_Anim : HelicopterLand_Anim
+      await this.playAnimation(animation)
+      this._playerMovement.flightMode = flightMode
     }
 
     this.camera.position.set(9, 1.25, -47)
