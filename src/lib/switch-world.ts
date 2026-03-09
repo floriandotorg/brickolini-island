@@ -20,6 +20,10 @@ type WorldSpawnInner =
       name: 'act1'
       spawn: IsleParam
     }
+  | {
+      name: 'infomain'
+      ending: 'bad' | 'good' | null
+    }
 
 export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
   if (engine.hasWorld) {
@@ -40,6 +44,9 @@ export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
   if ('spawn' in spawn) {
     return await switchWorldInner({ name: 'act1', spawn: getSpawnLocation(spawn.spawn) })
   }
+  if ('ending' in spawn) {
+    return await switchWorldInner({ name: 'infomain', ending: spawn.ending })
+  }
   const _exhaustiveCheck: never = spawn
   throw new Error(`Unknown world spawn ${spawn}`)
 }
@@ -57,7 +64,7 @@ const switchWorldInner = async (normalizedSpawn: WorldSpawnInner) => {
         case 'garage':
           return import('../worlds/garage').then(m => new m.Garage())
         case 'infomain':
-          return import('../worlds/infomain').then(m => new m.InfoMain())
+          return import('../worlds/infomain').then(m => new m.InfoMain(normalizedSpawn.ending))
         case 'regbook':
           return import('../worlds/regbook').then(m => new m.RegBook())
         case 'police':

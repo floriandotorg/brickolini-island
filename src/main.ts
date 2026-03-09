@@ -35,6 +35,8 @@ const start = async () => {
       }
       case 'elevride':
         return { floor: ElevatorEntrance.First }
+      case 'infomain':
+        return { ending: null }
       default:
         return { world }
     }

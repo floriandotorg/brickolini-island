@@ -1,6 +1,5 @@
 import * as THREE from 'three'
-import { BadEnd_Movie } from '../../../actions/intro'
-import { engine } from '../../engine'
+import { switchWorld } from '../../switch-world'
 import { PathActor } from './path-actor'
 
 const NEXT_LOCATION: [number, number][] = [
@@ -101,9 +100,7 @@ export class Act2Actor extends PathActor {
         .map(([i]) => i),
     )
     if (this._currentLocationIndex === 8 && this._locations[8].cleared) {
-      void engine.playCutscene(BadEnd_Movie).then(() => {
-        window.location.reload()
-      })
+      void switchWorld({ ending: 'bad' })
     }
     if (numClearedLocations >= 8 && this._currentLocationIndex !== 8) {
       this._currentLocationIndex = 8
@@ -135,7 +132,7 @@ export class Act2Actor extends PathActor {
     if (this._currentLocationIndex < 0) {
       this._currentLocationIndex = 0
       this._navigateToNextLocation()
-      this.speed = 70
+      this.speed = 500
     }
 
     const result = super.update(delta)

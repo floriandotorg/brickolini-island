@@ -122,7 +122,7 @@ export class Elevator extends IsleBase {
   private _exit(): void {
     switch (this._floor) {
       case Floor.First:
-        void switchWorld('infomain')
+        void switchWorld({ ending: null })
         break
       case Floor.Third:
         void switchWorld('elevopen')

@@ -30,7 +30,7 @@ export class ElevBott extends World {
           void switchWorld('infodoor')
           return true
         case 'RightArrow_Ctl':
-          void switchWorld('infomain')
+          void switchWorld({ ending: null })
           return true
       }
       return false

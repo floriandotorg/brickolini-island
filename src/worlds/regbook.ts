@@ -178,7 +178,7 @@ export class RegBook extends World {
           } else if (state === 27) {
             this.removeChar()
           } else if (state === 28) {
-            void switchWorld('infomain')
+            void switchWorld({ ending: null })
           }
           return true
         case 'Check0_Ctl':
@@ -220,7 +220,7 @@ export class RegBook extends World {
   private loadSave(name?: string) {
     if (name != null && name.length > 0) {
       engine.loadSaveGame(name)
-      void switchWorld('infomain')
+      void switchWorld({ ending: null })
     }
   }
 

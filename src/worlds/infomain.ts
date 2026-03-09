@@ -51,7 +51,10 @@ import {
   PepperHot_Bitmap,
   Pizza_A_Bitmap,
   Race_A_Bitmap,
+  tic089in_RunAnim,
+  tic092in_RunAnim,
 } from '../actions/infomain'
+import { BadEnd_Movie, GoodEnd_Movie } from '../actions/intro'
 import { InformationCenter_Music } from '../actions/jukebox'
 import { BookWig_Flic } from '../actions/sndanim'
 import type { CharacterMovieAction, ImageAction, RunAnimationAction } from '../lib/action-types'
@@ -139,7 +142,7 @@ export class InfoMain extends World {
   private _bookWigMovie: MovieSprite | null = null
   private readonly _bookWigInterval = engine.createInterval(3000)
 
-  constructor() {
+  constructor(private readonly _ending: 'bad' | 'good' | null) {
     super('infomain')
     this._characterFrame = createImageSprite(FrameHot_Bitmap)
     this._building.scene.add(this._characterFrame)
@@ -286,11 +289,6 @@ export class InfoMain extends World {
     this._bookWigMovie.visible = false
     this._bookWigMovie.hideAfterFinish = true
     this._bookWigMovie.parent = this._building.scene
-
-    void this.playAnimation(iic001in_RunAnim).then(async () => {
-      void engine.switchBackgroundMusic(InformationCenter_Music)
-      this._welcomeTimeout = engine.createTimeout(25_000)
-    })
   }
 
   public override activate(composer: Composer): void {
@@ -299,6 +297,18 @@ export class InfoMain extends World {
     const pad = Math.floor((7 - engine.currentSaveGame.name.length) / 2)
     this._name.name = engine.currentSaveGame.name.padStart(pad + engine.currentSaveGame.name.length, ' ')
     this.placeCharacterFrame()
+    if (this._ending !== null) {
+      engine.stopBackgroundMusic()
+      engine
+        .playCutscene(this._ending === 'bad' ? BadEnd_Movie : GoodEnd_Movie)
+        .then(() => this.playAnimation(this._ending === 'bad' ? tic092in_RunAnim : tic089in_RunAnim))
+        .then(() => engine.switchBackgroundMusic(InformationCenter_Music))
+    } else {
+      void this.playAnimation(iic001in_RunAnim).then(async () => {
+        void engine.switchBackgroundMusic(InformationCenter_Music)
+        this._welcomeTimeout = engine.createTimeout(25_000)
+      })
+    }
   }
 
   public override deactivate(): void {

@@ -435,7 +435,7 @@ export class ControlsCollection {
       const result = control.pointerDown(normalizedX, normalizedY)
       if (result != null) {
         if (engine.currentWorld.name !== 'infomain' && control.name === 'Info_Ctl') {
-          void switchWorld('infomain')
+          void switchWorld({ ending: null })
           return true
         }
 

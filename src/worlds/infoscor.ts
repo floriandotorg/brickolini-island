@@ -25,7 +25,7 @@ export class InfoScor extends World {
     this._building.onButtonClicked = buttonName => {
       switch (buttonName) {
         case 'LeftArrow_Ctl':
-          void switchWorld('infomain')
+          void switchWorld({ ending: null })
           return true
         case 'RightArrow_Ctl':
           void switchWorld('infodoor')
