@@ -504,5 +504,6 @@ export class Dashboard {
 
   public activate(composer: Composer): void {
     composer.add(this._render)
+    this.pointerUp()
   }
 }

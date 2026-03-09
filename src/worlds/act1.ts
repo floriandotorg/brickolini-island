@@ -376,6 +376,8 @@ import type { DTA } from '../lib/assets/dta'
 import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
 import { locations } from '../lib/locations'
+import { switchWorld } from '../lib/switch-world'
+import { Helicopter } from '../lib/world/actors/helicopter'
 import { PlayerMovement } from '../lib/world/player-movement'
 import { Isle } from './isle'
 import type { IsleParam } from './isle-base'
@@ -872,6 +874,13 @@ export class Act1 extends Isle {
       if (!this._playerMovement.flightMode) {
         this.currentVehicle?.exit()
       }
+    }
+
+    this._dashboard.onInfoButtonClicked = () => {
+      if (this.currentVehicle instanceof Helicopter) {
+        this._playerMovement.flightMode = false
+      }
+      switchWorld({ ending: null })
     }
 
     this._dashboard.onFlightModeClick = async (mode: 'taking-off' | 'landing') => {
