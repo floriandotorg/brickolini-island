@@ -334,10 +334,9 @@ export abstract class IsleBase extends World {
     this._dashboard.activate(composer)
 
     const noPizzaSign = this.scene.getObjectByName('nopizza')?.children[0]
-    if (noPizzaSign == null || !(noPizzaSign instanceof THREE.Mesh)) {
-      throw new Error('No pizza sign found')
+    if (noPizzaSign instanceof THREE.Mesh) {
+      noPizzaSign.material.map = engine.currentSaveGame.player === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
     }
-    noPizzaSign.material.map = engine.currentSaveGame.player === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
   }
 
   public getVehicleRoi(vehicle: VehicleType): Roi3D | null {
