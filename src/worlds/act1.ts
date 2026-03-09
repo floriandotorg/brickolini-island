@@ -771,6 +771,10 @@ export class Act1 extends Isle {
   override async init(): Promise<void> {
     await super.init()
 
+    const takeOff = this.boundaryManager.getObjectPlacementFromLocation('helicopterTakenOff')
+    const land = this.boundaryManager.getObjectPlacementFromLocation('helicopterLanded')
+    this._playerMovement.flightInfo = { takeOff, land }
+
     this.boundaryManager.onTrigger((name, data, direction, roi) => {
       if (roi != null) {
         return
@@ -863,7 +867,13 @@ export class Act1 extends Isle {
     })
 
     this._dashboard.onExit = () => {
-      this.currentVehicle?.exit()
+      if (!this._playerMovement.flightMode) {
+        this.currentVehicle?.exit()
+      }
+    }
+
+    this._dashboard.onFlightModeClick = (mode: 'taking-off' | 'landing') => {
+      this._playerMovement.flightMode = mode === 'taking-off'
     }
 
     this.camera.position.set(9, 1.25, -47)

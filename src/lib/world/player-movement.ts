@@ -31,6 +31,11 @@ export class PlayerMovement {
   private _verticalVel = 0
   private _pitchVel = 0
   private _slewMode = false
+  private _flightMode = false
+  public flightInfo: {
+    takeOff: { position: THREE.Vector3; quaternion: THREE.Quaternion }
+    land: { position: THREE.Vector3; quaternion: THREE.Quaternion }
+  } | null = null
 
   constructor(
     private readonly _camera: THREE.PerspectiveCamera,
@@ -45,6 +50,26 @@ export class PlayerMovement {
 
   set slewMode(value: boolean) {
     this._slewMode = value
+  }
+
+  get flightMode(): boolean {
+    return this._flightMode
+  }
+
+  set flightMode(value: boolean) {
+    if (this.flightInfo == null) {
+      throw new Error('Unable to enter flight mode without flight position defined')
+    }
+    const { position, quaternion } = value ? this.flightInfo.takeOff : this.flightInfo.land
+
+    if (!value) {
+      position.add(new THREE.Vector3(0, CAM_HEIGHT, 0))
+    }
+
+    this._camera.position.copy(position)
+    this._camera.quaternion.copy(quaternion)
+    this.resetVelocities()
+    this._flightMode = value
   }
 
   get linearVelocity(): number {
@@ -127,6 +152,10 @@ export class PlayerMovement {
   }
 
   private _calculateSlopeTilt(): number {
+    if (this._flightMode) {
+      return 0
+    }
+
     const downRay = new THREE.Raycaster(this._camera.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0), 0, 10)
     const hit = downRay.intersectObjects(this._groundGroup)[0]
 
@@ -234,7 +263,7 @@ export class PlayerMovement {
       }
     }
 
-    if (!this._slewMode) {
+    if (!this._slewMode && !this._flightMode) {
       this.placeOnGround(this._camera)
     }
 

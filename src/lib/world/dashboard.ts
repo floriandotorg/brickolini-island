@@ -344,9 +344,12 @@ export class Dashboard {
   private _infoControl: Control | null = null
   private _speedMeter: Meter | null = null
   private _fuelMeter: Meter | null = null
+  private _takeOffControl: Control | null = null
+  private _landControl: Control | null = null
 
   public onExit: () => void = () => {}
   public onInfoButtonClicked: () => void = () => {}
+  public onFlightModeClick: (mode: 'taking-off' | 'landing') => void = _ => {}
 
   public pointerDown(normalizedX: number, normalizedY: number): void {
     if (this._armsMask?.pointerDown(normalizedX, normalizedY) != null) {
@@ -360,6 +363,14 @@ export class Dashboard {
     if (this._infoControl?.pointerDown(normalizedX, normalizedY) != null) {
       this.onInfoButtonClicked()
     }
+
+    if (this._takeOffControl?.pointerDown(normalizedX, normalizedY) != null) {
+      this.onFlightModeClick('taking-off')
+    }
+
+    if (this._landControl?.pointerDown(normalizedX, normalizedY) != null) {
+      this.onFlightModeClick('landing')
+    }
   }
 
   public pointerUp(): void {
@@ -370,6 +381,9 @@ export class Dashboard {
     if (this._infoControl != null) {
       this._infoControl.pointerUp()
     }
+
+    this._takeOffControl?.pointerUp()
+    this._landControl?.pointerUp()
   }
 
   public async show(vehicle: Vehicle): Promise<void> {
@@ -438,11 +452,19 @@ export class Dashboard {
     this._armsMask = await Control.create(armsAction)
     this._render.scene.add(this._armsMask.sprite)
 
-    const hornAction = action.children.find(child => child.name.endsWith('Horn_Ctl'))
-    if (hornAction != null && isControlAction(hornAction)) {
-      this._hornControl = await Control.create(hornAction)
-      this._render.scene.add(this._hornControl.sprite)
-      this._hornControl.draw()
+    const addControl = async (suffix: string): Promise<Control | null> => {
+      const controlAction = action.children.find(child => child.name.endsWith(suffix))
+      if (!isControlAction(controlAction)) {
+        return null
+      }
+      const control = await Control.create(controlAction)
+      this._render.scene.add(control.sprite)
+      control.draw()
+      return control
+    }
+
+    this._hornControl = await addControl('Horn_Ctl')
+    if (this._hornControl != null) {
       const sound = action.children.find(child => isAudioAction(child) && child.name.endsWith('Horn_Sound'))
       if (!isAudioAction(sound)) {
         throw new Error('Horn sound not found')
@@ -450,12 +472,9 @@ export class Dashboard {
       this._hornSound = sound
     }
 
-    const infoAction = action.children.find(child => child.name.endsWith('Info_Ctl'))
-    if (isControlAction(infoAction)) {
-      this._infoControl = await Control.create(infoAction)
-      this._render.scene.add(this._infoControl.sprite)
-      this._infoControl.draw()
-    }
+    this._infoControl = await addControl('Info_Ctl')
+    this._takeOffControl = await addControl('TakeOff_Ctl')
+    this._landControl = await addControl('Land_Ctl')
   }
 
   public clear(): void {
@@ -465,6 +484,8 @@ export class Dashboard {
     this._infoControl?.sprite.removeFromParent()
     this._speedMeter?.sprite.removeFromParent()
     this._fuelMeter?.sprite.removeFromParent()
+    this._takeOffControl?.sprite.removeFromParent()
+    this._landControl?.sprite.removeFromParent()
 
     this._hornSound = null
     this._background = null
@@ -473,6 +494,8 @@ export class Dashboard {
     this._infoControl = null
     this._speedMeter = null
     this._fuelMeter = null
+    this._takeOffControl = null
+    this._landControl = null
   }
 
   public update(velocity: number): void {

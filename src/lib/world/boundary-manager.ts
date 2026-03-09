@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import type { Boundary, Edge } from '../assets/boundary'
 import type { Roi3D } from '../assets/model'
+import { getSpawnLocation, type SpawnLocation } from '../assets/spawn-location'
 import { engine } from '../engine'
 import type { World } from './world'
 
@@ -104,12 +105,22 @@ export class BoundaryManager {
     return this._boundaries.find(b => b.name?.toLowerCase() === boundaryName.toLowerCase()) ?? null
   }
 
+  public getObjectPlacementFromLocation(location: SpawnLocation): {
+    position: THREE.Vector3
+    quaternion: THREE.Quaternion
+    boundary: Boundary
+    destinationEdge: Edge
+  } {
+    const locationPosition = getSpawnLocation(location).position
+    return this.getObjectPlacement(locationPosition.boundaryName, locationPosition.source, locationPosition.sourceScale, locationPosition.destination, locationPosition.destinationScale)
+  }
+
   public getObjectPlacement(
     boundaryName: string,
     src: number,
     srcScale: number,
     dst: number,
-    _dstScale: number,
+    dstScale: number,
   ): {
     position: THREE.Vector3
     quaternion: THREE.Quaternion
@@ -120,7 +131,7 @@ export class BoundaryManager {
     if (boundary == null) {
       throw new Error(`Boundary ${boundaryName} not found`)
     }
-    const { matrix, destinationEdge } = boundary.getActorPlacement(src, srcScale, dst, _dstScale)
+    const { matrix, destinationEdge } = boundary.getActorPlacement(src, srcScale, dst, dstScale)
     const position = new THREE.Vector3()
     const quaternion = new THREE.Quaternion()
     const scale = new THREE.Vector3()

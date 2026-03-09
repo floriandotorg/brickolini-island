@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import { _Isle } from '../actions/isle'
 import { getModel } from '../lib/assets/model'
-import { getSpawnLocation } from '../lib/assets/spawn-location'
 import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
 import type { Actor } from '../lib/world/actor'
@@ -39,8 +38,7 @@ export class Isle extends IsleBase {
       }
       const placement = (() => {
         if (engine.resetVehicleRespawn(type)) {
-          const spawnPosition = getSpawnLocation(spawn).position
-          return this.boundaryManager.getObjectPlacement(spawnPosition.boundaryName, spawnPosition.source, spawnPosition.sourceScale, spawnPosition.destination, spawnPosition.destinationScale)
+          return this.boundaryManager.getObjectPlacementFromLocation(spawn)
         }
         return engine.currentSaveGame.getVehiclePlacement(type)
       })()
