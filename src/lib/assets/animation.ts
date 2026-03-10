@@ -65,125 +65,119 @@ export const getBeforeAndAfter = <T extends { timeAndFlags: { time: number } }>(
 }
 
 export type AnimationActor = { type: WDB.ActorType; object: THREE.Object3D; children: Map<string, THREE.Object3D>; roi: Roi3D }
+export type ActorTransform = { position: THREE.Vector3; quaternion: THREE.Quaternion; scale: THREE.Vector3 }
+
+const getUuid = (name: string, path: string[], actors: Map<string, AnimationActor>): string | undefined => {
+  let uuid: string | undefined
+
+  for (const key of path.toReversed()) {
+    const parent = actors.get(key)
+    if (parent != null) {
+      const actor = parent.children.get(name)
+      if (actor != null) {
+        uuid = actor.uuid
+        break
+      }
+    }
+  }
+
+  if (uuid == null) {
+    const actor = actors.get(name)
+    if (actor != null && actor.type !== WDB.ActorType.ManagedActor) {
+      uuid = actor.object.uuid
+    }
+  }
+
+  return uuid
+}
+
+const computeNodeTransform = (animation: Animation3DNode, time: number, result: Map<string, ActorTransform>, name: string, parent: THREE.Matrix4, actors: Map<string, AnimationActor>, path: string[] = []): void => {
+  const t = (before: { timeAndFlags: { time: number } }, after: { timeAndFlags: { time: number } }) => (time - before.timeAndFlags.time) / (after.timeAndFlags.time - before.timeAndFlags.time)
+
+  const translateBy = (mat: THREE.Matrix4, vertex: THREE.Vector3) => {
+    mat.elements[12] += vertex.x
+    mat.elements[13] += vertex.y
+    mat.elements[14] += vertex.z
+  }
+
+  const getRotation = (): THREE.Matrix4 => {
+    const { before, after } = getBeforeAndAfter(animation.rotationKeys, time)
+    if (after == null) {
+      if (before.timeAndFlags.flags & 1) {
+        return new THREE.Matrix4().makeRotationFromQuaternion(before.quaternion)
+      }
+    } else if (before.timeAndFlags.flags & 1 || after.timeAndFlags.flags & 1) {
+      if (after.timeAndFlags.flags & 4) {
+        return new THREE.Matrix4().makeRotationFromQuaternion(before.quaternion)
+      }
+
+      const afterQuat = after.timeAndFlags.flags & 2 ? new THREE.Quaternion(-after.quaternion.x, -after.quaternion.y, -after.quaternion.z, -after.quaternion.w) : after.quaternion
+      return new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().slerpQuaternions(before.quaternion, afterQuat, t(before, after)))
+    }
+
+    return new THREE.Matrix4()
+  }
+
+  let mat = new THREE.Matrix4()
+
+  if (animation.scaleKeys.length > 0) {
+    const { before, after } = getBeforeAndAfter(animation.scaleKeys, time)
+    if (after == null) {
+      mat.scale(before.vertex)
+    } else {
+      const scale = new THREE.Vector3().lerpVectors(before.vertex, after.vertex, t(before, after))
+      mat.scale(scale)
+    }
+
+    if (animation.rotationKeys.length > 0) {
+      mat = getRotation().multiply(mat)
+    }
+  } else if (animation.rotationKeys.length > 0) {
+    mat = getRotation()
+  }
+
+  if (animation.translationKeys.length > 0) {
+    const { before, after } = getBeforeAndAfter(animation.translationKeys, time)
+    if (after == null) {
+      if (before.timeAndFlags.flags & 1) {
+        translateBy(mat, before.vertex)
+      }
+    } else if (before.timeAndFlags.flags & 1 || after.timeAndFlags.flags & 1) {
+      translateBy(mat, new THREE.Vector3().lerpVectors(before.vertex, after.vertex, t(before, after)))
+    }
+  }
+
+  mat = parent.clone().multiply(mat)
+
+  const uuid = getUuid(name, path, actors)
+
+  if (uuid != null) {
+    const position = new THREE.Vector3()
+    const quaternion = new THREE.Quaternion()
+    const scale = new THREE.Vector3()
+    mat.decompose(position, quaternion, scale)
+    if (Math.abs(scale.x) < 1e-8 || Math.abs(scale.y) < 1e-8 || Math.abs(scale.z) < 1e-8) {
+      quaternion.copy(new THREE.Quaternion())
+    }
+    if (import.meta.env.DEV && (Number.isNaN(position.x) || Number.isNaN(position.y) || Number.isNaN(position.z) || Number.isNaN(quaternion.x) || Number.isNaN(quaternion.y) || Number.isNaN(quaternion.z) || Number.isNaN(quaternion.w) || Number.isNaN(scale.x) || Number.isNaN(scale.y) || Number.isNaN(scale.z))) {
+      throw new Error('NaN in transform')
+    }
+    result.set(uuid, { position, quaternion, scale })
+  }
+
+  for (const child of animation.children) {
+    computeNodeTransform(child, time, result, child.name, mat, actors, [...path, name])
+  }
+}
+
+export const getTransformsAtTime = (animation: Animation3DNode, actors: Map<string, AnimationActor>, baseTransform: THREE.Matrix4, time: number): Map<string, ActorTransform> => {
+  const result = new Map<string, ActorTransform>()
+  computeNodeTransform(animation, time, result, animation.name, baseTransform, actors)
+  return result
+}
 
 export const animationToTracks = (animation: Animation3DNode, actors: Map<string, AnimationActor>, baseTransform = new THREE.Matrix4()): THREE.KeyframeTrack[] => {
-  const position = new THREE.Vector3()
-  const quaternion = new THREE.Quaternion()
-  const scale = new THREE.Vector3()
-
   const getDurationMs = (animation: Animation3DNode): number => Math.max(animation.translationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.rotationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.scaleKeys.at(-1)?.timeAndFlags.time ?? 0, ...animation.children.map(getDurationMs))
-
-  const getUuid = (name: string, path: string[]): string | undefined => {
-    let uuid: string | undefined
-
-    for (const key of path.toReversed()) {
-      const parent = actors.get(key)
-      if (parent != null) {
-        const actor = parent.children.get(name)
-        if (actor != null) {
-          uuid = actor.uuid
-          break
-        }
-      }
-    }
-
-    if (uuid == null) {
-      const actor = actors.get(name)
-      if (actor != null && actor.type !== WDB.ActorType.ManagedActor) {
-        uuid = actor.object.uuid
-      }
-    }
-
-    return uuid
-  }
-
-  const getTransform = (animation: Animation3DNode, time: number, valueMap: Map<string, number[]>, name: string, parent: THREE.Matrix4, path: string[] = []): void => {
-    const push = (key: string, values: number[]) => {
-      const existing = valueMap.get(key)
-      if (existing == null) {
-        valueMap.set(key, values)
-      } else {
-        existing.push(...values)
-      }
-    }
-
-    const t = (before: { timeAndFlags: { time: number } }, after: { timeAndFlags: { time: number } }) => (time - before.timeAndFlags.time) / (after.timeAndFlags.time - before.timeAndFlags.time)
-
-    const translateBy = (mat: THREE.Matrix4, vertex: THREE.Vector3) => {
-      mat.elements[12] += vertex.x
-      mat.elements[13] += vertex.y
-      mat.elements[14] += vertex.z
-    }
-
-    const getRotation = (): THREE.Matrix4 => {
-      const { before, after } = getBeforeAndAfter(animation.rotationKeys, time)
-      if (after == null) {
-        if (before.timeAndFlags.flags & 1) {
-          return new THREE.Matrix4().makeRotationFromQuaternion(before.quaternion)
-        }
-      } else if (before.timeAndFlags.flags & 1 || after.timeAndFlags.flags & 1) {
-        if (after.timeAndFlags.flags & 4) {
-          return new THREE.Matrix4().makeRotationFromQuaternion(before.quaternion)
-        }
-
-        const afterQuat = after.timeAndFlags.flags & 2 ? new THREE.Quaternion(-after.quaternion.x, -after.quaternion.y, -after.quaternion.z, -after.quaternion.w) : after.quaternion
-        return new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().slerpQuaternions(before.quaternion, afterQuat, t(before, after)))
-      }
-
-      return new THREE.Matrix4()
-    }
-
-    let mat = new THREE.Matrix4()
-
-    if (animation.scaleKeys.length > 0) {
-      const { before, after } = getBeforeAndAfter(animation.scaleKeys, time)
-      if (after == null) {
-        mat.scale(before.vertex)
-      } else {
-        const scale = new THREE.Vector3().lerpVectors(before.vertex, after.vertex, t(before, after))
-        mat.scale(scale)
-      }
-
-      if (animation.rotationKeys.length > 0) {
-        mat = getRotation().multiply(mat)
-      }
-    } else if (animation.rotationKeys.length > 0) {
-      mat = getRotation()
-    }
-
-    if (animation.translationKeys.length > 0) {
-      const { before, after } = getBeforeAndAfter(animation.translationKeys, time)
-      if (after == null) {
-        if (before.timeAndFlags.flags & 1) {
-          translateBy(mat, before.vertex)
-        }
-      } else if (before.timeAndFlags.flags & 1 || after.timeAndFlags.flags & 1) {
-        translateBy(mat, new THREE.Vector3().lerpVectors(before.vertex, after.vertex, t(before, after)))
-      }
-    }
-
-    mat = parent.clone().multiply(mat)
-
-    const uuid = getUuid(name, path)
-
-    if (uuid != null) {
-      mat.decompose(position, quaternion, scale)
-      // if the scale is close to zero, the quaternion is not valid, so we set it to the identity
-      if (Math.abs(scale.x) < 1e-8 || Math.abs(scale.y) < 1e-8 || Math.abs(scale.z) < 1e-8) {
-        quaternion.copy(new THREE.Quaternion())
-      }
-      if (import.meta.env.DEV && (Number.isNaN(position.x) || Number.isNaN(position.y) || Number.isNaN(position.z) || Number.isNaN(quaternion.x) || Number.isNaN(quaternion.y) || Number.isNaN(quaternion.z) || Number.isNaN(quaternion.w) || Number.isNaN(scale.x) || Number.isNaN(scale.y) || Number.isNaN(scale.z))) {
-        throw new Error('NaN in transform')
-      }
-      push(`${uuid}.position`, position.toArray())
-      push(`${uuid}.quaternion`, quaternion.toArray())
-      push(`${uuid}.scale`, scale.toArray())
-    }
-
-    for (const child of animation.children) {
-      getTransform(child, time, valueMap, child.name, mat, [...path, name])
-    }
-  }
 
   const duration = getDurationMs(animation)
   const getNextTime = (animation: Animation3DNode, start: number, keys: ('translationKeys' | 'rotationKeys' | 'scaleKeys' | 'morphKeys')[]): number => {
@@ -202,7 +196,20 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
   }
   const valueMap = new Map<string, number[]>()
   for (const time of times) {
-    getTransform(animation, time, valueMap, animation.name, baseTransform)
+    const transforms = getTransformsAtTime(animation, actors, baseTransform, time)
+    for (const [uuid, { position, quaternion, scale }] of transforms) {
+      const push = (key: string, values: number[]) => {
+        const existing = valueMap.get(key)
+        if (existing == null) {
+          valueMap.set(key, values)
+        } else {
+          existing.push(...values)
+        }
+      }
+      push(`${uuid}.position`, position.toArray())
+      push(`${uuid}.quaternion`, quaternion.toArray())
+      push(`${uuid}.scale`, scale.toArray())
+    }
   }
 
   const timesSec = times.map(t => t / 1_000)
@@ -245,7 +252,7 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
 
     const visible = animation.morphKeys.length < 1 ? parent : getBeforeAndAfter(animation.morphKeys, time).before.visible
 
-    const uuid = getUuid(name, path)
+    const uuid = getUuid(name, path, actors)
     if (uuid != null) {
       push(`${uuid}.visible`, visible)
     }
