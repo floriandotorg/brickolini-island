@@ -1,7 +1,5 @@
 import * as THREE from 'three'
-import type { IsleBase } from '../../../worlds/isle-base'
 import type { Roi3D } from '../../assets/model'
-import { engine, type Interval } from '../../engine'
 import { switchWorld } from '../../switch-world'
 import { Plants } from '../plants'
 import { PathActor } from './path-actor'
@@ -510,12 +508,7 @@ export class Act2Actor extends PathActor {
     },
   ]
   private _currentLocationIndex = -1
-  private _state: { name: 'going-to-next-location' } | { name: 'shooting'; targetIndex: number; damageInterval: Interval } = { name: 'going-to-next-location' }
-
-  constructor(_roi: Roi3D, _isle: IsleBase) {
-    super(_roi, _isle)
-    this._clampSpeedToZeroForAnimationSelection = false
-  }
+  private _state: { name: 'going-to-next-location' } | { name: 'shooting'; targetIndex: number } = { name: 'going-to-next-location' }
 
   private _setNextLocation(): void {
     const numClearedLocations = this._locations.filter(location => location.cleared).length
@@ -546,16 +539,52 @@ export class Act2Actor extends PathActor {
     const location = this._locations[this._currentLocationIndex]
     this.navigateTo(location.boundary, location.position, location.direction)
     this._state = { name: 'going-to-next-location' }
+    this.speed = 4
   }
 
-  private _selectTarget(): void {
+  private _selectNextTarget(): void {
     const targetIndex = this._locations[this._currentLocationIndex].targets.findIndex(target => target.health > 0)
     if (targetIndex === -1) {
       this._locations[this._currentLocationIndex].cleared = true
       this._navigateToNextLocation()
       return
     }
-    this._state = { name: 'shooting', targetIndex, damageInterval: engine.createInterval(1_800) }
+    this._state = { name: 'shooting', targetIndex }
+    this._shootSelectedTarget()
+  }
+
+  private _shootSelectedTarget(): void {
+    if (this._state.name !== 'shooting') {
+      throw new Error('Not in shooting state')
+    }
+    console.log('shooting', this._locations[this._currentLocationIndex].targets[this._state.targetIndex].health)
+    const animation = this._animationActions.get(-1)
+    if (animation == null) {
+      throw new Error('Animation not found')
+    }
+    const targetPosition = this._getTargetRoi(this._state.targetIndex).position.clone()
+    const direction = targetPosition.sub(this.roi.position)
+    direction.y = 0
+    direction.normalize()
+    const dir = direction.multiplyScalar(-1)
+    const worldUp = new THREE.Vector3(0, 1, 0)
+    const right = new THREE.Vector3().crossVectors(worldUp, dir).normalize()
+    const up = new THREE.Vector3().crossVectors(dir, right).normalize()
+    const matrix = new THREE.Matrix4().makeBasis(right, up, dir)
+    const rotation = new THREE.Quaternion().setFromRotationMatrix(matrix)
+    void this._isle.playAnimation(animation, { location: this.roi.position.clone().add(new THREE.Vector3(0, 1, 0)), rotation, overrideLoop: THREE.LoopOnce }).then(() => {
+      if (this._state.name !== 'shooting') {
+        throw new Error('Animation finished but not in shooting state')
+      }
+
+      this._locations[this._currentLocationIndex].targets[this._state.targetIndex].health -= 1
+      if (this._locations[this._currentLocationIndex].targets[this._state.targetIndex].health <= 0) {
+        this._getTargetRoi(this._state.targetIndex).visible = false
+        this._selectNextTarget()
+      } else {
+        this._shootSelectedTarget()
+      }
+    })
   }
 
   private _getTargetRoi(targetIndex: number): Roi3D {
@@ -569,21 +598,15 @@ export class Act2Actor extends PathActor {
     if (this._currentLocationIndex < 0) {
       this._currentLocationIndex = 0
       this._navigateToNextLocation()
-      this.speed = 4
-    }
-
-    if (this._state.name === 'shooting' && this._state.damageInterval.resetExpired()) {
-      this._locations[this._currentLocationIndex].targets[this._state.targetIndex].health -= 1
-      console.log('shooting', this._locations[this._currentLocationIndex].targets[this._state.targetIndex].health)
-      if (this._locations[this._currentLocationIndex].targets[this._state.targetIndex].health <= 0) {
-        this._getTargetRoi(this._state.targetIndex).visible = false
-        this._selectTarget()
-      }
     }
 
     if (this._state.name === 'going-to-next-location' && !this.isFollowingPath) {
       this.speed = -1
-      this._selectTarget()
+      this._selectNextTarget()
+    }
+
+    if (this._state.name === 'shooting') {
+      return { from: this.roi.position.clone(), to: this.roi.position.clone() }
     }
 
     return super.update(delta)

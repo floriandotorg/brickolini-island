@@ -66,14 +66,12 @@ export abstract class Actor extends Entity {
     runtime.preparing = null
   }
 
-  protected _clampSpeedToZeroForAnimationSelection = true
-
   private _selectAnimationKey(): number | null {
     if (this._animationRuntimes.size === 0) {
       return null
     }
     const sorted = [...this._animationRuntimes.keys()].sort((a, b) => a - b)
-    const speed = this._clampSpeedToZeroForAnimationSelection ? Math.max(this._speed, 0) : this._speed
+    const speed = Math.max(this._speed, 0)
     let selected = sorted[0]
     for (const key of sorted) {
       if (key <= speed) {

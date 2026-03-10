@@ -496,9 +496,10 @@ export abstract class World {
 
   public async playAnimation(
     action: RunAnimationAction | NestedAnimationAction | AnimationAction,
-    { location, rotation, unskippable, lockCamera, extraTracks }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[] } = {},
+    { location, rotation, unskippable, lockCamera, extraTracks, overrideLoop }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[]; overrideLoop?: THREE.AnimationActionLoopStyles } = {},
   ): Promise<void> {
-    const { animation, managedActorNames, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, roisToHideOnStop, loop } = await this.buildAnimation(action, { location, rotation, extraTracks })
+    const { animation, managedActorNames, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, roisToHideOnStop, loop: defaultLoop } = await this.buildAnimation(action, { location, rotation, extraTracks })
+    const loop = overrideLoop ?? defaultLoop
 
     this.setupCameraForAnimation(animation.tree)
 
