@@ -54,6 +54,12 @@ export class Act2 extends IsleBase {
     block02.moveRoiTo(block02Placement.position, block02Placement.quaternion)
     block02.model.boundingSphere.radius *= 1.5
 
+    const ambul = this.getRoi('ambul')
+    if (ambul.actor == null) {
+      throw new Error('Ambul actor not found')
+    }
+    await Promise.all([ambul.actor.addAnimationAction(0, this.getCachedAnimation('Ambul_Anim0')), ambul.actor.addAnimationAction(6, this.getCachedAnimation('Ambul_Anim2')), ambul.actor.addAnimationAction(3, this.getCachedAnimation('Ambul_Anim3')), ambul.actor.addAnimationAction(-1, this.getCachedAnimation('BrShoot'))])
+
     this.boundaryManager.onTrigger((name, data, direction, roi) => {
       console.log(`Boundary trigger: ${name}, ${data}, ${direction}, ${roi?.name}`)
 
