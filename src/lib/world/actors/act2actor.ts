@@ -572,6 +572,7 @@ export class Act2Actor extends PathActor {
     const up = new THREE.Vector3().crossVectors(dir, right).normalize()
     const matrix = new THREE.Matrix4().makeBasis(right, up, dir)
     const rotation = new THREE.Quaternion().setFromRotationMatrix(matrix)
+    this._isle.playPositionalAudio('xarrow', this.roi.model)
     void this._isle.playAnimation(animation, { location: this.roi.position.clone().add(new THREE.Vector3(0, 1, 0)), rotation, overrideLoop: THREE.LoopOnce }).then(() => {
       if (this._state.name !== 'shooting') {
         throw new Error('Animation finished but not in shooting state')
