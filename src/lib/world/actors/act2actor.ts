@@ -1,20 +1,11 @@
 import * as THREE from 'three'
+import { VObehind0_PlayWav, VObehind1_PlayWav, VObehind2_PlayWav, VObehind3_PlayWav, VOhead0_PlayWav, VOhead1_PlayWav, VOinterrupt0_PlayWav, VOinterrupt1_PlayWav, VOinterrupt2_PlayWav, VOinterrupt3_PlayWav } from '../../../actions/act2main'
+import { type Audio, Playlist } from '../../assets/audio'
 import type { Roi3D } from '../../assets/model'
+import { engine, type Interval, type Timeout } from '../../engine'
 import { switchWorld } from '../../switch-world'
 import { Plants } from '../plants'
 import { PathActor } from './path-actor'
-
-const NEXT_LOCATION: [number, number][] = [
-  [3, 7],
-  [2, 4],
-  [3, 6],
-  [5, 1],
-  [7, 0],
-  [6, 1],
-  [0, 4],
-  [2, 5],
-  [0, 4],
-]
 
 const getPlantHealth = (index: number): number => {
   switch (Plants.plants[index].variant) {
@@ -29,6 +20,12 @@ const getPlantHealth = (index: number): number => {
 }
 
 const buildingIndexToName = ['infocen', 'policsta', 'Jail', 'races', 'medcntr', 'gas', 'beach', 'racef', 'racej', 'Store', 'Bank', 'Post', 'haus1', 'haus2', 'haus3', 'Pizza']
+
+namespace VoiceOvers {
+  export const head = new Playlist([VOhead0_PlayWav, VOhead1_PlayWav])
+  export const behind = new Playlist([VObehind0_PlayWav, VObehind1_PlayWav, VObehind2_PlayWav, VObehind3_PlayWav])
+  export const interrupt = new Playlist([VOinterrupt0_PlayWav, VOinterrupt1_PlayWav, VOinterrupt2_PlayWav, VOinterrupt3_PlayWav])
+}
 
 export class Act2Actor extends PathActor {
   private readonly _locations: {
@@ -48,6 +45,7 @@ export class Act2Actor extends PathActor {
           health: number
         }
     )[]
+    next: [number, number]
   }[] = [
     // 4,8 = 1 / 2
     {
@@ -59,12 +57,12 @@ export class Act2Actor extends PathActor {
         {
           type: 'building',
           index: 12,
-          health: 5,
+          health: 2,
         },
         {
           type: 'building',
           index: 14,
-          health: 5,
+          health: 2,
         },
         {
           type: 'plant',
@@ -102,6 +100,7 @@ export class Act2Actor extends PathActor {
           health: getPlantHealth(73),
         },
       ],
+      next: [3, 7],
     },
     {
       position: new THREE.Vector3(70.393349, 8.07, 3.151935),
@@ -112,7 +111,7 @@ export class Act2Actor extends PathActor {
         {
           type: 'building',
           index: 13,
-          health: 5,
+          health: 2,
         },
         {
           type: 'plant',
@@ -185,6 +184,7 @@ export class Act2Actor extends PathActor {
           health: getPlantHealth(74),
         },
       ],
+      next: [2, 4],
     },
     {
       position: new THREE.Vector3(47.74, 4.079995, -52.3),
@@ -195,12 +195,12 @@ export class Act2Actor extends PathActor {
         {
           type: 'building',
           index: 9,
-          health: 5,
+          health: 2,
         },
         {
           type: 'building',
           index: 11,
-          health: 5,
+          health: 2,
         },
         {
           type: 'plant',
@@ -228,6 +228,7 @@ export class Act2Actor extends PathActor {
           health: getPlantHealth(60),
         },
       ],
+      next: [3, 6],
     },
     {
       position: new THREE.Vector3(26.273487, 0.069, 12.170015),
@@ -238,17 +239,17 @@ export class Act2Actor extends PathActor {
         {
           type: 'building',
           index: 7,
-          health: 5,
+          health: 2,
         },
         {
           type: 'building',
           index: 8,
-          health: 5,
+          health: 1,
         },
         {
           type: 'building',
           index: 3,
-          health: 5,
+          health: 2,
         },
         {
           type: 'plant',
@@ -266,6 +267,7 @@ export class Act2Actor extends PathActor {
           health: getPlantHealth(46),
         },
       ],
+      next: [5, 1],
     },
     {
       position: new THREE.Vector3(-26.16499, 0.069, 5.61),
@@ -276,12 +278,12 @@ export class Act2Actor extends PathActor {
         {
           type: 'building',
           index: 5,
-          health: 5,
+          health: 2,
         },
         {
           type: 'building',
           index: 10,
-          health: 5,
+          health: 2,
         },
         {
           type: 'plant',
@@ -334,6 +336,7 @@ export class Act2Actor extends PathActor {
           health: getPlantHealth(56),
         },
       ],
+      next: [7, 0],
     },
     {
       position: new THREE.Vector3(-66.383446, 4.07, 32.387417),
@@ -344,7 +347,7 @@ export class Act2Actor extends PathActor {
         {
           type: 'building',
           index: 4,
-          health: 5,
+          health: 1,
         },
         {
           type: 'plant',
@@ -367,6 +370,7 @@ export class Act2Actor extends PathActor {
           health: getPlantHealth(55),
         },
       ],
+      next: [6, 1],
     },
     {
       position: new THREE.Vector3(-71.843285, 0.069, -49.524852),
@@ -377,7 +381,7 @@ export class Act2Actor extends PathActor {
         {
           type: 'building',
           index: 2,
-          health: 5,
+          health: 2,
         },
         {
           type: 'plant',
@@ -405,6 +409,7 @@ export class Act2Actor extends PathActor {
           health: getPlantHealth(67),
         },
       ],
+      next: [0, 4],
     },
     {
       position: new THREE.Vector3(-26.470566, 0.069, -44.670845),
@@ -415,7 +420,7 @@ export class Act2Actor extends PathActor {
         {
           type: 'building',
           index: 6,
-          health: 5,
+          health: 2,
         },
         {
           type: 'plant',
@@ -438,6 +443,7 @@ export class Act2Actor extends PathActor {
           health: getPlantHealth(62),
         },
       ],
+      next: [2, 5],
     },
     {
       position: new THREE.Vector3(6.323625, 0.069, -47.96045),
@@ -488,27 +494,28 @@ export class Act2Actor extends PathActor {
         {
           type: 'building',
           index: 15,
-          health: 5,
+          health: 2,
         },
       ],
-    },
-    {
-      position: new THREE.Vector3(36.689, -0.978409, 31.449),
-      direction: new THREE.Vector3(0.083792, -0.94303, -0.66398698),
-      boundary: 'edg00_157',
-      cleared: false,
-      targets: [],
-    },
-    {
-      position: new THREE.Vector3(44.6, 0.1, 45.3),
-      direction: new THREE.Vector3(0.95, 0.0, -0.3),
-      boundary: 'edg00_154',
-      cleared: false,
-      targets: [],
+      next: [0, 4],
     },
   ]
+  private readonly _lastBrick = {
+    position: new THREE.Vector3(44.6, 0.1, 45.3),
+    direction: new THREE.Vector3(0.95, 0.0, -0.3),
+    boundary: 'edg00_154',
+  }
+  private readonly _hiding = {
+    position: new THREE.Vector3(36.689, -0.978409, 31.449),
+    direction: new THREE.Vector3(0.083792, -0.94303, -0.66398698),
+    boundary: 'edg00_157',
+  }
+
   private _currentLocationIndex = -1
-  private _state: { name: 'going-to-next-location' } | { name: 'shooting'; targetIndex: number } = { name: 'going-to-next-location' }
+  private _droppedBricks = 0
+  private _lastDropTimeout: Timeout | null = null
+  private _voiceOver: Audio | null = null
+  private _state: { name: 'going-to-next-location' } | { name: 'shooting'; targetIndex: number } | { name: 'going-to-drop-last-brick' } | { name: 'going-to-hiding' } | { name: 'hidden' } = { name: 'going-to-next-location' }
 
   private _setNextLocation(): void {
     const numClearedLocations = this._locations.filter(location => location.cleared).length
@@ -520,7 +527,7 @@ export class Act2Actor extends PathActor {
       return
     }
     const currentLocationIndex = this._currentLocationIndex
-    const selectedLocationIndex = NEXT_LOCATION[this._currentLocationIndex][Math.random() >= 0.5 ? 0 : 1]
+    const selectedLocationIndex = this._locations[this._currentLocationIndex].next[Math.random() >= 0.5 ? 0 : 1]
     this._currentLocationIndex = selectedLocationIndex
     if (numClearedLocations >= 7) {
       return
@@ -537,9 +544,45 @@ export class Act2Actor extends PathActor {
     this._setNextLocation()
     console.log('setting next location to', this._currentLocationIndex)
     const location = this._locations[this._currentLocationIndex]
-    this.navigateTo(location.boundary, location.position, location.direction)
+    this._navigateTo(location)
     this._state = { name: 'going-to-next-location' }
     this.speed = 4
+  }
+
+  private _navigateToDropLastBrick(): void {
+    this._navigateTo(this._lastBrick)
+    this._state = { name: 'going-to-drop-last-brick' }
+  }
+
+  private _navigateToHiding(): void {
+    this._navigateTo(this._hiding)
+    this._state = { name: 'going-to-hiding' }
+  }
+
+  private _navigateTo(location: { position: THREE.Vector3; direction: THREE.Vector3; boundary: string }) {
+    this.navigateTo(location.boundary, location.position, location.direction)
+    this._speed = 4
+  }
+
+  private _dropBrick(): void {
+    if (this._droppedBricks < 6) {
+      this._playVoiceOver(VoiceOvers.behind)
+      this._droppedBricks++
+      console.log('dropped brick number ', this._droppedBricks)
+      this._lastDropTimeout = engine.createTimeout(3500)
+      if (this._droppedBricks === 5) {
+        this._navigateToDropLastBrick()
+      } else if (this._droppedBricks >= 6) {
+        this._navigateToHiding()
+      }
+    }
+  }
+
+  private async _playVoiceOver(playlist: Playlist): Promise<void> {
+    if (this._voiceOver == null || this._voiceOver.ended) {
+      const action = playlist.play()
+      this._voiceOver = await engine.playAudio(action, 'speech')
+    }
   }
 
   private _selectNextTarget(): void {
@@ -601,9 +644,37 @@ export class Act2Actor extends PathActor {
       this._navigateToNextLocation()
     }
 
-    if (this._state.name === 'going-to-next-location' && !this.isFollowingPath) {
-      this.speed = -1
-      this._selectNextTarget()
+    const playerToAmbulance = this.roi.position.clone().sub(this._isle.camera.position)
+    if (playerToAmbulance.lengthSq() < 75) {
+      const cameraDir = this._isle.camera.getWorldDirection(new THREE.Vector3())
+      if (cameraDir.dot(playerToAmbulance) >= 0) {
+        const roiDir = this.roi.getWorldDirection(new THREE.Vector3())
+        const behind = playerToAmbulance.dot(roiDir) < 0
+        if (behind) {
+          if (this._lastDropTimeout == null || this._lastDropTimeout.isExpired) {
+            this._dropBrick()
+          }
+        } else {
+          this._playVoiceOver(VoiceOvers.head)
+        }
+      }
+    }
+
+    if (!this.isFollowingPath) {
+      switch (this._state.name) {
+        case 'going-to-next-location':
+          this.speed = -1
+          this._selectNextTarget()
+          break
+        case 'going-to-hiding':
+          this.speed = 0
+          this.roi.visible = false
+          this._state = { name: 'hidden' }
+          break
+        case 'going-to-drop-last-brick':
+          this._dropBrick()
+          break
+      }
     }
 
     if (this._state.name === 'shooting') {

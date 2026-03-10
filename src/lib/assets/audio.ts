@@ -65,6 +65,20 @@ export class Audio {
   public onEnded: () => void = () => {}
 }
 
+export class Playlist {
+  private _index = 0
+  public constructor(private readonly _audios: AudioAction[]) {}
+
+  public play(): AudioAction {
+    const action = this._audios[this._index]
+    if (action == null) {
+      throw new Error(`No audio action at index ${this._index}`)
+    }
+    this._index = (this._index + 1) % this._audios.length
+    return action
+  }
+}
+
 export const getAudio = async (listener: THREE.AudioListener, action: AudioAction, gains: GainNode[]): Promise<Audio> => {
   const audio = new THREE.Audio(listener)
   audio.setBuffer(await audioLoader.loadAsync(getActionFileUrl(action)))
