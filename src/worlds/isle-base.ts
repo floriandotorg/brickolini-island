@@ -124,6 +124,14 @@ export abstract class IsleBase extends World {
     return this._animationInfos
   }
 
+  public getCachedAnimation(name: string): AnimationAction {
+    const animation = this._cachedAnimations.get(name.toLowerCase())
+    if (animation == null) {
+      throw new Error(`Animation not found: ${name}`)
+    }
+    return animation
+  }
+
   constructor(
     name: WorldName,
     {
@@ -752,7 +760,7 @@ export abstract class IsleBase extends World {
         if (animationAction == null) {
           throw new Error(`Animation not found: ${animationName}`)
         }
-        actor.addAnimationAction(speed, animationAction)
+        void actor.addAnimationAction(speed, animationAction)
       }
     }
 

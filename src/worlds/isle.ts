@@ -4,6 +4,8 @@ import { getModel } from '../lib/assets/model'
 import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
 import type { Actor } from '../lib/world/actor'
+import { PathActor } from '../lib/world/actors/path-actor'
+import { CHARACTER_CYCLES } from '../lib/world/character'
 import type { VehicleType } from '../lib/world/dashboard'
 import type { WorldName } from '../lib/world/world'
 import { CAR_BUILD_VEHICLES, IsleBase } from './isle-base'
@@ -62,17 +64,52 @@ export class Isle extends IsleBase {
     this._ambulanceRoi = this.findRoi('ambul')
     this._towtruckRoi = this.findRoi('towtk')
 
-    const mama = await this.getActor('mama')
-    const mamaPlacement = this.boundaryManager.getObjectPlacement('USR00_47', 1, 0.43, 3, 0.84)
-    mama.moveRoiTo(mamaPlacement.position, mamaPlacement.quaternion)
+    if (engine.currentSaveGame.playerUnsafe !== 'mama') {
+      const mama = await this.getActor('mama')
+      const mamaPlacement = this.boundaryManager.getObjectPlacement('USR00_47', 1, 0.43, 3, 0.84)
+      mama.moveRoiTo(mamaPlacement.position, mamaPlacement.quaternion)
+      const mamaActor = new PathActor(mama, this)
+      const mamaCycle1 = CHARACTER_CYCLES.mama[Math.floor(Math.random() * 3)]
+      if (mamaCycle1 == null) {
+        throw new Error('Mama cycle 1 is null')
+      }
+      void mamaActor.addAnimationAction(4, mamaCycle1)
+      const mamaCycle2 = CHARACTER_CYCLES.mama[Math.floor(Math.random() * 3) + 13]
+      if (mamaCycle2 == null) {
+        throw new Error('Mama cycle 2 is null')
+      }
+      void mamaActor.addAnimationAction(0, mamaCycle2)
+      mamaActor.speed = 0.9
+      this.registerActor(mamaActor)
+    }
 
-    const papa = await this.getActor('papa')
-    const papaPlacement = this.boundaryManager.getObjectPlacement('USR00_193', 3, 0.55, 1, 0.4)
-    papa.moveRoiTo(papaPlacement.position, papaPlacement.quaternion)
+    if (engine.currentSaveGame.playerUnsafe !== 'papa') {
+      const papa = await this.getActor('papa')
+      const papaPlacement = this.boundaryManager.getObjectPlacement('EDG02_54', 3, 0.55, 1, 0.4) // USR00_193
+      papa.moveRoiTo(papaPlacement.position, papaPlacement.quaternion)
+      const papaActor = new PathActor(papa, this)
+      const papaCycle1 = CHARACTER_CYCLES.papa[Math.floor(Math.random() * 3)]
+      if (papaCycle1 == null) {
+        throw new Error('Papa cycle 1 is null')
+      }
+      void papaActor.addAnimationAction(4, papaCycle1)
+      const papaCycle2 = CHARACTER_CYCLES.papa[Math.floor(Math.random() * 3) + 13]
+      if (papaCycle2 == null) {
+        throw new Error('Papa cycle 2 is null')
+      }
+      void papaActor.addAnimationAction(0, papaCycle2)
+      papaActor.speed = 0.9
+      this.registerActor(papaActor)
+    }
 
     const brickstr = await this.getActor('brickstr')
     const brickstrPlacement = this.boundaryManager.getObjectPlacement('EDG02_95', 1, 0.5, 3, 0.5)
     brickstr.moveRoiTo(brickstrPlacement.position, brickstrPlacement.quaternion)
+    const brickstrActor = new PathActor(brickstr, this)
+    void brickstrActor.addAnimationAction(4, CHARACTER_CYCLES.brickstr[Math.floor(Math.random() * 3)])
+    void brickstrActor.addAnimationAction(0, CHARACTER_CYCLES.brickstr[Math.floor(Math.random() * 3) + 14])
+    brickstrActor.speed = 0.5
+    this.registerActor(brickstrActor)
 
     if (this._bikeRoi != null) {
       this.placeVehicle('bike', 'INT44', 2, 0.5, 0, 0.5)
