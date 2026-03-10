@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { AnimB1, AnimB2, AnimB3, AnimF1, AnimF2, AnimF3, AnimP1, AnimP2, AnimP3, AnimT1, AnimT2, AnimT3, Sound8, Sound9, Sound10, Sound11, Sound12, Sound13, Sound14, Sound15, Sound16, Sound17 } from '../../actions/sndanim'
 import type { AnimationAction, PositionalAudioAction } from '../action-types'
 import { getAnimation } from '../assets/animation'
-import { calculateTransformationMatrix, getGlobalPart } from '../assets/model'
+import { calculateTransformationMatrix, getGlobalPart, type Roi3D } from '../assets/model'
 import { WDB } from '../assets/wdb'
 import { engine } from '../engine'
 import type { World as WorldType } from './world'
@@ -17,7 +17,7 @@ export namespace Plants {
     ACT3 = 1 << 16,
   }
 
-  enum Variant {
+  export enum Variant {
     Flower = 0,
     Tree = 1,
     Bush = 2,
@@ -124,8 +124,11 @@ export namespace Plants {
 
   type PlantInfo = { worlds: Plants.World; variant: Variant; color: Color; locationAndDirection: LocationAndDirection }
 
+  const roiList: Roi3D[] = []
+  export const getRoi = (index: number): Roi3D => roiList[index]
+
   // information based on legoplants.cpp
-  const plants: PlantInfo[] = [
+  export const plants: PlantInfo[] = [
     { worlds: Plants.World.ACT1 | Plants.World.ACT2 | Plants.World.ACT3, variant: Variant.Flower, color: Color.Red, locationAndDirection: { location: [73.75, 8.0, -8.4375], direction: [-1.0, 0.0, 0.0], up: [0.0, 1.0, 0.0] } },
     { worlds: Plants.World.ACT1 | Plants.World.ACT2 | Plants.World.ACT3, variant: Variant.Flower, color: Color.Red, locationAndDirection: { location: [16.8125, 0.0, -41.2], direction: [-1.0, 0.0, 0.0], up: [0.0, 1.0, 0.0] } },
     { worlds: Plants.World.ACT1 | Plants.World.ACT2 | Plants.World.ACT3, variant: Variant.Flower, color: Color.Red, locationAndDirection: { location: [71.0, 7.0, -25.0], direction: [-1.0, 0.0, 0.0], up: [0.0, 1.0, 0.0] } },
@@ -249,7 +252,9 @@ export namespace Plants {
       const animationRoot = new THREE.Group()
       animationRoot.name = 'animation'
       mesh.add(animationRoot)
-      animationRoot.add((await getGlobalPart(plantName, null, null)).model)
+      const roi = await getGlobalPart(plantName, null, null)
+      roiList.push(roi)
+      animationRoot.add(roi.model)
       group.add(mesh)
       world.addClickListener(mesh, async () => {
         switch (engine.currentSaveGame.player) {
@@ -272,6 +277,7 @@ export namespace Plants {
         animationRoot.name = 'animation'
         mesh.add(animationRoot)
         const roi = await getGlobalPart(partName(plantState.variant, plantState.color), null, null)
+        roiList[n] = roi
         animationRoot.add(roi.model)
         const animation = await getAnimation(
           animations[plantState.variant][plantState.animationIndex],
