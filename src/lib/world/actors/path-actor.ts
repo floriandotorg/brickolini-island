@@ -32,6 +32,10 @@ export class PathActor extends Actor {
     return this._destination
   }
 
+  protected hasDestination(): boolean {
+    return this._destination != null
+  }
+
   public setCurrentDestination(destination: Destination): void {
     this._destination = destination
   }
@@ -197,7 +201,7 @@ export class PathActor extends Actor {
   public override update(delta: number): { from: THREE.Vector3; to: THREE.Vector3 } {
     super.update(delta)
 
-    if (this._speed <= 0) {
+    if (this._speed <= 0 || !this.hasDestination()) {
       return { from: this.roi.position.clone(), to: this.roi.position.clone() }
     }
 
