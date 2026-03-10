@@ -170,7 +170,7 @@ export class PathActor extends Actor {
 
   protected _calculateSpline({ forceDistance, forceDestination, forceDirection }: { forceDistance?: number; forceDestination?: THREE.Vector3; forceDirection?: THREE.Vector3 } = {}): THREE.CubicBezierCurve3 {
     const boundaryUp = new THREE.Vector3(-this.destination.boundary.up.x, this.destination.boundary.up.y, this.destination.boundary.up.z)
-    const startDirection = this.roi.model.getWorldDirection(new THREE.Vector3())
+    const startDirection = this.roi.getWorldDirection(new THREE.Vector3())
     let destination = forceDestination
     if (forceDestination == null) {
       const startRight = new THREE.Vector3().crossVectors(boundaryUp, startDirection).normalize()

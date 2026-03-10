@@ -157,6 +157,15 @@ export class Roi3D {
     return this.model.position
   }
 
+  public getWorldQuaternion(target = new THREE.Quaternion()): THREE.Quaternion {
+    return this.model.getWorldQuaternion(target)
+  }
+
+  public getWorldDirection(target = new THREE.Vector3()): THREE.Vector3 {
+    const quaternion = this.getWorldQuaternion(new THREE.Quaternion())
+    return target.set(0, 0, 1).applyQuaternion(quaternion).normalize()
+  }
+
   public set visible(value: boolean) {
     this.model.visible = value
     for (const roi of this.children) {

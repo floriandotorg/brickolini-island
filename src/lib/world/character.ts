@@ -1479,6 +1479,10 @@ export class Character extends Roi3D {
     return this._worldPosition
   }
 
+  public override getWorldQuaternion(target = new THREE.Quaternion()): THREE.Quaternion {
+    return target.copy(this._worldQuaternion)
+  }
+
   private constructor(
     name: CharacterName,
     private _info: (typeof ACTORS)[keyof typeof ACTORS],
