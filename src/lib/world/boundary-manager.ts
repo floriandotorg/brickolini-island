@@ -148,8 +148,7 @@ export class BoundaryManager {
     if (hit == null) {
       return null
     }
-    const { boundary } = this._meshToBoundary.get(hit.object as THREE.Mesh) ?? {}
-    return boundary ?? null
+    return this._meshToBoundary.get(hit.object as THREE.Mesh)?.boundary ?? null
   }
 
   public update(fromPos: THREE.Vector3, toPos: THREE.Vector3, roi: Roi3D | null): void {

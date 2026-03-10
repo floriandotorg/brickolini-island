@@ -8,6 +8,6 @@ export abstract class Entity {
   }
 
   public async onClick(): Promise<boolean> {
-    return Promise.resolve(false)
+    return false
   }
 }
