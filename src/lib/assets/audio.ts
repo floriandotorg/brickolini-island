@@ -7,13 +7,17 @@ const audioLoader = new THREE.AudioLoader(manager)
 export class Audio {
   private readonly _action: AudioAction
   private readonly _audio: THREE.Audio<GainNode>
+  private _ended = false
 
   public constructor(action: AudioAction, audio: THREE.Audio<GainNode>, gains: GainNode[] = []) {
     this._action = action
     this._audio = audio
     this._audio.gain.gain.value = action.volume / 100
     this._audio.setLoop(action.loops > 1)
-    this._audio.onEnded = () => this.onEnded()
+    this._audio.onEnded = () => {
+      this.onEnded()
+      this._ended = true
+    }
 
     if (gains.length > 0) {
       this._audio.gain.disconnect()
@@ -23,6 +27,10 @@ export class Audio {
       }
       gains[gains.length - 1].connect(audio.listener.getInput())
     }
+  }
+
+  public get ended(): boolean {
+    return this._ended
   }
 
   public get gain(): AudioParam {
