@@ -67,5 +67,8 @@ export const getPositionalAudio = async (listener: THREE.AudioListener, action: 
   const audio = new THREE.PositionalAudio(listener)
   audio.setBuffer(await audioLoader.loadAsync(getActionFileUrl(action)))
   audio.gain.gain.value = action.volume / 100
+  audio.setRefDistance(10)
+  audio.setRolloffFactor(1.25)
+  audio.setMaxDistance(100)
   return audio
 }
