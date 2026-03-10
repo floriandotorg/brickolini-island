@@ -1,8 +1,9 @@
 import * as THREE from 'three'
 import { VObehind0_PlayWav, VObehind1_PlayWav, VObehind2_PlayWav, VObehind3_PlayWav, VOhead0_PlayWav, VOhead1_PlayWav, VOinterrupt0_PlayWav, VOinterrupt1_PlayWav, VOinterrupt2_PlayWav, VOinterrupt3_PlayWav } from '../../../actions/act2main'
+import { Act2 } from '../../../worlds/act2'
 import { type Audio, Playlist } from '../../assets/audio'
 import type { Roi3D } from '../../assets/model'
-import { engine, type Interval, type Timeout } from '../../engine'
+import { engine, type Timeout } from '../../engine'
 import { switchWorld } from '../../switch-world'
 import { Plants } from '../plants'
 import { PathActor } from './path-actor'
@@ -513,9 +514,10 @@ export class Act2Actor extends PathActor {
 
   private _currentLocationIndex = -1
   private _droppedBricks = 0
+  private _inRange = false
   private _lastDropTimeout: Timeout | null = null
   private _voiceOver: Audio | null = null
-  private _state: { name: 'going-to-next-location' } | { name: 'shooting'; targetIndex: number } | { name: 'going-to-drop-last-brick' } | { name: 'going-to-hiding' } | { name: 'hidden' } = { name: 'going-to-next-location' }
+  private _state: { name: 'going-to-next-location' } | { name: 'shooting'; readonly targetIndex: number; cancelled: boolean } | { name: 'going-to-drop-last-brick' } | { name: 'going-to-hiding' } | { name: 'hidden' } = { name: 'going-to-next-location' }
 
   private _setNextLocation(): void {
     const numClearedLocations = this._locations.filter(location => location.cleared).length
@@ -592,7 +594,7 @@ export class Act2Actor extends PathActor {
       this._navigateToNextLocation()
       return
     }
-    this._state = { name: 'shooting', targetIndex }
+    this._state = { name: 'shooting', targetIndex, cancelled: false }
     this._shootSelectedTarget()
   }
 
@@ -600,7 +602,8 @@ export class Act2Actor extends PathActor {
     if (this._state.name !== 'shooting') {
       throw new Error('Not in shooting state')
     }
-    console.log('shooting', this._locations[this._currentLocationIndex].targets[this._state.targetIndex].health)
+    const target = this._locations[this._currentLocationIndex].targets[this._state.targetIndex]
+    console.log('shooting', target.health)
     const animation = this._animationActions.get(-1)
     if (animation == null) {
       throw new Error('Animation not found')
@@ -616,13 +619,22 @@ export class Act2Actor extends PathActor {
     const matrix = new THREE.Matrix4().makeBasis(right, up, dir)
     const rotation = new THREE.Quaternion().setFromRotationMatrix(matrix)
     this._isle.playPositionalAudio('xarrow', this.roi.model)
+    if (!(this._isle instanceof Act2)) {
+      throw new Error('Isle is not of type Act2')
+    }
+    this._isle.scheduleAnimation(target)
     void this._isle.playAnimation(animation, { location: this.roi.position.clone().add(new THREE.Vector3(0, 1, 0)), rotation, overrideLoop: THREE.LoopOnce }).then(() => {
       if (this._state.name !== 'shooting') {
         throw new Error('Animation finished but not in shooting state')
       }
 
-      this._locations[this._currentLocationIndex].targets[this._state.targetIndex].health -= 1
-      if (this._locations[this._currentLocationIndex].targets[this._state.targetIndex].health <= 0) {
+      if (this._state.cancelled) {
+        this._navigateToNextLocation()
+        return
+      }
+
+      target.health -= 1
+      if (target.health <= 0) {
         this._getTargetRoi(this._state.targetIndex).visible = false
         this._selectNextTarget()
       } else {
@@ -645,18 +657,27 @@ export class Act2Actor extends PathActor {
     }
 
     const playerToAmbulance = this.roi.position.clone().sub(this._isle.camera.position)
-    if (playerToAmbulance.lengthSq() < 75) {
-      const cameraDir = this._isle.camera.getWorldDirection(new THREE.Vector3())
-      if (cameraDir.dot(playerToAmbulance) >= 0) {
-        const roiDir = this.roi.getWorldDirection(new THREE.Vector3())
-        const behind = playerToAmbulance.dot(roiDir) < 0
-        if (behind) {
-          if (this._lastDropTimeout == null || this._lastDropTimeout.isExpired) {
-            this._dropBrick()
+    const cameraDir = this._isle.camera.getWorldDirection(new THREE.Vector3())
+    if (cameraDir.dot(playerToAmbulance) >= 0) {
+      if (playerToAmbulance.lengthSq() < 75) {
+        if (!this._inRange) {
+          this._inRange = true
+          if (this._state.name === 'shooting') {
+            this._state.cancelled = true
+          } else {
+            const roiDir = this.roi.getWorldDirection(new THREE.Vector3())
+            const behind = playerToAmbulance.dot(roiDir) < 0
+            if (behind) {
+              if (this._lastDropTimeout == null || this._lastDropTimeout.isExpired) {
+                this._dropBrick()
+              }
+            } else {
+              this._playVoiceOver(VoiceOvers.head)
+            }
           }
-        } else {
-          this._playVoiceOver(VoiceOvers.head)
         }
+      } else {
+        this._inRange = false
       }
     }
 

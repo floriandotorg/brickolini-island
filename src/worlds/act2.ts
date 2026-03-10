@@ -34,6 +34,7 @@ export class Act2 extends IsleBase {
 
   private _initialHelpAudioPlayed = false
   private _infomanIsTalking = false
+  private _destructionAnimations = new Map<{ type: 'plant' | 'building'; index: number }, number>()
 
   constructor() {
     super('act2', { wdbWorldName: 'ACT2', dtaWorldName: 'ACT2' })
@@ -123,6 +124,12 @@ export class Act2 extends IsleBase {
     }
   }
 
+  public scheduleAnimation(entity: { type: 'plant' | 'building'; index: number }): void {
+    if (!this._destructionAnimations.has(entity)) {
+      this._destructionAnimations.set(entity, engine.elapsedTimeMilliseconds)
+    }
+  }
+
   public override update(delta: number): void {
     super.update(delta)
 
@@ -151,6 +158,39 @@ export class Act2 extends IsleBase {
           this._infomanIsTalking = false
         }
       })
+    }
+
+    const destructionAnimations = [...this._destructionAnimations]
+    if (destructionAnimations.length > 0) {
+      const factor = delta * 10
+      const scale = new THREE.Vector3(1.03 ** factor, 0.95 ** factor, 1.03 ** factor)
+      for (const [key, start] of destructionAnimations) {
+        if (key.type !== 'plant') {
+          // TODO: Separate handling for building
+          continue
+        }
+        const root = this._plantGroup.children[key.index]
+        const elapsed = engine.elapsedTimeMilliseconds - start
+        if (elapsed >= 1800) {
+          this._destructionAnimations.delete(key)
+          // TODO: Load original values and move Y lower
+          continue
+        }
+        if (elapsed < 800) {
+          continue
+        }
+        const m = root.matrix.clone()
+        const sin1 = Math.sin(elapsed * 2 * 0.0062832) * 0.2
+        const sin2 = Math.sin(elapsed * 4 * 0.0062832) * 0.2
+
+        m.elements[4] = sin1
+        m.elements[6] = sin2
+
+        m.scale(scale)
+
+        root.matrix.copy(m)
+        root.matrixAutoUpdate = false
+      }
     }
   }
 }
