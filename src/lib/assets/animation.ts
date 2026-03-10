@@ -176,6 +176,14 @@ export const getTransformsAtTime = (animation: Animation3DNode, actors: Map<stri
   return result
 }
 
+export const getChildTransformsAtTime = (animation: Animation3DNode, actors: Map<string, AnimationActor>, baseTransform: THREE.Matrix4, time: number): Map<string, ActorTransform> => {
+  const result = new Map<string, ActorTransform>()
+  for (const child of animation.children) {
+    computeNodeTransform(child, time, result, child.name, baseTransform, actors, [animation.name])
+  }
+  return result
+}
+
 export const animationToTracks = (animation: Animation3DNode, actors: Map<string, AnimationActor>, baseTransform = new THREE.Matrix4()): THREE.KeyframeTrack[] => {
   const getDurationMs = (animation: Animation3DNode): number => Math.max(animation.translationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.rotationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.scaleKeys.at(-1)?.timeAndFlags.time ?? 0, ...animation.children.map(getDurationMs))
 

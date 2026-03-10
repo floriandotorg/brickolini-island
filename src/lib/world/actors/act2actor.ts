@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import type { IsleBase } from '../../../worlds/isle-base'
 import type { Roi3D } from '../../assets/model'
 import { engine, type Interval } from '../../engine'
 import { switchWorld } from '../../switch-world'
@@ -510,6 +511,11 @@ export class Act2Actor extends PathActor {
   ]
   private _currentLocationIndex = -1
   private _state: { name: 'going-to-next-location' } | { name: 'shooting'; targetIndex: number; damageInterval: Interval } = { name: 'going-to-next-location' }
+
+  constructor(_roi: Roi3D, _isle: IsleBase) {
+    super(_roi, _isle)
+    this._clampSpeedToZeroForAnimationSelection = false
+  }
 
   private _setNextLocation(): void {
     const numClearedLocations = this._locations.filter(location => location.cleared).length

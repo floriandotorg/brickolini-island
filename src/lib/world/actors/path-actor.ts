@@ -202,6 +202,7 @@ export class PathActor extends Actor {
     super.update(delta)
 
     if (this._speed <= 0 || !this.hasDestination()) {
+      this.updateAnimation(delta)
       return { from: this.roi.position.clone(), to: this.roi.position.clone() }
     }
 
@@ -230,6 +231,8 @@ export class PathActor extends Actor {
     if (this._distanceTraveled >= 1) {
       this._switchBoundary()
     }
+
+    this.updateAnimation(delta)
 
     return { from, to }
   }

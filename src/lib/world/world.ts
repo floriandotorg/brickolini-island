@@ -300,20 +300,7 @@ export abstract class World {
     }
   }
 
-  public async buildAnimation(action: RunAnimationAction | NestedAnimationAction | AnimationAction, { location, rotation, extraTracks }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<BuiltAnimation> {
-    const children = action.type === Action.Type.ParallelAction ? action.children : []
-    const animationActions = action.type === Action.Type.ParallelAction ? children.filter(c => c.presenter === 'LegoAnimPresenter' || c.presenter === 'LegoLocomotionAnimPresenter' || c.presenter === 'LegoLoopingAnimPresenter') : [action]
-    if (animationActions.length !== 1) {
-      throw new Error(`Expected exactly one animation, got ${animationActions.length}`)
-    }
-
-    const animationAction = animationActions[0]
-    if (!isAnimationAction(animationAction)) {
-      throw new Error(`Expected animation action, got ${animationAction.type}`)
-    }
-
-    const animation = parse3DAnimation(await getAction(animationAction))
-
+  public async resolveAnimationActors(animation: Animation3D): Promise<{ animationActors: Map<string, AnimationActor>; managedActorNames: string[] }> {
     const animationActors = new Map<string, AnimationActor>()
     const managedActorNames: string[] = []
 
@@ -375,6 +362,25 @@ export abstract class World {
           throw new Error(`Unsupported actor type ${actor.type} for ${actor.name}`)
       }
     }
+
+    return { animationActors, managedActorNames }
+  }
+
+  public async buildAnimation(action: RunAnimationAction | NestedAnimationAction | AnimationAction, { location, rotation, extraTracks }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<BuiltAnimation> {
+    const children = action.type === Action.Type.ParallelAction ? action.children : []
+    const animationActions = action.type === Action.Type.ParallelAction ? children.filter(c => c.presenter === 'LegoAnimPresenter' || c.presenter === 'LegoLocomotionAnimPresenter' || c.presenter === 'LegoLoopingAnimPresenter') : [action]
+    if (animationActions.length !== 1) {
+      throw new Error(`Expected exactly one animation, got ${animationActions.length}`)
+    }
+
+    const animationAction = animationActions[0]
+    if (!isAnimationAction(animationAction)) {
+      throw new Error(`Expected animation action, got ${animationAction.type}`)
+    }
+
+    const animation = parse3DAnimation(await getAction(animationAction))
+
+    const { animationActors, managedActorNames } = await this.resolveAnimationActors(animation)
 
     const positionalAudioActions = children.filter(c => isPositionalAudioAction(c))
     const audioActions = children.filter(c => isAudioAction(c))
