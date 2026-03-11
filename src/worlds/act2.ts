@@ -95,6 +95,7 @@ export class Act2 extends IsleBase {
 
             const { position, quaternion } = this.boundaryManager.getObjectPlacement('EDG01_27', 2, 0.5, 0, 0.5)
             this.getRoi('ambul').moveRoiTo(position, quaternion)
+            this.getActor('ambul', Act2Actor).start()
           })
         }
       }
@@ -108,7 +109,6 @@ export class Act2 extends IsleBase {
 
     void this.playCameraAnimation(introAnimations[Math.floor(Math.random() * introAnimations.length)]).then(() => {
       this.playCameraAnimation(tja009ni_RunAnim).then(() => {
-        this.getActor('ambul', Act2Actor).start()
         this._state = {
           type: 'going-to-residential-area',
           helpInterval: engine.createInterval(90_000),
