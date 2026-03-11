@@ -543,6 +543,9 @@ export class Act2Actor extends PathActor {
   }
 
   private _navigateToNextLocation(): void {
+    this._isle.getRoi('pwrbrik').visible = false
+    this._isle.getRoi('debrick').visible = false
+    this._isle.getRoi('ray').visible = false
     this._setNextLocation()
     console.log('setting next location to', this._currentLocationIndex)
     const location = this._locations[this._currentLocationIndex]
