@@ -64,6 +64,10 @@ export class Act2 extends IsleBase {
     this.boundaryManager.onTrigger((name, data, direction, roi) => {
       console.log(`Boundary trigger: ${name}, ${data}, ${direction}, ${roi?.name}`)
 
+      if (roi != null) {
+        return
+      }
+
       if (name[2] === 'C') {
         if (data === 0x2a && this._state.type === 'going-to-residential-area' && !this._infomanIsTalking) {
           this._infomanIsTalking = true
