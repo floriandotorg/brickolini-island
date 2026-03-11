@@ -4,10 +4,13 @@ import { Jail_Music } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type Interval, type Timeout } from '../lib/engine'
 import { Act2Actor } from '../lib/world/actors/act2actor'
+import { Act2Brick } from '../lib/world/actors/act2brick'
 import { PlayerMovement } from '../lib/world/player-movement'
 import { IsleBase } from './isle-base'
 
 const introAnimations = [tns002br_RunAnim, tns003br_RunAnim, tns004br_RunAnim]
+
+const helicopterPartNames = ['xchbase1', 'xchblad1', 'xchseat1', 'xchtail1', 'xhback1', 'xhljet1', 'xhmidl1', 'xhmotr1', 'xhsidl1', 'xhsidr1'] as const
 
 export class Act2 extends IsleBase {
   private readonly _playerMovement = new PlayerMovement(
@@ -36,6 +39,7 @@ export class Act2 extends IsleBase {
   private _initialHelpAudioPlayed = false
   private _infomanIsTalking = false
   private _destructionAnimations = new Map<{ type: 'plant' | 'building'; index: number }, number>()
+  private _bricks: Act2Brick[] = []
 
   constructor() {
     super('act2', { wdbWorldName: 'ACT2', dtaWorldName: 'ACT2' })
@@ -45,6 +49,13 @@ export class Act2 extends IsleBase {
     await super.init()
 
     await this.handleStartUpAction(_Act2Main)
+
+    for (const helicopterPartName of helicopterPartNames) {
+      const roi = this.getRoi(helicopterPartName)
+      const brick = new Act2Brick(roi, this)
+      this.registerActor(brick)
+      this._bricks.push(brick)
+    }
 
     const block01 = this.getRoi('block01')
     const block01Placement = this.boundaryManager.getObjectPlacement('EDG01_04', 1, 0.5, 3, 0.5)
@@ -124,6 +135,22 @@ export class Act2 extends IsleBase {
 
     if (key === 'f' && import.meta.env.DEV) {
       this._playerMovement.toggleSlewMode()
+    }
+  }
+
+  public get remainingBrickCount(): number {
+    return 6 - this._bricks.filter(brick => brick.state !== 'waiting').length
+  }
+
+  public placeBrick(): void {
+    const ambul = this.getActor('ambul', Act2Actor)
+    const position = ambul.roi.position
+    for (const brick of this._bricks.slice(0, 6)) {
+      if (brick.state !== 'waiting') {
+        continue
+      }
+      brick.place(position)
+      break
     }
   }
 

@@ -718,6 +718,9 @@ export abstract class IsleBase extends World {
       case 'Act2GenActor':
         actor = new (await import('../lib/world/actors/act2gen')).Act2Gen(model, this)
         break
+      case 'Act2Brick':
+        actor = new (await import('../lib/world/actors/act2brick')).Act2Brick(model, this)
+        break
     }
 
     if (actor == null && entity == null) {

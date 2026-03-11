@@ -513,7 +513,6 @@ export class Act2Actor extends PathActor {
   }
 
   private _currentLocationIndex = -1
-  private _droppedBricks = 0
   private _inRange = false
   private _lastDropTimeout: Timeout | null = null
   private _voiceOver: Audio | null = null
@@ -577,14 +576,18 @@ export class Act2Actor extends PathActor {
   }
 
   private _dropBrick(): void {
-    if (this._droppedBricks < 6) {
+    if (!(this._isle instanceof Act2)) {
+      throw new Error('Isle is not of type Act2')
+    }
+
+    if (this._isle.remainingBrickCount > 0) {
       this._playVoiceOver(VoiceOvers.behind)
-      this._droppedBricks++
-      console.log('dropped brick number ', this._droppedBricks)
+      this._isle.placeBrick()
+      console.log('dropped brick number ', 6 - this._isle.remainingBrickCount)
       this._lastDropTimeout = engine.createTimeout(3500)
-      if (this._droppedBricks === 5) {
+      if (this._isle.remainingBrickCount === 1) {
         this._navigateToDropLastBrick()
-      } else if (this._droppedBricks >= 6) {
+      } else {
         this._navigateToHiding()
       }
     }
