@@ -277,7 +277,7 @@ export class InfoMain extends World {
 
     this.scene.add(await Plants.place(this, Plants.World.IMAIN))
 
-    ;(await this.getActor('infoman')).onClicked = () => {
+    ;(await this.getCharacter('infoman')).onClicked = () => {
       this.skipAllRunningAnimations()
       this._welcomeTimeout = null
       void this.playAnimation(ANIMATIONS[this._currentAnimationIndex])

@@ -3,6 +3,7 @@ import { _Act2Main, Avo906In_PlayWav, Avo907In_PlayWav, Avo908In_PlayWav, tja009
 import { Jail_Music } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type Interval, type Timeout } from '../lib/engine'
+import { Act2Actor } from '../lib/world/actors/act2actor'
 import { PlayerMovement } from '../lib/world/player-movement'
 import { IsleBase } from './isle-base'
 
@@ -55,11 +56,8 @@ export class Act2 extends IsleBase {
     block02.moveRoiTo(block02Placement.position, block02Placement.quaternion)
     block02.model.boundingSphere.radius *= 1.5
 
-    const ambul = this.getRoi('ambul')
-    if (ambul.actor == null) {
-      throw new Error('Ambul actor not found')
-    }
-    await Promise.all([ambul.actor.addAnimationAction(0, this.getCachedAnimation('Ambul_Anim0')), ambul.actor.addAnimationAction(6, this.getCachedAnimation('Ambul_Anim2')), ambul.actor.addAnimationAction(3, this.getCachedAnimation('Ambul_Anim3')), ambul.actor.addAnimationAction(-1, this.getCachedAnimation('BrShoot'))])
+    const ambul = this.getActor('ambul', Act2Actor)
+    await Promise.all([ambul.addAnimationAction(0, this.getCachedAnimation('Ambul_Anim0')), ambul.addAnimationAction(6, this.getCachedAnimation('Ambul_Anim2')), ambul.addAnimationAction(3, this.getCachedAnimation('Ambul_Anim3')), ambul.addAnimationAction(-1, this.getCachedAnimation('BrShoot'))])
 
     this.boundaryManager.onTrigger((name, data, direction, roi) => {
       console.log(`Boundary trigger: ${name}, ${data}, ${direction}, ${roi?.name}`)
@@ -110,6 +108,7 @@ export class Act2 extends IsleBase {
 
     void this.playCameraAnimation(introAnimations[Math.floor(Math.random() * introAnimations.length)]).then(() => {
       this.playCameraAnimation(tja009ni_RunAnim).then(() => {
+        this.getActor('ambul', Act2Actor).start()
         this._state = {
           type: 'going-to-residential-area',
           helpInterval: engine.createInterval(90_000),

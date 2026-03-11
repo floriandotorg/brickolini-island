@@ -274,10 +274,7 @@ export class Pizzeria extends Actor {
 
   private _reset(): void {
     this._missionState = { state: 'not-started' }
-    const skateboard = this.act1.getRoi('skate').actor
-    if (!(skateboard instanceof Skateboard)) {
-      throw new Error('Skateboard is not a Skateboard')
-    }
+    const skateboard = this.act1.getActor('skate', Skateboard)
     skateboard.showPizza = false
     this.act1.cameraAnimationTriggerEnabled = true
     this.act1.backgroundMusicTriggerEnabled = true
@@ -327,10 +324,7 @@ export class Pizzeria extends Actor {
         this.act1.cameraAnimationTriggerEnabled = false
         this.act1.backgroundMusicTriggerEnabled = false
         this.act1.placeVehicle('skate', 'INT37', 2, 0.5, 3, 0.5, true)
-        const skateboard = this.act1.getRoi('skate').actor
-        if (!(skateboard instanceof Skateboard)) {
-          throw new Error('Skateboard is not a Skateboard')
-        }
+        const skateboard = this.act1.getActor('skate', Skateboard)
         skateboard.showPizza = true
         skateboard.enter()
         this._helpAudioPlayed = false

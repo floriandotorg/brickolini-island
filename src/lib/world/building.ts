@@ -184,7 +184,7 @@ export class Building {
           throw new Error(`Invalid keys for actor ${child.children[0]} found`)
         }
         if (actorName != null) {
-          const actor = await this._world.getActor(actorName.toLowerCase() as CharacterName)
+          const actor = await this._world.getCharacter(actorName.toLowerCase() as CharacterName)
           actor.visible = visibility?.toLowerCase() !== 'false'
         }
       }

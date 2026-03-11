@@ -579,7 +579,7 @@ export abstract class IsleBase extends World {
       if (model != null) {
         throw new Error('Actor action with both model and character is not supported')
       }
-      model = await this.getActor(characterName.toLowerCase() as CharacterName)
+      model = await this.getCharacter(characterName.toLowerCase() as CharacterName)
     }
     if (model == null) {
       model = await getModel(action.children[0])

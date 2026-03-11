@@ -517,7 +517,7 @@ export class Act2Actor extends PathActor {
   private _inRange = false
   private _lastDropTimeout: Timeout | null = null
   private _voiceOver: Audio | null = null
-  private _state: { name: 'going-to-next-location' } | { name: 'shooting'; readonly targetIndex: number; cancelled: boolean } | { name: 'going-to-drop-last-brick' } | { name: 'going-to-hiding' } | { name: 'hidden' } = { name: 'going-to-next-location' }
+  private _state: { name: 'going-to-next-location' } | { name: 'shooting'; readonly targetIndex: number; cancelled: boolean } | { name: 'going-to-drop-last-brick' } | { name: 'going-to-hiding' } | { name: 'hidden' } | { name: 'idle' } = { name: 'idle' }
 
   private _setNextLocation(): void {
     const numClearedLocations = this._locations.filter(location => location.cleared).length
@@ -564,6 +564,13 @@ export class Act2Actor extends PathActor {
   private _navigateTo(location: { position: THREE.Vector3; direction: THREE.Vector3; boundary: string }) {
     this.navigateTo(location.boundary, location.position, location.direction)
     this._speed = 4
+  }
+
+  public start(): void {
+    if (this._state.name !== 'idle') {
+      throw new Error('Actor is not in idle state')
+    }
+    this._state = { name: 'going-to-next-location' }
   }
 
   private _dropBrick(): void {
@@ -651,6 +658,10 @@ export class Act2Actor extends PathActor {
   }
 
   public override update(delta: number): { from: THREE.Vector3; to: THREE.Vector3 } {
+    if (this._state.name === 'idle') {
+      return { from: this.roi.position.clone(), to: this.roi.position.clone() }
+    }
+
     if (this._currentLocationIndex < 0) {
       this._currentLocationIndex = 0
       this._navigateToNextLocation()

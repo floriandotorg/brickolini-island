@@ -211,7 +211,15 @@ export abstract class World {
     this.camera.lookAt(pathToPosition(lookAtPositionPath))
   }
 
-  public async getActor(name: CharacterName): Promise<Character> {
+  public getActor<T extends Actor>(name: string, type: abstract new (...args: never[]) => T): T {
+    const actor = this.getRoi(name).actor
+    if (!(actor instanceof type)) {
+      throw new Error(`Actor not found: ${name}`)
+    }
+    return actor
+  }
+
+  public async getCharacter(name: CharacterName): Promise<Character> {
     const existing = this._characters.get(name)
     if (existing != null) {
       ++existing.refCount
@@ -323,7 +331,7 @@ export abstract class World {
         }
         case WDB.ActorType.ManagedActor: {
           const actorName = actor.name.replace(/^\*/, '')
-          const minifig = await this.getActor(actorName as CharacterName)
+          const minifig = await this.getCharacter(actorName as CharacterName)
           managedActorNames.push(actorName)
           if (actor.name.startsWith('*')) {
             minifig.visible = false

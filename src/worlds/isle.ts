@@ -65,7 +65,7 @@ export class Isle extends IsleBase {
     this._towtruckRoi = this.findRoi('towtk')
 
     if (engine.currentSaveGame.playerUnsafe !== 'mama') {
-      const mama = await this.getActor('mama')
+      const mama = await this.getCharacter('mama')
       const mamaPlacement = this.boundaryManager.getObjectPlacement('USR00_47', 1, 0.43, 3, 0.84)
       mama.moveRoiTo(mamaPlacement.position, mamaPlacement.quaternion)
       const mamaActor = new PathActor(mama, this)
@@ -84,7 +84,7 @@ export class Isle extends IsleBase {
     }
 
     if (engine.currentSaveGame.playerUnsafe !== 'papa') {
-      const papa = await this.getActor('papa')
+      const papa = await this.getCharacter('papa')
       const papaPlacement = this.boundaryManager.getObjectPlacement('EDG02_54', 3, 0.55, 1, 0.4) // USR00_193
       papa.moveRoiTo(papaPlacement.position, papaPlacement.quaternion)
       const papaActor = new PathActor(papa, this)
@@ -102,7 +102,7 @@ export class Isle extends IsleBase {
       this.registerActor(papaActor)
     }
 
-    const brickstr = await this.getActor('brickstr')
+    const brickstr = await this.getCharacter('brickstr')
     const brickstrPlacement = this.boundaryManager.getObjectPlacement('EDG02_95', 1, 0.5, 3, 0.5)
     brickstr.moveRoiTo(brickstrPlacement.position, brickstrPlacement.quaternion)
     const brickstrActor = new PathActor(brickstr, this)
