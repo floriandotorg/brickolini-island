@@ -402,13 +402,23 @@ class Engine {
       }
     })
 
+    const clearKeys = () => {
+      for (const key of this._keyStates) {
+        this._world?.keyUp(new KeyboardEvent('keyup', { key }))
+      }
+      this._keyStates.clear()
+    }
+
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
+        clearKeys()
         this._audioListener.context.suspend()
       } else {
         this._audioListener.context.resume()
       }
     })
+
+    window.addEventListener('blur', clearKeys)
 
     window.addEventListener('resize', this._setRendererSize)
     this._setRendererSize()
