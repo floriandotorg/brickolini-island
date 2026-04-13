@@ -72,7 +72,7 @@ export const isPositionalAudioAction = (action: unknown): action is PositionalAu
 
 export const isAnimationAction = (action: unknown): action is AnimationAction => isAction(action) && isAnimationPresenter(action.presenter)
 
-export const isNestedAnimationAction = (action: unknown): action is AnimationAction => isAction(action) && action.presenter === null && 'children' in action && Array.isArray(action.children) && action.children.length === 1 && isAnimationAction(action.children[0])
+export const isNestedAnimationAction = (action: unknown): action is NestedAnimationAction => isAction(action) && action.presenter === null && 'children' in action && Array.isArray(action.children) && action.children.length === 1 && isAnimationAction(action.children[0])
 
 export const isPhonemeAction = (action: unknown): action is PhonemeAction => isAction(action) && action.type === Action.Type.Anim && action.presenter === 'LegoPhonemePresenter'
 

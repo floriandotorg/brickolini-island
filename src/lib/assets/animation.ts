@@ -202,9 +202,10 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
   for (let start = 0; start <= duration; start = getNextTime(animation, start, ['translationKeys', 'rotationKeys', 'scaleKeys'])) {
     times.push(start)
   }
+  const skipRoot = !actors.has(animation.name)
   const valueMap = new Map<string, number[]>()
   for (const time of times) {
-    const transforms = getTransformsAtTime(animation, actors, baseTransform, time)
+    const transforms = skipRoot ? getChildTransformsAtTime(animation, actors, baseTransform, time) : getTransformsAtTime(animation, actors, baseTransform, time)
     for (const [uuid, { position, quaternion, scale }] of transforms) {
       const push = (key: string, values: number[]) => {
         const existing = valueMap.get(key)
@@ -276,7 +277,13 @@ export const animationToTracks = (animation: Animation3DNode, actors: Map<string
   }
   const morphValueMap = new Map<string, boolean[]>()
   for (const time of morphTimes) {
-    getMorph(animation, time, morphValueMap, animation.name, true)
+    if (skipRoot) {
+      for (const child of animation.children) {
+        getMorph(child, time, morphValueMap, child.name, true, [animation.name])
+      }
+    } else {
+      getMorph(animation, time, morphValueMap, animation.name, true)
+    }
   }
 
   const morphResult = Array.from(morphValueMap.entries()).map(

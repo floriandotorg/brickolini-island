@@ -33,7 +33,8 @@
       "complexity": {
         "noUselessEscapeInRegex": "error",
         "useOptionalChain": "error",
-        "noUselessSwitchCase": "error"
+        "noUselessSwitchCase": "error",
+        "useSimpleNumberKeys": "off"
       },
       "style": {
         "useCollapsedIf": "error",

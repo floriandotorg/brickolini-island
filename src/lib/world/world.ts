@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
-import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, isAudioAction, isPositionalAudioAction, type NestedAnimationAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
+import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, isAudioAction, isNestedAnimationAction, isPositionalAudioAction, isRunAnimationAction, type NestedAnimationAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
 import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import { type Audio, getPositionalAudio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
@@ -506,7 +506,28 @@ export abstract class World {
     action: RunAnimationAction | NestedAnimationAction | AnimationAction,
     { location, rotation, unskippable, lockCamera, extraTracks, overrideLoop }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[]; overrideLoop?: THREE.AnimationActionLoopStyles } = {},
   ): Promise<void> {
-    const { animation, managedActorNames, positionalAudioActions, audioActions, tracks, lookAtKeys, faceAnimations, pointAtCameraObjects, roisToHideOnStop, loop: defaultLoop } = await this.buildAnimation(action, { location, rotation, extraTracks })
+    const animationAction = isRunAnimationAction(action) || isNestedAnimationAction(action) ? [...action.children].find((c): c is AnimationAction => isAnimationAction(c)) : action
+    if (animationAction == null) {
+      throw new Error('No AnimationAction found')
+    }
+    const directionRotation = new THREE.Quaternion()
+    calculateTransformationMatrix([0, 0, 0], [-animationAction.direction[0], animationAction.direction[1], animationAction.direction[2]], [-animationAction.up[0], animationAction.up[1], animationAction.up[2]]).decompose(new THREE.Vector3(), directionRotation, new THREE.Vector3())
+    if (rotation != null) {
+      directionRotation.multiply(rotation)
+    }
+    console.log(animationAction)
+    const {
+      animation,
+      managedActorNames,
+      positionalAudioActions,
+      audioActions,
+      tracks,
+      lookAtKeys,
+      faceAnimations,
+      pointAtCameraObjects,
+      roisToHideOnStop,
+      loop: defaultLoop,
+    } = await this.buildAnimation(action, { location: new THREE.Vector3(-animationAction.location[0], animationAction.location[1], animationAction.location[2]).add(location ?? new THREE.Vector3()), rotation: directionRotation, extraTracks })
     const loop = overrideLoop ?? defaultLoop
 
     this.setupCameraForAnimation(animation.tree)
