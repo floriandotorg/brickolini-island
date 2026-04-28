@@ -85,7 +85,7 @@ export class Isle extends IsleBase {
 
     if (engine.currentSaveGame.playerUnsafe !== 'papa') {
       const papa = await this.getCharacter('papa')
-      const papaPlacement = this.boundaryManager.getObjectPlacement('EDG02_54', 3, 0.55, 1, 0.4) // USR00_193
+      const papaPlacement = this.boundaryManager.getObjectPlacement('USR00_193', 3, 0.55, 1, 0.4)
       papa.moveRoiTo(papaPlacement.position, papaPlacement.quaternion)
       const papaActor = new PathActor(papa, this)
       const papaCycle1 = CHARACTER_CYCLES.papa[Math.floor(Math.random() * 3)]
