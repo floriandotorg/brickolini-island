@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.13/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.5/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -20,8 +20,7 @@
     "enabled": true,
     "rules": {
       "nursery": {
-        "useSortedClasses": "error",
-        "useSpread": "error"
+        "useSortedClasses": "error"
       },
       "suspicious": {
         "noIrregularWhitespace": "error",
@@ -50,7 +49,8 @@
         "useNumberNamespace": "error",
         "noInferrableTypes": "error",
         "noUselessElse": "error",
-        "useConsistentArrowReturn": "error"
+        "useConsistentArrowReturn": "error",
+        "useSpreadOverApply": "error"
       },
       "correctness": {
         "noUnusedImports": "error",

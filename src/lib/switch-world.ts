@@ -103,7 +103,7 @@ const switchWorldInner = async (normalizedSpawn: WorldSpawnInner) => {
           return import('../worlds/act2').then(m => new m.Act2())
         default: {
           const _exhaustiveCheck: never = normalizedSpawn
-          throw new Error(`Unhandled world: ${normalizedSpawn}`)
+          throw new Error(`Unhandled world: ${(normalizedSpawn as { name: string }).name}`)
         }
       }
     })()
