@@ -99,6 +99,10 @@ export class RoiModel extends THREE.Group {
     return this._roi3d
   }
 
+  public get roi3dOrNull(): Roi3D | null {
+    return this._roi3d
+  }
+
   public getWorldBoundingSphere(): THREE.Sphere {
     const worldCenter = this.getWorldPosition(new THREE.Vector3())
     worldCenter.add(this.boundingSphere.center)

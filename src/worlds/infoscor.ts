@@ -50,4 +50,12 @@ export class InfoScor extends World {
   public override pointerUp(_event: NormalizedMouseEvent): void {
     this._building.pointerUp()
   }
+
+  public override keyPressed(key: string): void {
+    if (key === ' ') {
+      void switchWorld({ ending: null })
+      return
+    }
+    super.keyPressed(key)
+  }
 }

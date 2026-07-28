@@ -7,6 +7,7 @@ import { DuneBugy_Model } from '../actions/dunecar'
 import { NoPizaz_Texture, NoPizza_Texture } from '../actions/isle'
 import { Jsuser_Model } from '../actions/jetski'
 import { Rcuser_Model } from '../actions/racecar'
+import { act1State } from '../lib/act1-state'
 import { type ActionBase, type ActorAction, type AnimationAction, type EntityAction, getExtraValue, isActorAction, isAnimationAction, isBoundaryAction, isEntityAction, isPositionalAudioAction, type ModelAction, type RunAnimationAction, type SerialAction } from '../lib/action-types'
 import { type Boundary, type Edge, getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
@@ -109,6 +110,16 @@ export abstract class IsleBase extends World {
   public set currentVehicle(vehicle: Vehicle | null) {
     this._currentVehicle = vehicle
   }
+
+  public get canExit(): boolean {
+    const vehicleType = this._currentVehicle?.type
+    if (vehicleType === 'ambul' || vehicleType === 'towtk') {
+      return false
+    }
+    return act1State.value === 'none'
+  }
+
+  public abortMission(): void {}
 
   public get dashboard(): Dashboard {
     return this._dashboard
@@ -510,7 +521,7 @@ export abstract class IsleBase extends World {
     return null
   }
 
-  public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location): Promise<void> {
+  public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location, lockOnly = false): Promise<void> {
     if (animationInfo == null) {
       animationInfo = this.animationInfos.find(a => a.objectId === action.id)
       if (animationInfo == null) {
@@ -526,38 +537,39 @@ export abstract class IsleBase extends World {
     if (location != null) {
       location.animationPlayedAtLocation = true
     }
-    const extraTracks = (() => {
-      if (location == null || !animationInfo.hasCameraAnimation) {
-        return undefined
-      }
-      const matrix = calculateTransformationMatrix(location.position, location.direction, location.up)
-      const position = new THREE.Vector3()
-      const quaternion = new THREE.Quaternion()
-      matrix.decompose(position, quaternion, new THREE.Vector3())
-      // for some reason we need to rotate yaw by 180 degrees
-      const rotationQuaternion = new THREE.Quaternion()
-      rotationQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
-      quaternion.premultiply(rotationQuaternion)
-      quaternion.normalize()
-      const cameraQuaternion = new THREE.Quaternion()
-      cameraQuaternion.copy(this.camera.quaternion)
-      cameraQuaternion.normalize()
-      // ensure shortest path
-      if (cameraQuaternion.dot(quaternion) < 0) {
-        quaternion.x *= -1
-        quaternion.y *= -1
-        quaternion.z *= -1
-        quaternion.w *= -1
-      }
-      return [
-        new THREE.VectorKeyframeTrack('camera.position', [0, 1], [this.camera.position.x, this.camera.position.y, this.camera.position.z, position.x, position.y, position.z]),
-        new THREE.QuaternionKeyframeTrack('camera.quaternion', [0, 1], [this.camera.quaternion.x, this.camera.quaternion.y, this.camera.quaternion.z, this.camera.quaternion.w, quaternion.x, quaternion.y, quaternion.z, quaternion.w]),
-      ]
-    })()
+    const extraTracks = lockOnly
+      ? undefined
+      : (() => {
+          if (location == null || !animationInfo.hasCameraAnimation) {
+            return undefined
+          }
+          const matrix = calculateTransformationMatrix(location.position, location.direction, location.up)
+          const position = new THREE.Vector3()
+          const quaternion = new THREE.Quaternion()
+          matrix.decompose(position, quaternion, new THREE.Vector3())
+          // for some reason we need to rotate yaw by 180 degrees
+          const rotationQuaternion = new THREE.Quaternion()
+          rotationQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
+          quaternion.premultiply(rotationQuaternion)
+          quaternion.normalize()
+          const cameraQuaternion = new THREE.Quaternion()
+          cameraQuaternion.copy(this.camera.quaternion)
+          cameraQuaternion.normalize()
+          // ensure shortest path
+          if (cameraQuaternion.dot(quaternion) < 0) {
+            quaternion.x *= -1
+            quaternion.y *= -1
+            quaternion.z *= -1
+            quaternion.w *= -1
+          }
+          return [
+            new THREE.VectorKeyframeTrack('camera.position', [0, 1], [this.camera.position.x, this.camera.position.y, this.camera.position.z, position.x, position.y, position.z]),
+            new THREE.QuaternionKeyframeTrack('camera.quaternion', [0, 1], [this.camera.quaternion.x, this.camera.quaternion.y, this.camera.quaternion.z, this.camera.quaternion.w, quaternion.x, quaternion.y, quaternion.z, quaternion.w]),
+          ]
+        })()
     return this.playAnimation(action, {
       extraTracks,
-      unskippable: extraTracks != null,
-      lockCamera: extraTracks != null,
+      lockCamera: lockOnly || extraTracks != null,
     }).then(() => {
       this._cameraAnimationPlaying = false
     })
@@ -656,22 +668,22 @@ export abstract class IsleBase extends World {
     let entity: Entity | null = null
     switch (objectScript) {
       case 'GasStationEntity':
-        entity = new (await import('../lib/world/entities/gas-station')).GasStation(model)
+        entity = new (await import('../lib/world/entities/gas-station')).GasStation(model, this)
         break
       case 'InfoCenterEntity':
-        entity = new (await import('../lib/world/entities/info-center')).InfoCenter(model)
+        entity = new (await import('../lib/world/entities/info-center')).InfoCenter(model, this)
         break
       case 'PoliceEntity':
-        entity = new (await import('../lib/world/entities/police')).Police(model)
+        entity = new (await import('../lib/world/entities/police')).Police(model, this)
         break
       case 'HospitalEntity':
-        entity = new (await import('../lib/world/entities/hospital')).Hospital(model)
+        entity = new (await import('../lib/world/entities/hospital')).Hospital(model, this)
         break
       case 'BeachHouseEntity':
-        entity = new (await import('../lib/world/entities/beach-house')).BeachHouseEntity(model)
+        entity = new (await import('../lib/world/entities/beach-house')).BeachHouseEntity(model, this)
         break
       case 'RaceStandsEntity':
-        entity = new (await import('../lib/world/entities/race-stands')).RaceStandsEntity(model)
+        entity = new (await import('../lib/world/entities/race-stands')).RaceStandsEntity(model, this)
         break
     }
     if (entity != null) {

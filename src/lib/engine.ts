@@ -116,6 +116,7 @@ class Engine {
   private _keyStates: Set<string> = new Set()
   private _backgroundAudio: { actionId: number; audio: Audio } | null = null
   private _transitionStart = 0
+  private _transitionSpeedMs = 50
   private _transitionPromiseResolve: (() => void) | null = null
   private _currentSaveGame = SaveGame.UnloadedSave
   private readonly _gains: Record<AudioType, GainNode>
@@ -380,6 +381,13 @@ class Engine {
     document.addEventListener('keydown', event => {
       this._keyStates.add(event.key)
 
+      if (this._state === 'cutscene') {
+        if (event.key === ' ') {
+          this._cutsceneVideo.pause()
+        }
+        return
+      }
+
       if (this._state === 'game') {
         this._world?.keyDown(event)
       }
@@ -480,9 +488,10 @@ class Engine {
     this._world.activate(this._composer, param)
   }
 
-  public async transition(): Promise<void> {
+  public async transition(speedMs = 50): Promise<void> {
     this._state = 'transition'
     this._transitionStart = this._timer.getElapsed()
+    this._transitionSpeedMs = speedMs
     this._mosaicEffect.tileSize = Math.ceil(Math.max(this._canvas.clientWidth / ORIGINAL_TOTAL_WIDTH, this._canvas.clientHeight / ORIGINAL_TOTAL_HEIGHT) * 10)
     this._mosaicEffect.progress = 0.0
     return new Promise(resolve => {
@@ -567,7 +576,7 @@ class Engine {
 
     if (this._state === 'transition') {
       const progressPerTick = 1 / 16
-      const ticks = Math.floor(((this._timer.getElapsed() - this._transitionStart) * 1000) / 50)
+      const ticks = Math.floor(((this._timer.getElapsed() - this._transitionStart) * 1000) / this._transitionSpeedMs)
       this._mosaicEffect.progress = progressPerTick * ticks
       if (this._mosaicEffect.progress >= 1.0) {
         this._mosaicEffect.progress = 0.0

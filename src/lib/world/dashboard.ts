@@ -91,7 +91,7 @@ import {
   SkatePizza_Bitmap,
   TowTrackDashboard,
 } from '../../actions/isle'
-import { type AudioAction, type ControlAction, getExtraValue, type ImageAction, isAudioAction, isControlAction, isImageAction, isMeterAction, type MeterAction, type ParallelAction } from '../action-types'
+import { type AudioAction, type ControlAction, getExtraValue, type ImageAction, isControlAction, isImageAction, isMeterAction, type MeterAction, type ParallelAction } from '../action-types'
 import { CanvasSprite, createImageSprite } from '../assets/canvas-sprite'
 import { Control } from '../assets/control'
 import { getImage } from '../assets/image'
@@ -340,7 +340,7 @@ export class Dashboard {
   private _background: THREE.Sprite | null = null
   private _armsMask: Control | null = null
   private _hornControl: Control | null = null
-  private _hornSound: AudioAction | null = null
+  private _hornOn = false
   private _infoControl: Control | null = null
   private _speedMeter: Meter | null = null
   private _fuelMeter: Meter | null = null
@@ -350,14 +350,16 @@ export class Dashboard {
   public onExit: () => void = () => {}
   public onInfoButtonClicked: () => void = () => {}
   public onFlightModeClick: (mode: 'taking-off' | 'landing') => void = _ => {}
+  public onHornToggle: ((on: boolean) => void) | null = null
 
   public pointerDown(normalizedX: number, normalizedY: number): void {
     if (this._armsMask?.pointerDown(normalizedX, normalizedY) != null) {
       this.onExit()
     }
 
-    if (this._hornControl?.pointerDown(normalizedX, normalizedY) != null && this._hornSound != null) {
-      void engine.playAudio(this._hornSound, 'effects')
+    if (this._hornControl?.pointerDown(normalizedX, normalizedY) != null) {
+      this._hornOn = !this._hornOn
+      this.onHornToggle?.(this._hornOn)
     }
 
     if (this._infoControl?.pointerDown(normalizedX, normalizedY) != null) {
@@ -465,11 +467,7 @@ export class Dashboard {
 
     this._hornControl = await addControl('Horn_Ctl')
     if (this._hornControl != null) {
-      const sound = action.children.find(child => isAudioAction(child) && child.name.endsWith('Horn_Sound'))
-      if (!isAudioAction(sound)) {
-        throw new Error('Horn sound not found')
-      }
-      this._hornSound = sound
+      this._hornOn = false
     }
 
     this._infoControl = await addControl('Info_Ctl')
@@ -487,7 +485,7 @@ export class Dashboard {
     this._takeOffControl?.sprite.removeFromParent()
     this._landControl?.sprite.removeFromParent()
 
-    this._hornSound = null
+    this._hornOn = false
     this._background = null
     this._armsMask = null
     this._hornControl = null
@@ -500,6 +498,10 @@ export class Dashboard {
 
   public update(velocity: number): void {
     this._speedMeter?.draw(velocity)
+  }
+
+  public updateFuel(fill: number): void {
+    this._fuelMeter?.draw(fill)
   }
 
   public activate(composer: Composer): void {

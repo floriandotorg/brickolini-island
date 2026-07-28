@@ -372,11 +372,13 @@ import {
 } from '../actions/isle'
 // import { CNs001Pe, tns030bd_RunAnim } from '../actions/act2main'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../actions/jukebox'
+import { act1State } from '../lib/act1-state'
 import type { DTA } from '../lib/assets/dta'
 import type { Composer } from '../lib/effect/composer'
-import { engine } from '../lib/engine'
+import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { locations } from '../lib/locations'
 import { switchWorld } from '../lib/switch-world'
+import { Ambulance } from '../lib/world/actors/ambulance'
 import { Helicopter } from '../lib/world/actors/helicopter'
 import { PlayerMovement } from '../lib/world/player-movement'
 import { Isle } from './isle'
@@ -767,6 +769,7 @@ export class Act1 extends Isle {
   }
 
   public backgroundMusicTriggerEnabled = true
+  private _ambulance: Ambulance | null | undefined
 
   constructor() {
     super('act1', false)
@@ -880,6 +883,7 @@ export class Act1 extends Isle {
       if (this.currentVehicle instanceof Helicopter) {
         this._playerMovement.flightMode = false
       }
+      this.abortMission()
       switchWorld({ ending: null })
     }
 
@@ -910,12 +914,53 @@ export class Act1 extends Isle {
     // this.playAnimation(tns002br_RunAnim)
   }
 
+  public override abortMission(): void {
+    if (act1State.value !== 'none') {
+      this.ambulance?.abort()
+    }
+  }
+
+  private static readonly PICKUP_ROI_NAMES = new Set(['ps-gate', 'gd'])
+
+  public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
+    const ambulance = this.ambulance
+    if (act1State.value === 'ambulance' && ambulance != null && ambulance.isInPickupPhase) {
+      this._dashboard.pointerDown(event.normalizedX, event.normalizedY)
+      const name = this.pickRoiNameAt(event.normalizedX, event.normalizedY, Act1.PICKUP_ROI_NAMES)
+      if (name != null) {
+        ambulance.handlePickupClick(name)
+      }
+      return
+    }
+    await super.pointerDown(event)
+  }
+
+  private get ambulance(): Ambulance | null {
+    if (this._ambulance !== undefined) {
+      return this._ambulance
+    }
+    const actor = this.findRoi('ambul')?.actor
+    this._ambulance = actor instanceof Ambulance ? actor : null
+    return this._ambulance
+  }
+
   public override async activate(composer: Composer, param?: IsleParam): Promise<void> {
     await super.activate(composer, param)
     if (param != null) {
       const { position, quaternion } = this.boundaryManager.getObjectPlacement(param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
       this.camera.position.copy(position)
       this.camera.quaternion.copy(quaternion)
+    }
+    if (act1State.value === 'transitionToAmbulance') {
+      act1State.value = 'ambulance'
+      this.cameraAnimationTriggerEnabled = false
+      this.backgroundMusicTriggerEnabled = false
+      const ambulance = this.ambulance
+      if (ambulance != null) {
+        const placement = this.boundaryManager.getObjectPlacementFromLocation('hospitalExited')
+        ambulance.roi.moveRoiTo(placement.position, placement.quaternion)
+        void ambulance.startMission()
+      }
     }
   }
 
@@ -927,7 +972,21 @@ export class Act1 extends Isle {
     this._playerMovement.placeOnGround(object)
   }
 
+  public override keyDown(event: KeyboardEvent): void {
+    super.keyDown(event)
+    if (event.key === ' ' && !event.repeat) {
+      const ambulance = this.ambulance
+      if (ambulance?.isInCutscene) {
+        ambulance.handleSpace()
+      }
+    }
+  }
+
   public override keyPressed(key: string): void {
+    if (key === ' ' && this.ambulance != null && this.ambulance.isInCutscene) {
+      return
+    }
+
     super.keyPressed(key)
 
     if (key === 'f' && import.meta.env.DEV) {
@@ -951,7 +1010,12 @@ export class Act1 extends Isle {
       this._water.material.uniforms.time.value += delta * 0.1
     }
 
-    if (this.isRunningCameraAnimation) {
+    const ambulance = this.ambulance
+    if (act1State.value === 'ambulance' && ambulance != null && ambulance.missionActive && !ambulance.isInCutscene && this.currentVehicle !== ambulance) {
+      ambulance.abort()
+    }
+
+    if (this.isRunningCameraAnimation || (this.ambulance?.isInCutscene ?? false)) {
       return
     }
 

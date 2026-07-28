@@ -24,6 +24,9 @@ export class SaveGame {
   private static readonly VehiclePlacementKey = ['vehicle', 'placement']
   private static readonly VehicleProgressKey = ['vehicle', 'progress']
   private static readonly PlayedExitExplanationKey = 'playedExitExplanation'
+  private static readonly HospitalVisitCountKey = ['hospital', 'visit']
+  private static readonly AmbulanceHighScoreKey = ['ambulance', 'high']
+  private static readonly AmbulanceCurrentScoreKey = ['ambulance', 'current']
 
   public get playerUnsafe(): PlayerCharacter | null {
     return this._player
@@ -39,6 +42,30 @@ export class SaveGame {
   public set player(character: PlayerCharacter) {
     this._player = character
     this.setItem(this.playerUnsafe, SaveGame.PlayerKey)
+  }
+
+  public getHospitalVisitCount(player: PlayerCharacter): number {
+    return Number.parseInt(this.getItem(...SaveGame.HospitalVisitCountKey, player) ?? '0', 10) || 0
+  }
+
+  public setHospitalVisitCount(player: PlayerCharacter, value: number): void {
+    this.setItem(value, ...SaveGame.HospitalVisitCountKey, player)
+  }
+
+  public getAmbulanceHighScore(player: PlayerCharacter): number {
+    return Number.parseInt(this.getItem(...SaveGame.AmbulanceHighScoreKey, player) ?? '0', 10) || 0
+  }
+
+  public setAmbulanceHighScore(player: PlayerCharacter, value: number): void {
+    this.setItem(value, ...SaveGame.AmbulanceHighScoreKey, player)
+  }
+
+  public getAmbulanceCurrentScore(player: PlayerCharacter): number {
+    return Number.parseInt(this.getItem(...SaveGame.AmbulanceCurrentScoreKey, player) ?? '0', 10) || 0
+  }
+
+  public setAmbulanceCurrentScore(player: PlayerCharacter, value: number): void {
+    this.setItem(value, ...SaveGame.AmbulanceCurrentScoreKey, player)
   }
 
   public get playedExitExplanation(): boolean {

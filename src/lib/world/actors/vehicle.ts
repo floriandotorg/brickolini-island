@@ -11,6 +11,9 @@ export abstract class Vehicle extends Actor {
   protected abstract readonly explanationAnimationOffset: THREE.Vector3 | null
 
   override async onClick(): Promise<boolean> {
+    if (!this._isle.canExit) {
+      return true
+    }
     await this.enter()
     return true
   }

@@ -256,14 +256,17 @@ export abstract class World {
   }
 
   public findRoi(name: string): Roi3D | null {
-    const roi = this.scene.getObjectByName(name.toLowerCase())
-    if (roi == null) {
-      return null
-    }
-    if (!(roi instanceof RoiModel)) {
-      throw new Error(`Object "${name}" is not an ROI`)
-    }
-    return roi.roi3d
+    const lowerName = name.toLowerCase()
+    let found: Roi3D | null = null
+    this.scene.traverse(object => {
+      if (found == null && object instanceof RoiModel) {
+        const roi3d = object.roi3dOrNull
+        if (roi3d != null && roi3d.name === lowerName) {
+          found = roi3d
+        }
+      }
+    })
+    return found
   }
 
   public getRoi(name: string): Roi3D {
@@ -646,6 +649,26 @@ export abstract class World {
       }
       hit = hit.parent
     }
+  }
+
+  public pickRoiNameAt(normalizedX: number, normalizedY: number, names: Set<string>): string | null {
+    this._raycaster.setFromCamera(new THREE.Vector2(normalizedX, normalizedY), this._render.camera)
+    const hits = this._raycaster.intersectObjects(Array.from(this._clickListeners.keys()))
+    for (const hit of hits) {
+      if (!hit.object.visible) {
+        continue
+      }
+      let obj: THREE.Object3D | null = hit.object
+      while (obj != null) {
+        const match = obj instanceof RoiModel ? (obj.roi3dOrNull?.name ?? obj.name) : obj.name
+        if (match != null && names.has(match)) {
+          return match
+        }
+        obj = obj.parent
+      }
+      return null
+    }
+    return null
   }
   public pointerUp(_event: NormalizedMouseEvent): void {}
   public pointerMove(_event: NormalizedMouseEvent): void {}

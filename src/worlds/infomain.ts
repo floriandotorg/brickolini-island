@@ -301,7 +301,7 @@ export class InfoMain extends World {
       engine.stopBackgroundMusic()
       engine
         .playCutscene(this._ending === 'bad' ? BadEnd_Movie : GoodEnd_Movie)
-        .then(() => this.playAnimation(this._ending === 'bad' ? tic092in_RunAnim : tic089in_RunAnim))
+        .then(() => this.playAnimation(this._ending === 'bad' ? tic092in_RunAnim : tic089in_RunAnim, { unskippable: true }))
         .then(() => engine.switchBackgroundMusic(InformationCenter_Music))
     } else {
       void this.playAnimation(iic001in_RunAnim).then(async () => {
