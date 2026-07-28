@@ -40,6 +40,14 @@ biome.json              # 2-space, single quotes, semis as needed, lineWidth 320
 - Always run `npm run check` and `npm run lint` when finishing a task.
 - Do not use Playwright (browser automation). Reason about runtime behavior from the source and ask the user to test in their browser instead.
 
+## Original codebase
+
+When implementing features make it faithful to the original game. You can query the original by using the ask-legacy skill. Try to mimic the old implementation while still using modern TypeScript and software engineering practices.
+
+When getting a spec, implement that spec as faithfully as possible. If the spec is ambiguous, use the ask-legacy skill for clarification.
+
+If the ask-legacy skill does not work, ask the user.
+
 ## Asset pipeline
 
 Rendering: WebGL renderer + post-processing GLSL, separate scenes for world vs cutscenes. Asset loaders under `src/lib/assets/` parse binary formats (`wdb`, `dta`, animation, model, mesh).
