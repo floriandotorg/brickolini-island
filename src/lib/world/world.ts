@@ -13,6 +13,16 @@ import type { Actor } from './actor'
 import { BoundaryManager } from './boundary-manager'
 import { Character, type CharacterName } from './character'
 
+const _ptatcamAnimWorld = new THREE.Matrix4()
+const _ptatcamLocal = new THREE.Matrix4()
+const _ptatcamUp = new THREE.Vector3()
+const _ptatcamTrans = new THREE.Vector3()
+const _ptatcamToCam = new THREE.Vector3()
+const _ptatcamRight = new THREE.Vector3()
+const _ptatcamForward = new THREE.Vector3()
+const _ptatcamCol = new THREE.Vector3()
+const _ptatcamBasis = new THREE.Matrix4()
+
 // you cannot enter the second floor
 export enum ElevatorEntrance {
   First = 0,
@@ -70,6 +80,8 @@ export abstract class World {
   private readonly _debugDirection: HTMLElement
   private readonly _debugTime: HTMLElement
   private readonly _debugSlewMode: HTMLElement
+  private readonly _debugSaveGame: HTMLElement
+  private readonly _debugPlayer: HTMLElement
 
   private _raycaster = new THREE.Raycaster()
   private _clickListeners = new Map<THREE.Object3D, () => Promise<boolean>>()
@@ -113,6 +125,8 @@ export abstract class World {
     this._debugDirection = getElement('debug-direction')
     this._debugTime = getElement('debug-time')
     this._debugSlewMode = getElement('debug-slew-mode')
+    this._debugSaveGame = getElement('debug-save-game')
+    this._debugPlayer = getElement('debug-player')
 
     this._render.scene.add(this._debugGroup)
   }
@@ -407,6 +421,7 @@ export abstract class World {
           console.warn(`PTATCAM: Object not found: ${name}`)
           continue
         }
+        object.matrixWorldAutoUpdate = false
         pointAtCameraObjects.push(object)
       }
     }
@@ -617,6 +632,9 @@ export abstract class World {
         for (const actorName of managedActorNames) {
           this.releaseActor(actorName)
         }
+        for (const object of pointAtCameraObjects) {
+          object.matrixWorldAutoUpdate = true
+        }
         this._runningAnimations = this._runningAnimations.filter(a => a.mixer !== mixer)
         resolve()
       }
@@ -727,6 +745,10 @@ export abstract class World {
       this._debugTime.textContent = `${Math.floor(hours).toFixed(0).padStart(2, '0')}:${Math.floor(minutes).toFixed(0).padStart(2, '0')}`
     }
     this._debugSlewMode.classList.toggle('hidden', positionDirection == null || !positionDirection.slewMode)
+
+    const saveGame = engine.currentSaveGame
+    this._debugSaveGame.textContent = saveGame.name
+    this._debugPlayer.textContent = saveGame.playerUnsafe ?? '—'
   }
 
   protected update(delta: number): void {
@@ -774,17 +796,35 @@ export abstract class World {
       }
 
       for (const object of pointAtCameraObjects) {
-        const a = object.getWorldPosition(new THREE.Vector3())
-        const b = this.camera.getWorldPosition(new THREE.Vector3())
-        b.y = a.y
-        const dir = b.clone().sub(a)
-        if (dir.length() < 1e-8) {
-          return
+        const chain: THREE.Object3D[] = []
+        for (let node: THREE.Object3D | null = object; node != null; node = node.parent) {
+          chain.unshift(node)
         }
-
-        const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
-        const targetYaw = Math.atan2(dir.x, -dir.z)
-        object.quaternion.setFromEuler(new THREE.Euler(-euler.x, -targetYaw, -euler.z, 'YXZ'))
+        const animWorld = _ptatcamAnimWorld.identity()
+        for (const node of chain) {
+          _ptatcamLocal.compose(node.position, node.quaternion, node.scale)
+          animWorld.multiply(_ptatcamLocal)
+        }
+        const up = _ptatcamUp.setFromMatrixColumn(animWorld, 1)
+        const upScale = up.length()
+        if (upScale < 1e-8) {
+          continue
+        }
+        up.multiplyScalar(1 / upScale)
+        const trans = _ptatcamTrans.setFromMatrixColumn(animWorld, 3)
+        const toCam = _ptatcamToCam.copy(trans).sub(this.camera.position)
+        const right = _ptatcamRight.crossVectors(up, toCam)
+        if (right.lengthSq() < 1e-12) {
+          continue
+        }
+        right.normalize()
+        const forward = _ptatcamForward.crossVectors(right, up)
+        const rightScale = _ptatcamCol.setFromMatrixColumn(animWorld, 0).length()
+        const forwardScale = _ptatcamCol.setFromMatrixColumn(animWorld, 2).length()
+        right.multiplyScalar(rightScale)
+        up.multiplyScalar(upScale)
+        forward.multiplyScalar(forwardScale)
+        object.matrixWorld.copy(_ptatcamBasis.makeBasis(right, up, forward).setPosition(trans))
       }
 
       if (finishedByStopAtTime) {
