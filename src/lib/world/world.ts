@@ -422,7 +422,11 @@ export abstract class World {
           throw new Error(`Actor not found: ${phoneme.extra}`)
         }
         const videoElement = document.createElement('video')
+        videoElement.muted = true
+        videoElement.playsInline = true
+        videoElement.preload = 'auto'
         videoElement.src = getActionFileUrl(phoneme)
+        videoElement.load()
         const videoTexture = new THREE.VideoTexture(videoElement)
         videoTexture.colorSpace = THREE.SRGBColorSpace
         return {
@@ -602,6 +606,9 @@ export abstract class World {
     return new Promise(resolve => {
       const removeMe = () => {
         for (const faceAnimation of faceAnimations) {
+          for (const { videoElement } of faceAnimation.animations) {
+            videoElement.pause()
+          }
           faceAnimation.character.resetHeadTexture()
         }
         for (const roi of roisToHideOnStop) {
@@ -752,13 +759,18 @@ export abstract class World {
         if (currentAnimation == null) {
           continue
         }
-        const { videoElement } = currentAnimation
+        const { videoElement, videoTexture } = currentAnimation
+        const targetTime = mixer.time - currentAnimation.start / 1_000
         if (faceAnimation.currentVideoElement !== videoElement) {
+          faceAnimation.currentVideoElement?.pause()
           faceAnimation.currentVideoElement = videoElement
-          faceAnimation.character.headMaterial.map = currentAnimation.videoTexture
+          faceAnimation.character.headMaterial.map = videoTexture
           faceAnimation.character.headMaterial.needsUpdate = true
+          videoElement.currentTime = targetTime
+          void videoElement.play()
+        } else if (videoElement.readyState >= videoElement.HAVE_CURRENT_DATA && Math.abs(videoElement.currentTime - targetTime) > 0.1) {
+          videoElement.currentTime = targetTime
         }
-        faceAnimation.currentVideoElement.currentTime = mixer.time - currentAnimation.start / 1_000
       }
 
       for (const object of pointAtCameraObjects) {
