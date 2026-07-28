@@ -15,6 +15,7 @@ export interface Settings {
   }
   volume: Record<AudioType, number>
   freeRoam: boolean
+  fill: boolean
 }
 
 export const setSettings = (settings: Partial<Settings>) => {
@@ -35,6 +36,9 @@ export const setSettings = (settings: Partial<Settings>) => {
   }
   if (settings.freeRoam != null) {
     localStorage.setItem('settings.freeRoam', settings.freeRoam ? 'true' : 'false')
+  }
+  if (settings.fill != null) {
+    localStorage.setItem('settings.fill', settings.fill ? 'true' : 'false')
   }
 }
 
@@ -87,5 +91,6 @@ export const getSettings = (): Settings => {
       cutscene: parseVolume('cutscene'),
     },
     freeRoam: localStorage.getItem('settings.freeRoam') === 'true',
+    fill: localStorage.getItem('settings.fill') === 'true',
   }
 }

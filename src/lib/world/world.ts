@@ -73,6 +73,7 @@ export type BuiltAnimation = {
 
 export abstract class World {
   protected _render = new Render3D()
+  public fixedAspectRatio = false
 
   private readonly _debugGroup: THREE.Group = new THREE.Group()
   private readonly _debugBox: HTMLElement
@@ -665,7 +666,7 @@ export abstract class World {
   }
 
   public async pointerDown(event: NormalizedMouseEvent): Promise<void> {
-    this._raycaster.setFromCamera(new THREE.Vector2(event.normalizedX, event.normalizedY), this._render.camera)
+    this._raycaster.setFromCamera(new THREE.Vector2(event.ndcX, event.ndcY), this._render.camera)
     let hit: THREE.Object3D | null = this._raycaster.intersectObjects(Array.from(this._clickListeners.keys()))[0]?.object
     while (hit != null) {
       const onClick = this._clickListeners.get(hit)

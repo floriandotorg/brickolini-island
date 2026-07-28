@@ -25,6 +25,30 @@ export const normalizePoint = (x: number, y: number, totalSize: [number, number]
   return [normalizedX, normalizedY]
 }
 
+export type LetterboxAnchor = 'center' | 'bottom'
+
+export type LetterboxBounds = { left: number; right: number; top: number; bottom: number }
+
+export const letterboxBounds = (width: number, height: number, contentAspect: number = RESOLUTION_RATIO, anchor: LetterboxAnchor = 'center'): LetterboxBounds => {
+  const canvasAspect = width / height
+  if (canvasAspect > contentAspect) {
+    const half = canvasAspect / contentAspect
+    return { left: -half, right: half, top: 1, bottom: -1 }
+  }
+  const half = contentAspect / canvasAspect
+  if (anchor === 'bottom') {
+    return { left: -1, right: 1, top: half, bottom: -1 }
+  }
+  return { left: -1, right: 1, top: half, bottom: -half }
+}
+
+export const screenToContentNDC = (nx: number, ny: number, width: number, height: number, contentAspect: number = RESOLUTION_RATIO, anchor: LetterboxAnchor = 'center'): [number, number] => {
+  const { left, right, top, bottom } = letterboxBounds(width, height, contentAspect, anchor)
+  const contentX = ((nx + 1) / 2) * (right - left) + left
+  const contentY = ((ny + 1) / 2) * (top - bottom) + bottom
+  return [contentX, contentY]
+}
+
 function sigmoid(z: number): number {
   return 1 / (1 + Math.exp(-z))
 }
@@ -90,13 +114,16 @@ export type Sentinel = symbol & { __brand: 'Sentinel' }
 export type NormalizedMouseEvent = {
   normalizedX: number
   normalizedY: number
+  ndcX: number
+  ndcY: number
 }
 
 const createNormalizedMouseEvent = (event: MouseEvent, canvas: HTMLCanvasElement): NormalizedMouseEvent => {
   const rect = canvas.getBoundingClientRect()
-  const [normalizedX, normalizedY] = normalizePoint(event.clientX - rect.left, event.clientY - rect.top, [rect.width, rect.height])
+  const [ndcX, ndcY] = normalizePoint(event.clientX - rect.left, event.clientY - rect.top, [rect.width, rect.height])
+  const [normalizedX, normalizedY] = screenToContentNDC(ndcX, ndcY, rect.width, rect.height)
 
-  return { normalizedX, normalizedY }
+  return { normalizedX, normalizedY, ndcX, ndcY }
 }
 
 class Engine {
@@ -484,7 +511,7 @@ class Engine {
     this._world?.deactivate()
     this._composer.resetPipeline()
     this._world = world
-    this._world.resize(this._canvas.clientWidth, this._canvas.clientHeight)
+    this._setRendererSize()
     this._world.activate(this._composer, param)
   }
 
@@ -547,15 +574,22 @@ class Engine {
     })
   }
 
+  public resize = () => {
+    this._setRendererSize()
+  }
+
   private _setRendererSize = () => {
     let width = window.innerWidth
     let height = window.innerHeight
-    const targetRatio = 4 / 3
+    const fill = getSettings().fill && !(this._world?.fixedAspectRatio ?? false)
 
-    if (width / height > targetRatio) {
-      width = height * targetRatio
-    } else {
-      height = width / targetRatio
+    if (!fill) {
+      const targetRatio = RESOLUTION_RATIO
+      if (width / height > targetRatio) {
+        width = height * targetRatio
+      } else {
+        height = width / targetRatio
+      }
     }
 
     this._canvas.style.left = `${(window.innerWidth - width) / 2}px`

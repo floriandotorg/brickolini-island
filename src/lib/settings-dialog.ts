@@ -62,6 +62,11 @@ if (freeRoamCheckbox == null || !(freeRoamCheckbox instanceof HTMLInputElement))
   throw new Error('Free roam checkbox not found')
 }
 
+const fillCheckbox = document.getElementById('fill-checkbox')
+if (fillCheckbox == null || !(fillCheckbox instanceof HTMLInputElement)) {
+  throw new Error('Fill checkbox not found')
+}
+
 const volumeSlider = (audioType: AudioType): HTMLInputElement => {
   const slider = document.getElementById(`${audioType}-volume-slider`)
   if (slider == null || !(slider instanceof HTMLInputElement)) {
@@ -89,6 +94,7 @@ const updateControlsFromSettings = () => {
   postProcessingCheckbox.checked = settings.graphics.postProcessing
   toneMappingCheckbox.checked = settings.graphics.toneMapping === 'filmic'
   freeRoamCheckbox.checked = settings.freeRoam
+  fillCheckbox.checked = settings.fill
   for (const audioType of AudioTypes) {
     volumeSliders[audioType].value = settings.volume[audioType].toString()
   }
@@ -114,6 +120,7 @@ const updateSettingsFromCheckboxes = () => {
       cutscene: Number.parseFloat(volumeSliders.cutscene.value),
     },
     freeRoam: freeRoamCheckbox.checked,
+    fill: fillCheckbox.checked,
   })
   engine.updateVolumes()
 }
@@ -157,4 +164,9 @@ for (const checkbox of [realisticWaterCheckbox, sunCheckbox, hdTexturesCheckbox,
 
 freeRoamCheckbox.addEventListener('change', () => {
   updateSettingsFromCheckboxes()
+})
+
+fillCheckbox.addEventListener('change', () => {
+  updateSettingsFromCheckboxes()
+  engine.resize()
 })

@@ -350,6 +350,7 @@ export abstract class Race extends IsleBase {
 
     this._applyVisibility(0)
 
+    this._controlsRender.letterbox = true
     composer.add(this._controlsRender)
   }
 
@@ -372,7 +373,7 @@ export abstract class Race extends IsleBase {
 
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
     await super.pointerDown(event)
-    this._dashboard.pointerDown(event.normalizedX, event.normalizedY)
+    this._dashboard.pointerDown(event)
     this._controls.pointerDown(event.normalizedX, event.normalizedY)
   }
 

@@ -97,7 +97,7 @@ import { Control } from '../assets/control'
 import { getImage } from '../assets/image'
 import type { ColorName } from '../assets/mesh'
 import { type Composer, Render2D } from '../effect/composer'
-import { engine } from '../engine'
+import { engine, type NormalizedMouseEvent } from '../engine'
 
 export const VehicleTypes = ['bike', 'moto', 'ambul', 'towtk', 'jetski', 'racecar', 'helicopter', 'dunecar', 'skate'] as const
 export type VehicleType = (typeof VehicleTypes)[number]
@@ -352,7 +352,8 @@ export class Dashboard {
   public onFlightModeClick: (mode: 'taking-off' | 'landing') => void = _ => {}
   public onHornToggle: ((on: boolean) => void) | null = null
 
-  public pointerDown(normalizedX: number, normalizedY: number): void {
+  public pointerDown(event: NormalizedMouseEvent): void {
+    const [normalizedX, normalizedY] = this._render.contentNDC(event.ndcX, event.ndcY)
     if (this._armsMask?.pointerDown(normalizedX, normalizedY) != null) {
       this.onExit()
     }
@@ -500,6 +501,8 @@ export class Dashboard {
   }
 
   public activate(composer: Composer): void {
+    this._render.letterbox = true
+    this._render.letterboxAnchor = 'bottom'
     composer.add(this._render)
     this.pointerUp()
   }

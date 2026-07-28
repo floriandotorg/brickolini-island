@@ -110,6 +110,7 @@ export class Building {
           })()
 
     this._world = world
+    world.fixedAspectRatio = true
 
     this._backgroundMusic = backgroundMusic
 

@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { RESOLUTION_RATIO } from '../engine'
+import { type LetterboxAnchor, letterboxBounds, RESOLUTION_RATIO } from '../engine'
 import effectFrag from './shader/effect.glsl'
 
 export abstract class Effect {
@@ -84,6 +84,9 @@ export class Render3D extends Render {
 export class Render2D extends Render {
   public scene = new THREE.Scene()
   public camera = new THREE.OrthographicCamera()
+  public letterbox = false
+  public letterboxAnchor: LetterboxAnchor = 'center'
+  private _bounds = { left: -1, right: 1, top: 1, bottom: -1 }
 
   private _renderTarget = new THREE.WebGLRenderTarget(1, 1, {
     type: THREE.FloatType,
@@ -107,6 +110,21 @@ export class Render2D extends Render {
 
   public resize(width: number, height: number): void {
     this._renderTarget.setSize(width, height)
+    if (this.letterbox) {
+      this._bounds = letterboxBounds(width, height, RESOLUTION_RATIO, this.letterboxAnchor)
+      this.camera.left = this._bounds.left
+      this.camera.right = this._bounds.right
+      this.camera.top = this._bounds.top
+      this.camera.bottom = this._bounds.bottom
+      this.camera.updateProjectionMatrix()
+    }
+  }
+
+  public contentNDC(ndcX: number, ndcY: number): [number, number] {
+    const { left, right, top, bottom } = this._bounds
+    const x = ((ndcX + 1) / 2) * (right - left) + left
+    const y = ((ndcY + 1) / 2) * (top - bottom) + bottom
+    return [x, y]
   }
 }
 
