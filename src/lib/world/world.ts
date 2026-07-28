@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { Action } from '../../actions/types'
 import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, isAudioAction, isNestedAnimationAction, isPositionalAudioAction, isRunAnimationAction, type NestedAnimationAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
 import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
-import { type Audio, getPositionalAudio } from '../assets/audio'
+import type { Audio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
 import { calculateTransformationMatrix, getGlobalPart, Roi3D, RoiModel } from '../assets/model'
 import type { SpawnLocation } from '../assets/spawn-location'
@@ -563,7 +563,7 @@ export abstract class World {
         if (character == null) {
           throw new Error(`Actor not found: ${audio.extra}`)
         }
-        return this.playPositionalAudio(audio, character instanceof Character ? character.head.model : character.model, audio.startTime / 1_000)
+        return this.playPositionalAudio(audio, character instanceof Character ? character.head.model : character.model, audio.startTime / 1_000, 'animations')
       }),
     )
     const sentinel = audioActions.length > 0 || audios.length > 0 ? engine.lowerBackgroundMusic() : null
@@ -843,11 +843,11 @@ export abstract class World {
   private readonly _cachedPositionalAudios = new Map<string, Promise<THREE.PositionalAudio>>()
 
   public async cachePositionalAudio(action: PositionalAudioAction): Promise<void> {
-    this._cachedPositionalAudios.set((action.filename.split(/[\\/]/).pop() ?? '').replace(/\.wav$/i, '').toLowerCase(), getPositionalAudio(engine.audioListener, action))
+    this._cachedPositionalAudios.set((action.filename.split(/[\\/]/).pop() ?? '').replace(/\.wav$/i, '').toLowerCase(), engine.getPositionalAudio(action, 'effects'))
   }
 
-  public async playPositionalAudio(action: PositionalAudioAction | string, parent: THREE.Object3D, delay?: number): Promise<THREE.PositionalAudio> {
-    const audio = await (typeof action === 'string' ? (await this._cachedPositionalAudios.get(action))?.clone() : getPositionalAudio(engine.audioListener, action))
+  public async playPositionalAudio(action: PositionalAudioAction | string, parent: THREE.Object3D, delay?: number, type: AudioType = 'effects'): Promise<THREE.PositionalAudio> {
+    const audio = await (typeof action === 'string' ? (await this._cachedPositionalAudios.get(action))?.clone() : engine.getPositionalAudio(action, type))
     if (audio == null) {
       throw new Error(`Positional audio not found: ${action}`)
     }

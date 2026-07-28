@@ -85,12 +85,21 @@ export const getAudio = async (listener: THREE.AudioListener, action: AudioActio
   return new Audio(action, audio, gains)
 }
 
-export const getPositionalAudio = async (listener: THREE.AudioListener, action: PositionalAudioAction): Promise<THREE.PositionalAudio> => {
+export const getPositionalAudio = async (listener: THREE.AudioListener, action: PositionalAudioAction, gains: GainNode[] = []): Promise<THREE.PositionalAudio> => {
   const audio = new THREE.PositionalAudio(listener)
   audio.setBuffer(await audioLoader.loadAsync(getActionFileUrl(action)))
   audio.gain.gain.value = action.volume / 100
-  audio.setRefDistance(10)
-  audio.setRolloffFactor(1.25)
+  audio.setDistanceModel('exponential')
+  audio.setRefDistance(15)
+  audio.setRolloffFactor(1)
   audio.setMaxDistance(100)
+  if (gains.length > 0) {
+    audio.gain.disconnect()
+    audio.gain.connect(gains[0])
+    for (let n = 1; n < gains.length; ++n) {
+      gains[n - 1].connect(gains[n])
+    }
+    gains[gains.length - 1].connect(listener.getInput())
+  }
   return audio
 }

@@ -1,6 +1,6 @@
 import * as THREE from 'three'
-import type { AudioAction, CompositeMediaAction, ImageAction } from './action-types'
-import { type Audio, getAudio } from './assets/audio'
+import type { AudioAction, CompositeMediaAction, ImageAction, PositionalAudioAction } from './action-types'
+import { type Audio, getAudio, getPositionalAudio } from './assets/audio'
 import { getActionFileUrl } from './assets/load'
 import { Composer, Render2D } from './effect/composer'
 import { FilmGrainEffect } from './effect/film-grain'
@@ -509,10 +509,14 @@ class Engine {
 
   public async setWorld(world: World, param?: unknown) {
     this._world?.deactivate()
+    if (this._world != null) {
+      this._world.camera.remove(this._audioListener)
+    }
     this._composer.resetPipeline()
     this._world = world
     this._setRendererSize()
     this._world.activate(this._composer, param)
+    this._world.camera.add(this._audioListener)
   }
 
   public async transition(speedMs = 50): Promise<void> {
@@ -530,6 +534,10 @@ class Engine {
     const gains = type === 'music' ? [this._backgroundLowerGain] : []
     gains.push(this._gains[type])
     return getAudio(this._audioListener, action, gains)
+  }
+
+  public getPositionalAudio(action: PositionalAudioAction, type: AudioType): Promise<THREE.PositionalAudio> {
+    return getPositionalAudio(this._audioListener, action, [this._gains[type]])
   }
 
   public async playAudio(action: AudioAction, type: AudioType): Promise<Audio> {
