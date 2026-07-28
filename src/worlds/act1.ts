@@ -379,6 +379,7 @@ import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { locations } from '../lib/locations'
 import { switchWorld } from '../lib/switch-world'
 import { Ambulance } from '../lib/world/actors/ambulance'
+import { FuelVehicle } from '../lib/world/actors/fuel-vehicle'
 import { Helicopter } from '../lib/world/actors/helicopter'
 import { PlayerMovement } from '../lib/world/player-movement'
 import { Isle } from './isle'
@@ -787,6 +788,13 @@ export class Act1 extends Isle {
         return
       }
 
+      if (data === 0x168) {
+        if (this.currentVehicle instanceof FuelVehicle) {
+          this.currentVehicle.refuel()
+        }
+        return
+      }
+
       const music = [ResidentalArea_Music, BeachBlvd_Music, Cave_Music, CentralRoads_Music, Jail_Music, Hospital_Music, InformationCenter_Music, PoliceStation_Music, Park_Music, CentralNorthRoad_Music, GarageArea_Music, RaceTrackRoad_Music, Beach_Music, Quiet_Audio]
 
       const triggers: [number, number][] = [
@@ -1023,7 +1031,7 @@ export class Act1 extends Isle {
 
     this.updateActors(delta, fromPos, toPos)
 
-    this._dashboard.update(normalizedSpeed)
+    this._dashboard.update(normalizedSpeed, this.currentVehicle?.fuel ?? 0)
 
     this.boundaryManager.update(fromPos, toPos, null)
   }

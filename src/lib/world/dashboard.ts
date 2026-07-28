@@ -407,8 +407,6 @@ export class Dashboard {
           this._render.scene.add(this._speedMeter.sprite)
         } else if (variable.endsWith('fuel')) {
           this._fuelMeter = await Meter.create(child)
-          // For now to at least show something
-          this._fuelMeter.draw(0.5)
           this._render.scene.add(this._fuelMeter.sprite)
         }
       }
@@ -496,12 +494,9 @@ export class Dashboard {
     this._landControl = null
   }
 
-  public update(velocity: number): void {
+  public update(velocity: number, fuel: number): void {
     this._speedMeter?.draw(velocity)
-  }
-
-  public updateFuel(fill: number): void {
-    this._fuelMeter?.draw(fill)
+    this._fuelMeter?.draw(fuel)
   }
 
   public activate(composer: Composer): void {

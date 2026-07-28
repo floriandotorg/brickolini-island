@@ -7,4 +7,8 @@ export class Jetski extends Vehicle {
   protected override explanationAnimationOffset = new THREE.Vector3(2.5, 0.6, 2.5)
   public override type = 'jetski' as const
   protected override dashboard = { type: 'jetski' } as const
+
+  public override get fuel(): number {
+    return 0.8
+  }
 }

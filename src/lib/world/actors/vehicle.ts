@@ -10,6 +10,10 @@ export abstract class Vehicle extends Actor {
   protected abstract readonly explanationAnimation: RunAnimationAction | null
   protected abstract readonly explanationAnimationOffset: THREE.Vector3 | null
 
+  public get fuel(): number {
+    return 0
+  }
+
   override async onClick(): Promise<boolean> {
     if (!this._isle.canExit) {
       return true

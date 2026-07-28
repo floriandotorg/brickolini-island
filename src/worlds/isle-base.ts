@@ -712,6 +712,9 @@ export abstract class IsleBase extends World {
       case 'Ambulance':
         actor = new (await import('../lib/world/actors/ambulance')).Ambulance(model, this)
         break
+      case 'TowTrack':
+        actor = new (await import('../lib/world/actors/towtrack')).TowTrack(model, this)
+        break
       case 'LegoRaceCar':
         actor = new (await import('../lib/world/actors/race-car')).RaceCar(model, this)
         break

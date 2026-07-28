@@ -319,7 +319,7 @@ export class Act2 extends IsleBase {
 
     this.updateActors(delta, fromPos, toPos)
 
-    this._dashboard.update(normalizedSpeed)
+    this._dashboard.update(normalizedSpeed, this.currentVehicle?.fuel ?? 0)
 
     this.boundaryManager.update(fromPos, toPos, null)
 

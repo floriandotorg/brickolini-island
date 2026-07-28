@@ -46,7 +46,7 @@ import type { Audio } from '../../assets/audio'
 import type { SpawnLocation } from '../../assets/spawn-location'
 import { engine, type Sentinel } from '../../engine'
 import type { PlayerCharacter } from '../../save-game'
-import { Vehicle } from './vehicle'
+import { FuelVehicle } from './fuel-vehicle'
 
 const beachApproachAnimations: Record<PlayerCharacter, RunAnimationAction> = {
   pepper: hpz049bd_RunAnim,
@@ -61,7 +61,6 @@ const banterLines = [ham034ra_PlayWav, ham035ra_PlayWav, ham036ra_PlayWav, hpz03
 const banterIntervalMilliseconds = 40_000
 const redFinishTime = 300_000
 const blueFinishTime = 400_000
-const fuelConsumptionPerMs = 3.333333333e-6
 
 const scoreColorValue = { grey: 0, yellow: 1, blue: 2, red: 3 } as const
 type ScoreColor = keyof typeof scoreColorValue
@@ -70,17 +69,17 @@ const scoreColorByValue: Record<number, ScoreColor> = { 0: 'grey', 1: 'yellow', 
 type RunningState = {
   state: 'starting' | 'entered' | 'pickup' | 'returning'
   startTime: number
-  fuel: number
   site?: 'beach' | 'police'
   phase?: 'waiting' | 'finished' | 'finish'
   color?: ScoreColor
 }
 
-export class Ambulance extends Vehicle {
+export class Ambulance extends FuelVehicle {
   public override type = 'ambul' as const
   protected override dashboard = { type: 'ambul' } as const
   protected override explanationAnimation = null
   protected override explanationAnimationOffset = null
+  protected override drainsOnlyWhenActive = true
 
   private _missionState: RunningState | { state: 'idle' } = { state: 'idle' }
   private _beachDone = false
@@ -121,11 +120,6 @@ export class Ambulance extends Vehicle {
         return
       }
 
-      if (data === 0x168) {
-        this._refuel()
-        return
-      }
-
       if (data === 0x131 && !this._beachDone) {
         void this._startPickup('beach')
       } else if (name[2] === 'C' && (data === 0x22 || data === 0x23 || data === 0x24) && !this._policeDone) {
@@ -148,7 +142,7 @@ export class Ambulance extends Vehicle {
     }
 
     this._inCutscene = true
-    this._missionState = { state: 'starting', startTime: 0, fuel: 1 }
+    this._missionState = { state: 'starting', startTime: 0 }
 
     await this._playCutsceneAnimation(hho027en_RunAnim)
     await this._enterDrivingState('hospitalExited', true)
@@ -213,7 +207,6 @@ export class Ambulance extends Vehicle {
     this._missionState = {
       state: 'entered',
       startTime: this._missionState.state === 'starting' ? engine.elapsedTimeMilliseconds : (this._missionState as RunningState).startTime,
-      fuel: this._missionState.state === 'starting' ? 1 : (this._missionState as RunningState).fuel,
     }
     this.act1.cameraAnimationTriggerEnabled = false
     this.act1.backgroundMusicTriggerEnabled = false
@@ -239,12 +232,6 @@ export class Ambulance extends Vehicle {
       this._hornAudio.playAgain()
     } else {
       this._hornAudio?.stop()
-    }
-  }
-
-  private _refuel(): void {
-    if (this._missionState.state !== 'idle') {
-      this._missionState.fuel = 1
     }
   }
 
@@ -383,12 +370,8 @@ export class Ambulance extends Vehicle {
     this.reset()
   }
 
-  public override update(delta: number): { from: THREE.Vector3; to: THREE.Vector3 } | null {
-    if (this._isle.currentVehicle === this && this._missionState.state !== 'idle') {
-      const fuel = Math.max(0, this._missionState.fuel + delta * 1000 * -fuelConsumptionPerMs)
-      this._missionState.fuel = fuel
-      this._isle.dashboard.updateFuel(fuel)
-    }
+  public override update(delta: number): null {
+    super.update(delta)
 
     if (this._speechAudio?.ended) {
       this._speechAudio = null
