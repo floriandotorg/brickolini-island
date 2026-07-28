@@ -6,6 +6,14 @@ import { isSpawnLocation, type SpawnLocation } from './lib/assets/spawn-location
 import { switchWorld } from './lib/switch-world'
 import { ElevatorEntrance, type WorldName, type WorldSpawn } from './lib/world/world'
 
+if (import.meta.env.DEV) {
+  const offset = Number(import.meta.env.VITE_PORT_OFFSET ?? 0)
+  const hue = (offset * 47) % 360
+  const border = document.createElement('div')
+  border.style.cssText = `position:fixed;inset:0;pointer-events:none;z-index:9999;border:4px solid hsl(${hue},70%,45%);`
+  document.body.append(border)
+}
+
 const playButton = document.getElementById('play-button')
 if (playButton == null || !(playButton instanceof HTMLButtonElement)) {
   throw new Error('Play button not found')
