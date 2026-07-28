@@ -38,6 +38,7 @@ biome.json              # 2-space, single quotes, semis as needed, lineWidth 320
 - Never use the term "Lego" (copyright) — write "brick" or "island".
 - The code should document itself; avoid comments unless necessary.
 - Always run `npm run check` and `npm run lint` when finishing a task.
+- Do not use Playwright (browser automation). Reason about runtime behavior from the source and ask the user to test in their browser instead.
 
 ## Asset pipeline
 
