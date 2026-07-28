@@ -102,6 +102,7 @@ export abstract class IsleBase extends World {
   private _currentVehicle: Vehicle | null = null
   private _cachedAnimations = new Map<string, AnimationAction>()
   protected _cameraAnimationPlaying = false
+  protected _jukeboxEntity: import('../lib/world/entities/jukebox').JukeBoxEntity | null = null
 
   public get currentVehicle(): Vehicle | null {
     return this._currentVehicle
@@ -685,8 +686,17 @@ export abstract class IsleBase extends World {
       case 'RaceStandsEntity':
         entity = new (await import('../lib/world/entities/race-stands')).RaceStandsEntity(model, this)
         break
+      case 'JukeBoxEntity':
+        entity = new (await import('../lib/world/entities/jukebox')).JukeBoxEntity(model, this)
+        this._jukeboxEntity = entity as import('../lib/world/entities/jukebox').JukeBoxEntity
+        break
     }
     if (entity != null) {
+      const matrix = calculateTransformationMatrix([-action.location[0], action.location[1], action.location[2]], [-action.direction[0], action.direction[1], action.direction[2]], [-action.up[0], action.up[1], action.up[2]])
+      const position = new THREE.Vector3()
+      const quaternion = new THREE.Quaternion()
+      matrix.decompose(position, quaternion, new THREE.Vector3())
+      model.moveRoiTo(position, quaternion)
       this.addClickListener(entity.roi, async () => {
         if (!this.ignoreEntityClick) {
           return await entity.onClick()

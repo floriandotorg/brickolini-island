@@ -142,6 +142,7 @@ class Engine {
   private _world: World | null = null
   private _keyStates: Set<string> = new Set()
   private _backgroundAudio: { actionId: number; audio: Audio } | null = null
+  private readonly _backgroundMusicChangedListeners = new Set<(actionId: number | null) => void>()
   private _transitionStart = 0
   private _transitionSpeedMs = 50
   private _transitionPromiseResolve: (() => void) | null = null
@@ -220,6 +221,7 @@ class Engine {
       this._backgroundAudio = { actionId: action.id, audio }
       this._backgroundAudio.audio.gain.value = sourceVolume
       this._backgroundAudio.audio.play()
+      this._notifyBackgroundMusicChanged(action.id)
       return
     }
 
@@ -235,6 +237,20 @@ class Engine {
     this._backgroundAudio.audio.gain.setValueAtTime(0, now)
     this._backgroundAudio.audio.gain.linearRampToValueAtTime(sourceVolume, fadeEnd)
     this._backgroundAudio.audio.play()
+    this._notifyBackgroundMusicChanged(action.id)
+  }
+
+  public onBackgroundMusicChanged(listener: (actionId: number | null) => void): () => void {
+    this._backgroundMusicChangedListeners.add(listener)
+    return () => {
+      this._backgroundMusicChangedListeners.delete(listener)
+    }
+  }
+
+  private _notifyBackgroundMusicChanged(actionId: number | null): void {
+    for (const listener of this._backgroundMusicChangedListeners) {
+      listener(actionId)
+    }
   }
 
   public pauseBackgroundMusic(): void {
@@ -245,6 +261,7 @@ class Engine {
 
   public stopBackgroundMusic(): void {
     this._backgroundAudio?.audio.stop()
+    this._notifyBackgroundMusicChanged(null)
   }
 
   public resumeBackgroundMusic(): void {

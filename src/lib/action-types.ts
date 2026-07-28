@@ -6,7 +6,7 @@ export const animationPresenters = ['LegoAnimPresenter', 'LegoLocomotionAnimPres
 
 export const modelPresenter = 'LegoModelPresenter'
 
-export type ActionBase = { id: number; siFile: string; type: Action.Type; presenter: string | null; extra: string | null; name: string; location: readonly [number, number, number] }
+export type ActionBase = { id: number; siFile: string; type: Action.Type; presenter: string | null; extra: string | null; name: string; location: readonly [number, number, number]; direction: readonly [number, number, number]; up: readonly [number, number, number] }
 
 export type FileActionBase = Override<ActionBase, { fileType: Action.FileType }>
 

@@ -20,6 +20,7 @@ export const SpawnLocations = [
   'helicopterTakenOff',
   'helicopterLanded',
   'helicopterExited',
+  'jukeboxExterior',
 ] as const
 export type SpawnLocation = (typeof SpawnLocations)[number]
 export const isSpawnLocation = (name: string): name is SpawnLocation => SpawnLocations.includes(name as SpawnLocation)
@@ -64,5 +65,7 @@ export const getSpawnLocation = (location: SpawnLocation): IsleParam => {
       return { position: { boundaryName: 'edg02_51', source: 2, sourceScale: 0.63, destination: 0, destinationScale: 0.4 } }
     case 'helicopterExited':
       return { position: { boundaryName: 'edg02_50', source: 2, sourceScale: 0.8, destination: 1, destinationScale: 0.3 } }
+    case 'jukeboxExterior':
+      return { position: { boundaryName: 'INT36', source: 0, sourceScale: 0.2, destination: 4, destinationScale: 0.4 } }
   }
 }

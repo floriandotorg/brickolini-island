@@ -101,6 +101,8 @@ const switchWorldInner = async (normalizedSpawn: WorldSpawnInner) => {
           return import('../worlds/carrace').then(m => new m.CarRace())
         case 'act2':
           return import('../worlds/act2').then(m => new m.Act2())
+        case 'jukeboxw':
+          return import('../worlds/jukeboxw').then(m => new m.JukeBox())
         default: {
           const _exhaustiveCheck: never = normalizedSpawn
           throw new Error(`Unhandled world: ${(normalizedSpawn as { name: string }).name}`)

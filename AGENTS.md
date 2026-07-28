@@ -48,6 +48,10 @@ When getting a spec, implement that spec as faithfully as possible. If the spec 
 
 If the ask-legacy skill does not work, ask the user.
 
+## Coordinate system
+
+The original game uses a left-handed coordinate system; three.js is right-handed. The x-axis is therefore negated on read: `BinaryReader.readVector3()` returns `[-x, y, z]`, so all WDB vectors (positions, directions, up) arrive in three.js space. Action data in `src/actions/*.ts` is transcribed verbatim from the original `.si` files and stays in original coordinates — negate x of `location`, `direction`, and `up` when converting an action transform to three.js (see `World.playAnimation`). 
+
 ## Asset pipeline
 
 Rendering: WebGL renderer + post-processing GLSL, separate scenes for world vs cutscenes. Asset loaders under `src/lib/assets/` parse binary formats (`wdb`, `dta`, animation, model, mesh).

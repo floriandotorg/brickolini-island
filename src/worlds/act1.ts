@@ -376,6 +376,7 @@ import { act1State } from '../lib/act1-state'
 import type { DTA } from '../lib/assets/dta'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent } from '../lib/engine'
+import { jukeBoxState } from '../lib/jukebox-state'
 import { locations } from '../lib/locations'
 import { switchWorld } from '../lib/switch-world'
 import { Ambulance } from '../lib/world/actors/ambulance'
@@ -969,6 +970,11 @@ export class Act1 extends Isle {
         ambulance.roi.moveRoiTo(placement.position, placement.quaternion)
         void ambulance.startMission()
       }
+    }
+
+    if (jukeBoxState.pendingStart) {
+      jukeBoxState.pendingStart = false
+      this._jukeboxEntity?.startAction()
     }
   }
 
