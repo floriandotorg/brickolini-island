@@ -116,6 +116,8 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
           return import('../worlds/elevbott').then(m => new m.ElevBott())
         case 'infodoor':
           return import('../worlds/infodoor').then(m => new m.InfoDoor())
+        case 'histbook':
+          return import('../worlds/histbook').then(m => new m.HistBook())
         case 'infoscor':
           return import('../worlds/infoscor').then(m => new m.InfoScor())
         case 'polidoor':
@@ -182,7 +184,7 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
   await engine.setWorld(world, param)
 }
 
-const invalidPreviousWorlds: WorldName[] = ['elevbott', 'elevride', 'elevopen', 'seaview', 'observe', 'elevdown'] as const
+const invalidPreviousWorlds: WorldName[] = ['histbook', 'elevbott', 'elevride', 'elevopen', 'seaview', 'observe', 'elevdown'] as const
 
 export const switchToPreviousWorld = (): Promise<void> => {
   if (lastWorld != null && !invalidPreviousWorlds.includes(lastWorld.name)) {

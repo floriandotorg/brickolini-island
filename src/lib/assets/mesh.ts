@@ -70,6 +70,7 @@ const createTexture = (name: string, source: 'model' | 'part' | 'image'): THREE.
     image: 'images',
   }
   return textureLoader.load(getFileUrl(`world/${sourceToPath[source]}/${name.toLowerCase()}.png`), texture => {
+    texture.name = name.toLowerCase()
     texture.colorSpace = THREE.SRGBColorSpace
     texture.wrapS = THREE.RepeatWrapping
     texture.wrapT = THREE.RepeatWrapping

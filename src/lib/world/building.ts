@@ -81,6 +81,7 @@ export class Building {
     backgroundMusic,
     exitSpawnPoint,
     noLights,
+    skipWdbWorld,
   }: {
     world: World
     startUpAction:
@@ -99,6 +100,7 @@ export class Building {
           control?: string
           animation?: RunAnimationAction
         }
+    skipWdbWorld?: boolean
     noLights?: boolean
   }): Promise<void> {
     this._exitSpawnPoint =
@@ -115,7 +117,7 @@ export class Building {
     this._backgroundMusic = backgroundMusic
 
     const worldName = getExtraValue(startUpAction, 'World')?.trim()
-    if (worldName != null) {
+    if (worldName != null && !skipWdbWorld) {
       world.worldGroup = await getWorld(worldName as Parameters<typeof getWorld>[0])
       if (!getSettings().graphics.pbrMaterials) {
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
