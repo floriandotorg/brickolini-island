@@ -250,6 +250,23 @@ export abstract class World {
     return actor
   }
 
+  public characterExists(name: string): boolean {
+    return this._characters.has(name)
+  }
+
+  public characterRefCount(name: string): number {
+    return this._characters.get(name)?.refCount ?? 0
+  }
+
+  public isBoxInFrustum(box: THREE.Box3): boolean {
+    this.camera.updateMatrixWorld()
+    return new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse)).intersectsBox(box)
+  }
+
+  public attachActor(actor: Actor): void {
+    this._actors.add(actor)
+  }
+
   public releaseActor(name: string): void {
     const entry = this._characters.get(name)
     if (entry == null) {

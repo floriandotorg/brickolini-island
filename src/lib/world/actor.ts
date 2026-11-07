@@ -4,6 +4,7 @@ import type { AnimationAction } from '../action-types'
 import { type Animation3D, type AnimationActor, getChildTransformsAtTime, parse3DAnimation } from '../assets/animation'
 import { getAction } from '../assets/load'
 import type { Roi3D } from '../assets/model'
+import { WDB } from '../assets/wdb'
 import { advanceCycleTime, selectSpeedTier } from '../locomotion.ts'
 import { Entity } from './entity'
 
@@ -61,7 +62,17 @@ export abstract class Actor extends Entity {
 
   private async _prepareRuntime(runtime: AnimationRuntime): Promise<void> {
     const animation = parse3DAnimation(await getAction(runtime.action))
-    const { animationActors } = await this._isle.resolveAnimationActors(animation)
+    const animationActors = new Map<string, AnimationActor>()
+    for (const entry of animation.actors) {
+      const name = entry.name.toLowerCase()
+      const roi = entry.type === WDB.ActorType.ManagedActor || name.startsWith('actor_') || name === this.roi.name ? this.roi : this._isle.findRoi(name)
+      if (roi != null) {
+        animationActors.set(name, { type: entry.type ?? WDB.ActorType.ManagedActor, object: roi.model, children: new Map(roi.children.map(child => [child.name, child.model])), roi })
+      }
+    }
+    if (!animationActors.has(animation.tree.name)) {
+      animationActors.set(animation.tree.name, { type: WDB.ActorType.ManagedActor, object: this.roi.model, children: new Map(this.roi.children.map(child => [child.name, child.model])), roi: this.roi })
+    }
     runtime.animation = animation
     runtime.animationActors = animationActors
     runtime.preparing = null
@@ -71,8 +82,18 @@ export abstract class Actor extends Entity {
     return selectSpeedTier([...this._animationRuntimes.keys()], this._speed)
   }
 
-  protected updateAnimation(delta: number): void {
-    const key = this._selectAnimationKey()
+  public clearAnimationActions(): void {
+    this._animationActions.clear()
+    this._animationRuntimes.clear()
+    this._activeAnimationKey = null
+  }
+
+  protected applyAnimationAt(key: number, time: number): void {
+    this.updateAnimation(0, key, time)
+  }
+
+  protected updateAnimation(delta: number, forcedKey?: number, forcedTime?: number): void {
+    const key = forcedKey ?? this._selectAnimationKey()
     if (key == null) {
       return
     }
@@ -91,7 +112,7 @@ export abstract class Actor extends Entity {
     }
 
     const durationMs = this._getAnimationDurationMs(runtime.animation.tree)
-    runtime.time = advanceCycleTime(runtime.time, delta, this._speed, durationMs)
+    runtime.time = forcedTime ?? advanceCycleTime(runtime.time, delta, this._speed, durationMs)
 
     const baseTransform = new THREE.Matrix4()
     baseTransform.makeRotationFromQuaternion(this.roi.getWorldQuaternion(new THREE.Quaternion()))

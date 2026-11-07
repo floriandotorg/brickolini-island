@@ -844,6 +844,16 @@ export class Act1 extends Isle {
       ]
 
       if (name[2] === 'S') {
+        if (data === 300) {
+          void this.extras.placeBrickster()
+        } else if (data === 301) {
+          this.extras.setDurationAndLifetime(['brickstr'], 0, 20000)
+        } else if (data === 305 && act1State.value !== 'ambulance') {
+          void this.extras.placeMamaAndPapa()
+        } else if (data === 306) {
+          this.extras.setDurationAndLifetime(['mama', 'papa'], 0, 20000)
+        }
+
         if (data === 302 && act1State.value !== 'pizza') {
           void this.playAnimation(TRS302_OpenJailDoor)
         } else if (data === 303) {
@@ -1080,6 +1090,14 @@ export class Act1 extends Isle {
       void engine.switchBackgroundMusic(param.music)
     }
 
+    if (act1State.value === 'none') {
+      this.allowExtras = true
+      await this.extras.initialize()
+      if (param?.spawn === 'pizzeriaExterior') {
+        await this.extras.placeMamaAndPapa()
+      }
+    }
+
     if (jukeBoxState.pendingStart) {
       jukeBoxState.pendingStart = false
       this._jukeboxEntity?.startAction()
@@ -1141,11 +1159,13 @@ export class Act1 extends Isle {
     }
 
     if (this.isRunningCameraAnimation || (this.missions.some(mission => mission.isInCutscene) && !this.hasReleasedPlayerAnimation)) {
+      void this.updateActors(delta, this.camera.position, this.camera.position)
       return
     }
 
     if (this.currentVehicle instanceof Helicopter && helicopterState.status !== 2) {
       this._dashboard.update(0, 0)
+      void this.updateActors(delta, this.camera.position, this.camera.position)
       return
     }
 

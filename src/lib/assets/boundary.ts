@@ -132,6 +132,11 @@ export class Edge {
     throw new Error('isTraversableToFace: Face not found')
   }
 
+  public isTraversableIntoFaceWithMask(boundary: Boundary, mask: number): boolean {
+    const allowed = this.faceA === boundary ? (this.flags & 2) !== 0 : this.faceB === boundary && (this.flags & 1) !== 0
+    return allowed && (boundary.flags & 3 & mask) === mask
+  }
+
   public connectFaces(edges: Edge[], boundaries: Boundary[]) {
     if (this.faceInfoA != null) {
       this.faceA = boundaries[this.faceInfoA.faceBoundaryIndex]
@@ -190,6 +195,18 @@ export class Boundary {
     this.triggers = triggers
     this.direction = direction
     this.mesh = null
+  }
+
+  public get isPedestrian(): boolean {
+    return (this.flags & 1) !== 0
+  }
+
+  public get hidden(): boolean {
+    return (this.flags & 0x10) !== 0
+  }
+
+  public set hidden(hidden: boolean) {
+    this.flags = hidden ? this.flags | 0x10 : this.flags & ~0x10
   }
 
   public get normal(): THREE.Vector3 {

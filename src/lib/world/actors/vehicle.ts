@@ -77,6 +77,12 @@ export abstract class Vehicle extends Actor {
       this._isle.currentVehicle.exit()
     }
     this._isle.currentVehicle = this
+    if (['bike', 'moto', 'skate', 'dunecar'].includes(this.type)) {
+      await this._isle.extras.placeBrickster(this.roi.position)
+      await this._isle.extras.placeMamaAndPapa(this.roi.position)
+    } else if (this.type === 'helicopter' || this.type === 'jetski') {
+      await this._isle.extras.placeBrickster()
+    }
 
     this.roi.visible = false
 

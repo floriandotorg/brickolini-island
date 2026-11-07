@@ -26,6 +26,7 @@ import type { Vehicle } from '../lib/world/actors/vehicle'
 import type { Character, CharacterName } from '../lib/world/character'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
 import type { Entity } from '../lib/world/entity'
+import { ExtrasManager } from '../lib/world/extras-manager'
 import { Plants } from '../lib/world/plants'
 import type { PlayerMovement } from '../lib/world/player-movement'
 import { World, type WorldName } from '../lib/world/world'
@@ -70,67 +71,6 @@ export const CAR_BUILD_VEHICLES: { readonly type: CarBuildVehicleType; readonly 
     spawn: 'racecarSpawn',
     createActor: async (model: Roi3D, islebase: IsleBase) => new (await import('../lib/world/actors/racecar')).RaceCar(model, islebase),
   },
-]
-
-const extraVehicles = ['bikebd', 'bikepg', 'bikerd', 'bikesy', 'motoni', 'motola', 'board'] as const
-type ExtraVehicle = (typeof extraVehicles)[number]
-
-const _extraCharacters: {
-  name: CharacterName
-  vehicleId: ExtraVehicle | null
-  canSpawnAsExtra: boolean
-  duration: number
-  maxLifetime: number
-  vehicleProbability: number
-  cycleIndex: number
-}[] = [
-  { name: 'pepper', vehicleId: 'board', canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 50, cycleIndex: 1 },
-  { name: 'mama', vehicleId: null, canSpawnAsExtra: false, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 2 },
-  { name: 'papa', vehicleId: null, canSpawnAsExtra: false, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 3 },
-  { name: 'nick', vehicleId: 'motoni', canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 20, cycleIndex: 4 },
-  { name: 'laura', vehicleId: 'motola', canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 20, cycleIndex: 5 },
-  { name: 'brickstr', vehicleId: null, canSpawnAsExtra: false, duration: 1000, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 6 },
-  { name: 'studs', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'rhoda', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'valerie', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'snap', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'pt', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'mg', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'bu', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'ml', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'nu', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'na', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'cl', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'en', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 're', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'ro', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'd1', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'd2', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'd3', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'd4', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'l1', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'l2', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'l3', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'l4', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'l5', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'l6', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'b1', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'b2', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'b3', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'b4', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'cm', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'gd', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'rd', vehicleId: 'bikerd', canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 50, cycleIndex: 9 },
-  { name: 'pg', vehicleId: 'bikepg', canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 50, cycleIndex: 8 },
-  { name: 'bd', vehicleId: 'bikebd', canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 100, cycleIndex: 7 },
-  { name: 'sy', vehicleId: 'bikesy', canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 100, cycleIndex: 10 },
-  { name: 'gn', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'df', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'bs', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'lt', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'st', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'bm', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
-  { name: 'jk', vehicleId: null, canSpawnAsExtra: true, duration: 1500, maxLifetime: 20000, vehicleProbability: 0, cycleIndex: 0 },
 ]
 
 export abstract class IsleBase extends World {
@@ -426,40 +366,40 @@ export abstract class IsleBase extends World {
     }
   }
 
-  public allowExtras = true
+  public readonly extras = new ExtrasManager(this)
 
-  private _spawnExtras(): void {
-    if (!this.allowExtras) {
-      return
-    }
-    const arr = [...Array(11).keys()]
-    for (let n = 0; n < 5; ++n) {
-      let r = Math.floor(Math.random() * 5)
-
-      for (const j of arr) {
-        if (r-- === 0) {
-          this._spawnExtraCharacter(j)
-          arr.splice(arr.indexOf(j), 1)
-        }
-      }
-    }
+  public get navigationSpeed(): number {
+    return this.playerMovement?.linearVelocity ?? 0
   }
 
-  private _spawnExtraCharacter(cycleIndex: number): void {
-    console.log(cycleIndex)
+  public override deactivate(): void {
+    this.extras.suspend()
+    super.deactivate()
+  }
+
+  private _allowExtras = true
+
+  public get allowExtras(): boolean {
+    return this._allowExtras
+  }
+
+  public set allowExtras(value: boolean) {
+    this._allowExtras = value
+    if (!value) {
+      this.extras.purge(true)
+    }
   }
 
   public override async activate(composer: Composer, _param?: unknown): Promise<void> {
     super.activate(composer, _param)
 
     this._dashboard.activate(composer)
+    this.extras.resume()
 
     const noPizzaSign = this.scene.getObjectByName('nopizza')?.children[0]
     if (noPizzaSign instanceof THREE.Mesh) {
       noPizzaSign.material.map = engine.currentSaveGame.player === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
     }
-
-    this._spawnExtras()
   }
 
   public getVehicleRoi(vehicle: VehicleType): Roi3D | null {
@@ -659,6 +599,7 @@ export abstract class IsleBase extends World {
     this.playerMovement?.resetVelocities()
 
     this._cameraAnimationPlaying = true
+    const returnExtras = this.extras.borrowForAnimation(animationInfo.modelInfo.map(model => model.name))
     ++animationInfo.numPlayed
     if (location != null) {
       location.animationPlayedAtLocation = true
@@ -699,7 +640,8 @@ export abstract class IsleBase extends World {
       animationLocation: animationInfo.location,
       extraTracks,
       lockCamera: lockOnly || extraTracks != null,
-    }).then(() => {
+    }).finally(() => {
+      returnExtras()
       this._cameraAnimationPlaying = false
     })
   }
@@ -955,6 +897,7 @@ export abstract class IsleBase extends World {
     super.update(delta)
 
     this._updateSun()
+    this.extras.tick(delta)
 
     if (this._water != null) {
       this._water.material.uniforms.time.value += delta * 0.1

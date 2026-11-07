@@ -108,6 +108,10 @@ export class PathActor extends Actor {
     this._destination = nextDestination
   }
 
+  protected chooseEdge(edges: Edge[]): Edge | undefined {
+    return edges[0]
+  }
+
   protected _switchBoundary(): void {
     if (this._path != null) {
       const nextDestination = this._path.destinations.shift()
@@ -159,7 +163,7 @@ export class PathActor extends Actor {
         edges.push(edge)
       }
     } while (edge !== this.destination.edge)
-    edge = edges.find(candidate => candidate !== this.destination.edge) ?? this.destination.edge.getCCWEdge(nextBoundary).getCCWEdge(nextBoundary)
+    edge = this.chooseEdge(edges.filter(candidate => candidate !== this.destination.edge)) ?? this.destination.edge
 
     this._destination = {
       boundary: nextBoundary,
@@ -216,7 +220,7 @@ export class PathActor extends Actor {
 
     const distancedTraveledClamped = Math.min(this._distanceTraveled, 1)
     const matrix = new THREE.Matrix4()
-    const worldUp = new THREE.Vector3(0, 1, 0)
+    const worldUp = this.destination.boundary.normal
     const dir = this._spline.getTangentAt(distancedTraveledClamped).multiplyScalar(-1).normalize()
     const right = new THREE.Vector3().crossVectors(worldUp, dir).normalize()
     const up = new THREE.Vector3().crossVectors(dir, right).normalize()

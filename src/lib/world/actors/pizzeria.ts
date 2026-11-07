@@ -243,6 +243,7 @@ export class Pizzeria extends Actor {
     this.act1.skipAllRunningAnimations(true)
     const generation = ++this._generation
     this._phase = 'introduction'
+    await this.act1.extras.placeMamaAndPapa()
     act1State.value = 'pizza'
     this.act1.cameraAnimationTriggerEnabled = false
     this.act1.backgroundMusicTriggerEnabled = false
