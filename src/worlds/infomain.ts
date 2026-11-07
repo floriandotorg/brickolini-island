@@ -170,7 +170,14 @@ export class InfoMain extends World {
     }
   }
 
+  private playInfomainAnimation(action: RunAnimationAction): Promise<void> {
+    this.skipAllRunningAnimations()
+    this._welcomeTimeout = null
+    return this.playAnimation(action)
+  }
+
   private async playCharacterMovie(characterMovie: { children: readonly [CharacterMovieAction, CharacterMovieAction, CharacterMovieAction] }, selectionAnimation: RunAnimationAction): Promise<void> {
+    const isCancelled = (): boolean => this._characterMovieState === CharacterMovieState.cancelled
     const play = async (movie: MovieSprite): Promise<void> => {
       if (this._characterMovieState !== CharacterMovieState.cancelled) {
         await movie.play(this._building.scene)
@@ -180,6 +187,8 @@ export class InfoMain extends World {
     if (this._characterMovieState === CharacterMovieState.playing) {
       return
     }
+    this.skipAllRunningAnimations()
+    this._welcomeTimeout = null
     this._characterMovieState = CharacterMovieState.playing
     engine.input.disable()
     engine.input.allowSpaceWhileDisabled = true
@@ -196,6 +205,7 @@ export class InfoMain extends World {
     await play(end)
     end.removeFromParent()
     engine.resumeBackgroundMusic()
+    const cancelled = isCancelled()
     this._characterMovieState = CharacterMovieState.idle
     this._characterMovie = null
     if (engine.currentWorld === this) {
@@ -203,7 +213,9 @@ export class InfoMain extends World {
       engine.input.enable()
       setCursor('arrow')
     }
-    void this.playAnimation(selectionAnimation)
+    if (!cancelled && engine.currentWorld === this) {
+      void this.playInfomainAnimation(selectionAnimation)
+    }
   }
 
   private placeCharacterFrame(): void {
@@ -300,7 +312,7 @@ export class InfoMain extends World {
     ;(await this.getCharacter('infoman')).onClicked = () => {
       this.skipAllRunningAnimations()
       this._welcomeTimeout = null
-      void this.playAnimation(ANIMATIONS[this._currentAnimationIndex])
+      void this.playInfomainAnimation(ANIMATIONS[this._currentAnimationIndex])
       this._currentAnimationIndex = (this._currentAnimationIndex + 1) % ANIMATIONS.length
       return true
     }
@@ -450,7 +462,7 @@ export class InfoMain extends World {
               void this.playAudio(iic007in_PlayWav, 'speech')
             } else {
               const selectionAnimation = getSelectionAnimation(character)
-              void this.playAnimation(selectionAnimation).then(() => {
+              void this.playInfomainAnimation(selectionAnimation).then(() => {
                 if (dest.destination != null) {
                   void switchWorld(dest.destination)
                 }
@@ -518,7 +530,7 @@ export class InfoMain extends World {
     super.update(delta)
     if (this._welcomeTimeout?.isExpired === true) {
       this._welcomeTimeout = null
-      void this.playAnimation(iicx17in_RunAnim)
+      void this.playInfomainAnimation(iicx17in_RunAnim)
     }
     if (this._bookWigMovie != null && this._bookWigInterval.resetExpired()) {
       this._bookWigMovie.stop()

@@ -201,6 +201,14 @@ export class PathActor extends Actor {
     return curve
   }
 
+  public override resume(): void {
+    super.resume()
+    if (!this.suspended) {
+      this._spline = null
+      this._distanceTraveled = 0
+    }
+  }
+
   public override update(delta: number): { from: THREE.Vector3; to: THREE.Vector3 } {
     super.update(delta)
 

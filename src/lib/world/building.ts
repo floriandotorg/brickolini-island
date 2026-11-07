@@ -45,14 +45,27 @@ export class Building {
     animation?: RunAnimationAction
   }
 
+  private _exiting = false
+  private _exitImmediatelyIfRunning = false
+
   constructor() {
     this._render.addEffect(new TransparentEdgeBlurEffect())
     this._controls.onButtonClicked = (buttonName, event) => {
       if (this._exitSpawnPoint != null && buttonName.endsWith(this._exitSpawnPoint.control)) {
+        if (this._exiting) {
+          this._world?.skipAllRunningAnimations(true)
+          return true
+        }
+        this._exiting = true
         const spawn = this._exitSpawnPoint.world
-        const animationPromise = this._exitSpawnPoint.animation != null && this._world != null ? this._world.playAnimation(this._exitSpawnPoint.animation) : Promise.resolve()
-        animationPromise.then(() => {
-          void switchWorld(spawn)
+        const hadRunning = this._world?.hasRunningAnimations ?? false
+        this._world?.skipAllRunningAnimations(true)
+        const animation = hadRunning && this._exitImmediatelyIfRunning ? null : this._exitSpawnPoint.animation
+        const promise = animation != null && this._world != null ? this._world.playAnimation(animation) : Promise.resolve()
+        void promise.then(() => {
+          if (this._exiting) {
+            void switchWorld(spawn)
+          }
         })
         return true
       }
@@ -79,6 +92,7 @@ export class Building {
     exitSpawnPoint,
     noLights,
     skipWdbWorld,
+    exitImmediatelyIfRunning = false,
   }: {
     world: World
     startUpAction:
@@ -97,9 +111,11 @@ export class Building {
           control?: string
           animation?: RunAnimationAction
         }
+    exitImmediatelyIfRunning?: boolean
     skipWdbWorld?: boolean
     noLights?: boolean
   }): Promise<void> {
+    this._exitImmediatelyIfRunning = exitImmediatelyIfRunning
     this._exitSpawnPoint =
       exitSpawnPoint == null
         ? undefined
@@ -197,6 +213,10 @@ export class Building {
     return this._render.scene
   }
 
+  public get exiting(): boolean {
+    return this._exiting
+  }
+
   public get exitAnimation(): RunAnimationAction | undefined {
     return this._exitSpawnPoint?.animation
   }
@@ -208,6 +228,7 @@ export class Building {
   }
 
   public activate(composer: Composer): void {
+    this._exiting = false
     this.pointerUp() // Reset control state
     composer.add(this._render)
     if (this._backgroundMusic != null) {

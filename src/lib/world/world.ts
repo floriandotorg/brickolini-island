@@ -10,9 +10,11 @@ import type { SpawnLocation } from '../assets/spawn-location'
 import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
 import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
-import type { Actor } from './actor'
+import { Actor, ColliderType } from './actor'
 import { BoundaryManager } from './boundary-manager'
 import { Character, type CharacterName } from './character'
+import { CollisionResolver, type SphereCollider } from './collision'
+import type { PlayerMovement } from './player-movement'
 
 const _ptatcamAnimWorld = new THREE.Matrix4()
 const _ptatcamLocal = new THREE.Matrix4()
@@ -23,6 +25,23 @@ const _ptatcamRight = new THREE.Vector3()
 const _ptatcamForward = new THREE.Vector3()
 const _ptatcamCol = new THREE.Vector3()
 const _ptatcamBasis = new THREE.Matrix4()
+
+const PLAYER_COLLISION_RADIUS = 0
+const MAX_SHOVE_VELOCITY = 40
+const COLLISION_EPSILON = 1e-4
+const _shoveVel = new THREE.Vector3()
+const _segAb = new THREE.Vector3()
+const _segAp = new THREE.Vector3()
+
+const distanceSquaredPointSegment = (point: THREE.Vector3, a: THREE.Vector3, b: THREE.Vector3): number => {
+  _segAb.copy(b).sub(a)
+  const abLenSq = _segAb.lengthSq()
+  if (abLenSq < 1e-12) {
+    return point.distanceToSquared(a)
+  }
+  const t = Math.min(1, Math.max(0, _segAp.copy(point).sub(a).dot(_segAb) / abLenSq))
+  return _segAp.copy(a).addScaledVector(_segAb, t).distanceToSquared(point)
+}
 
 // you cannot enter the second floor
 export enum ElevatorEntrance {
@@ -61,6 +80,7 @@ export type BuiltAnimation = {
   animation: Animation3D
   animationActors: Map<string, AnimationActor>
   managedActorNames: string[]
+  roisToRemoveOnStop: Roi3D[]
   positionalAudioActions: PositionalAudioAction[]
   audioActions: AudioAction[]
   tracks: THREE.KeyframeTrack[]
@@ -103,7 +123,16 @@ export abstract class World {
     faceAnimations: FaceAnimation[]
     pointAtCameraObjects: THREE.Object3D[]
     stopAtTime?: number
+    collisionRois?: Roi3D[]
+    collisionCenter?: THREE.Vector3
+    collisionRadius?: number
   }[] = []
+  private _collision = new CollisionResolver()
+
+  protected get playerMovement(): PlayerMovement | null {
+    return null
+  }
+
   private _runningAudios: Audio[] = []
   private _characters = new Map<string, { character: Character; refCount: number }>()
   private _worldGroup: THREE.Group | null = null
@@ -250,6 +279,14 @@ export abstract class World {
     return actor
   }
 
+  public resumeHeldActor(name: string): void {
+    this.findRoi(name)?.actor?.resume()
+  }
+
+  public get hasRunningAnimations(): boolean {
+    return this._runningAnimations.length > 0
+  }
+
   public characterExists(name: string): boolean {
     return this._characters.has(name)
   }
@@ -336,27 +373,124 @@ export abstract class World {
 
   public async updateActors(delta: number, playerFrom: THREE.Vector3, playerTo: THREE.Vector3): Promise<void> {
     for (const actor of this._actors) {
-      const result = actor.update(delta)
-      if (actor.checkCollision(playerFrom, playerTo)) {
-        actor.onCollision(null)
+      if (actor.suspended) {
+        continue
       }
+      if (!actor.collisionEnabled) {
+        actor.update(delta)
+        continue
+      }
+      const actorQuaternion = actor.roi.getWorldQuaternion()
+      const result = actor.update(delta)
       if (result == null) {
         continue
       }
       const { from: actorFrom, to: actorTo } = result
-      for (const other of this._actors) {
-        if (other !== actor && other.checkCollision(actorFrom, actorTo)) {
+      const moverRadius = actor.roi.model.getWorldBoundingSphere().radius
+      let collided = this._checkAnimatedCollisions(actorFrom, actorTo, actor.roi, moverRadius)
+      if (!collided) {
+        const moverCollideBox = actor.colliderType === ColliderType.Box
+        for (const other of this._actors) {
+          if (other === actor || !other.collisionEnabled || !other.checkCollision(actorFrom, actorTo, moverCollideBox)) {
+            continue
+          }
+          actor.onCollision(other.roi)
           other.onCollision(actor.roi)
+          collided = true
+          break
         }
+      }
+      if (collided) {
+        actor.roi.moveRoiTo(actorFrom, actorQuaternion)
+        this.boundaryManager.update(actorFrom, actorFrom, actor.roi)
+        continue
       }
       this.onActorMoved(actor, actorFrom, actorTo)
       this.boundaryManager.update(actorFrom, actorTo, actor.roi)
     }
+
+    if (this.isRunningCameraAnimation) {
+      return
+    }
+
+    const contacts = new Set<Roi3D>()
+    const colliders = this._collectPlayerColliders(playerFrom, playerTo)
+    const glided = this._collision.collideAndGlide(playerFrom, playerTo, PLAYER_COLLISION_RADIUS, colliders, contacts)
+    const push = this._collision.resolvePenetration(glided, PLAYER_COLLISION_RADIUS, colliders, contacts)
+
+    for (const roi of contacts) {
+      roi.actor?.onCollision(null)
+    }
+
+    const pushVec = _shoveVel.set(push.x, 0, push.z)
+    const finalPos = this.playerMovement != null && pushVec.lengthSq() > 0 ? this.playerMovement.constrainDisplacement(glided, pushVec) : glided.add(push)
+    this.camera.position.x = finalPos.x
+    this.camera.position.z = finalPos.z
+    playerTo.copy(this.camera.position)
+
+    if (push.lengthSq() > COLLISION_EPSILON) {
+      _shoveVel.set(push.x, 0, push.z).divideScalar(Math.max(delta, 1 / 120))
+      if (_shoveVel.lengthSq() > MAX_SHOVE_VELOCITY * MAX_SHOVE_VELOCITY) {
+        _shoveVel.setLength(MAX_SHOVE_VELOCITY)
+      }
+      this.playerMovement?.applyExternalVelocity(_shoveVel)
+    }
   }
 
-  public async resolveAnimationActors(animation: Animation3D, substitutions: ReadonlyMap<string, string> = new Map()): Promise<{ animationActors: Map<string, AnimationActor>; managedActorNames: string[] }> {
+  private _collectPlayerColliders(from: THREE.Vector3, to: THREE.Vector3): SphereCollider[] {
+    const colliders: SphereCollider[] = []
+    for (const actor of this._actors) {
+      if (actor.suspended) {
+        continue
+      }
+      if (!actor.collisionEnabled) {
+        continue
+      }
+      const sphere = actor.roi.model.getWorldBoundingSphere()
+      colliders.push({ center: sphere.center, radius: sphere.radius, dynamic: true, roi: actor.roi })
+    }
+    for (const { collisionRois, collisionCenter, collisionRadius } of this._runningAnimations) {
+      if (collisionRois == null || collisionCenter == null || collisionRadius == null) {
+        continue
+      }
+      const reach = collisionRadius + PLAYER_COLLISION_RADIUS
+      if (distanceSquaredPointSegment(collisionCenter, from, to) > reach * reach) {
+        continue
+      }
+      for (const roi of collisionRois) {
+        if (!roi.model.visible) {
+          continue
+        }
+        const sphere = roi.model.getWorldBoundingSphere()
+        colliders.push({ center: sphere.center, radius: sphere.radius, dynamic: true, roi })
+      }
+    }
+    return colliders
+  }
+
+  private _checkAnimatedCollisions(from: THREE.Vector3, to: THREE.Vector3, mover: Roi3D | null, moverRadius: number): boolean {
+    const moverRois = new Set(mover?.getAllRois() ?? [])
+    for (const { collisionRois, collisionCenter, collisionRadius } of this._runningAnimations) {
+      if (collisionRois == null || collisionCenter == null || collisionRadius == null) {
+        continue
+      }
+      const reach = collisionRadius + moverRadius
+      if (distanceSquaredPointSegment(collisionCenter, from, to) > reach * reach) {
+        continue
+      }
+      for (const roi of collisionRois) {
+        if (!moverRois.has(roi) && Actor.intersectRoi(from, to, roi)) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+
+  public async resolveAnimationActors(animation: Animation3D, substitutions: ReadonlyMap<string, string> = new Map()): Promise<{ animationActors: Map<string, AnimationActor>; managedActorNames: string[]; roisToRemoveOnStop: Roi3D[] }> {
     const animationActors = new Map<string, AnimationActor>()
     const managedActorNames: string[] = []
+    const roisToRemoveOnStop: Roi3D[] = []
 
     const addActorToList = (type: WDB.ActorType, actor: Roi3D, name = actor.name) => {
       animationActors.set(name, {
@@ -398,6 +532,7 @@ export abstract class World {
           node.name = actor.name.toLowerCase()
           node.visible = false
           this.scene.add(node.model)
+          roisToRemoveOnStop.push(node)
           addActorToList(actor.type, node)
           break
         }
@@ -407,15 +542,22 @@ export abstract class World {
           node.name = actor.name.toLowerCase()
           node.visible = false
           this.scene.add(node.model)
+          roisToRemoveOnStop.push(node)
           addActorToList(actor.type, node)
           break
         }
         case WDB.ActorType.SceneRoi1:
         case WDB.ActorType.SceneRoi2: {
+          const existing = this.findRoi(actor.name)
+          if (existing != null) {
+            addActorToList(actor.type, existing)
+            break
+          }
           const name = actor.name.replace(/[0-9_]*$/, '')
           const node = (this.findRoi(name) ?? (await getGlobalPart(name, null, null))).clone()
           node.name = actor.name.toLowerCase()
           this.scene.add(node.model)
+          roisToRemoveOnStop.push(node)
           addActorToList(actor.type, node)
           break
         }
@@ -424,7 +566,7 @@ export abstract class World {
       }
     }
 
-    return { animationActors, managedActorNames }
+    return { animationActors, managedActorNames, roisToRemoveOnStop }
   }
 
   public async buildAnimation(action: RunAnimationAction | NestedAnimationAction | AnimationAction, { location, rotation, extraTracks }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<BuiltAnimation> {
@@ -447,7 +589,7 @@ export abstract class World {
     for (let n = 0; n + 1 < parts.length; n += 2) {
       substitutions.set(parts[n].toLowerCase(), parts[n + 1].toLowerCase())
     }
-    const { animationActors, managedActorNames } = await this.resolveAnimationActors(animation, substitutions)
+    const { animationActors, managedActorNames, roisToRemoveOnStop } = await this.resolveAnimationActors(animation, substitutions)
 
     const positionalAudioActions = children.filter(c => isPositionalAudioAction(c))
     const audioActions = children.filter(c => isAudioAction(c))
@@ -554,6 +696,7 @@ export abstract class World {
       animation,
       animationActors,
       managedActorNames,
+      roisToRemoveOnStop,
       positionalAudioActions,
       audioActions,
       tracks,
@@ -576,10 +719,23 @@ export abstract class World {
       extraTracks,
       overrideLoop,
       signal,
+      holdManagedActorNames,
       managed = false,
       capturesPlayer = false,
       animationLocation = -1,
-    }: { managed?: boolean; capturesPlayer?: boolean; animationLocation?: number; location?: THREE.Vector3; rotation?: THREE.Quaternion; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[]; overrideLoop?: THREE.AnimationActionLoopStyles; signal?: AbortSignal } = {},
+    }: {
+      managed?: boolean
+      capturesPlayer?: boolean
+      animationLocation?: number
+      location?: THREE.Vector3
+      rotation?: THREE.Quaternion
+      unskippable?: boolean
+      lockCamera?: boolean
+      extraTracks?: THREE.KeyframeTrack[]
+      overrideLoop?: THREE.AnimationActionLoopStyles
+      signal?: AbortSignal
+      holdManagedActorNames?: readonly string[]
+    } = {},
   ): Promise<void> {
     const animationAction = isRunAnimationAction(action) || isNestedAnimationAction(action) ? [...action.children].find((c): c is AnimationAction => isAnimationAction(c)) : action
     if (animationAction == null) {
@@ -590,10 +746,10 @@ export abstract class World {
     if (rotation != null) {
       directionRotation.multiply(rotation)
     }
-    console.log(animationAction)
     const {
       animation,
       managedActorNames,
+      roisToRemoveOnStop,
       positionalAudioActions,
       audioActions,
       tracks,
@@ -602,6 +758,8 @@ export abstract class World {
       pointAtCameraObjects,
       roisToHideOnStop,
       loop: defaultLoop,
+      animationActors,
+      location: builtLocation,
     } = await this.buildAnimation(action, { location: new THREE.Vector3(-animationAction.location[0], animationAction.location[1], animationAction.location[2]).add(location ?? new THREE.Vector3()), rotation: directionRotation, extraTracks })
     if (signal?.aborted) {
       for (const name of managedActorNames) {
@@ -610,6 +768,9 @@ export abstract class World {
       return
     }
     const loop = overrideLoop ?? defaultLoop
+    const collisionRois = [...new Set([...animationActors.values()].flatMap(actor => actor.roi.getAllRois()))].filter(roi => roi.model.hasLod)
+    const collisionCenter = new THREE.Vector3(...animation.center).add(builtLocation)
+    const collisionRadius = animation.radius
 
     this.setupCameraForAnimation(animation.tree)
 
@@ -645,6 +806,11 @@ export abstract class World {
       pointAtCameraObjects,
       roisToHideOnStop,
       managedActorNames,
+      roisToRemoveOnStop,
+      holdManagedActorNames,
+      collisionRois,
+      collisionCenter,
+      collisionRadius,
       lockCamera,
       unskippable,
       loop,
@@ -675,6 +841,11 @@ export abstract class World {
       pointAtCameraObjects = [],
       roisToHideOnStop = [],
       managedActorNames = [],
+      roisToRemoveOnStop = [],
+      holdManagedActorNames = [],
+      collisionRois,
+      collisionCenter,
+      collisionRadius,
       lockCamera,
       unskippable,
       startAtTime = 0,
@@ -691,6 +862,11 @@ export abstract class World {
       pointAtCameraObjects?: THREE.Object3D[]
       roisToHideOnStop?: Roi3D[]
       managedActorNames?: string[]
+      roisToRemoveOnStop?: Roi3D[]
+      holdManagedActorNames?: readonly string[]
+      collisionRois?: Roi3D[]
+      collisionCenter?: THREE.Vector3
+      collisionRadius?: number
       lockCamera?: boolean
       unskippable?: boolean
       startAtTime?: number
@@ -700,6 +876,10 @@ export abstract class World {
   ): Promise<void> {
     if (stopAtTime != null && startAtTime > stopAtTime) {
       throw new Error(`Start (${startAtTime}) must be before stop (${stopAtTime}) when both are defined`)
+    }
+    const suspendedActors = [...this._actors].filter(actor => !actor.animationBorrowed && managedActorNames.some(name => name.toLowerCase() === actor.roi.name))
+    for (const actor of suspendedActors) {
+      actor.suspend()
     }
     const mixer = new THREE.AnimationMixer(root)
     const clipAction = mixer.clipAction(clip)
@@ -727,6 +907,14 @@ export abstract class World {
         for (const roi of roisToHideOnStop) {
           roi.visible = false
         }
+        for (const roi of roisToRemoveOnStop) {
+          this.removeFromParents(roi.getAllModels())
+        }
+        for (const actor of suspendedActors) {
+          if (!holdManagedActorNames.includes(actor.roi.name)) {
+            actor.resume()
+          }
+        }
         for (const actorName of managedActorNames) {
           this.releaseActor(actorName)
         }
@@ -737,7 +925,7 @@ export abstract class World {
         resolve()
       }
 
-      this._runningAnimations.push({ onRelease, metadata, action, mixer, clipAction, audios, nonPositionalAudios, resolve: removeMe, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, stopAtTime })
+      this._runningAnimations.push({ collisionRois, collisionCenter, collisionRadius, onRelease, metadata, action, mixer, clipAction, audios, nonPositionalAudios, resolve: removeMe, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, stopAtTime })
       mixer.addEventListener('finished', removeMe)
     })
   }

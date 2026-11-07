@@ -85,6 +85,7 @@ export const calculateTransformationMatrix = (location: readonly [number, number
 export class RoiModel extends THREE.Group {
   private _roi3d: Roi3D | null = null
   public offsetIndex = 0
+  public hasLod = false
   public boundingSphere = new THREE.Sphere(new THREE.Vector3(), 0)
   public boundingBox: THREE.Box3 = new THREE.Box3()
 
@@ -104,20 +105,20 @@ export class RoiModel extends THREE.Group {
   }
 
   public getWorldBoundingSphere(): THREE.Sphere {
-    const worldCenter = this.getWorldPosition(new THREE.Vector3())
-    worldCenter.add(this.boundingSphere.center)
-    return new THREE.Sphere(worldCenter, this.boundingSphere.radius)
+    this.updateWorldMatrix(true, false)
+    return this.boundingSphere.clone().applyMatrix4(this._roi3d?.getWorldBoundsMatrix() ?? this.matrixWorld)
   }
 
   public getWorldBoundingBox(): THREE.Box3 {
-    const worldPosition = this.getWorldPosition(new THREE.Vector3())
-    return new THREE.Box3(this.boundingBox.min.clone().add(worldPosition), this.boundingBox.max.clone().add(worldPosition))
+    this.updateWorldMatrix(true, false)
+    return this.boundingBox.clone().applyMatrix4(this._roi3d?.getWorldBoundsMatrix() ?? this.matrixWorld)
   }
 
   public override copy(object: THREE.Object3D, recursive?: boolean): this {
     super.copy(object, recursive)
     if (object instanceof RoiModel) {
       this.offsetIndex = object.offsetIndex
+      this.hasLod = object.hasLod
       this.boundingSphere = object.boundingSphere.clone()
       this.boundingBox = object.boundingBox.clone()
       this._roi3d = null
@@ -155,6 +156,31 @@ export class Roi3D {
 
   public getAllModels(): RoiModel[] {
     return [this.model, ...this.children.flatMap(c => c.getAllModels())]
+  }
+
+  public getWorldBoundsMatrix(): THREE.Matrix4 {
+    this.model.updateWorldMatrix(true, false)
+    return this.model.matrixWorld
+  }
+
+  private _capturedModels: { object: THREE.Object3D; position: THREE.Vector3; quaternion: THREE.Quaternion; scale: THREE.Vector3; visible: boolean }[] | null = null
+
+  public captureTransform(): void {
+    this._capturedModels = this.getAllModels().map(object => ({ object, position: object.position.clone(), quaternion: object.quaternion.clone(), scale: object.scale.clone(), visible: object.visible }))
+  }
+
+  public restoreTransform(): void {
+    for (const { object, position, quaternion, scale, visible } of this._capturedModels ?? []) {
+      object.position.copy(position)
+      object.quaternion.copy(quaternion)
+      object.scale.copy(scale)
+      object.visible = visible
+    }
+    this._capturedModels = null
+  }
+
+  public getAllRois(): Roi3D[] {
+    return [this, ...this.children.flatMap(child => child.getAllRois())]
   }
 
   public get position(): THREE.Vector3 {
@@ -344,6 +370,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
       meshes.push(mesh)
     }
     createdMeshes.push({ meshes, lod, texture: null, customColor })
+    roiModel.hasLod = lod != null
   }
 
   for (const child of roi.children) {
@@ -402,6 +429,7 @@ const getPart = async (name: string, part: WDB.Part, color: WDB.Color | null, te
   result.name = name.toLowerCase()
   result.model.name = name.toLowerCase()
   result.model.roi3d = result
+  result.model.hasLod = true
   let n = 0
   for (const [geometry, material] of createGeometryAndMaterials(lod, color, texture, 'part')) {
     const mesh = new THREE.Mesh(geometry, material)

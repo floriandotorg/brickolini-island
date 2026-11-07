@@ -1512,6 +1512,29 @@ export class Character extends Roi3D {
     this._worldQuaternion.copy(newQuaternion)
   }
 
+  public override getWorldBoundsMatrix(): THREE.Matrix4 {
+    return new THREE.Matrix4().compose(this._worldPosition, this._worldQuaternion, new THREE.Vector3(1, 1, 1))
+  }
+
+  private _capturedPosition: THREE.Vector3 | null = null
+  private _capturedQuaternion: THREE.Quaternion | null = null
+
+  public override captureTransform(): void {
+    super.captureTransform()
+    this._capturedPosition = this._worldPosition.clone()
+    this._capturedQuaternion = this._worldQuaternion.clone()
+  }
+
+  public override restoreTransform(): void {
+    super.restoreTransform()
+    if (this._capturedPosition != null && this._capturedQuaternion != null) {
+      this._worldPosition.copy(this._capturedPosition)
+      this._worldQuaternion.copy(this._capturedQuaternion)
+    }
+    this._capturedPosition = null
+    this._capturedQuaternion = null
+  }
+
   public resetHeadTexture(): void {
     if (this._originalHeadTexture == null) {
       throw new Error('Original head texture not found')
@@ -1526,7 +1549,7 @@ export class Character extends Roi3D {
     for (const [bodyPartName, part] of Object.entries(BODY_PARTS)) {
       if (bodyPartName === 'top') {
         actor.model.boundingBox = new THREE.Box3(new THREE.Vector3(part.boundingBox[0], part.boundingBox[1], part.boundingBox[2]), new THREE.Vector3(part.boundingBox[3], part.boundingBox[4], part.boundingBox[5]))
-        actor.model.boundingSphere = new THREE.Sphere(new THREE.Vector3(part.boundingSphere[1], part.boundingSphere[2], part.boundingSphere[3]), part.boundingSphere[0])
+        actor.model.boundingSphere = new THREE.Sphere(new THREE.Vector3(part.boundingSphere[0], part.boundingSphere[1], part.boundingSphere[2]), part.boundingSphere[3])
         continue
       }
 

@@ -571,7 +571,7 @@ export abstract class IsleBase extends World {
     throw new Error('Not implemented')
   }
 
-  protected get playerMovement(): PlayerMovement | null {
+  protected override get playerMovement(): PlayerMovement | null {
     return null
   }
 

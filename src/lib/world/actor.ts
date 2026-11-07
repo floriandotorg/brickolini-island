@@ -28,6 +28,33 @@ export abstract class Actor extends Entity {
   private _activeAnimationKey: number | null = null
   protected _speed = 0
 
+  private _suspendCount = 0
+
+  public get animationBorrowed(): boolean {
+    return false
+  }
+
+  public get suspended(): boolean {
+    return this._suspendCount > 0
+  }
+
+  public suspend(): void {
+    if (this._suspendCount === 0) {
+      this.roi.captureTransform()
+    }
+    ++this._suspendCount
+  }
+
+  public resume(): void {
+    if (this._suspendCount === 0) {
+      return
+    }
+    --this._suspendCount
+    if (this._suspendCount === 0) {
+      this.roi.restoreTransform()
+    }
+  }
+
   constructor(
     _roi: Roi3D,
     protected readonly _isle: IsleBase,
@@ -137,15 +164,19 @@ export abstract class Actor extends Entity {
     this._speed = speed
   }
 
-  public checkCollision(from: THREE.Vector3, to: THREE.Vector3): boolean {
-    if (this._colliderType === ColliderType.Sphere) {
-      return this.checkSphereCollision(from, to)
-    }
-    return this.checkBoxCollision(from, to)
+  public get collisionEnabled(): boolean {
+    return this.roi.model.visible
   }
 
-  private checkSphereCollision(from: THREE.Vector3, to: THREE.Vector3): boolean {
-    const sphere = this.roi.model.getWorldBoundingSphere()
+  public checkCollision(from: THREE.Vector3, to: THREE.Vector3, moverCollideBox = false): boolean {
+    if (moverCollideBox && this._colliderType === ColliderType.Box) {
+      return this.checkBoxCollision(from, to)
+    }
+    return this.checkSphereCollision(from, to)
+  }
+
+  public static intersectRoi(from: THREE.Vector3, to: THREE.Vector3, roi: Roi3D): boolean {
+    const sphere = roi.model.getWorldBoundingSphere()
     const direction = to.clone().sub(from)
     const length = direction.length()
     if (length < 0.0001) {
@@ -163,22 +194,28 @@ export abstract class Actor extends Entity {
     return closestPoint.distanceTo(sphere.center) <= sphere.radius
   }
 
+  private checkSphereCollision(from: THREE.Vector3, to: THREE.Vector3): boolean {
+    return Actor.intersectRoi(from, to, this.roi)
+  }
+
   private checkBoxCollision(from: THREE.Vector3, to: THREE.Vector3): boolean {
-    const box = this.roi.model.getWorldBoundingBox()
-    const direction = to.clone().sub(from)
+    const model = this.roi.model
+    model.updateWorldMatrix(true, false)
+    const inverseMatrix = model.matrixWorld.clone().invert()
+    const localFrom = from.clone().applyMatrix4(inverseMatrix)
+    const localTo = to.clone().applyMatrix4(inverseMatrix)
+    const direction = localTo.clone().sub(localFrom)
     const length = direction.length()
     if (length < 0.0001) {
       return false
     }
-    if (box.containsPoint(from)) {
-      return false
-    }
-    const ray = new THREE.Ray(from, direction.normalize())
-    const intersection = ray.intersectBox(box, new THREE.Vector3())
+    direction.normalize()
+    const ray = new THREE.Ray(localFrom, direction)
+    const intersection = ray.intersectBox(model.boundingBox, new THREE.Vector3())
     if (intersection == null) {
       return false
     }
-    return from.distanceTo(intersection) <= length
+    return localFrom.distanceTo(intersection) <= length
   }
 
   public update(_delta: number): { from: THREE.Vector3; to: THREE.Vector3 } | null {

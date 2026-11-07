@@ -789,14 +789,6 @@ export class Act1 extends Isle {
   override async init(): Promise<void> {
     await super.init()
     this._playerMovement.boundaryManager = this.boundaryManager
-    this._playerMovement.canMove = (from, to) => {
-      const actor = this.actors.find(actor => actor !== this.currentVehicle && actor.roi.model.visible && actor.checkCollision(from, to))
-      if (actor != null) {
-        actor.onCollision(null)
-        return false
-      }
-      return true
-    }
 
     const takeOff = this.boundaryManager.getObjectPlacementFromLocation('helicopterTakenOff')
     const land = this.boundaryManager.getObjectPlacementFromLocation('helicopterLanded')

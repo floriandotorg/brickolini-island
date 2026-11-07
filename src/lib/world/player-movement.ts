@@ -37,6 +37,7 @@ export class PlayerMovement {
   private _rotVel = 0
   private _verticalVel = 0
   private _pitchVel = 0
+  private _externalVelocity = new THREE.Vector3()
   private _lookYaw = 0
   private _slewMode = false
   private _flightMode = false
@@ -87,11 +88,22 @@ export class PlayerMovement {
 
   resetVelocities(): void {
     this.navigation.reset()
+    this._externalVelocity.set(0, 0, 0)
     this._boundary = null
     this._linearVel = 0
     this._rotVel = 0
     this._verticalVel = 0
     this._pitchVel = 0
+  }
+
+  public applyExternalVelocity(velocity: THREE.Vector3): void {
+    this._externalVelocity.add(velocity)
+  }
+
+  public constrainDisplacement(position: THREE.Vector3, displacement: THREE.Vector3): THREE.Vector3 {
+    const target = position.clone().add(displacement)
+    const boundary = this.boundaryManager?.getBoundaryFromPosition(position)
+    return boundary == null || boundary.isInside(target) ? target : position.clone()
   }
 
   toggleSlewMode(): void {
@@ -263,6 +275,10 @@ export class PlayerMovement {
   }
 
   update(delta: number, vehicleType: VehicleType | null, maximumSpeed?: number): { fromPos: THREE.Vector3; toPos: THREE.Vector3; normalizedSpeed: number } {
+    if (this._externalVelocity.lengthSq() > 0.0001) {
+      this._camera.position.copy(this.constrainDisplacement(this._camera.position, this._externalVelocity.clone().multiplyScalar(delta)))
+      this._externalVelocity.multiplyScalar(Math.max(0, 1 - delta * 4))
+    }
     this._camera.rotateY(-this._lookYaw)
     const speedMultiplier = this._slewMode ? 4 : 1
     const maxLinearVel = maximumSpeed ?? (vehicleType != null ? VEHICLE_MAX_LINEAR_VEL[vehicleType] : WALK_SPEED)
