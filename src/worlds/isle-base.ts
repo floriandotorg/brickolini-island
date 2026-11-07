@@ -219,7 +219,7 @@ export abstract class IsleBase extends World {
       this.worldGroup = await getWorld(this._wdbWorldName)
     }
 
-    this._plantGroup = await Plants.place(this, Plants.World.ACT1)
+    this._plantGroup = await Plants.place(this, this._wdbWorldName === 'ACT2' ? Plants.World.ACT2 : this._wdbWorldName === 'ACT3' ? Plants.World.ACT3 : Plants.World.ACT1)
     this.scene.add(this._plantGroup)
     if (import.meta.hot) {
       import.meta.hot.accept('../lib/world/plants', async newModule => {
@@ -797,9 +797,10 @@ export abstract class IsleBase extends World {
       const quaternion = new THREE.Quaternion()
       matrix.decompose(position, quaternion, new THREE.Vector3())
       model.moveRoiTo(position, quaternion)
-      this.addClickListener(entity.roi, async object => {
+      const clickEntity = entity
+      this.addClickListener(clickEntity.roi, async object => {
         if (!this.ignoreEntityClick) {
-          return await entity.onClick(object)
+          return await clickEntity.onClick(object)
         }
         return false
       })
@@ -846,6 +847,9 @@ export abstract class IsleBase extends World {
       case 'Pizza':
         actor = new (await import('../lib/world/actors/pizza')).Pizza(model, this)
         break
+      case 'Act2PoliceStation':
+        entity = new (await import('../lib/world/entities/act2-police')).Act2Police(model)
+        break
       case 'Act2Actor':
         actor = new (await import('../lib/world/actors/act2actor')).Act2Actor(model, this)
         break
@@ -886,18 +890,20 @@ export abstract class IsleBase extends World {
       if (actor == null) {
         throw new Error('Animation can only be used with actors')
       }
-      const parts = animation.split(';')
-      if (parts.length % 2 !== 0) {
-        throw new Error('Animation must have an even number of parts')
-      }
-      for (let n = 0; n < parts.length; n += 2) {
+      const parts = animation
+        .split(',')[0]
+        .split(/[:;]/)
+        .filter(part => part.length > 0)
+      for (let n = 0; n + 1 < parts.length; n += 2) {
         const animationName = parts[n]
-        const speed = Number.parseInt(parts[n + 1], 10)
+        const speed = Number.parseFloat(parts[n + 1])
         const animationAction = this._cachedAnimations.get(animationName.toLowerCase())
         if (animationAction == null) {
-          throw new Error(`Animation not found: ${animationName}`)
+          continue
         }
-        void actor.addAnimationAction(speed, animationAction)
+        if (Number.isFinite(speed)) {
+          await actor.addAnimationAction(speed, animationAction)
+        }
       }
     }
 

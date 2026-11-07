@@ -14,9 +14,10 @@ export class PathActor extends Actor {
 
   protected _spline: THREE.CubicBezierCurve3 | null = null
   protected _distanceTraveled = 0
+  private _finishingPath = false
 
   public get isFollowingPath(): boolean {
-    return this._path != null
+    return this._path != null || this._finishingPath
   }
 
   private _path: {
@@ -105,8 +106,14 @@ export class PathActor extends Actor {
     }
     const nextDestination = this._path.destinations.shift()
     if (nextDestination == null) {
-      throw new Error('No next destination found')
+      this._destination = { boundary: destinationBoundary, edge: destinationBoundary.edges[0], scale: 0.5 }
+      this._spline = this._calculateSpline({ forceDestination: position, forceDirection: direction })
+      this._distanceTraveled = 0
+      this._path = null
+      this._finishingPath = true
+      return
     }
+    this._finishingPath = false
     this._destination = nextDestination
   }
 
@@ -121,6 +128,7 @@ export class PathActor extends Actor {
         this._spline = this._calculateSpline({ forceDestination: this._path.finalPosition, forceDirection: this._path.finalDirection })
         this._distanceTraveled = 0
         this._path = null
+        this._finishingPath = true
         return
       }
       this._destination = nextDestination
@@ -242,7 +250,14 @@ export class PathActor extends Actor {
     this.roi.moveRoiTo(to, quaternion)
 
     if (this._distanceTraveled >= 1) {
-      this._switchBoundary()
+      if (this._finishingPath) {
+        this._finishingPath = false
+        this._destination = null
+        this._spline = null
+        this._speed = 0
+      } else {
+        this._switchBoundary()
+      }
     }
 
     this.updateAnimation(delta)

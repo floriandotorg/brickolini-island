@@ -184,6 +184,22 @@ export const getChildTransformsAtTime = (animation: Animation3DNode, actors: Map
   return result
 }
 
+export const getVisibilityAtTime = (node: Animation3DNode, actors: Map<string, AnimationActor>, time: number): Map<string, boolean> => {
+  const result = new Map<string, boolean>()
+  const visit = (node: Animation3DNode, parent: boolean, path: string[]): void => {
+    const visible = node.morphKeys.length === 0 ? parent : getBeforeAndAfter(node.morphKeys, time).before.visible
+    const uuid = getUuid(node.name, path, actors)
+    if (uuid != null) {
+      result.set(uuid, visible)
+    }
+    for (const child of node.children) {
+      visit(child, visible, [...path, node.name])
+    }
+  }
+  visit(node, true, [])
+  return result
+}
+
 export const animationToTracks = (animation: Animation3DNode, actors: Map<string, AnimationActor>, baseTransform = new THREE.Matrix4()): THREE.KeyframeTrack[] => {
   const getDurationMs = (animation: Animation3DNode): number => Math.max(animation.translationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.rotationKeys.at(-1)?.timeAndFlags.time ?? 0, animation.scaleKeys.at(-1)?.timeAndFlags.time ?? 0, ...animation.children.map(getDurationMs))
 

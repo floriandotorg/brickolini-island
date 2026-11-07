@@ -471,6 +471,9 @@ class Engine {
 
     canvas.addEventListener('pointerdown', event => {
       canvas.focus()
+      if (this._audioListener.context.state === 'suspended') {
+        void this._audioListener.context.resume()
+      }
       if (event.button !== 0 || this.paused) {
         return
       }

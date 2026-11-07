@@ -127,6 +127,9 @@ export namespace Plants {
   type PlantInfo = { worlds: Plants.World; variant: Variant; color: Color; locationAndDirection: LocationAndDirection }
 
   const roiList: Roi3D[] = []
+  const worldPlants = new WeakMap<WorldType, Map<number, { group: THREE.Group; roi: Roi3D }>>()
+
+  export const getPlacement = (world: WorldType, index: number): { group: THREE.Group; roi: Roi3D } | null => worldPlants.get(world)?.get(index) ?? null
   export const getRoi = (index: number): Roi3D => roiList[index]
 
   // information based on legoplants.cpp
@@ -253,10 +256,18 @@ export namespace Plants {
     await Promise.all(promises)
   }
 
+  export const getStates = (save: SaveGame = engine.currentSaveGame): PlantState[] => {
+    const states = statesBySave.get(save) ?? save.plants ?? plants.map(plant => ({ color: plant.color, variant: plant.variant, move: 0, sound: 3, mood: 1, counter: -1 }))
+    statesBySave.set(save, states)
+    return states
+  }
+
   export const place = async (world: WorldType, plantWorld: World): Promise<THREE.Group> => {
     const save = engine.currentSaveGame
-    const plantStates = statesBySave.get(save) ?? save.plants ?? plants.map(plant => ({ color: plant.color, variant: plant.variant, move: 0, sound: 3, mood: 1, counter: -1 }))
+    const plantStates = getStates(save)
     statesBySave.set(save, plantStates)
+    const placed = new Map<number, { group: THREE.Group; roi: Roi3D }>()
+    worldPlants.set(world, placed)
     const group = new THREE.Group()
     group.name = 'plants'
     placements.set(world, group)
@@ -279,11 +290,15 @@ export namespace Plants {
       const mesh = new THREE.Group()
       mesh.name = `plant${n}`
       matrix.decompose(mesh.position, mesh.quaternion, mesh.scale)
+      if (plantState.counter >= 0) {
+        mesh.position.y -= ([1, 2, 2, 3][plantState.variant] - plantState.counter) * [0.1, 0.7, 0.5, 0.9][plantState.variant]
+      }
       const animationRoot = new THREE.Group()
       animationRoot.name = 'animation'
       mesh.add(animationRoot)
       const roi = await getGlobalPart(plantName, null, null)
       roiList[n] = roi
+      placed.set(n, { group: mesh, roi })
       let currentRoi = roi
       animationRoot.add(roi.model)
       group.add(mesh)
@@ -310,6 +325,7 @@ export namespace Plants {
         const roi = await getGlobalPart(partName(plantState.variant, plantState.color), null, null)
         roiList[n] = roi
         currentRoi = roi
+        placed.set(n, { group: mesh, roi })
         animationRoot.clear().add(roi.model)
         if (feedback) {
           try {

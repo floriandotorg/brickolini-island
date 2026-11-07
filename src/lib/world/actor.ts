@@ -1,11 +1,12 @@
 import * as THREE from 'three'
 import type { IsleBase } from '../../worlds/isle-base'
 import type { AnimationAction } from '../action-types'
-import { type Animation3D, type AnimationActor, getChildTransformsAtTime, parse3DAnimation } from '../assets/animation'
+import { type Animation3D, type AnimationActor, getChildTransformsAtTime, getTransformsAtTime, getVisibilityAtTime, parse3DAnimation } from '../assets/animation'
 import { getAction } from '../assets/load'
 import type { Roi3D } from '../assets/model'
 import { WDB } from '../assets/wdb'
 import { advanceCycleTime, selectSpeedTier } from '../locomotion.ts'
+import { Character } from './character'
 import { Entity } from './entity'
 
 export enum ColliderType {
@@ -92,7 +93,7 @@ export abstract class Actor extends Entity {
     const animationActors = new Map<string, AnimationActor>()
     for (const entry of animation.actors) {
       const name = entry.name.toLowerCase()
-      const roi = entry.type === WDB.ActorType.ManagedActor || name.startsWith('actor_') || name === this.roi.name ? this.roi : this._isle.findRoi(name)
+      const roi = (entry.type === WDB.ActorType.ManagedActor && this.roi instanceof Character) || name.startsWith('actor_') || name === this.roi.name ? this.roi : this._isle.findRoi(name)
       if (roi != null) {
         animationActors.set(name, { type: entry.type ?? WDB.ActorType.ManagedActor, object: roi.model, children: new Map(roi.children.map(child => [child.name, child.model])), roi })
       }
@@ -115,11 +116,15 @@ export abstract class Actor extends Entity {
     this._activeAnimationKey = null
   }
 
-  protected applyAnimationAt(key: number, time: number): void {
-    this.updateAnimation(0, key, time)
+  protected getAnimationDuration(key: number): number {
+    return this._animationRuntimes.get(key)?.animation?.duration ?? 0
   }
 
-  protected updateAnimation(delta: number, forcedKey?: number, forcedTime?: number): void {
+  protected applyAnimationAt(key: number, time: number, transform?: THREE.Matrix4): void {
+    this.updateAnimation(0, key, time, transform)
+  }
+
+  protected updateAnimation(delta: number, forcedKey?: number, forcedTime?: number, transform?: THREE.Matrix4): void {
     const key = forcedKey ?? this._selectAnimationKey()
     if (key == null) {
       return
@@ -145,6 +150,9 @@ export abstract class Actor extends Entity {
     baseTransform.makeRotationFromQuaternion(this.roi.getWorldQuaternion(new THREE.Quaternion()))
     baseTransform.setPosition(this.roi.position)
 
+    if (transform != null) {
+      baseTransform.copy(transform)
+    }
     const transforms = getChildTransformsAtTime(runtime.animation.tree, runtime.animationActors, baseTransform, runtime.time)
     for (const [uuid, { position, quaternion, scale }] of transforms) {
       const object = this._isle.scene.getObjectByProperty('uuid', uuid)
@@ -152,6 +160,20 @@ export abstract class Actor extends Entity {
         object.position.copy(position)
         object.quaternion.copy(quaternion)
         object.scale.copy(scale)
+      }
+    }
+    for (const [uuid, visible] of getVisibilityAtTime(runtime.animation.tree, runtime.animationActors, runtime.time)) {
+      const object = this._isle.scene.getObjectByProperty('uuid', uuid)
+      if (object != null) {
+        object.visible = visible
+      }
+    }
+    const bindings = new Map([...runtime.animationActors].map(([name, actor]) => [name, { ...actor, type: actor.type === WDB.ActorType.ManagedActor ? WDB.ActorType.Unknown : actor.type }]))
+    const poses = getTransformsAtTime(runtime.animation.tree, bindings, baseTransform, runtime.time)
+    for (const actor of runtime.animationActors.values()) {
+      const pose = poses.get(actor.object.uuid)
+      if (actor.roi !== this.roi && actor.roi instanceof Character && pose != null) {
+        actor.roi.syncAnimationPose(pose.position, pose.quaternion)
       }
     }
   }
@@ -222,5 +244,5 @@ export abstract class Actor extends Entity {
     return null
   }
 
-  public onCollision(_roi: Roi3D | null): void {}
+  public onCollision(_roi: Roi3D | null, _mover = false): void {}
 }

@@ -405,8 +405,8 @@ export abstract class World {
           if (other === actor || !other.collisionEnabled || !other.checkCollision(actorFrom, actorTo, moverCollideBox)) {
             continue
           }
-          actor.onCollision(other.roi)
-          other.onCollision(actor.roi)
+          actor.onCollision(other.roi, true)
+          other.onCollision(actor.roi, false)
           collided = true
           break
         }
