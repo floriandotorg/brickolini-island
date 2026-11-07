@@ -1,0 +1,28 @@
+setupAgentStartupPolicy: wait-for-setup
+
+scripts:
+  setup: |
+    set -eu
+
+    main_root=$(git worktree list --porcelain | head -n 1)
+    main_root=${main_root#worktree }
+
+    mkdir -p public
+
+    for assets in org hd; do
+      source="$main_root/public/$assets"
+      target="public/$assets"
+
+      if [ -e "$target" ] || [ -L "$target" ]; then
+        continue
+      fi
+
+      if [ ! -d "$source" ]; then
+        printf 'Assets not found, skipping: %s\n' "$source" >&2
+        continue
+      fi
+
+      ln -s "$source" "$target"
+    done
+
+    npm ci
