@@ -1,9 +1,9 @@
 import * as THREE from 'three'
-import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, igs002d3_RunAnim, igs003d3_RunAnim, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/dunecar'
+import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, igs003d3_RunAnim, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/dunecar'
 import { DuneCarBuild_Flic, DuneCarBuild_Music } from '../../actions/jukebox'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
-import type { NormalizedMouseEvent } from '../../lib/engine'
+import { engine, type NormalizedMouseEvent } from '../../lib/engine'
 import { Building } from '../../lib/world/building'
 import { World } from '../../lib/world/world'
 import { buildColorControls, buildDecalControls, Carbuild, type SpeakerAnimations } from './carbuild'
@@ -27,6 +27,9 @@ export class Dunecar extends World {
   }
 
   public override escape(): boolean {
+    this._musicMovie?.stop()
+    this._carbuild?.skipHost()
+    engine.stopBackgroundMusic()
     this.skipAllRunningAnimations(true)
     return true
   }
@@ -38,7 +41,6 @@ export class Dunecar extends World {
       world: this,
       startUpAction: _StartUp,
       backgroundMusic: DuneCarBuild_Music,
-      exitSpawnPoint: { world: 'garage', control: 'Exit_Ctl', animation: igs002d3_RunAnim },
     })
 
     const sprite = await MovieSprite.create(DuneCarBuild_Flic, -0.25)
@@ -46,7 +48,6 @@ export class Dunecar extends World {
     sprite.musicOnly = true
     this._musicMovie = sprite
 
-    // TODO: Get "VIEW" transformation from the model's animation
     const displayPosition = new THREE.Vector3(1.31, -0.49, 2.5)
     const decalControls = await buildDecalControls(null, Decal_Sound, this._building, ['dbfrfn'])
     const colorControls = await buildColorControls(
@@ -75,6 +76,10 @@ export class Dunecar extends World {
 
   public override activate(composer: Composer): void {
     void this._musicMovie?.play(this._building.scene)
+    if (this._carbuild != null) {
+      this._carbuild.onFinish = () => this._musicMovie?.stop()
+      void this._carbuild.activate()
+    }
     this._building.activate(composer)
     super.activate(composer)
   }
@@ -100,7 +105,7 @@ export class Dunecar extends World {
   }
 
   protected override handleSkipKey(): void {
-    this.stopAnimationsInRange(this.name, 500, 510)
+    this._carbuild?.skipHost()
   }
 
   public override update(delta: number): void {

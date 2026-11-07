@@ -213,7 +213,7 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
   })()
 
   await engine.setWorld(world, param)
-  if (previousName != null && previousName !== normalizedSpawn.name && (previousName === 'carrace' || previousName === 'jetrace' || (previousName === 'act1' && normalizedSpawn.name === 'act2') || (previousName === 'act2' && normalizedSpawn.name === 'copter'))) {
+  if (previousName != null && previousName !== normalizedSpawn.name && (['carrace', 'jetrace', 'copter', 'dunecar', 'jetski', 'racecar'].includes(previousName) || (previousName === 'act1' && normalizedSpawn.name === 'act2') || (previousName === 'act2' && normalizedSpawn.name === 'copter'))) {
     discardWorld(previousName)
   }
 }

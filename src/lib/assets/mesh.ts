@@ -4,6 +4,7 @@ export { type ColorName, ColorNames, type ColorTableName, ColorTableNames, getDe
 
 import * as THREE from 'three'
 import { engine } from '../engine'
+import { VehicleTextureSlots } from '../save-game'
 import { getSettings } from '../settings'
 import { getFileUrl, manager } from './load'
 import { RoiModel } from './model'
@@ -63,13 +64,26 @@ export const colorMesh = (object: THREE.Object3D, color: THREE.Color): void =>
     }
   })
 
+const namedTextureMaterials = new Map<string, Set<THREE.MeshBasicMaterial | THREE.MeshLambertMaterial | THREE.MeshPhysicalMaterial>>()
+const textureKey = (name: string): string => name.toLowerCase().replace(/\.[^.]+$/, '')
+
+export const replaceNamedTexture = (name: string, texture: THREE.Texture): void => {
+  for (const material of namedTextureMaterials.get(textureKey(name)) ?? []) {
+    material.map = texture
+    material.needsUpdate = true
+  }
+}
+
 const createTexture = (name: string, source: 'model' | 'part' | 'image'): THREE.Texture => {
   const sourceToPath = {
     model: 'model_textures',
     part: 'part_textures',
     image: 'images',
   }
-  return textureLoader.load(getFileUrl(`world/${sourceToPath[source]}/${name.toLowerCase()}.png`), texture => {
+  const slot = VehicleTextureSlots.find(slot => slot === textureKey(name))
+  const override = slot == null ? null : engine.currentSaveGame.getVehicleTexture(slot)
+  const path = override != null && /^(copter|dunecar|jetski|racecar)\/\d+$/.test(override) ? `${override}.png` : `world/${sourceToPath[source]}/${name.toLowerCase()}.png`
+  const result = textureLoader.load(getFileUrl(path), texture => {
     texture.name = name.toLowerCase()
     texture.colorSpace = THREE.SRGBColorSpace
     texture.wrapS = THREE.RepeatWrapping
@@ -80,6 +94,8 @@ const createTexture = (name: string, source: 'model' | 'part' | 'image'): THREE.
       texture.anisotropy = engine.renderer.capabilities.getMaxAnisotropy()
     }
   })
+  result.name = name.toLowerCase()
+  return result
 }
 
 const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color | null, texture: string | THREE.Texture | null, type: 'model' | 'part'): [THREE.BufferGeometry, THREE.Material] => {
@@ -136,6 +152,12 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
       material.transparent = true
       material.opacity = color.alpha
     }
+  }
+  if (modelMesh.textureName) {
+    const key = textureKey(modelMesh.textureName)
+    const materials = namedTextureMaterials.get(key) ?? new Set()
+    materials.add(material)
+    namedTextureMaterials.set(key, materials)
   }
   return [geometry, material]
 }

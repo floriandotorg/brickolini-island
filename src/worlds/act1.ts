@@ -1047,7 +1047,25 @@ export class Act1 extends Isle {
     }
 
     if (param?.camLocation != null && act1State.value === 'none') {
-      void this.ambient.cameraTrigger(param.camLocation)
+      const reveals = [
+        { spawn: 'garageExited', vehicle: 'dunecar', name: 'igs008na' },
+        { spawn: 'jetskibuildExited', vehicle: 'jetski', name: 'ijs006sn' },
+        { spawn: 'policeExited', vehicle: 'helicopter', name: 'ips002ro' },
+        { spawn: 'racecarbuildExited', vehicle: 'racecar', name: 'irt007in' },
+      ] as const
+      const reveal = reveals.find(reveal => reveal.spawn === param.spawn)
+      const state = reveal == null ? null : engine.currentSaveGame.getBuildState(reveal.vehicle)
+      const info = reveal == null ? null : this.animationInfos.find(info => info.name.toLowerCase() === reveal.name)
+      const action = info == null ? null : await this.getRunAnimation(info.objectId)
+      if (reveal != null && state?.finishedBuild && !state.playedExitScript && action != null) {
+        engine.currentSaveGame.setBuildState(reveal.vehicle, { ...state, playedExitScript: true })
+        void this.playCameraAnimation(action).catch(error => {
+          engine.currentSaveGame.setBuildState(reveal.vehicle, { ...state, playedExitScript: false })
+          console.error(error)
+        })
+      } else {
+        void this.ambient.cameraTrigger(param.camLocation)
+      }
     }
 
     if (jukeBoxState.pendingStart) {

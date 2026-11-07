@@ -1,9 +1,9 @@
 import * as THREE from 'three'
-import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, ijs003d4_RunAnim, ijs004d4_RunAnim, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/jetski'
+import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, ijs004d4_RunAnim, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/jetski'
 import { JetskiBuild_Flic, JetskiBuild_Music } from '../../actions/jukebox'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
-import type { NormalizedMouseEvent } from '../../lib/engine'
+import { engine, type NormalizedMouseEvent } from '../../lib/engine'
 import { Building } from '../../lib/world/building'
 import { World } from '../../lib/world/world'
 import { buildColorControls, buildDecalControls, Carbuild, type SpeakerAnimations } from './carbuild'
@@ -27,6 +27,9 @@ export class Jetski extends World {
   }
 
   public override escape(): boolean {
+    this._musicMovie?.stop()
+    this._carbuild?.skipHost()
+    engine.stopBackgroundMusic()
     this.skipAllRunningAnimations(true)
     return true
   }
@@ -38,11 +41,6 @@ export class Jetski extends World {
       world: this,
       startUpAction: _StartUp,
       backgroundMusic: JetskiBuild_Music,
-      exitSpawnPoint: {
-        spawn: 'jetskibuildExited',
-        control: 'Exit_Ctl',
-        animation: ijs003d4_RunAnim,
-      },
     })
 
     const sprite = await MovieSprite.create(JetskiBuild_Flic, -0.25)
@@ -50,7 +48,6 @@ export class Jetski extends World {
     sprite.musicOnly = true
     this._musicMovie = sprite
 
-    // TODO: Get "VIEW" transformation from the model's animation
     const displayPosition = new THREE.Vector3(1.44, -0.13, 3.1)
     const decalControls = await buildDecalControls(Decal_Bitmap, Decal_Sound, this._building, [
       ['JSFRNT', ['Decals_Ctl', 'Decals_Ctl1', 'Decals_Ctl2', 'Decals_Ctl3']],
@@ -82,6 +79,10 @@ export class Jetski extends World {
 
   public override activate(composer: Composer): void {
     void this._musicMovie?.play(this._building.scene)
+    if (this._carbuild != null) {
+      this._carbuild.onFinish = () => this._musicMovie?.stop()
+      void this._carbuild.activate()
+    }
     this._building.activate(composer)
     super.activate(composer)
   }
@@ -107,7 +108,7 @@ export class Jetski extends World {
   }
 
   protected override handleSkipKey(): void {
-    this.stopAnimationsInRange(this.name, 500, 510)
+    this._carbuild?.skipHost()
   }
 
   public override update(delta: number): void {

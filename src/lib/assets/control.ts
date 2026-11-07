@@ -400,6 +400,13 @@ export class Control {
     }
   }
 
+  public setDisplayedState(state: 0 | 1): void {
+    const child = this._action.children[state]
+    if (child != null) {
+      setImageSprite(this._sprite, getImageAction(child).image, this._sprite.position.z)
+    }
+  }
+
   public draw(): void {
     const image = this._handler.image
     if (image == null) {

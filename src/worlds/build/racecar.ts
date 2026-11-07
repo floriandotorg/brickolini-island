@@ -1,9 +1,9 @@
 import * as THREE from 'three'
 import { RaceCarBuild_Flic, RaceCarBuild_Music } from '../../actions/jukebox'
-import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, irt002d1_RunAnim, irt003d1_RunAnim, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/racecar'
+import { _StartUp, Black_Ctl, Blue_Ctl, Build_Anim0, Build_Anim1, Build_Anim2, ColorBook_Bitmap, Decal_Sound, GetBrick_Sound, Gray_Ctl, Green_Ctl, irt003d1_RunAnim, Paint_Sound, PlaceBrick_Sound, Red_Ctl, Rotate_Sound, Shelf_Sound, Yellow_Ctl } from '../../actions/racecar'
 import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
-import type { NormalizedMouseEvent } from '../../lib/engine'
+import { engine, type NormalizedMouseEvent } from '../../lib/engine'
 import { Building } from '../../lib/world/building'
 import { World } from '../../lib/world/world'
 import { buildColorControls, buildDecalControls, Carbuild, type SpeakerAnimations } from './carbuild'
@@ -27,6 +27,9 @@ export class Racecar extends World {
   }
 
   public override escape(): boolean {
+    this._musicMovie?.stop()
+    this._carbuild?.skipHost()
+    engine.stopBackgroundMusic()
     this.skipAllRunningAnimations(true)
     return true
   }
@@ -38,11 +41,6 @@ export class Racecar extends World {
       world: this,
       startUpAction: _StartUp,
       backgroundMusic: RaceCarBuild_Music,
-      exitSpawnPoint: {
-        spawn: 'racecarbuildExited',
-        control: 'Exit_Ctl',
-        animation: irt002d1_RunAnim,
-      },
     })
 
     const sprite = await MovieSprite.create(RaceCarBuild_Flic, -0.25)
@@ -50,7 +48,6 @@ export class Racecar extends World {
     sprite.musicOnly = true
     this._musicMovie = sprite
 
-    // TODO: Get "VIEW" transformation from the model's animation
     const displayPosition = new THREE.Vector3(0, 2.25, 2.62)
     const decalControls = await buildDecalControls(null, Decal_Sound, this._building, [['RCBACK', ['Decals_Ctl1']], ['RCTAIL', ['Decals_Ctl2']], 'rcfrnt'])
     const colorControls = await buildColorControls(
@@ -79,6 +76,10 @@ export class Racecar extends World {
 
   public override activate(composer: Composer): void {
     void this._musicMovie?.play(this._building.scene)
+    if (this._carbuild != null) {
+      this._carbuild.onFinish = () => this._musicMovie?.stop()
+      void this._carbuild.activate()
+    }
     this._building.activate(composer)
     super.activate(composer)
   }
@@ -104,7 +105,7 @@ export class Racecar extends World {
   }
 
   protected override handleSkipKey(): void {
-    this.stopAnimationsInRange(this.name, 500, 510)
+    this._carbuild?.skipHost()
   }
 
   public override update(delta: number): void {
