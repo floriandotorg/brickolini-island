@@ -180,7 +180,18 @@ export class Roi3D {
   }
 
   public getAllRois(): Roi3D[] {
-    return [this, ...this.children.flatMap(child => child.getAllRois())]
+    const rois = new Set<Roi3D>([this])
+    this.model.traverse(object => {
+      if (object instanceof RoiModel && object.roi3dOrNull != null) {
+        rois.add(object.roi3dOrNull)
+      }
+    })
+    for (const child of this.children) {
+      for (const roi of child.getAllRois()) {
+        rois.add(roi)
+      }
+    }
+    return [...rois]
   }
 
   public get position(): THREE.Vector3 {
@@ -441,6 +452,14 @@ const getPart = async (name: string, part: WDB.Part, color: WDB.Color | null, te
     result.model.add(mesh)
     meshes.push(mesh)
   }
+  result.model.boundingBox.makeEmpty()
+  for (const mesh of meshes) {
+    mesh.geometry.computeBoundingBox()
+    if (mesh.geometry.boundingBox != null) {
+      result.model.boundingBox.union(mesh.geometry.boundingBox)
+    }
+  }
+  result.model.boundingBox.getBoundingSphere(result.model.boundingSphere)
   createdMeshes.push({ meshes, lod, texture, customColor: color })
   return result
 }

@@ -1,9 +1,10 @@
 import * as THREE from 'three'
-import { AnimB1, AnimB2, AnimB3, AnimF1, AnimF2, AnimF3, AnimP1, AnimP2, AnimP3, AnimT1, AnimT2, AnimT3, Sound8, Sound9, Sound10, Sound11, Sound12, Sound13, Sound14, Sound15, Sound16, Sound17 } from '../../actions/sndanim'
+import { AnimB1, AnimB2, AnimB3, AnimF1, AnimF2, AnimF3, AnimP1, AnimP2, AnimP3, AnimT1, AnimT2, AnimT3, Sound7, Sound8, Sound9, Sound10, Sound11, Sound12, Sound13, Sound14, Sound17, Sound18 } from '../../actions/sndanim'
 import type { AnimationAction, PositionalAudioAction } from '../action-types'
 import { getAnimation } from '../assets/animation'
 import { calculateTransformationMatrix, getGlobalPart, type Roi3D } from '../assets/model'
 import { WDB } from '../assets/wdb'
+import { advanceClickState } from '../customization-rules'
 import { engine } from '../engine'
 import type { PlantState, SaveGame } from '../save-game.ts'
 import type { World as WorldType } from './world'
@@ -119,7 +120,7 @@ export namespace Plants {
     [Variant.Palm]: [AnimP1, AnimP2, AnimP3],
   }
 
-  const sounds: PositionalAudioAction[] = [Sound8, Sound9, Sound10, Sound11, Sound12, Sound13, Sound14, Sound15, Sound16]
+  const sounds: PositionalAudioAction[] = [Sound7, Sound8, Sound9, Sound10, Sound11, Sound12, Sound13, Sound14]
 
   type LocationAndDirection = { location: [number, number, number]; direction: [number, number, number]; up: [number, number, number] }
 
@@ -254,7 +255,7 @@ export namespace Plants {
 
   export const place = async (world: WorldType, plantWorld: World): Promise<THREE.Group> => {
     const save = engine.currentSaveGame
-    const plantStates = statesBySave.get(save) ?? save.plants ?? plants.map(plant => ({ color: plant.color, variant: plant.variant, move: 0, sound: 0, mood: 0, counter: -1 }))
+    const plantStates = statesBySave.get(save) ?? save.plants ?? plants.map(plant => ({ color: plant.color, variant: plant.variant, move: 0, sound: 3, mood: 1, counter: -1 }))
     statesBySave.set(save, plantStates)
     const group = new THREE.Group()
     group.name = 'plants'
@@ -268,7 +269,7 @@ export namespace Plants {
       const plantInfo = plants[n]
       const plantState = plantStates[n]
 
-      if ((plantInfo.worlds & plantWorld) === 0) {
+      if ((plantInfo.worlds & plantWorld) === 0 || plantState.counter === 0) {
         continue
       }
 
@@ -276,7 +277,7 @@ export namespace Plants {
       const matrix = new THREE.Matrix4()
       calculateTransformationMatrix(plantInfo.locationAndDirection.location, plantInfo.locationAndDirection.direction, plantInfo.locationAndDirection.up, matrix)
       const mesh = new THREE.Group()
-      mesh.name = `plant-${Variant[plantInfo.variant]}-${Color[plantInfo.color]}`.toLowerCase()
+      mesh.name = `plant${n}`
       matrix.decompose(mesh.position, mesh.quaternion, mesh.scale)
       const animationRoot = new THREE.Group()
       animationRoot.name = 'animation'
@@ -286,33 +287,39 @@ export namespace Plants {
       let currentRoi = roi
       animationRoot.add(roi.model)
       group.add(mesh)
+      let animating = false
       world.addClickListener(mesh, async () => {
-        switch (engine.currentSaveGame.player) {
-          case 'pepper':
-            plantState.variant = nextVariant(plantState.variant)
-            break
-          case 'nick':
-            plantState.color = nextColor(plantState.color)
-            break
-          case 'papa':
-            plantState.move = (plantState.move + 1) % animations[plantState.variant].length
-            break
-          case 'mama':
-            plantState.sound = (plantState.sound + 1) % sounds.length
-            break
+        if (world.ignoreEntityClick || engine.currentSaveGame.playerUnsafe == null) {
+          return false
+        }
+        const player = engine.currentSaveGame.player
+        if (player === 'pepper' && engine.currentSaveGame.act !== 1) {
+          return true
+        }
+        Object.assign(plantState, advanceClickState(plantState, player, 'plant'))
+        if (player === 'pepper' && plantState.counter === -1) {
+          plantState.variant = nextVariant(plantState.variant)
+        } else if (player === 'nick') {
+          plantState.color = nextColor(plantState.color)
         }
         save.plants = plantStates
-        mesh.clear()
-        const animationRoot = new THREE.Group()
-        animationRoot.name = 'animation'
-        mesh.add(animationRoot)
+        const feedback = !animating
+        if (feedback) {
+          animating = true
+        }
         const roi = await getGlobalPart(partName(plantState.variant, plantState.color), null, null)
         roiList[n] = roi
         currentRoi = roi
-        animationRoot.add(roi.model)
-        void animate()
-        if (engine.currentSaveGame.player === 'laura') {
-          void world.playPositionalAudio(Sound17, mesh)
+        animationRoot.clear().add(roi.model)
+        if (feedback) {
+          try {
+            if (player === 'laura') {
+              void world.playPositionalAudio((plantState.mood & 1) === 0 ? Sound17 : Sound18, mesh)
+            }
+            await animate()
+          } finally {
+            animating = false
+          }
         }
         return true
       })

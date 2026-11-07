@@ -124,6 +124,7 @@ export abstract class World {
     faceAnimations: FaceAnimation[]
     pointAtCameraObjects: THREE.Object3D[]
     stopAtTime?: number
+    managedActorNames?: readonly string[]
     collisionRois?: Roi3D[]
     collisionCenter?: THREE.Vector3
     collisionRadius?: number
@@ -288,6 +289,10 @@ export abstract class World {
     return this._runningAnimations.length > 0
   }
 
+  public isCharacterAnimating(name: string): boolean {
+    return this._runningAnimations.some(animation => animation.managedActorNames?.includes(name))
+  }
+
   public characterExists(name: string): boolean {
     return this._characters.has(name)
   }
@@ -354,6 +359,9 @@ export abstract class World {
   public async registerActor(actor: Actor): Promise<void> {
     await actor.init()
     this._actors.add(actor)
+    if (actor.roi instanceof Character) {
+      return
+    }
     this.addClickListener(actor.roi, async () => {
       if (!this.ignoreEntityClick) {
         return await actor.onClick()
@@ -958,7 +966,7 @@ export abstract class World {
         resolve()
       }
 
-      this._runningAnimations.push({ collisionRois, collisionCenter, collisionRadius, onRelease, metadata, action, mixer, clipAction, audios, nonPositionalAudios, resolve: removeMe, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, stopAtTime })
+      this._runningAnimations.push({ managedActorNames, collisionRois, collisionCenter, collisionRadius, onRelease, metadata, action, mixer, clipAction, audios, nonPositionalAudios, resolve: removeMe, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, stopAtTime })
       mixer.addEventListener('finished', removeMe)
     })
   }

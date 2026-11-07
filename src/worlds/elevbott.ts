@@ -4,6 +4,7 @@ import type { Composer } from '../lib/effect/composer'
 import type { NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
+import { Plants } from '../lib/world/plants'
 import { ElevatorEntrance, World } from '../lib/world/world'
 
 export class ElevBott extends World {
@@ -25,6 +26,8 @@ export class ElevBott extends World {
       startUpAction: _StartUp,
       backgroundMusic: InformationCenter_Music,
     })
+
+    this.scene.add(await Plants.place(this, Plants.World.IELEV))
 
     this._building.onButtonClicked = buttonName => {
       switch (buttonName) {

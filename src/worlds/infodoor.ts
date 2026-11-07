@@ -4,6 +4,7 @@ import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
+import { Plants } from '../lib/world/plants'
 import { World } from '../lib/world/world'
 
 export class InfoDoor extends World {
@@ -25,6 +26,8 @@ export class InfoDoor extends World {
       startUpAction: _StartUp,
       backgroundMusic: InformationCenter_Music,
     })
+
+    this.scene.add(await Plants.place(this, Plants.World.IISLE))
 
     this._building.onButtonClicked = buttonName => {
       this.skipAllRunningAnimations(true)

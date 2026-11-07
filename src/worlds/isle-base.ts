@@ -28,6 +28,7 @@ import type { Character, CharacterName } from '../lib/world/character'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
 import type { Entity } from '../lib/world/entity'
 import { ExtrasManager } from '../lib/world/extras-manager'
+import { IslandBuildings } from '../lib/world/island-buildings'
 import { Plants } from '../lib/world/plants'
 import type { PlayerMovement } from '../lib/world/player-movement'
 import { World, type WorldName } from '../lib/world/world'
@@ -238,6 +239,10 @@ export abstract class IsleBase extends World {
       }
     }
 
+    if (this._wdbWorldName === 'ACT1' || this._wdbWorldName === 'ACT2' || this._wdbWorldName === 'ACT3') {
+      this.islandBuildings.attach()
+    }
+
     if (getURLParam('generate-cubemap') === 'true') {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
@@ -367,6 +372,7 @@ export abstract class IsleBase extends World {
     }
   }
 
+  public readonly islandBuildings = new IslandBuildings(this)
   public readonly ambient = new AmbientManager(this)
   public readonly extras = new ExtrasManager(this)
 
@@ -400,6 +406,7 @@ export abstract class IsleBase extends World {
     this._dashboard.activate(composer)
     this.extras.resume()
     this.ambient.restore()
+    this.islandBuildings.refresh()
 
     const noPizzaSign = this.scene.getObjectByName('nopizza')?.children[0]
     if (noPizzaSign instanceof THREE.Mesh) {

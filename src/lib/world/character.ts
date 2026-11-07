@@ -96,10 +96,12 @@ import {
   CNsx11La,
   CNsx11Ni,
 } from '../../actions/isle'
-import { Sound10 } from '../../actions/sndanim'
 import { colorAliases } from '../assets/mesh'
 import { calculateTransformationMatrix, getGlobalPart, Roi3D, RoiModel } from '../assets/model'
+import { advanceClickState, clickAnimationId, colorPart } from '../customization-rules'
 import { engine } from '../engine'
+import type { CharacterVariant } from '../save-game'
+import { playCustomizationFeedback } from './customization'
 import type { World } from './world'
 
 enum Flags {
@@ -338,9 +340,6 @@ const HAT_PARTS = [
   HatPart.Capdb,
   HatPart.Capjs,
   HatPart.Capmd,
-  HatPart.Sheet,
-  HatPart.Phat,
-  HatPart.Icap,
 ]
 
 const PEPPER_HAT_PARTS = [HatPart.Phat, ...HAT_PARTS]
@@ -1548,17 +1547,113 @@ export class Character extends Roi3D {
     this.headMaterial.needsUpdate = true
   }
 
+  private _clickState = { sound: 0, move: 0, mood: 0 }
+  private _playingClick = false
+
+  private persistCustomization(): void {
+    const colors = Object.values(Color)
+    const value: CharacterVariant = {
+      ...this._clickState,
+      hatPart: this._info.hatPart,
+      hatColor: colors.indexOf(this._info.hatColor),
+      torsoColor: colors.indexOf(this._info.groinColor),
+      armLeftColor: colors.indexOf(this._info.leftArmColor),
+      armRightColor: colors.indexOf(this._info.rightArmColor),
+      legLeftColor: colors.indexOf(this._info.leftLegColor),
+      legRightColor: colors.indexOf(this._info.rightLegColor),
+    }
+    engine.currentSaveGame.setCharacterVariant(this.name === 'pep' ? 'pepper' : this.name, value)
+  }
+
+  private customize = async (world: World, partName: string): Promise<boolean> => {
+    if (world.ignoreEntityClick || engine.currentSaveGame.playerUnsafe == null) {
+      return false
+    }
+    if (this.onClicked()) {
+      return true
+    }
+    const player = engine.currentSaveGame.player
+    if (player === 'pepper' && engine.currentSaveGame.act !== 1) {
+      return true
+    }
+    this._clickState = advanceClickState(this._clickState, player, 'actor')
+    let target = ''
+    let model = ''
+    let color = this._info.hatColor
+    if (player === 'pepper') {
+      this._info.hatPart = (this._info.hatPart + 1) % this._info.hatParts.length
+      target = 'infohat'
+      model = this._info.hatParts[this._info.hatPart]
+    } else if (player === 'nick') {
+      target = colorPart(partName)
+      switch (target) {
+        case 'infohat':
+          color = this._info.hatColor = nextColor(this._info.hatColor)
+          model = this._info.hatParts[this._info.hatPart]
+          break
+        case 'infogron':
+          color = this._info.groinColor = nextColor(this._info.groinColor)
+          model = 'infogron'
+          break
+        case 'arm-lft':
+          color = this._info.leftArmColor = nextColor(this._info.leftArmColor)
+          model = 'arm-lft'
+          break
+        case 'arm-rt':
+          color = this._info.rightArmColor = nextColor(this._info.rightArmColor)
+          model = 'arm-rt'
+          break
+        case 'leg-lft':
+          color = this._info.leftLegColor = nextColor(this._info.leftLegColor)
+          model = 'leg'
+          break
+        case 'leg-rt':
+          color = this._info.rightLegColor = nextColor(this._info.rightLegColor)
+          model = 'leg'
+          break
+      }
+    }
+    this.persistCustomization()
+    const play = !this._playingClick
+    if (play) {
+      this._playingClick = true
+    }
+    try {
+      const child = this.children.find(child => child.name === target)
+      if (child != null && model !== '') {
+        const replacement = await getGlobalPart(model, colorAliases[color], null)
+        child.model.clear().add(replacement.model)
+      }
+      if (play) {
+        await playCustomizationFeedback(world, this, 'actor', this._clickState, clickAnimationId('actor', this._clickState.move), player === 'laura')
+      }
+    } finally {
+      if (play) {
+        this._playingClick = false
+      }
+    }
+    return true
+  }
+
   public static async create(world: World, name: CharacterName): Promise<Character> {
-    const actor = new Character(name, ACTORS[name as keyof typeof ACTORS])
+    const actor = new Character(name, structuredClone(ACTORS[name]))
+    const saved = engine.currentSaveGame.getCharacterVariant(name === 'pep' ? 'pepper' : name)
+    if (saved != null) {
+      const colors = Object.values(Color)
+      actor._clickState = { sound: saved.sound % 9, move: saved.move % 4, mood: saved.mood % 4 }
+      actor._info.hatPart = saved.hatPart % actor._info.hatParts.length
+      actor._info.hatColor = colors[saved.hatColor % colors.length]
+      actor._info.groinColor = colors[saved.torsoColor % colors.length]
+      actor._info.leftArmColor = colors[saved.armLeftColor % colors.length]
+      actor._info.rightArmColor = colors[saved.armRightColor % colors.length]
+      actor._info.leftLegColor = colors[saved.legLeftColor % colors.length]
+      actor._info.rightLegColor = colors[saved.legRightColor % colors.length]
+    }
 
     for (const [bodyPartName, part] of Object.entries(BODY_PARTS)) {
       if (bodyPartName === 'top') {
         actor.model.boundingBox = new THREE.Box3(new THREE.Vector3(part.boundingBox[0], part.boundingBox[1], part.boundingBox[2]), new THREE.Vector3(part.boundingBox[3], part.boundingBox[4], part.boundingBox[5]))
         actor.model.boundingSphere = new THREE.Sphere(new THREE.Vector3(part.boundingSphere[0], part.boundingSphere[1], part.boundingSphere[2]), part.boundingSphere[3])
-        continue
-      }
-
-      if (bodyPartName === 'infohat' && actor._info.hatParts[actor._info.hatPart] === 'bald') {
         continue
       }
 
@@ -1605,94 +1700,13 @@ export class Character extends Roi3D {
       const bodyPartRoi = new Roi3D(bodyPartModel, bodyPartName)
       actor.children.push(bodyPartRoi)
 
-      world.addClickListener(bodyPartRoi, async () => {
-        if (engine.currentSaveGame.player === 'nick') {
-          switch (bodyPartName) {
-            case 'head':
-            case 'infohat':
-              actor._info.hatColor = nextColor(actor._info.hatColor)
-              actor.children
-                .find(child => child.name === 'infohat')
-                ?.model.clear()
-                .add((await getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null)).model)
-              break
-            case 'body':
-            case 'infogron':
-              actor._info.groinColor = nextColor(actor._info.groinColor)
-              actor.children
-                .find(child => child.name === 'infogron')
-                ?.model.clear()
-                .add((await getGlobalPart('infogron', colorAliases[actor._info.groinColor], null)).model)
-              break
-            case 'claw-lft':
-            case 'arm-lft':
-              actor._info.leftArmColor = nextColor(actor._info.leftArmColor)
-              actor.children
-                .find(child => child.name === 'arm-lft')
-                ?.model.clear()
-                .add((await getGlobalPart('arm-lft', colorAliases[actor._info.leftArmColor], null)).model)
-              break
-            case 'claw-rt':
-            case 'arm-rt':
-              actor._info.rightArmColor = nextColor(actor._info.rightArmColor)
-              actor.children
-                .find(child => child.name === 'arm-rt')
-                ?.model.clear()
-                .add((await getGlobalPart('arm-rt', colorAliases[actor._info.rightArmColor], null)).model)
-              break
-            case 'leg-lft':
-              actor._info.leftLegColor = nextColor(actor._info.leftLegColor)
-              actor.children
-                .find(child => child.name === 'leg-lft')
-                ?.model.clear()
-                .add((await getGlobalPart('leg', colorAliases[actor._info.leftLegColor], null)).model)
-              break
-            case 'leg-rt':
-              actor._info.rightLegColor = nextColor(actor._info.rightLegColor)
-              actor.children
-                .find(child => child.name === 'leg-rt')
-                ?.model.clear()
-                .add((await getGlobalPart('leg', colorAliases[actor._info.rightLegColor], null)).model)
-              break
-            default:
-              throw new Error(`Unknown part: ${bodyPartName}`)
-          }
-
-          void world.playPositionalAudio(Sound10, bodyPartModel)
-
-          return true
-        }
-
-        return actor.onClicked()
-      })
+      world.addClickListener(bodyPartRoi, () => actor.customize(world, bodyPartName))
 
       const matrix = calculateTransformationMatrix(part.pos, part.dir, part.up)
       matrix.decompose(bodyPartModel.position, bodyPartModel.quaternion, bodyPartModel.scale)
     }
 
-    world.addClickListener(actor, async (): Promise<boolean> => {
-      if (engine.currentSaveGame.player === 'pepper') {
-        const hatParentMesh = actor.children.find(child => child.name === 'infohat')
-        if (hatParentMesh == null) {
-          return false
-        }
-
-        actor._info.hatPart = (actor._info.hatPart + 1) % actor._info.hatParts.length
-
-        if (actor._info.hatParts[actor._info.hatPart] === 'bald') {
-          return true
-        }
-
-        hatParentMesh.model.clear()
-        const mesh = await getGlobalPart(actor._info.hatParts[actor._info.hatPart], colorAliases[actor._info.hatColor], null)
-        mesh.model.name = `${mesh.model.name}-part`
-        hatParentMesh.model.add(mesh.model)
-
-        return true
-      }
-
-      return false
-    })
+    world.addClickListener([actor.model], () => actor.customize(world, 'body'))
 
     return actor
   }
