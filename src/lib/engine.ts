@@ -5,7 +5,10 @@ import { getActionFileUrl } from './assets/load'
 import { Composer, Render2D } from './effect/composer'
 import { FilmGrainEffect } from './effect/film-grain'
 import { MosaicEffect } from './effect/mosaic'
-import { SAVE_GAME_STORAGE_KEY, SaveGame } from './save-game'
+import { PlayerDirectory } from './player-directory.ts'
+import { SaveGame } from './save-game'
+import { getScoreHistory } from './score-history.ts'
+import { resetSession } from './session-state.ts'
 import { getSettings } from './settings'
 import type { VehicleType } from './world/dashboard'
 import type { World } from './world/world'
@@ -153,7 +156,11 @@ class Engine {
   private readonly _respawnVehicle = new Set<VehicleType>()
 
   public debugMode = false
-  public readonly saveGameNames: string[]
+  public readonly playerDirectory: PlayerDirectory
+
+  public get saveGameNames(): readonly string[] {
+    return this.playerDirectory.names
+  }
 
   public get currentPlayerMask(): number {
     const currentPlayerId = this.currentPlayerId
@@ -188,23 +195,25 @@ class Engine {
     return this._currentSaveGame
   }
 
-  private set currentSaveGame(saveGame: SaveGame) {
-    this.saveGameNames.splice(0, 0, saveGame.name)
-    this._currentSaveGame = saveGame
-  }
-
   public loadSaveGame(name: string): void {
-    for (const [index, saveGameName] of this.saveGameNames.entries()) {
-      if (saveGameName.toUpperCase() === name.toUpperCase()) {
-        this.saveGameNames.splice(index, 1)
-        break
-      }
+    const save = SaveGame.create(name)
+    getScoreHistory().update(this._currentSaveGame)
+    const index = this.playerDirectory.find(name)
+    if (index >= 0) {
+      this.playerDirectory.select(index)
+    } else {
+      this.playerDirectory.add(name)
+      save.act = 1
     }
-    this.currentSaveGame = SaveGame.create(name)
+    save.ensurePlayerId()
+    this._currentSaveGame = save
+    getScoreHistory().update(save)
+    resetSession()
+    this._respawnVehicle.clear()
   }
 
   public storeSaveGames(): void {
-    localStorage.setItem(SAVE_GAME_STORAGE_KEY, JSON.stringify(this.saveGameNames))
+    this.playerDirectory.store()
   }
 
   public async switchBackgroundMusic(action: AudioAction): Promise<void> {
@@ -475,17 +484,7 @@ class Engine {
     window.addEventListener('resize', this._setRendererSize)
     this._setRendererSize()
 
-    const savesJson = localStorage.getItem(SAVE_GAME_STORAGE_KEY)
-    this.saveGameNames =
-      savesJson == null
-        ? []
-        : (() => {
-            const jsonResult = JSON.parse(savesJson)
-            if (Array.isArray(jsonResult) && jsonResult.every(name => typeof name === 'string' && SaveGame.validName(name))) {
-              return jsonResult
-            }
-            return []
-          })()
+    this.playerDirectory = new PlayerDirectory(localStorage, SaveGame.delete)
 
     const preloadedSave = getURLParam('save')
     if (preloadedSave != null) {

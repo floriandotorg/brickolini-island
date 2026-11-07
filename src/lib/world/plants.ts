@@ -5,6 +5,7 @@ import { getAnimation } from '../assets/animation'
 import { calculateTransformationMatrix, getGlobalPart, type Roi3D } from '../assets/model'
 import { WDB } from '../assets/wdb'
 import { engine } from '../engine'
+import type { PlantState, SaveGame } from '../save-game.ts'
 import type { World as WorldType } from './world'
 
 export namespace Plants {
@@ -212,24 +213,12 @@ export namespace Plants {
     { worlds: Plants.World.IISLE, variant: Variant.Flower, color: Color.Red, locationAndDirection: { location: [-1.801479, -0.52473, -11.75], direction: [0.0175, 0.0, -0.9998], up: [0.0, 1.0, 0.0] } },
   ]
 
-  const storedPlantStates = localStorage.getItem('gameState.plantStates')
-
-  const plantStates: {
-    color: Color
-    variant: Variant
-    animationIndex: number
-    soundIndex: number
-  }[] =
-    storedPlantStates != null
-      ? JSON.parse(storedPlantStates)
-      : plants.map(plant => ({
-          color: plant.color,
-          variant: plant.variant,
-          animationIndex: 0,
-          soundIndex: 0,
-        }))
+  const statesBySave = new WeakMap<SaveGame, PlantState[]>()
 
   export const place = async (world: WorldType, plantWorld: World): Promise<THREE.Group> => {
+    const save = engine.currentSaveGame
+    const plantStates = statesBySave.get(save) ?? save.plants ?? plants.map(plant => ({ color: plant.color, variant: plant.variant, move: 0, sound: 0, mood: 0, counter: -1 }))
+    statesBySave.set(save, plantStates)
     const group = new THREE.Group()
     group.name = 'plants'
     if (plantStates.length !== plants.length) {
@@ -253,7 +242,7 @@ export namespace Plants {
       animationRoot.name = 'animation'
       mesh.add(animationRoot)
       const roi = await getGlobalPart(plantName, null, null)
-      roiList.push(roi)
+      roiList[n] = roi
       animationRoot.add(roi.model)
       group.add(mesh)
       world.addClickListener(mesh, async () => {
@@ -265,13 +254,13 @@ export namespace Plants {
             plantState.color = nextColor(plantState.color)
             break
           case 'papa':
-            plantState.animationIndex = (plantState.animationIndex + 1) % animations[plantState.variant].length
+            plantState.move = (plantState.move + 1) % animations[plantState.variant].length
             break
           case 'mama':
-            plantState.soundIndex = (plantState.soundIndex + 1) % sounds.length
+            plantState.sound = (plantState.sound + 1) % sounds.length
             break
         }
-        localStorage.setItem('gameState.plantStates', JSON.stringify(plantStates))
+        save.plants = plantStates
         mesh.clear()
         const animationRoot = new THREE.Group()
         animationRoot.name = 'animation'
@@ -280,7 +269,7 @@ export namespace Plants {
         roiList[n] = roi
         animationRoot.add(roi.model)
         const animation = await getAnimation(
-          animations[plantState.variant][plantState.animationIndex],
+          animations[plantState.variant][plantState.move],
           new Map([
             ['flwrred', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map(), roi }],
             ['flwgrn', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map(), roi }],
@@ -292,7 +281,7 @@ export namespace Plants {
         if (engine.currentSaveGame.player === 'laura') {
           void world.playPositionalAudio(Sound17, mesh)
         }
-        void world.playPositionalAudio(sounds[plantState.soundIndex], mesh)
+        void world.playPositionalAudio(sounds[plantState.sound], mesh)
         void world.playAnimationClip(animationRoot, animation)
         return true
       })

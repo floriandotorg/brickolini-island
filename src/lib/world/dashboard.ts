@@ -98,10 +98,9 @@ import { getImage } from '../assets/image'
 import type { ColorName } from '../assets/mesh'
 import { type Composer, Render2D } from '../effect/composer'
 import { engine, type NormalizedMouseEvent } from '../engine'
+import type { VehicleType } from '../vehicle-types.ts'
 
-export const VehicleTypes = ['bike', 'moto', 'ambul', 'towtk', 'jetski', 'racecar', 'helicopter', 'dunecar', 'skate'] as const
-export type VehicleType = (typeof VehicleTypes)[number]
-export const isVehicleType = (name: string): name is VehicleType => VehicleTypes.includes(name as VehicleType)
+export { isVehicleType, type VehicleType, VehicleTypes } from '../vehicle-types.ts'
 export type Vehicle =
   | {
       type: Exclude<VehicleType, 'skate'>

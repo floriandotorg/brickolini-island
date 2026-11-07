@@ -145,7 +145,13 @@ export class Pizzeria extends Actor {
   }
   private _helpAudioPlayed = false
   private _playedLocationAnimation = false
-  private _pepperBroughtPizzaWithoutHelicopterCount = 0
+  private get _pepperBroughtPizzaWithoutHelicopterCount(): number {
+    return engine.currentSaveGame.getPizzaCounter('pepper') - 1
+  }
+
+  private set _pepperBroughtPizzaWithoutHelicopterCount(value: number) {
+    engine.currentSaveGame.setPizzaCounter('pepper', value + 1)
+  }
 
   public get pizzaMissionActive(): boolean {
     return this._missionState.state !== 'not-started'
@@ -161,6 +167,9 @@ export class Pizzeria extends Actor {
   public override async init(): Promise<void> {
     if (!(this._isle instanceof Act1)) {
       return
+    }
+    for (const player of ['pepper', 'mama', 'papa', 'nick', 'laura'] as const) {
+      this.playerState[player] = engine.currentSaveGame.getPizzeriaPlaylist(player)
     }
     this.act1.boundaryManager.onTrigger((name, data, _direction, roi) => {
       if (roi != null) {
@@ -299,6 +308,7 @@ export class Pizzeria extends Actor {
     const action = actions[this.playerState[engine.currentSaveGame.player]]
     this.playerState[engine.currentSaveGame.player] = Math.min(this.playerState[engine.currentSaveGame.player] + 1, actions.length - 1)
 
+    engine.currentSaveGame.setPizzeriaPlaylist(engine.currentSaveGame.player, this.playerState[engine.currentSaveGame.player])
     void this.act1.playCameraAnimation(action).then(() => {
       if (this._missionState.state === 'introduction') {
         this._missionState = { state: 'waiting-for-accept-quest', timeout: engine.createTimeout(5_000) }

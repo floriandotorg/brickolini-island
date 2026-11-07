@@ -46,6 +46,7 @@ import type { Audio } from '../../assets/audio'
 import type { SpawnLocation } from '../../assets/spawn-location'
 import { engine, type Sentinel } from '../../engine'
 import type { PlayerCharacter } from '../../save-game'
+import { type ScoreColor, ScoreColors } from '../../score.ts'
 import { FuelVehicle } from './fuel-vehicle'
 
 const beachApproachAnimations: Record<PlayerCharacter, RunAnimationAction> = {
@@ -61,10 +62,6 @@ const banterLines = [ham034ra_PlayWav, ham035ra_PlayWav, ham036ra_PlayWav, hpz03
 const banterIntervalMilliseconds = 40_000
 const redFinishTime = 300_000
 const blueFinishTime = 400_000
-
-const scoreColorValue = { grey: 0, yellow: 1, blue: 2, red: 3 } as const
-type ScoreColor = keyof typeof scoreColorValue
-const scoreColorByValue: Record<number, ScoreColor> = { 0: 'grey', 1: 'yellow', 2: 'blue', 3: 'red' }
 
 type RunningState = {
   state: 'starting' | 'entered' | 'pickup' | 'returning'
@@ -344,11 +341,7 @@ export class Ambulance extends FuelVehicle {
 
   private _updateScore(color: ScoreColor): void {
     const player = engine.currentSaveGame.player
-    const value = scoreColorValue[color]
-    engine.currentSaveGame.setAmbulanceCurrentScore(player, value)
-    if (value > engine.currentSaveGame.getAmbulanceHighScore(player)) {
-      engine.currentSaveGame.setAmbulanceHighScore(player, value)
-    }
+    engine.currentSaveGame.recordScore('ambulance', player, color)
   }
 
   public reset(): void {
@@ -397,10 +390,10 @@ export class Ambulance extends FuelVehicle {
   }
 
   public static getHighScore(player: PlayerCharacter): ScoreColor {
-    return scoreColorByValue[engine.currentSaveGame.getAmbulanceHighScore(player)] ?? 'grey'
+    return ScoreColors[engine.currentSaveGame.getAmbulanceHighScore(player)] ?? 'grey'
   }
 
   public static getCurrentScore(player: PlayerCharacter): ScoreColor {
-    return scoreColorByValue[engine.currentSaveGame.getAmbulanceCurrentScore(player)] ?? 'grey'
+    return ScoreColors[engine.currentSaveGame.getAmbulanceCurrentScore(player)] ?? 'grey'
   }
 }

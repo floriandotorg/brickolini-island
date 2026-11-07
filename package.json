@@ -8,6 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "check": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
     "lint": "biome check",
     "lefthook:install": "lefthook install"
   },

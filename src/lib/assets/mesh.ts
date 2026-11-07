@@ -1,3 +1,7 @@
+import { type ColorName, isColorTableName } from '../color-table.ts'
+
+export { type ColorName, ColorNames, type ColorTableName, ColorTableNames, getDefaultColor, isColorName, isColorTableName } from '../color-table.ts'
+
 import * as THREE from 'three'
 import { engine } from '../engine'
 import { getSettings } from '../settings'
@@ -6,33 +10,6 @@ import { RoiModel } from './model'
 import { WDB } from './wdb'
 
 export const textureLoader = new THREE.TextureLoader(manager)
-
-export const ColorNames = [
-  'lego black',
-  'lego black f',
-  'lego black flat',
-  'lego blue',
-  'lego blue flat',
-  'lego brown',
-  'lego brown flt',
-  'lego brown flat',
-  'lego drk grey',
-  'lego drk grey flt',
-  'lego dk grey flt',
-  'lego green',
-  'lego green flat',
-  'lego lt grey',
-  'lego lt grey flt',
-  'lego lt grey fla',
-  'lego red',
-  'lego red flat',
-  'lego white',
-  'lego white flat',
-  'lego yellow',
-  'lego yellow flat',
-] as const
-export type ColorName = (typeof ColorNames)[number]
-export const isColorName = (name: string): name is ColorName => ColorNames.includes(name as ColorName)
 
 export const colorAliases: Record<ColorName, WDB.Color> = {
   'lego black': { red: 0x21, green: 0x21, blue: 0x21, alpha: 1 },
@@ -58,104 +35,6 @@ export const colorAliases: Record<ColorName, WDB.Color> = {
   'lego yellow': { red: 0xff, green: 0xb9, blue: 0x00, alpha: 1 },
   'lego yellow flat': { red: 0xff, green: 0xb9, blue: 0x00, alpha: 1 },
 }
-
-export const ColorTableNames = [
-  'c_dbbkfny0',
-  'c_dbbkxly0',
-  'c_chbasey0',
-  'c_chbacky0',
-  'c_chdishy0',
-  'c_chhorny0',
-  'c_chljety1',
-  'c_chrjety1',
-  'c_chmidly0',
-  'c_chmotry0',
-  'c_chsidly0',
-  'c_chsidry0',
-  'c_chstuty0',
-  'c_chtaily0',
-  'c_chwindy1',
-  'c_dbfbrdy0',
-  'c_dbflagy0',
-  'c_dbfrfny4',
-  'c_dbfrxly0',
-  'c_dbhndly0',
-  'c_dbltbry0',
-  'c_jsdashy0',
-  'c_jsexhy0',
-  'c_jsfrnty5',
-  'c_jshndly0',
-  'c_jslsidy0',
-  'c_jsrsidy0',
-  'c_jsskiby0',
-  'c_jswnshy5',
-  'c_rcbacky6',
-  'c_rcedgey0',
-  'c_rcfrmey0',
-  'c_rcfrnty6',
-  'c_rcmotry0',
-  'c_rcsidey0',
-  'c_rcstery0',
-  'c_rcstrpy0',
-  'c_rctailya',
-  'c_rcwhl1y0',
-  'c_rcwhl2y0',
-  'c_jsbasey0',
-  'c_chblady0',
-  'c_chseaty0',
-] as const
-export type ColorTableName = (typeof ColorTableNames)[number]
-export const isColorTableName = (name: string): name is ColorTableName => ColorTableNames.includes(name as ColorTableName)
-
-// spellchecker: disable
-const colorTable: Record<ColorTableName, ColorName> = {
-  c_dbbkfny0: 'lego red', // dunebuggy back fender
-  c_dbbkxly0: 'lego white', // dunebuggy back axle
-  c_chbasey0: 'lego black', // copter base
-  c_chbacky0: 'lego black', // copter back
-  c_chdishy0: 'lego white', // copter dish
-  c_chhorny0: 'lego black', // copter horn
-  c_chljety1: 'lego black', // copter left jet
-  c_chrjety1: 'lego black', // copter right jet
-  c_chmidly0: 'lego black', // copter middle
-  c_chmotry0: 'lego blue', // copter motor
-  c_chsidly0: 'lego black', // copter side left
-  c_chsidry0: 'lego black', // copter side right
-  c_chstuty0: 'lego black', // copter skids
-  c_chtaily0: 'lego black', // copter tail
-  c_chwindy1: 'lego black', // copter windshield
-  c_dbfbrdy0: 'lego red', // dunebuggy body
-  c_dbflagy0: 'lego yellow', // dunebuggy flag
-  c_dbfrfny4: 'lego red', // dunebuggy front fender
-  c_dbfrxly0: 'lego white', // dunebuggy front axle
-  c_dbhndly0: 'lego white', // dunebuggy handlebar
-  c_dbltbry0: 'lego white', // dunebuggy rear light
-  c_jsdashy0: 'lego white', // jetski dash
-  c_jsexhy0: 'lego black', // jetski exhaust
-  c_jsfrnty5: 'lego black', // jetski front
-  c_jshndly0: 'lego red', // jetski handlebar
-  c_jslsidy0: 'lego black', // jetski left side
-  c_jsrsidy0: 'lego black', // jetski right side
-  c_jsskiby0: 'lego red', // jetski base
-  c_jswnshy5: 'lego white', // jetski windshield
-  c_rcbacky6: 'lego green', // racecar back
-  c_rcedgey0: 'lego green', // racecar edge
-  c_rcfrmey0: 'lego red', // racecar frame
-  c_rcfrnty6: 'lego green', // racecar front
-  c_rcmotry0: 'lego white', // racecar motor
-  c_rcsidey0: 'lego green', // racecar side
-  c_rcstery0: 'lego white', // racecar steering wheel
-  c_rcstrpy0: 'lego yellow', // racecar stripe
-  c_rctailya: 'lego white', // racecar tail
-  c_rcwhl1y0: 'lego white', // racecar wheels 1
-  c_rcwhl2y0: 'lego white', // racecar wheels 2
-  c_jsbasey0: 'lego white', // jetski base
-  c_chblady0: 'lego black', // copter blades
-  c_chseaty0: 'lego white', // copter seat
-}
-// spellchecker: enable
-
-export const getDefaultColor = (name: ColorTableName): ColorName => colorTable[name]
 
 export const colorFromName = (name: string): WDB.Color | null => {
   if (name.length > 0 && (name.toLowerCase().startsWith('indir-f-') || name.toLowerCase().startsWith('indir-g-'))) {

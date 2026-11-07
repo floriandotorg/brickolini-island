@@ -527,7 +527,7 @@ export abstract class World {
 
   public async playAnimation(
     action: RunAnimationAction | NestedAnimationAction | AnimationAction,
-    { location, rotation, unskippable, lockCamera, extraTracks, overrideLoop }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[]; overrideLoop?: THREE.AnimationActionLoopStyles } = {},
+    { location, rotation, unskippable, lockCamera, extraTracks, overrideLoop, signal }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[]; overrideLoop?: THREE.AnimationActionLoopStyles; signal?: AbortSignal } = {},
   ): Promise<void> {
     const animationAction = isRunAnimationAction(action) || isNestedAnimationAction(action) ? [...action.children].find((c): c is AnimationAction => isAnimationAction(c)) : action
     if (animationAction == null) {
@@ -551,6 +551,12 @@ export abstract class World {
       roisToHideOnStop,
       loop: defaultLoop,
     } = await this.buildAnimation(action, { location: new THREE.Vector3(-animationAction.location[0], animationAction.location[1], animationAction.location[2]).add(location ?? new THREE.Vector3()), rotation: directionRotation, extraTracks })
+    if (signal?.aborted) {
+      for (const name of managedActorNames) {
+        this.releaseActor(name)
+      }
+      return
+    }
     const loop = overrideLoop ?? defaultLoop
 
     this.setupCameraForAnimation(animation.tree)
@@ -566,6 +572,15 @@ export abstract class World {
         return this.playPositionalAudio(audio, character instanceof Character ? character.head.model : character.model, audio.startTime / 1_000, 'animations')
       }),
     )
+    if (signal?.aborted) {
+      for (const audio of [...audios, ...nonPositionalAudios]) {
+        audio.stop()
+      }
+      for (const name of managedActorNames) {
+        this.releaseActor(name)
+      }
+      return
+    }
     const sentinel = audioActions.length > 0 || audios.length > 0 ? engine.lowerBackgroundMusic() : null
 
     const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
@@ -839,6 +854,20 @@ export abstract class World {
   }
 
   public deactivate(): void {}
+
+  public dispose(): void {
+    this.skipAllRunningAnimations(true)
+    for (const animation of [...this._runningAnimations]) {
+      animation.resolve()
+      animation.mixer.stopAllAction()
+    }
+    this._runningAnimations.length = 0
+    this._actors.clear()
+    this._clickListeners.clear()
+    this._characters.clear()
+    this._cachedPositionalAudios.clear()
+    this.scene.clear()
+  }
 
   private readonly _cachedPositionalAudios = new Map<string, Promise<THREE.PositionalAudio>>()
 

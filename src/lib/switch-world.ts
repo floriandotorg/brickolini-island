@@ -1,6 +1,7 @@
 import type { IsleParam } from '../worlds/isle-base'
 import { getSpawnLocation } from './assets/spawn-location'
 import { engine } from './engine'
+import { onSessionReset } from './session-state.ts'
 import type { ElevatorEntrance, NormalWorld, World, WorldName, WorldSpawn } from './world/world'
 
 const worlds = new Map<WorldName, World>()
@@ -24,6 +25,29 @@ type WorldSpawnInner =
       name: 'infomain'
       ending: 'bad' | 'good' | null
     }
+
+export const discardWorld = (name: WorldName): void => {
+  const world = worlds.get(name)
+  if (world == null) {
+    return
+  }
+  if (currentWorld?.name === name) {
+    throw new Error('Cannot discard the active world')
+  }
+  world.dispose()
+  worlds.delete(name)
+}
+
+export const discardCachedWorlds = (except?: WorldName): void => {
+  for (const name of worlds.keys()) {
+    if (name !== except && name !== currentWorld?.name) {
+      discardWorld(name)
+    }
+  }
+  lastWorld = null
+}
+
+onSessionReset(() => discardCachedWorlds())
 
 export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
   if (engine.hasWorld) {
