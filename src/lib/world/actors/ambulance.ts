@@ -110,6 +110,9 @@ export class Ambulance extends FuelVehicle {
   }
 
   public override async init(): Promise<void> {
+    if (!(this._isle instanceof Act1)) {
+      return
+    }
     engine.currentSaveGame.clearVehiclePlacement(this.type)
     this.roi.visible = false
     const psGate = this.act1.findRoi('ps-gate')

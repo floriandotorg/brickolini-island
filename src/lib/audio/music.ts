@@ -1,7 +1,7 @@
 import { volumeToGain } from './volume.ts'
 
 type MusicAction = { id: number; volume: number }
-type Sound = { gain: { value: number }; loop: boolean; play: () => void; stop: () => void; pause: () => void }
+type Sound = { onEnded?: () => void; gain: { value: number }; loop: boolean; play: () => void; stop: () => void; pause: () => void }
 type Track = { actionId: number; audio: Sound; volume: number }
 
 export class BackgroundMusic<Action extends MusicAction> {
@@ -30,7 +30,7 @@ export class BackgroundMusic<Action extends MusicAction> {
     return this._enabled
   }
 
-  public async play(action: Action, speed = 5): Promise<void> {
+  public async play(action: Action, speed = 5, options: { loop?: boolean; onEnded?: () => void } = {}): Promise<void> {
     if (!this._enabled || this._loading || this._pending != null || this._active?.actionId === action.id) {
       return
     }
@@ -41,7 +41,23 @@ export class BackgroundMusic<Action extends MusicAction> {
       if (generation !== this._generation || !this._enabled) {
         return
       }
-      audio.loop = true
+      audio.loop = options.loop ?? true
+      if (!audio.loop) {
+        audio.onEnded = () => {
+          if (generation !== this._generation) {
+            return
+          }
+          if (this._active?.audio === audio) {
+            this._active = null
+          }
+          if (this._pending?.audio === audio) {
+            this._pending = null
+          }
+          this._mode = 'idle'
+          this.onChanged(null)
+          options.onEnded?.()
+        }
+      }
       this.adoptPending(audio, action, speed)
       audio.play()
     } finally {

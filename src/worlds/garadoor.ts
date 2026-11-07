@@ -1,5 +1,5 @@
 import { GaraDoor as GaraDoor_StartUp } from '../actions/isle'
-import { GarageArea_Music } from '../actions/jukebox'
+import { JBMusic2 } from '../actions/jukebox'
 import type { Composer } from '../lib/effect/composer'
 import type { NormalizedMouseEvent } from '../lib/engine'
 import { switchWorld } from '../lib/switch-world'
@@ -19,7 +19,7 @@ export class GarDoor extends Isle {
     await this._building.init({
       world: this,
       startUpAction: GaraDoor_StartUp,
-      backgroundMusic: GarageArea_Music,
+      backgroundMusic: JBMusic2,
       exitSpawnPoint: { spawn: 'garageExited' },
     })
 

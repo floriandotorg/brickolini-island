@@ -234,8 +234,8 @@ class Engine {
     this.currentSaveGame.dirty = false
   }
 
-  public switchBackgroundMusic(action: AudioAction, speed = 5): Promise<void> {
-    return this.music.play(action, speed)
+  public switchBackgroundMusic(action: AudioAction, speed = 5, options: { loop?: boolean; onEnded?: () => void } = {}): Promise<void> {
+    return this.music.play(action, speed, options)
   }
 
   public onBackgroundMusicChanged(listener: (actionId: number | null) => void): () => void {

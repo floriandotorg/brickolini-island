@@ -64,6 +64,9 @@ export class TowTrack extends FuelVehicle implements IsleMission {
   }
 
   public override async init(): Promise<void> {
+    if (!(this._isle instanceof Act1)) {
+      return
+    }
     engine.currentSaveGame.clearVehiclePlacement(this.type)
     this.roi.visible = false
     this.act1.boundaryManager.onTrigger((name, data, _direction, roi) => {

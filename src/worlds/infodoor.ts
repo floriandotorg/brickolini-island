@@ -27,6 +27,7 @@ export class InfoDoor extends World {
     })
 
     this._building.onButtonClicked = buttonName => {
+      this.skipAllRunningAnimations(true)
       switch (buttonName) {
         case 'Door_Ctl':
           if (engine.currentSaveGame.playerUnsafe == null) {

@@ -230,6 +230,10 @@ class ToggleControl implements Handler {
     return false
   }
 
+  public reset = (): void => {
+    this._pressedState = false
+  }
+
   private get _placedImage(): PlacedImage {
     return this._pressedState ? this._pressedImage : this._idleImage
   }
@@ -250,6 +254,14 @@ export class Control {
   private readonly _sprite: THREE.Sprite
   private readonly _handler: Handler
   private _z = 0
+
+  public resetToggle = (): void => {
+    if (this._handler instanceof ToggleControl) {
+      this._handler.reset()
+      const image = this._handler.image
+      setImageSprite(this._sprite, image)
+    }
+  }
 
   public static async create(action: ControlAction): Promise<Control> {
     try {
@@ -434,12 +446,12 @@ export class ControlsCollection {
     for (const control of this._controls.toSorted((a, b) => a.z - b.z)) {
       const result = control.pointerDown(normalizedX, normalizedY)
       if (result != null) {
-        if (engine.currentWorld.name !== 'infomain' && control.name === 'Info_Ctl') {
+        const controlHandled = this.onButtonClicked(control.name, result)
+        if (!controlHandled && engine.currentWorld.name !== 'infomain' && control.name === 'Info_Ctl') {
           void switchWorld({ ending: null })
           return true
         }
 
-        const controlHandled = this.onButtonClicked(control.name, result)
         if (!controlHandled) {
           console.warn(`Button ${control.name} not handled`)
         }

@@ -8,14 +8,17 @@ import { World } from '../lib/world/world'
 
 export class Police extends World {
   private readonly _building = new Building()
-  private _numVisits = 0
+  private _playing = false
+  private _generation = 0
 
   constructor() {
     super('police')
   }
 
   public override escape(): boolean {
-    this.skipAllRunningAnimations(true)
+    ++this._generation
+    this._playing = false
+    this.stopAnimationsInRange('police', 500, 510)
     return true
   }
 
@@ -26,13 +29,27 @@ export class Police extends World {
       world: this,
       startUpAction: _StartUp,
       backgroundMusic: PoliceStation_Music,
-      exitSpawnPoint: { world: 'copter' },
     })
 
-    this._building.onButtonClicked = buttonName => {
+    this._building.onButtonClicked = (buttonName, event) => {
+      if (event.state !== 1) {
+        return false
+      }
       switch (buttonName) {
+        case 'Donut_Ctl':
+          this.playDonut()
+          return true
+        case 'Info_Ctl':
+          this.escape()
+          void switchWorld({ ending: null })
+          return true
+        case 'Door_Ctl':
+          this.escape()
+          void switchWorld('copter')
+          return true
         case 'LeftArrow_Ctl':
         case 'RightArrow_Ctl':
+          this.escape()
           void switchWorld('polidoor')
           return true
       }
@@ -44,19 +61,39 @@ export class Police extends World {
     this._building.activate(composer)
     super.activate(composer)
 
-    if (engine.currentSaveGame.player === 'nick') {
-      void this.playAnimation(nps002la_RunAnim)
-    } else if (engine.currentSaveGame.player === 'laura') {
-      void this.playAnimation(nps001ni_RunAnim)
-    } else {
-      if (this._numVisits % 2 === 0) {
-        void this.playAnimation(nps002la_RunAnim)
-      } else {
-        void this.playAnimation(nps001ni_RunAnim)
-      }
-    }
+    this._playing = false
+    ++this._generation
+  }
 
-    ++this._numVisits
+  private playDonut = (): void => {
+    if (this._playing) {
+      return
+    }
+    this._playing = true
+    const generation = this._generation
+    const save = engine.currentSaveGame
+    const player = save.playerUnsafe
+    const name = player === 'nick' ? 'nps002la' : player === 'laura' ? 'nps001ni' : save.policeNextAnimation
+    save.policeNextAnimation = player === 'nick' || player === 'laura' ? name : name === 'nps001ni' ? 'nps002la' : 'nps001ni'
+    void this.playAnimation(name === 'nps001ni' ? nps001ni_RunAnim : nps002la_RunAnim).then(() => {
+      if (generation === this._generation) {
+        this._playing = false
+      }
+    })
+  }
+
+  public override keyPressed(key: string): void {
+    if (key === 'Space') {
+      this.stopAnimationsInRange('police', 500, 501)
+      this._playing = false
+      return
+    }
+    super.keyPressed(key)
+  }
+
+  public override deactivate(): void {
+    this.escape()
+    super.deactivate()
   }
 
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {

@@ -2,6 +2,7 @@ import type { IsleParam } from '../worlds/isle-base'
 import { getSpawnLocation } from './assets/spawn-location'
 import { setCursor } from './cursor.ts'
 import { engine } from './engine'
+import { radio } from './radio.ts'
 import { onSessionReset } from './session-state.ts'
 import type { ElevatorEntrance, NormalWorld, World, WorldName, WorldSpawn } from './world/world'
 
@@ -51,6 +52,7 @@ export const discardCachedWorlds = (except?: WorldName): void => {
 onSessionReset(() => discardCachedWorlds())
 
 export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
+  radio.stop()
   if (engine.hasWorld) {
     engine.currentWorld.skipAllRunningAnimations(true)
   }

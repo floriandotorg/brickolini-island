@@ -7,7 +7,7 @@ import { Transition } from '../src/lib/transition.ts'
 
 const track = (id: number) => ({ id, volume: 79 })
 const createMusic = () => {
-  const sounds: { gain: { value: number }; loop: boolean; playing: boolean; play: () => void; stop: () => void; pause: () => void }[] = []
+  const sounds: { onEnded?: () => void; gain: { value: number }; loop: boolean; playing: boolean; play: () => void; stop: () => void; pause: () => void }[] = []
   const music = new BackgroundMusic(async () => {
     const sound = {
       gain: { value: 1 },
@@ -133,4 +133,29 @@ test('transition durations match the scan line and no-animation modes', () => {
   }
   assert.equal(new Transition({ type: 'none' }).update(50), true)
   assert.throws(() => new Transition({ speedMs: 0 }))
+})
+
+test('non-looping music advances on natural end and ignores stale callbacks', async () => {
+  const { music, sounds } = createMusic()
+  let ended = 0
+  await music.play(track(1), 3, {
+    loop: false,
+    onEnded: () => {
+      ++ended
+    },
+  })
+  assert.equal(sounds[0].loop, false)
+  music.update(3)
+  sounds[0].onEnded?.()
+  assert.equal(ended, 1)
+  assert.equal(music.currentActionId, null)
+  await music.play(track(2), 3, {
+    loop: false,
+    onEnded: () => {
+      ++ended
+    },
+  })
+  music.stop()
+  sounds[1].onEnded?.()
+  assert.equal(ended, 1)
 })

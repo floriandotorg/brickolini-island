@@ -28,6 +28,7 @@ import { createTextureAsync } from '../assets/texture'
 import { type Composer, Render2D } from '../effect/composer'
 import { TransparentEdgeBlurEffect } from '../effect/transparent-edge-blur'
 import { engine } from '../engine'
+import { radio } from '../radio.ts'
 import { getSettings } from '../settings'
 import { switchWorld } from '../switch-world'
 import type { CharacterName } from './character'
@@ -57,11 +58,7 @@ export class Building {
       }
 
       if (buttonName.endsWith('Radio_Ctl')) {
-        if (event.state === 1) {
-          engine.resumeBackgroundMusic()
-        } else {
-          engine.pauseBackgroundMusic()
-        }
+        radio.toggle(() => this.getControl(buttonName)?.resetToggle())
         return true
       }
 
