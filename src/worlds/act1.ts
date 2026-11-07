@@ -374,11 +374,9 @@ import {
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../actions/jukebox'
 import { BRS303_CloseJailDoor, TRS302_OpenJailDoor } from '../actions/sndanim'
 import { act1State } from '../lib/act1-state'
-import type { DTA } from '../lib/assets/dta'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { jukeBoxState } from '../lib/jukebox-state'
-import { locations } from '../lib/locations'
 import { raceResults } from '../lib/race-state.ts'
 import { helicopterState, vehicleReturn } from '../lib/session-state.ts'
 import { switchWorld } from '../lib/switch-world'
@@ -786,6 +784,10 @@ export class Act1 extends Isle {
     super('act1', false)
   }
 
+  public override async getRunAnimation(id: number): Promise<import('../lib/action-types').RunAnimationAction | null> {
+    return ANIMATIONS.find(action => action.id === id) ?? super.getRunAnimation(id)
+  }
+
   override async init(): Promise<void> {
     await super.init()
     this._playerMovement.boundaryManager = this.boundaryManager
@@ -865,53 +867,7 @@ export class Act1 extends Isle {
           void engine.switchBackgroundMusic(music[triggers[data - 1][1] - 1])
         }
       } else if (name[2] === 'C') {
-        const location = locations.at(data)
-
-        if (this.cameraAnimationTriggerEnabled && (location == null || !location.animationPlayedAtLocation || location.frequency < Math.floor(Math.random() * 101))) {
-          const indices = (() => {
-            let firstIndex = -1
-            for (let n = 0; n < this.animationInfos.length; ++n) {
-              if (this.animationInfos[n].location === -1) {
-                return null
-              }
-              if (this.animationInfos[n].location === data) {
-                firstIndex = n
-                break
-              }
-            }
-            if (firstIndex < 0) {
-              return null
-            }
-            let lastIndex = firstIndex
-            for (let n = firstIndex + 1; n < this.animationInfos.length; ++n) {
-              if (this.animationInfos[n].location !== data) {
-                lastIndex = n
-                break
-              }
-            }
-
-            return { firstIndex, lastIndex }
-          })()
-
-          if (indices != null) {
-            const animationInfosAtLocation = this.animationInfos.slice(indices.firstIndex, indices.lastIndex)
-            let lastAnimationNumPlayed = Number.MAX_SAFE_INTEGER
-            let animationToPlay: DTA.AnimationInfo | undefined
-            for (const animationInfo of animationInfosAtLocation) {
-              if (!this._cameraAnimationPlaying && animationInfo.actorMask & engine.currentPlayerMask && animationInfo.active && animationInfo.numPlayed < lastAnimationNumPlayed && (animationInfo.numPlayed === 0 || animationInfo.name[0] !== 'i') && animationInfo.name[0] !== 'I') {
-                lastAnimationNumPlayed = animationInfo.numPlayed
-                animationToPlay = animationInfo
-              }
-            }
-            if (animationToPlay) {
-              const animationAction = ANIMATIONS.find(a => a.id === animationToPlay.objectId)
-              if (animationAction == null) {
-                throw new Error(`Animation action not found for animation info ${animationToPlay.name}`)
-              }
-              void this.playCameraAnimation(animationAction, animationToPlay, location)
-            }
-          }
-        }
+        void this.ambient.cameraTrigger(data)
       }
     })
 
@@ -1088,6 +1044,10 @@ export class Act1 extends Isle {
       if (param?.spawn === 'pizzeriaExterior') {
         await this.extras.placeMamaAndPapa()
       }
+    }
+
+    if (param?.camLocation != null && act1State.value === 'none') {
+      void this.ambient.cameraTrigger(param.camLocation)
     }
 
     if (jukeBoxState.pendingStart) {

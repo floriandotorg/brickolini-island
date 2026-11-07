@@ -22,6 +22,7 @@ export class ExtrasManager {
   private _spawn = 0
   private _spawnInterval = 5
   private _smoothed = 0.1
+  private _selector = 0
   private _adding = false
   private _initialized = false
   private _suspended = false
@@ -164,7 +165,7 @@ export class ExtrasManager {
   }
 
   public async addExtra(location = -1, force = false): Promise<void> {
-    if (this._adding || this._suspended || (!force && (!this._world.allowExtras || this._world.isRunningCameraAnimation || Math.abs(this._world.navigationSpeed) > 20))) {
+    if (this._adding || this._suspended || (!force && (!this._world.allowExtras || this._world.ambient.running || Math.abs(this._world.navigationSpeed) > 20))) {
       return
     }
     const index = this.slots.findIndex((slot, n) => slot == null && n < this.numAllowedExtras)
@@ -196,12 +197,18 @@ export class ExtrasManager {
     for (let n = 0; n < extraCharacters.length; ++n) {
       const id = (anim.extraCharacterId + n + 1) % extraCharacters.length
       const character = extraCharacters[id]
-      if (!character.canSpawnAsExtra || !this._enabled.has(character.name) || character.name === engine.currentSaveGame.playerUnsafe || this._world.characterExists(character.name)) {
+      const active = this._world.animationInfos.some(info => info.location === -1 && info.modelInfo.some(model => model.name.slice(0, 2).toLowerCase() === character.name.slice(0, 2)))
+      const wantActive = location < 0 && this._selector % 4 >= 2
+      if (active !== wantActive || !character.canSpawnAsExtra || !this._enabled.has(character.name) || character.name === engine.currentSaveGame.playerUnsafe || this._world.characterExists(character.name)) {
         continue
       }
       this._adding = true
       try {
+        if (this._selector % 4 === 1) {
+          placement = { ...placement, src: placement.dest, srcScale: placement.destScale, dest: placement.src, destScale: placement.srcScale }
+        }
         await this._place(index, id, placement, false)
+        ++this._selector
         engine.currentSaveGame.anim = { ...anim, extraCharacterId: id }
       } finally {
         this._adding = false
@@ -245,7 +252,8 @@ export class ExtrasManager {
         await actor.addAnimationAction(tier, action)
       }
     }
-    const slot = { actor, characterId: id, startTime: this._time, waiting: true, speed, riding, duration: scripted ? -1 : character.duration, lifetime: scripted ? -1 : character.maxLifetime }
+    actor.speed = scripted ? 0 : Math.random() * (riding ? 1.5 : 1.4) + (riding ? 0.9 : 0.6)
+    const slot = { actor, characterId: id, startTime: this._time, waiting: scripted, speed, riding, duration: scripted ? -1 : character.duration, lifetime: scripted ? -1 : character.maxLifetime }
     this.slots[index] = slot
     this._world.attachActor(actor)
     roi.visible = !placement.boundary.hidden
@@ -288,11 +296,53 @@ export class ExtrasManager {
     }
   }
 
+  public adoptCharacters(names: readonly string[]): void {
+    if (!this._world.allowExtras || this._suspended) {
+      return
+    }
+    for (const name of names) {
+      const id = extraCharacters.findIndex(character => character.name === name.toLowerCase())
+      if (id < 0 || name === engine.currentSaveGame.playerUnsafe || (name === 'brickstr' && this._world.name !== 'act1') || this.slots.some(slot => slot?.characterId === id)) {
+        continue
+      }
+      const index = this.slots.indexOf(null)
+      const roi = this._world.findRoi(name)
+      const boundary = roi == null ? null : this._world.boundaryManager.getBoundaryFromPosition(roi.position.clone().add(new THREE.Vector3(0, 1, 0)))
+      const edge = boundary?.edges.find(edge => edge.isTraversableFromFace(boundary))
+      if (index < 0 || roi == null || !roi.model.visible || boundary == null || edge == null) {
+        continue
+      }
+      void this._world.getCharacter(extraCharacters[id].name)
+      const actor = new ExtraActor(roi, this._world)
+      actor.setCurrentDestination({ boundary, edge, scale: 0.5 })
+      const character = extraCharacters[id]
+      const vehicle = character.vehicleId == null ? null : this._world.findRoi(character.vehicleId)
+      const riding = vehicle?.model.visible === true && !this.slots.some(slot => slot?.riding && extraCharacters[slot.characterId].vehicleId === character.vehicleId)
+      const cycles = cycleRows[character.cycleIndex]
+      const indices = extraCycleIndices(engine.currentSaveGame.getCharacterVariant(name)?.mood ?? 0)
+      const entries = riding
+        ? ([[1.7, cycles[10]]] as const)
+        : ([
+            [0.7, cycles[indices[0]]],
+            [4, cycles[indices[1]]],
+            [0, cycles[indices[2]]],
+          ] as const)
+      for (const [tier, action] of entries) {
+        if (action != null) {
+          void actor.addAnimationAction(tier, action)
+        }
+      }
+      this.slots[index] = { actor, characterId: id, startTime: this._time, waiting: true, speed: -1, riding, duration: Math.max(0, character.duration), lifetime: Math.max(0, character.maxLifetime) }
+      this._world.attachActor(actor)
+    }
+  }
+
   public borrowForAnimation(names: readonly string[]): () => void {
     this.lastActionTime = this._time
     const borrowed = this.slots.filter(slot => slot != null && names.some(name => name.toLowerCase() === slot.actor.roi.name))
     for (const slot of borrowed) {
       if (slot != null) {
+        slot.actor.roi.captureTransform()
         slot.actor.borrowed = true
       }
     }
@@ -301,6 +351,15 @@ export class ExtrasManager {
       for (const slot of borrowed) {
         if (slot == null) {
           continue
+        }
+        if (slot.duration < 0 || slot.lifetime < 0) {
+          slot.actor.roi.restoreTransform()
+        } else {
+          const boundary = this._world.boundaryManager.getBoundaryFromPosition(slot.actor.roi.position.clone().add(new THREE.Vector3(0, 1, 0)))
+          const edge = boundary?.edges.find(edge => edge.isTraversableFromFace(boundary))
+          if (boundary != null && edge != null) {
+            slot.actor.setCurrentDestination({ boundary, edge, scale: 0.5 })
+          }
         }
         slot.actor.borrowed = false
         slot.startTime = this._time

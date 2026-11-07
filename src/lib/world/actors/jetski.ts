@@ -15,8 +15,12 @@ export class Jetski extends Vehicle {
   }
 
   public override async enter(transition = true): Promise<void> {
+    const explained = engine.currentSaveGame.playedExitExplanation
     this._isle.allowExtras = false
     await super.enter(transition)
+    if (explained) {
+      void this._isle.ambient.cameraTrigger(68)
+    }
   }
 
   public override exit(): void {

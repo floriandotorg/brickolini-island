@@ -8,7 +8,7 @@ import { NoPizaz_Texture, NoPizza_Texture } from '../actions/isle'
 import { Jsuser_Model } from '../actions/jetski'
 import { Rcuser_Model } from '../actions/racecar'
 import { act1State } from '../lib/act1-state'
-import { type ActionBase, type ActorAction, type AnimationAction, type EntityAction, getExtraValue, isActorAction, isAnimationAction, isBoundaryAction, isEntityAction, isPositionalAudioAction, type ModelAction, type RunAnimationAction, type SerialAction } from '../lib/action-types'
+import { type ActionBase, type ActorAction, type AnimationAction, type EntityAction, getExtraValue, isActorAction, isAnimationAction, isBoundaryAction, isEntityAction, isPositionalAudioAction, isRunAnimationAction, type ModelAction, type RunAnimationAction, type SerialAction } from '../lib/action-types'
 import { type Boundary, type Edge, getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
@@ -23,6 +23,7 @@ import { getSettings } from '../lib/settings'
 import { type Actor, ColliderType } from '../lib/world/actor'
 import { PathActor } from '../lib/world/actors/path-actor'
 import type { Vehicle } from '../lib/world/actors/vehicle'
+import { AmbientManager } from '../lib/world/ambient-manager'
 import type { Character, CharacterName } from '../lib/world/character'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
 import type { Entity } from '../lib/world/entity'
@@ -233,7 +234,7 @@ export abstract class IsleBase extends World {
     if (this._dtaWorldName != null) {
       this._animationInfos = await loadAnimationInfoFromDTA(this._dtaWorldName)
       for (const animationInfo of this._animationInfos) {
-        animationInfo.active = true
+        animationInfo.active = this.name === 'act1'
       }
     }
 
@@ -366,6 +367,7 @@ export abstract class IsleBase extends World {
     }
   }
 
+  public readonly ambient = new AmbientManager(this)
   public readonly extras = new ExtrasManager(this)
 
   public get navigationSpeed(): number {
@@ -373,6 +375,8 @@ export abstract class IsleBase extends World {
   }
 
   public override deactivate(): void {
+    this.ambient.persist()
+    this.toggleManagedAnimations(false)
     this.extras.suspend()
     super.deactivate()
   }
@@ -395,6 +399,7 @@ export abstract class IsleBase extends World {
 
     this._dashboard.activate(composer)
     this.extras.resume()
+    this.ambient.restore()
 
     const noPizzaSign = this.scene.getObjectByName('nopizza')?.children[0]
     if (noPizzaSign instanceof THREE.Mesh) {
@@ -587,7 +592,18 @@ export abstract class IsleBase extends World {
     this._cameraAnimationPlaying = this.isRunningCameraAnimation
   }
 
-  public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location, lockOnly = false): Promise<void> {
+  protected override onAnimationCharactersFinished(names: readonly string[], managed: boolean): void {
+    if (managed) {
+      this.extras.adoptCharacters(names)
+    }
+  }
+
+  public async getRunAnimation(id: number): Promise<RunAnimationAction | null> {
+    const script = this.name === 'act2' ? await import('../actions/act2main') : this._dtaWorldName === 'ACT3' ? await import('../actions/act3') : await import('../actions/isle')
+    return Object.values(script).find((action): action is RunAnimationAction => isRunAnimationAction(action) && action.id === id) ?? null
+  }
+
+  public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location, lockOnly = false, anchorRoi?: Roi3D, holdManagedActorNames: readonly string[] = []): Promise<void> {
     if (animationInfo == null) {
       animationInfo = this.animationInfos.find(a => a.objectId === action.id)
       if (animationInfo == null) {
@@ -599,8 +615,9 @@ export abstract class IsleBase extends World {
     this.playerMovement?.resetVelocities()
 
     this._cameraAnimationPlaying = true
-    const returnExtras = this.extras.borrowForAnimation(animationInfo.modelInfo.map(model => model.name))
-    ++animationInfo.numPlayed
+    const finish = this.ambient.begin(animationInfo)
+    const previousPosition = this.camera.position.clone()
+    const previousQuaternion = this.camera.quaternion.clone()
     if (location != null) {
       location.animationPlayedAtLocation = true
     }
@@ -636,13 +653,19 @@ export abstract class IsleBase extends World {
         })()
     return this.playAnimation(action, {
       managed: true,
+      anchorRoi,
+      holdManagedActorNames,
       capturesPlayer: lockOnly || animationInfo.hasCameraAnimation,
       animationLocation: animationInfo.location,
       extraTracks,
       lockCamera: lockOnly || extraTracks != null,
     }).finally(() => {
-      returnExtras()
+      finish()
       this._cameraAnimationPlaying = false
+      if (animationInfo.hasCameraAnimation && this.boundaryManager.getBoundaryFromPosition(this.camera.position.clone().add(new THREE.Vector3(0, 1, 0))) == null) {
+        this.camera.position.copy(previousPosition)
+        this.camera.quaternion.copy(previousQuaternion)
+      }
     })
   }
 
@@ -732,6 +755,9 @@ export abstract class IsleBase extends World {
 
     let entity: Entity | null = null
     switch (objectScript) {
+      case 'JailEntity':
+        entity = new (await import('../lib/world/entities/jail')).JailEntity(model, this)
+        break
       case 'GasStationEntity':
         entity = new (await import('../lib/world/entities/gas-station')).GasStation(model, this)
         break
@@ -897,6 +923,7 @@ export abstract class IsleBase extends World {
     super.update(delta)
 
     this._updateSun()
+    this.ambient.tick(delta)
     this.extras.tick(delta)
 
     if (this._water != null) {

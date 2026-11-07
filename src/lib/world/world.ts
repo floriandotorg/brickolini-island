@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { Action } from '../../actions/types'
 import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, isAudioAction, isNestedAnimationAction, isPositionalAudioAction, isRunAnimationAction, type NestedAnimationAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
 import { type ManagedAnimation, skipDecision } from '../animation-skip.ts'
-import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
+import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, findRecursively, getBeforeAndAfter, getTransformsAtTime, parse3DAnimation } from '../assets/animation'
 import type { Audio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
 import { calculateTransformationMatrix, getGlobalPart, Roi3D, RoiModel } from '../assets/model'
@@ -79,6 +79,7 @@ type FaceAnimation = {
 export type BuiltAnimation = {
   animation: Animation3D
   animationActors: Map<string, AnimationActor>
+  rootTransform: THREE.Matrix4
   managedActorNames: string[]
   roisToRemoveOnStop: Roi3D[]
   positionalAudioActions: PositionalAudioAction[]
@@ -166,7 +167,7 @@ export abstract class World {
   }
 
   public get isRunningCameraAnimation(): boolean {
-    return this._runningAnimations.some(a => a.lookAtKeys != null || a.lockCamera)
+    return this._runningAnimations.some(a => !a.metadata.released && (a.lookAtKeys != null || a.lockCamera === true || a.metadata.hasCameraTrack))
   }
 
   public get scene(): THREE.Scene {
@@ -569,7 +570,7 @@ export abstract class World {
     return { animationActors, managedActorNames, roisToRemoveOnStop }
   }
 
-  public async buildAnimation(action: RunAnimationAction | NestedAnimationAction | AnimationAction, { location, rotation, extraTracks }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; extraTracks?: THREE.KeyframeTrack[] } = {}): Promise<BuiltAnimation> {
+  public async buildAnimation(action: RunAnimationAction | NestedAnimationAction | AnimationAction, { location, rotation, extraTracks, anchorRoi }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; extraTracks?: THREE.KeyframeTrack[]; anchorRoi?: Roi3D } = {}): Promise<BuiltAnimation> {
     const children = action.type === Action.Type.ParallelAction ? action.children : []
     const animationActions = action.type === Action.Type.ParallelAction ? children.filter(c => c.presenter === 'LegoAnimPresenter' || c.presenter === 'LegoLocomotionAnimPresenter' || c.presenter === 'LegoLoopingAnimPresenter') : [action]
     if (animationActions.length !== 1) {
@@ -658,6 +659,17 @@ export abstract class World {
       animationTransform.setPosition(location)
     }
 
+    if (anchorRoi != null) {
+      const actor = [...animationActors.values()].find(actor => actor.roi === anchorRoi)
+      if (actor != null) {
+        const bindings = new Map([...animationActors].map(([name, entry]) => [name, entry === actor ? { ...entry, type: WDB.ActorType.Unknown } : entry]))
+        const transform = getTransformsAtTime(animation.tree, bindings, new THREE.Matrix4(), 0).get(anchorRoi.model.uuid)
+        if (transform != null) {
+          animationTransform.copy(anchorRoi.getWorldBoundsMatrix()).multiply(new THREE.Matrix4().compose(transform.position, transform.quaternion, transform.scale).invert())
+        }
+      }
+    }
+
     const tracks = [...animationToTracks(animation.tree, animationActors, animationTransform), ...(extraTracks ?? [])]
 
     if (animation.cameraAnimation != null) {
@@ -695,6 +707,7 @@ export abstract class World {
     return {
       animation,
       animationActors,
+      rootTransform: animationTransform,
       managedActorNames,
       roisToRemoveOnStop,
       positionalAudioActions,
@@ -720,6 +733,7 @@ export abstract class World {
       overrideLoop,
       signal,
       holdManagedActorNames,
+      anchorRoi,
       managed = false,
       capturesPlayer = false,
       animationLocation = -1,
@@ -735,6 +749,7 @@ export abstract class World {
       overrideLoop?: THREE.AnimationActionLoopStyles
       signal?: AbortSignal
       holdManagedActorNames?: readonly string[]
+      anchorRoi?: Roi3D
     } = {},
   ): Promise<void> {
     const animationAction = isRunAnimationAction(action) || isNestedAnimationAction(action) ? [...action.children].find((c): c is AnimationAction => isAnimationAction(c)) : action
@@ -759,8 +774,9 @@ export abstract class World {
       roisToHideOnStop,
       loop: defaultLoop,
       animationActors,
+      rootTransform,
       location: builtLocation,
-    } = await this.buildAnimation(action, { location: new THREE.Vector3(-animationAction.location[0], animationAction.location[1], animationAction.location[2]).add(location ?? new THREE.Vector3()), rotation: directionRotation, extraTracks })
+    } = await this.buildAnimation(action, { location: new THREE.Vector3(-animationAction.location[0], animationAction.location[1], animationAction.location[2]).add(location ?? new THREE.Vector3()), rotation: directionRotation, extraTracks, anchorRoi })
     if (signal?.aborted) {
       for (const name of managedActorNames) {
         this.releaseActor(name)
@@ -815,6 +831,18 @@ export abstract class World {
       unskippable,
       loop,
       action,
+      onFinished: () => {
+        const bindings = new Map([...animationActors].map(([name, actor]) => [name, { ...actor, type: actor.type === WDB.ActorType.ManagedActor ? WDB.ActorType.Unknown : actor.type }]))
+        const poses = getTransformsAtTime(animation.tree, bindings, rootTransform, Math.max(0, clip.duration * 1000))
+        for (const name of managedActorNames) {
+          const actor = animationActors.get(name)
+          const pose = actor == null ? null : poses.get(actor.object.uuid)
+          if (actor?.roi instanceof Character && pose != null) {
+            actor.roi.syncAnimationPose(pose.position, pose.quaternion)
+          }
+        }
+        this.onAnimationCharactersFinished(managedActorNames, managed)
+      },
       onRelease: () => {
         if (sentinel != null) {
           engine.raiseBackgroundMusic(sentinel)
@@ -827,12 +855,15 @@ export abstract class World {
     }
   }
 
+  protected onAnimationCharactersFinished(_names: readonly string[], _managed: boolean): void {}
+
   public async playAnimationClip(
     root: THREE.Object3D,
     clip: THREE.AnimationClip,
     {
       action,
       onRelease,
+      onFinished,
       metadata = { managed: false, capturesPlayer: false, location: -1, hasCameraTrack: false, released: false },
       audios = [],
       nonPositionalAudios = [],
@@ -853,6 +884,7 @@ export abstract class World {
       loop,
     }: {
       onRelease?: () => void
+      onFinished?: () => void
       metadata?: ManagedAnimation
       action?: { id: number; siFile: string }
       audios?: THREE.PositionalAudio[]
@@ -907,6 +939,7 @@ export abstract class World {
         for (const roi of roisToHideOnStop) {
           roi.visible = false
         }
+        onFinished?.()
         for (const roi of roisToRemoveOnStop) {
           this.removeFromParents(roi.getAllModels())
         }

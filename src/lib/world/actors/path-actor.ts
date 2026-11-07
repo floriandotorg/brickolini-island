@@ -38,6 +38,8 @@ export class PathActor extends Actor {
 
   public setCurrentDestination(destination: Destination): void {
     this._destination = destination
+    this._spline = null
+    this._distanceTraveled = 0
   }
 
   public navigateTo(boundaryName: string, position: THREE.Vector3, direction: THREE.Vector3): void {

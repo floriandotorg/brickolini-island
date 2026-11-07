@@ -69,6 +69,7 @@ export abstract class Vehicle extends Actor {
   }
 
   public async enter(transition = true): Promise<void> {
+    this._isle.toggleManagedAnimations(false)
     if (transition) {
       await engine.transition({ keepMusic: true })
     }

@@ -214,6 +214,7 @@ export class Pizzeria extends Actor {
     this._timer = null
     this._removePizzaTimer = null
     this.act1.getActor('skate', Skateboard).showPizza = false
+    this.act1.resumeHeldActor('papa')
     this.act1.cameraAnimationTriggerEnabled = true
     this.act1.backgroundMusicTriggerEnabled = true
     this.act1.allowExtras = true
@@ -253,7 +254,7 @@ export class Pizzeria extends Actor {
     this._acceptanceIndices[player] = Math.min(2, this._acceptanceIndices[player] + 1)
     const index = save.getPizzeriaPlaylist(player)
     save.setPizzeriaPlaylist(player, Math.min(2, index + 1))
-    void this.act1.playCameraAnimation(introAnimations[player][index]).then(() => {
+    void this.act1.playCameraAnimation(introAnimations[player][index], undefined, undefined, false, undefined, ['papa']).then(() => {
       if (generation === this._generation && this._phase === 'introduction') {
         this._phase = 'waiting'
         this._timer = engine.createTimeout(5_000)
@@ -278,6 +279,7 @@ export class Pizzeria extends Actor {
       if (generation !== this._generation) {
         return
       }
+      this.act1.resumeHeldActor('papa')
       this._phase = 'delivering'
       this._timer = engine.createTimeout(350_000)
       this._helpAudioPlayed = false

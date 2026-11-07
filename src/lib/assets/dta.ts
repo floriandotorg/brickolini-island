@@ -1,14 +1,15 @@
+import { extraCharacters, extraVehicles } from '../world/extras-data'
 import { BinaryReader } from './binary-reader'
 import { getFile, getFileUrl } from './load'
 
 export namespace DTA {
   export interface ModelInfo {
     name: string
-    unknown1: number
+    actorType: number
     location: [number, number, number]
     direction: [number, number, number]
     up: [number, number, number]
-    unknown2: number
+    canBeIndexed: number
   }
 
   export interface AnimationInfo {
@@ -16,13 +17,15 @@ export namespace DTA {
     objectId: number
     location: number
     hasCameraAnimation: boolean
-    unknown2: number
+    unused0b: number
     actorMask: number
-    unknown4: number
-    unknownPosition: [number, number, number]
-    unknownRadius: number
+    unused0d: number
+    position: [number, number, number]
+    radius: number
     modelCount: number
     modelInfo: ModelInfo[]
+    characterIndex: number
+    vehicleIndices: number[]
     numPlayed: number
     active: boolean
   }
@@ -30,11 +33,11 @@ export namespace DTA {
 
 const parseModelInfo = (reader: BinaryReader): DTA.ModelInfo => ({
   name: reader.readString('u8'),
-  unknown1: reader.readUint8(),
+  actorType: reader.readUint8(),
   location: reader.readVector3(),
   direction: reader.readVector3(),
   up: reader.readVector3(),
-  unknown2: reader.readUint8(),
+  canBeIndexed: reader.readUint8(),
 })
 
 const parseAnimation = (reader: BinaryReader): DTA.AnimationInfo => {
@@ -42,11 +45,11 @@ const parseAnimation = (reader: BinaryReader): DTA.AnimationInfo => {
   const objectId = reader.readUint32()
   const location = reader.readInt16()
   const hasCameraAnimation = reader.readUint8() !== 0
-  const unknown2 = reader.readUint8()
+  const unused0b = reader.readUint8()
   const actorMask = reader.readUint8()
-  const unknown4 = reader.readUint8()
-  const unknownPosition = reader.readVector3()
-  const unknownRadius = reader.readFloat32()
+  const unused0d = reader.readUint8()
+  const position = reader.readVector3()
+  const radius = reader.readFloat32()
   const modelCount = reader.readUint8()
 
   const modelInfo: DTA.ModelInfo[] = []
@@ -59,13 +62,18 @@ const parseAnimation = (reader: BinaryReader): DTA.AnimationInfo => {
     objectId,
     location,
     hasCameraAnimation,
-    unknown2,
+    unused0b,
     actorMask,
-    unknown4,
-    unknownPosition,
-    unknownRadius,
+    unused0d,
+    position,
+    radius,
     modelCount,
     modelInfo,
+    characterIndex: extraCharacters.findIndex(character => character.name.slice(0, 2) === name.slice(-2).toLowerCase()),
+    vehicleIndices: modelInfo
+      .filter(model => model.canBeIndexed !== 0)
+      .flatMap(model => extraVehicles.flatMap((vehicle, n) => (vehicle === model.name.toLowerCase() ? [n] : [])))
+      .slice(0, 3),
     numPlayed: 0,
     active: false,
   }

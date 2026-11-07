@@ -1512,6 +1512,11 @@ export class Character extends Roi3D {
     this._worldQuaternion.copy(newQuaternion)
   }
 
+  public syncAnimationPose(position: THREE.Vector3, quaternion: THREE.Quaternion): void {
+    this._worldPosition.copy(position)
+    this._worldQuaternion.copy(quaternion)
+  }
+
   public override getWorldBoundsMatrix(): THREE.Matrix4 {
     return new THREE.Matrix4().compose(this._worldPosition, this._worldQuaternion, new THREE.Vector3(1, 1, 1))
   }

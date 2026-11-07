@@ -79,7 +79,7 @@ export class ExtraActor extends PathActor {
 
   public override update(delta: number): { from: THREE.Vector3; to: THREE.Vector3 } {
     const stationary = { from: this.roi.position.clone(), to: this.roi.position.clone() }
-    if (this.borrowed) {
+    if (this.borrowed || (this.boundary != null && this._isle.ambient.isBoundaryBusy(this.boundary))) {
       return stationary
     }
     const reaction = this._reaction

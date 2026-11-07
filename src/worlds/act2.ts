@@ -266,6 +266,10 @@ export class Act2 extends IsleBase {
     })
   }
 
+  protected override get playerMovement(): PlayerMovement {
+    return this._playerMovement
+  }
+
   protected override get debugPositionDirection(): { position: THREE.Vector3; direction: THREE.Vector3; slewMode: boolean } | null {
     return this._playerMovement.getDebugInfo()
   }
@@ -322,13 +326,14 @@ export class Act2 extends IsleBase {
   public override update(delta: number): void {
     super.update(delta)
 
-    const { fromPos, toPos, normalizedSpeed } = this._playerMovement.update(delta, this.currentVehicle?.type ?? null)
-
-    this.updateActors(delta, fromPos, toPos)
-
+    const fromPos = this.camera.position.clone()
+    const movement = this.isRunningCameraAnimation ? { fromPos, toPos: fromPos.clone(), normalizedSpeed: 0 } : this._playerMovement.update(delta, this.currentVehicle?.type ?? null)
+    const { toPos, normalizedSpeed } = movement
+    void this.updateActors(delta, movement.fromPos, toPos)
     this._dashboard.update(normalizedSpeed, this.currentVehicle?.fuel ?? 0)
-
-    this.boundaryManager.update(fromPos, toPos, null)
+    if (!this.isRunningCameraAnimation) {
+      this.boundaryManager.update(movement.fromPos, toPos, null)
+    }
 
     if (this._state.type === 'going-to-residential-area' && this._state.helpInterval.resetExpired() && !this._infomanIsTalking) {
       this._infomanIsTalking = true
