@@ -20,6 +20,8 @@ type AnimationRuntime = {
   animationActors: Map<string, AnimationActor> | null
   preparing: Promise<void> | null
   time: number
+  duration: number
+  objects: Map<string, THREE.Object3D>
 }
 
 export abstract class Actor extends Entity {
@@ -86,6 +88,8 @@ export abstract class Actor extends Entity {
       animationActors: null,
       preparing: null,
       time: 0,
+      duration: 0,
+      objects: new Map(),
     }
     this._animationRuntimes.set(speed, runtime)
     runtime.preparing = this._prepareRuntime(runtime)
@@ -105,9 +109,21 @@ export abstract class Actor extends Entity {
     if (!animationActors.has(animation.tree.name)) {
       animationActors.set(animation.tree.name, { type: WDB.ActorType.ManagedActor, object: this.roi.model, children: new Map(this.roi.children.map(child => [child.name, child.model])), roi: this.roi })
     }
+    runtime.duration = this._getAnimationDurationMs(animation.tree)
     runtime.animation = animation
     runtime.animationActors = animationActors
+    this._cacheAnimationObjects(runtime)
     runtime.preparing = null
+  }
+
+  private _cacheAnimationObjects(runtime: AnimationRuntime): void {
+    runtime.objects.clear()
+    for (const { object, children } of runtime.animationActors?.values() ?? []) {
+      runtime.objects.set(object.uuid, object)
+      for (const child of children.values()) {
+        runtime.objects.set(child.uuid, child)
+      }
+    }
   }
 
   private _selectAnimationKey(): number | null {
@@ -127,10 +143,11 @@ export abstract class Actor extends Entity {
       actor = { type: WDB.ActorType.Unknown, object: roi.model, roi, children: new Map() }
       runtime.animationActors.set(name, actor)
     }
-    if (actor != null) {
+    if (actor != null && runtime != null) {
       actor.object = roi.model
       actor.roi = roi
       actor.children = new Map(roi.children.map(child => [child.name, child.model]))
+      this._cacheAnimationObjects(runtime)
     }
   }
   protected animationActorNames(key: number): string[] {
@@ -164,8 +181,7 @@ export abstract class Actor extends Entity {
       return
     }
 
-    const durationMs = this._getAnimationDurationMs(runtime.animation.tree)
-    runtime.time = forcedTime ?? advanceCycleTime(runtime.time, delta, this._speed, durationMs)
+    runtime.time = forcedTime ?? advanceCycleTime(runtime.time, delta, this._speed, runtime.duration)
 
     const baseTransform = new THREE.Matrix4()
     baseTransform.makeRotationFromQuaternion(this.roi.getWorldQuaternion(new THREE.Quaternion()))
@@ -176,7 +192,7 @@ export abstract class Actor extends Entity {
     }
     const transforms = getChildTransformsAtTime(runtime.animation.tree, runtime.animationActors, baseTransform, runtime.time)
     for (const [uuid, { position, quaternion, scale }] of transforms) {
-      const object = this._isle.scene.getObjectByProperty('uuid', uuid)
+      const object = runtime.objects.get(uuid)
       if (object != null) {
         object.position.copy(position)
         object.quaternion.copy(quaternion)
@@ -212,6 +228,9 @@ export abstract class Actor extends Entity {
   }
 
   public checkCollision(from: THREE.Vector3, to: THREE.Vector3, moverCollideBox = false): boolean {
+    if (from.distanceToSquared(to) < 0.00000001) {
+      return false
+    }
     if (moverCollideBox && this._colliderType === ColliderType.Box) {
       return this.checkBoxCollision(from, to)
     }

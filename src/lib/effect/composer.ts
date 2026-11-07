@@ -3,6 +3,7 @@ import { type LetterboxAnchor, letterboxBounds, RESOLUTION_RATIO } from '../engi
 import { getSettings } from '../settings.ts'
 import { updateFocusedShadow } from '../world/lighting.ts'
 import type { Effect } from './effect.ts'
+import { RenderBatches } from './render-batches.ts'
 import effectFrag from './shader/effect.glsl'
 import { WorldShadingEffect } from './world-shading.ts'
 
@@ -55,6 +56,7 @@ export class Render3D extends Render {
     stencilBuffer: false,
     samples: 4,
   })
+  private readonly _batches = new RenderBatches()
   private _focusedShadows = getSettings().graphics.preset !== 'original'
 
   constructor() {
@@ -87,12 +89,20 @@ export class Render3D extends Render {
       })
     }
     renderer.setRenderTarget(this._renderTarget)
-    renderer.render(this.scene, this.camera)
-    renderer.setRenderTarget(null)
+    try {
+      if (renderer.extensions.has('WEBGL_multi_draw')) {
+        this._batches.prepare(this.scene)
+      }
+      renderer.render(this.scene, this.camera)
+    } finally {
+      this._batches.restore()
+      renderer.setRenderTarget(null)
+    }
   }
 
   public override dispose(): void {
     super.dispose()
+    this._batches.dispose()
     this._renderTarget.dispose()
     this._depth.dispose()
   }

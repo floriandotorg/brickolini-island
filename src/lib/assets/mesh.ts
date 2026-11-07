@@ -65,6 +65,7 @@ export const colorMesh = (object: THREE.Object3D, color: THREE.Color): void =>
     }
   })
 
+const textures = new Map<string, THREE.Texture>()
 const namedTextureMaterials = new Map<string, Set<THREE.MeshBasicMaterial | THREE.MeshLambertMaterial | THREE.MeshPhysicalMaterial>>()
 const textureKey = (name: string): string => name.toLowerCase().replace(/\.[^.]+$/, '')
 
@@ -84,7 +85,12 @@ const createTexture = (name: string, source: 'model' | 'part' | 'image'): THREE.
   const slot = VehicleTextureSlots.find(slot => slot === textureKey(name))
   const override = slot == null ? null : engine.currentSaveGame.getVehicleTexture(slot)
   const path = override != null && /^(copter|dunecar|jetski|racecar)\/\d+$/.test(override) ? `${override}.png` : `world/${sourceToPath[source]}/${name.toLowerCase()}.png`
-  const result = textureLoader.load(getFileUrl(path), texture => {
+  const url = getFileUrl(path)
+  const cached = textures.get(url)
+  if (cached != null) {
+    return cached
+  }
+  const loaded = textureLoader.load(url, texture => {
     texture.name = name.toLowerCase()
     texture.colorSpace = THREE.SRGBColorSpace
     texture.wrapS = THREE.RepeatWrapping
@@ -97,8 +103,9 @@ const createTexture = (name: string, source: 'model' | 'part' | 'image'): THREE.
       texture.anisotropy = Math.min(8, engine.renderer.capabilities.getMaxAnisotropy())
     }
   })
-  result.name = name.toLowerCase()
-  return result
+  loaded.name = name.toLowerCase()
+  textures.set(url, loaded)
+  return loaded
 }
 
 const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color | null, texture: string | THREE.Texture | null, type: 'model' | 'part'): [THREE.BufferGeometry, THREE.Material] => {
@@ -150,6 +157,7 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
     materials.add(material)
     namedTextureMaterials.set(key, materials)
   }
+  geometry.computeBoundingBox()
   return [geometry, material]
 }
 
