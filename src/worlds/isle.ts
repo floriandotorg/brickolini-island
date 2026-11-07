@@ -50,10 +50,11 @@ export class Isle extends IsleBase {
         this.removeActor(previousActor)
       }
       const placement = (() => {
-        if (engine.resetVehicleRespawn(type)) {
+        const saved = engine.currentSaveGame.getVehiclePlacement(type)
+        if (engine.resetVehicleRespawn(type) || (saved == null && engine.currentSaveGame.getBuildState(type).finishedBuild)) {
           return this.boundaryManager.getObjectPlacementFromLocation(spawn)
         }
-        return engine.currentSaveGame.getVehiclePlacement(type)
+        return saved
       })()
       if (placement != null) {
         const rootRoi = await getModel(model)

@@ -400,7 +400,7 @@ export abstract class World {
       if (!collided) {
         const moverCollideBox = actor.colliderType === ColliderType.Box
         for (const other of this._actors) {
-          if (other === actor || !other.collisionEnabled || !other.checkCollision(actorFrom, actorTo, moverCollideBox)) {
+          if (other === actor || other.suspended || !other.collisionEnabled || !other.checkCollision(actorFrom, actorTo, moverCollideBox)) {
             continue
           }
           actor.onCollision(other.roi, true)
@@ -1042,7 +1042,7 @@ export abstract class World {
 
   public async click(event: NormalizedMouseEvent): Promise<void> {
     this._raycaster.setFromCamera(new THREE.Vector2(event.ndcX, event.ndcY), this._render.camera)
-    let hit: THREE.Object3D | null = this._raycaster.intersectObjects(Array.from(this._clickListeners.keys()))[0]?.object
+    let hit: THREE.Object3D | null = this._raycaster.intersectObjects(Array.from(this._clickListeners.keys())).find(hit => this._isVisible(hit.object))?.object ?? null
     const picked = hit
     while (hit != null && picked != null) {
       const onClick = this._clickListeners.get(hit)
@@ -1057,7 +1057,7 @@ export abstract class World {
     this._raycaster.setFromCamera(new THREE.Vector2(normalizedX, normalizedY), this._render.camera)
     const hits = this._raycaster.intersectObjects(Array.from(this._clickListeners.keys()))
     for (const hit of hits) {
-      if (!hit.object.visible) {
+      if (!this._isVisible(hit.object)) {
         continue
       }
       let obj: THREE.Object3D | null = hit.object
@@ -1071,6 +1071,16 @@ export abstract class World {
       return null
     }
     return null
+  }
+  private _isVisible(object: THREE.Object3D): boolean {
+    let current: THREE.Object3D | null = object
+    while (current != null) {
+      if (!current.visible) {
+        return false
+      }
+      current = current.parent
+    }
+    return true
   }
   public pointerUp(_event: NormalizedMouseEvent): void {}
   public pointerMove(_event: NormalizedMouseEvent): void {}

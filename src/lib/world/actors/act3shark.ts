@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import type { Roi3D } from '../../assets/model'
 import type { Act3Ammo } from '../act3/ammo'
 import { Actor } from '../actor'
 export class Act3Shark extends Actor {
@@ -7,8 +8,14 @@ export class Act3Shark extends Actor {
   private _time = 0
   private _position = new THREE.Vector3()
   private _placeholder: string | null = null
+  private _placeholderRoi: Roi3D | null = null
   public override async init(): Promise<void> {
     this.roi.visible = false
+    this._placeholder = this.animationActorNames(0).find(name => !name.includes('shark')) ?? null
+    this._placeholderRoi = this._placeholder == null ? null : this._isle.findRoi(this._placeholder)
+    if (this._placeholderRoi != null) {
+      this._placeholderRoi.visible = false
+    }
   }
   public eatPizza(pizza: Act3Ammo): void {
     if (!pizza.valid || pizza.sharkFood) {
@@ -29,7 +36,6 @@ export class Act3Shark extends Actor {
       this._current = pizza
       this._time = 0
       this._position.copy(pizza.roi.position)
-      this._placeholder = this.animationActorNames(0).find(name => !name.includes('shark')) ?? null
       if (this._placeholder != null) {
         this.bindAnimationActor(0, this._placeholder, pizza.roi)
       }
@@ -38,6 +44,10 @@ export class Act3Shark extends Actor {
     this._time += delta * 1000
     this.applyAnimationAt(0, Math.min(this._time, this.getAnimationDuration(0)), new THREE.Matrix4().setPosition(this._position))
     if (this._time >= this.getAnimationDuration(0)) {
+      if (this._placeholder != null && this._placeholderRoi != null) {
+        this.bindAnimationActor(0, this._placeholder, this._placeholderRoi)
+        this._placeholderRoi.visible = false
+      }
       this._current.remove(true)
       this._current = null
       this.roi.visible = false
