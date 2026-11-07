@@ -231,10 +231,10 @@ export class PlayerMovement {
       return null
     }
     const oldUp = boundary.normal
-    const offset = this._flightMode ? 0 : CAM_HEIGHT
+    const offset = this._flightMode || engine.isPresenting ? 0 : CAM_HEIGHT
     const position = fromPos.clone().addScaledVector(oldUp, -offset)
     position.addScaledVector(oldUp, -(oldUp.dot(position) + boundary.up.w))
-    const direction = this._camera.getWorldDirection(new THREE.Vector3()).projectOnPlane(oldUp).normalize()
+    const direction = (engine.isPresenting ? (engine.xrHeadCamera ?? this._camera) : this._camera).getWorldDirection(new THREE.Vector3()).projectOnPlane(oldUp).normalize()
     direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(this._rotVel * delta * (oldUp.y < 0 ? -1 : 1)))
     let target = position.clone().addScaledVector(direction, this._linearVel * delta)
     const hit = boundary.intersect(position, target)
@@ -258,7 +258,9 @@ export class PlayerMovement {
     direction.projectOnPlane(up).normalize()
     const right = direction.clone().cross(up).normalize()
     const matrix = new THREE.Matrix4().makeBasis(right, up, direction.clone().negate())
-    this._camera.quaternion.setFromRotationMatrix(matrix)
+    if (!engine.isPresenting) {
+      this._camera.quaternion.setFromRotationMatrix(matrix)
+    }
     this._camera.position.copy(target).addScaledVector(up, offset)
     const ratio = vehicleType === 'bike' ? 3 : vehicleType === 'moto' ? 1.75 : vehicleType === 'skate' ? 3.5 : vehicleType === 'jetski' ? 2 : null
     if (ratio != null && this._linearVel > 0) {
@@ -284,6 +286,13 @@ export class PlayerMovement {
     const maxLinearVel = maximumSpeed ?? (vehicleType != null ? VEHICLE_MAX_LINEAR_VEL[vehicleType] : WALK_SPEED)
 
     const flags = engine.input.getNavigationFlags()
+    if (engine.isPresenting) {
+      flags.up = engine.xrWalking
+      flags.down = false
+      flags.left = false
+      flags.right = false
+      this.navigation.setTargets(320, 240, false)
+    }
     const settings = getSettings()
     const pad = settings.gamepad ? engine.input.getGamepad(navigator.getGamepads(), settings.gamepadIndex) : null
     if (pad?.pov != null) {
@@ -336,8 +345,8 @@ export class PlayerMovement {
     this._camera.rotation.z = leanRatio != null && this._linearVel > 0 ? THREE.MathUtils.degToRad(Math.trunc(-(this.navigation.rotationalVelocity * this._linearVel) / (maxLinearVel * leanRatio))) : 0
 
     const forward = new THREE.Vector3()
-    this._camera.getWorldDirection(forward)
-    if (this._slewMode || this._flightMode) {
+    ;(engine.isPresenting ? (engine.xrHeadCamera ?? this._camera) : this._camera).getWorldDirection(forward)
+    if (this._slewMode || this._flightMode || engine.isPresenting) {
       forward.y = 0
       forward.normalize()
     }
@@ -360,7 +369,7 @@ export class PlayerMovement {
     }
 
     if (!this._slewMode && !this._flightMode) {
-      this.placeOnGround(this._camera)
+      this.placeOnGround(this._camera, new THREE.Vector3(0, engine.isPresenting ? 0 : CAM_HEIGHT, 0))
     }
 
     this._camera.rotateY(this._lookYaw)

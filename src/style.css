@@ -22,3 +22,22 @@
   transform: translate(-50%, -50%);
   max-width: 500px;
 }
+
+.xr-button {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  padding: 0.5rem 1rem;
+  font-family: "w95fa", Tahoma, sans-serif;
+  font-weight: bold;
+  color: #000;
+  background: linear-gradient(to bottom, #ffe000, #ff9500);
+  border: 2px solid #000;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.xr-button:disabled {
+  display: none;
+}

@@ -16,6 +16,7 @@
     "@biomejs/biome": "^2.5.5",
     "@tailwindcss/vite": "^4.3.3",
     "@types/three": "^0.185.1",
+    "@vitejs/plugin-basic-ssl": "^2.3.0",
     "lefthook": "^2.1.10",
     "tailwindcss": "^4.3.3",
     "typescript": "~7.0.2",

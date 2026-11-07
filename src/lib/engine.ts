@@ -142,6 +142,8 @@ class Engine {
   private _cutsceneAudio: Audio | null = null
   private _canvas: HTMLCanvasElement
   private _audioListener = new THREE.AudioListener()
+  private _xrHeadCamera: THREE.PerspectiveCamera | null = null
+  private _xrWalking = false
   private _renderer: THREE.WebGLRenderer
   private _composer: Composer
   private _mosaicEffect = new MosaicEffect()
@@ -464,7 +466,11 @@ class Engine {
       const normalized = createNormalizedMouseEvent(event, this._canvas)
       return { x: (normalized.normalizedX + 1) * 320, y: (1 - normalized.normalizedY) * 240 }
     }
+    this._renderer.xr.enabled = true
+    void this._setupVrButton()
+
     canvas.addEventListener('pointerdown', event => {
+      canvas.focus()
       if (event.button !== 0 || this.paused) {
         return
       }
@@ -602,6 +608,18 @@ class Engine {
     return this._respawnVehicle.delete(vehicleType)
   }
 
+  public get xrHeadCamera(): THREE.PerspectiveCamera | null {
+    return this._xrHeadCamera
+  }
+
+  public get xrWalking(): boolean {
+    return this._xrWalking
+  }
+
+  public get isPresenting(): boolean {
+    return this._renderer.xr.isPresenting
+  }
+
   public isKeyDown(key: string): boolean {
     const flags = this.input.getNavigationFlags()
     const aliases: Record<string, boolean> = { ArrowUp: flags.up, ArrowDown: flags.down, ArrowLeft: flags.left, ArrowRight: flags.right }
@@ -611,6 +629,7 @@ class Engine {
   public start() {
     this._timer.connect(document)
     this._timer.reset()
+    this._canvas.focus()
     this.renderer.setAnimationLoop(() => this._render())
   }
 
@@ -766,6 +785,65 @@ class Engine {
     this._world?.resize(width, height)
   }
 
+  private _setupVrButton = async (): Promise<void> => {
+    const xr = navigator.xr
+    if (xr == null) {
+      return
+    }
+    const mode = (await xr.isSessionSupported('immersive-vr').catch(() => false)) ? 'immersive-vr' : (await xr.isSessionSupported('immersive-ar').catch(() => false)) ? 'immersive-ar' : null
+    if (mode == null) {
+      return
+    }
+    const button = document.createElement('button')
+    button.type = 'button'
+    button.classList.add('xr-button')
+    button.textContent = 'ENTER VR'
+    let session: XRSession | null = null
+    button.onclick = async () => {
+      if (session == null) {
+        session = await xr.requestSession(mode, { optionalFeatures: ['local-floor', 'bounded-floor', 'layers'] })
+        session.addEventListener('end', () => {
+          session = null
+          button.textContent = 'ENTER VR'
+          this._xrWalking = false
+        })
+        session.addEventListener('selectstart', () => {
+          this._xrWalking = true
+        })
+        session.addEventListener('selectend', () => {
+          this._xrWalking = false
+        })
+        await this._renderer.xr.setSession(session)
+        button.textContent = 'EXIT VR'
+      } else {
+        await session.end()
+      }
+    }
+    document.body.append(button)
+  }
+
+  private _ensureXrHeadCamera = (): THREE.PerspectiveCamera | null => {
+    if (this._world == null) {
+      return null
+    }
+    if (this._xrHeadCamera?.parent !== this._world.camera) {
+      this._xrHeadCamera?.removeFromParent()
+      const head = new THREE.PerspectiveCamera()
+      head.rotation.order = 'YXZ'
+      head.position.set(0, 0, 0)
+      head.quaternion.identity()
+      this._world.camera.add(head)
+      this._xrHeadCamera = head
+    }
+    const head = this._xrHeadCamera
+    head.near = this._world.camera.near
+    head.far = this._world.camera.far
+    head.position.set(0, 0, 0)
+    head.quaternion.identity()
+    head.updateMatrix()
+    return head
+  }
+
   private _render() {
     this._timer.update()
     const delta = this._skipDelta || this.paused ? 0 : this._timer.getDelta()
@@ -799,6 +877,13 @@ class Engine {
         const resolve = this._transitionPromiseResolve
         this._transitionPromiseResolve = null
         resolve()
+      }
+    }
+    if (this._renderer.xr.isPresenting && this._world != null && this._state !== 'cutscene') {
+      const head = this._ensureXrHeadCamera()
+      if (head != null) {
+        this._renderer.render(this._world.scene, head)
+        return
       }
     }
     if (this._state === 'cutscene') {
