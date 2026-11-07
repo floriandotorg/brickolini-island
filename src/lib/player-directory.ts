@@ -50,5 +50,14 @@ export class PlayerDirectory {
     this.store()
   }
 
+  public importNames = (names: readonly string[]): void => {
+    if (!names.every(name => /^[A-Z]{1,7}$/.test(name))) {
+      throw new Error('Invalid imported player name')
+    }
+    const merged = [...new Set([...names, ...this._names])].slice(0, 9)
+    this._storage.setItem('saves', JSON.stringify(merged))
+    this._names = merged
+  }
+
   public store = (): void => this._storage.setItem('saves', JSON.stringify(this._names))
 }

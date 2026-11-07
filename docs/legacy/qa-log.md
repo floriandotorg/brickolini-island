@@ -233,3 +233,123 @@ Note: these are reachable because the switch falls through the password-gated de
 - Debug shortcuts: gated behind `!*g_currentInput` (debug password).
 
 No files were changed.
+
+## Verify docs/savegame.ksy players.ksy history.ksy against retail serialization for implementing a TypeScript importer. List exact per-state payload layouts including playlist serialization flags and the Act1State planes/texture skipping, and character 16-byte entry field order and actor ordering. Identify any Kaitai schema inaccuracies. Focus on a concise implementable format, unknown states must reject a file. Do not edit files.
+_2026-11-07T22:28:55+07:00_
+
+Verification complete. I cross-referenced every `Serialize`/`Write`/`Read` path against the schemas. Below is the implementable spec and the schema discrepancies.
+
+## File layout (`*.gs`), little-endian
+
+```
+S32  version            // MUST equal 0x1000c (65548); reject otherwise
+S16  player_id
+U16  current_act        // 0=act1,1=act2,2=act3  (written U16, read S16)
+U8   actor_id           // 1=pepper..5=laura (0=none)
+variables...            // U8 namelen, name, U8 vallen, value; repeated
+end_marker              // U8 namelen, "END_OF_VARIABLES"  (no value)
+characters[66]           // 66 x 16 bytes
+plants[81]               // 81 x 12 bytes
+buildings[16]            // 16 x 10 bytes
+U8   building_next_variant
+S16 state_count
+states[state_count]     // each: S16 namelen, name, then payload
+U16 previous_area       // ALWAYS present; 0 for act1
+```
+Strings here are `MxString`: `S16 length` then `length` raw bytes (no NUL). Variable `END_OF_VARIABLES` is the terminator (only name written).
+
+## Character entry (16 bytes), order verified from `LegoCharacterManager::Write`
+
+```
+S32 sound
+S32 move
+U8  mood
+U8  hat_part_name_index   // index into that actor's hat-part array
+U8  hat_name_index        // hat color
+U8  infogron_name_index   // torso color
+U8  armlft_name_index     // L arm color
+U8  armrt_name_index      // R arm color
+U8  leglft_name_index     // L leg color
+U8  legrt_name_index      // R leg color
+```
+All 66 entries share this identical 16-byte layout; the pepper/infoman/ghost/standard KSY split only changes the *enum interpretation* of `hat_part_name_index` (pepper_hat vs standard_hat vs infoman/ghost single), not the bytes.
+
+### Actor ordering (`g_actorInfoInit`, 66 entries)
+```
+pepper mama papa nick laura
+infoman
+brickstr studs rhoda valerie snap pt mg bu ml nu na cl en re ro
+d1 d2 d3 d4 l1 l2 l3 l4 l5 l6 b1 b2 b3 b4
+cm gd rd pg bd sy gn df bs lt st bm jk
+ghost ghost01..ghost05
+hg pntgy pep cop01 actor_01..actor_05 btmncycl cboycycl boatman
+```
+Entry-type grouping (hat-part array): `pepper`(idx1), `pep`(idx57) = pepper; `infoman`(6) = infoman; `ghost..ghost05`(49-54) = ghost; all others = standard. KSY order and grouping match exactly.
+
+## Plant entry (12 bytes) / Building entry (10 bytes)
+
+Plant: `U8 variant, U32 sound, U32 move, U8 mood, U8 color, S8 initialCounter`
+Building: `U32 sound, U32 move, U8 mood, S8 initialCounter`; then one trailing `U8 m_nextVariant`.
+Counts 81 / 16 confirmed via `g_plantInfo[81]`, `g_buildingInfo[16]`. KSY matches (note: KSY labels the last byte `counter`; on-disk it is `m_initialCounter`, the seed copied into `m_counter` on load).
+
+## Per-state payloads
+
+Every state is preceded by `S16 namelen + name`. `LegoState::Serialize` writes only the class name in write mode; the 15 states below are exactly the ones with `IsSerializable()==TRUE` that add a data payload. The other `*State` classes (`JukeBoxState`, `RadioState`, `ScoreState`, `LegoAct2State`, `Act3State`, `HelicopterState`, `InfocenterState`) override `IsSerializable()` to FALSE and are never written, so the 15-case set is complete.
+
+| name | payload | layout |
+|---|---|---|
+| `PizzeriaState` | 10 B | 5 x S16 `nextIndex` (pepper, mama, papa, nick, laura) |
+| `PizzaMissionState` | 40 B | 5 x [S16 unused2, S16 counter, S16 score, S16 hiScore] |
+| `TowTrackMissionState` | 20 B | 5 x S16 score, 5 x S16 high (pepper..laura) |
+| `AmbulanceMissionState` | 20 B | same as TowTrack |
+| `HospitalState` | 12 B | S16 actor, S16 pepper, mama, papa, nick, laura |
+| `GasStationState` | 10 B | 5 x S16 action (pepper..laura) |
+| `PoliceState` | 4 B | S32 police_script |
+| `JetskiRaceState` | 25 B | 5 x [U8 id, S16 lastScore, S16 highScore] |
+| `CarRaceState` | 25 B | same as Jetski |
+| `LegoJetskiBuildState` | 4 B | U8 introCount, U8 finished, U8 playedExit, U8 placedParts |
+| `LegoCopterBuildState` | 4 B | same |
+| `LegoDuneCarBuildState` | 4 B | same |
+| `LegoRaceCarBuildState` | 4 B | same |
+| `AnimState` | var | U32 extraCharId, U32 animCount, animCount x U16, U32 locFlagsCount, locFlagsCount x U8 |
+| `Act1State` | var | see below |
+
+Scores are `ScoreColor` (0=grey,1=yellow,2=blue,3=red), range 0-3. KSY matches all of these.
+
+### PizzeriaState playlist "serialization flags"
+The `Playlist` struct has `m_objectIds`, `m_length`, `m_mode` (`e_loop`/`e_once`/`e_random`/`e_loopSkipFirst`), `m_nextIndex`. **Only `m_nextIndex` (S16) per playlist is persisted**; mode/length/objectIds are never serialized. So the payload is exactly 5 x S16 and there are no serialized "mode flags." KSY is correct here.
+
+### Act1State planes/texture skipping
+```
+7 x named_plane:   [motocycle, bike, skateboard, helicopter, jetski, dunebuggy, racecar]
+named_plane = S16 namelen + name + 3 x f32 position + 3 x f32 direction + 3 x f32 up  (name+36 B)
+```
+Then, **gated by `<plane>.name_length > 0`** (retail: `strcmp(plane.m_name, "") != 0`), the following textures appear — and only these four planes ever carry textures:
+- `helicopterPlane` named -> 3 x texture (windshield `chwind.gif`, jetLeft `chjetl.gif`, jetRight `chjetr.gif`)
+- `jetskiPlane` named -> 2 x texture (front `jsfrnt.gif`, windshield `jswnsh.gif`)
+- `dunebuggyPlane` named -> 1 x texture (front `dbfrfn.gif`)
+- `racecarPlane` named -> 3 x texture (front `rcfrnt.gif`, back `rcback.gif`, tail `rctail.gif`)
+
+motocycle/bike/skateboard planes never have a texture block. Each texture = `S16 namelen + name` then `LegoImage`: `U32 w, U32 h, U32 count, count x {U8 r,U8 g,U8 b}, w*h bytes bitmap`. KSY `act1_texture` matches (ReadNamedTexture returns NULL => load fails, so a corrupt texture must reject the file).
+Final two fields: `S16 cpt_click_dialogue_next_index`, `U8 played_exit_explanation`. KSY matches.
+
+## `History.gsi` and `Players.gsi`
+
+Players.gsi: `S16 count`, `count x username` where `username` = 7 x S16 letter index (0-25 A-Z, 29/30/31/32 intl, -1 empty). Max 9. KSY matches.
+
+History.gsi: `S16 next_player_id`, `S16 count`, then `count x` entry:
+`S16 index, S16 total_score, 25 x U8 scores[5 missions x 5 actors], 14-byte username, S16 player_id` = 45 bytes. Mission order: car_race, jetski_race, pizza_delivery, tow_track, ambulance; actor order pepper, mama, papa, nick, laura. KSY matches exactly.
+
+## Kaitai schema inaccuracies / gaps to fix in the importer
+
+1. **`previous_area` typed `s2`; retail writes `U16`** (and reads `S16`). Byte-identical for all valid `Area` values (<0x8000); cosmetic, but the KSY type is technically wrong (`u2`).
+
+2. **No rejection of unknown state names.** `game_state` uses `switch-on: name` with 15 cases and no `default`; Kaitai silently consumes 0 bytes for an unmatched name. The retail load rejects the file when `ObjectFactory::Create(name)` returns NULL (unknown name). The importer must explicitly validate `name` against the 15-state set and throw. (The 15 states are the complete serializable set; the `IsSerializable()==FALSE` states never occur, so accepting only these 15 is correct.)
+
+3. **No `version` enforcement.** KSY reads `s4` but doesn't require `0x1000c`; retail rejects with "Saved game version mismatch." Importer must assert equality.
+
+4. **Minor: `actor` enum omits `c_brickster` (6).** Harmless for saves (player/race actor ids are 1-5) but technically incomplete; also `c_none=0` is present.
+
+5. **Minor label: plant/building `counter`** is actually `m_initialCounter` (1 signed byte, same position).
+
+Everything else (field types, offsets, counts, ordering, the Act1State plane/texture gating, the playlist nextIndex-only rule) matches the retail serialization exactly.

@@ -11,6 +11,7 @@ const worlds = new Map<WorldName, World>()
 let lastWorld: WorldSpawnInner | null = null
 let currentWorld: WorldSpawnInner | null = null
 let savedPreviousWorld: WorldSpawnInner | null = null
+let staleActiveWorld: World | null = null
 
 type WorldSpawnInner =
   | {
@@ -48,6 +49,9 @@ export const discardWorld = (name: WorldName): void => {
     throw new Error('Cannot discard the active world')
   }
   world.dispose()
+  if (staleActiveWorld === world) {
+    staleActiveWorld = null
+  }
   worlds.delete(name)
 }
 
@@ -62,6 +66,7 @@ export const discardCachedWorlds = (except?: WorldName): void => {
 }
 
 onSessionReset(() => {
+  staleActiveWorld = currentWorld == null ? null : (worlds.get(currentWorld.name) ?? null)
   const previous = savedPreviousWorld
   discardCachedWorlds()
   savedPreviousWorld = previous
@@ -116,6 +121,9 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
   const previousName = engine.hasWorld ? engine.currentWorld.name : null
   const transition = engine.hasWorld ? engine.transition() : Promise.resolve()
 
+  if (staleActiveWorld != null && worlds.get(normalizedSpawn.name) === staleActiveWorld) {
+    worlds.delete(normalizedSpawn.name)
+  }
   if (!worlds.has(normalizedSpawn.name)) {
     const newWorld = await (() => {
       switch (normalizedSpawn.name) {
@@ -215,6 +223,14 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
   })()
 
   await engine.setWorld(world, param)
+  if (staleActiveWorld != null && staleActiveWorld !== world) {
+    const stale = staleActiveWorld
+    staleActiveWorld = null
+    if (worlds.get(stale.name) === stale) {
+      worlds.delete(stale.name)
+    }
+    stale.dispose()
+  }
   if (
     previousName != null &&
     previousName !== normalizedSpawn.name &&

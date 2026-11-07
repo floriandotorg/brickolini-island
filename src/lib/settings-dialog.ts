@@ -1,6 +1,10 @@
 import { type AudioType, AudioTypes, engine } from './engine'
+import { importOriginalFiles } from './original-save-loader'
+import { getScoreHistory } from './score-history'
+import { infocenterState, resetSession } from './session-state'
 import type { Preset } from './settings'
 import { getSettings, setPreset, setSettings } from './settings'
+import { switchWorld } from './switch-world'
 
 const settingsButton = document.getElementById('settings-button')
 if (settingsButton == null || !(settingsButton instanceof HTMLButtonElement)) {
@@ -16,6 +20,60 @@ const closeSettingsButton = document.getElementById('close-settings-button')
 if (closeSettingsButton == null || !(closeSettingsButton instanceof HTMLButtonElement)) {
   throw new Error('Close settings button not found')
 }
+
+const importSavesButton = document.getElementById('import-saves-button')
+const importFiles = document.getElementById('original-save-files')
+const importStatus = document.getElementById('save-import-status')
+if (!(importSavesButton instanceof HTMLButtonElement) || !(importFiles instanceof HTMLInputElement) || importStatus == null) {
+  throw new Error('Save import controls not found')
+}
+let resetAfterImport = false
+let importedPlayer: string | null = null
+const openImportedPlayer = (): void => {
+  if (!resetAfterImport) {
+    return
+  }
+  resetAfterImport = false
+  if (importedPlayer != null) {
+    engine.loadSaveGame(importedPlayer)
+    infocenterState.state = 'selectedSave'
+  } else {
+    resetSession()
+  }
+  importedPlayer = null
+  void switchWorld({ ending: null })
+}
+importSavesButton.addEventListener('click', () => importFiles.click())
+importFiles.addEventListener('change', async () => {
+  const files = Array.from(importFiles.files ?? [])
+  if (files.length === 0) {
+    return
+  }
+  importSavesButton.disabled = true
+  importStatus.textContent = 'Importing saved games...'
+  const previousPlayer = engine.currentSaveGame.isUnloaded ? null : engine.currentSaveGame.name
+  try {
+    engine.storeSaveGames()
+    const result = await importOriginalFiles(files, localStorage, engine.playerDirectory, getScoreHistory(), () => {
+      resetAfterImport = true
+      if (engine.hasWorld) {
+        engine.currentWorld.deactivate()
+      }
+    })
+    importedPlayer = result.players[0] ?? (resetAfterImport ? previousPlayer : null)
+    const message = result.players.length === 0 ? (result.files > 0 && result.errors.length === 0 ? 'Score history imported.' : 'No players imported.') : `Imported ${result.players.length} player${result.players.length === 1 ? '' : 's'}. Close Settings to open ${importedPlayer}.`
+    importStatus.textContent = [message, ...result.errors].join('\n')
+  } catch (error) {
+    importedPlayer = resetAfterImport ? previousPlayer : null
+    importStatus.textContent = error instanceof Error ? error.message : 'Could not import saved games.'
+  } finally {
+    importSavesButton.disabled = false
+    importFiles.value = ''
+    if (!settingsDialog.open) {
+      openImportedPlayer()
+    }
+  }
+})
 
 const presetSelect = document.getElementById('preset-select')
 if (presetSelect == null || !(presetSelect instanceof HTMLSelectElement)) {
@@ -178,6 +236,7 @@ document.addEventListener('keydown', event => {
 settingsDialog.addEventListener('close', () => {
   updateSettingsFromCheckboxes()
   engine.setPaused(false, 'settings')
+  openImportedPlayer()
 })
 
 for (const key of optionCheckboxes) {

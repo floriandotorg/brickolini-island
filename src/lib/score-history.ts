@@ -64,6 +64,27 @@ export class ScoreHistory {
     this.store()
   }
 
+  public importEntries = (entries: readonly ScoreHistoryEntry[], nextPlayerId: number): void => {
+    if (!entries.every(isEntry) || !Number.isSafeInteger(nextPlayerId) || nextPlayerId < 0) {
+      throw new Error('Invalid imported score history')
+    }
+    const merged = structuredClone(this._entries)
+    for (const entry of entries) {
+      const index = merged.findIndex(existing => existing.name === entry.name && existing.playerId === entry.playerId)
+      if (index < 0) {
+        merged.push(structuredClone(entry))
+      } else {
+        merged[index] = structuredClone(entry)
+      }
+    }
+    merged.sort((a, b) => b.totalScore - a.totalScore)
+    const next = Math.max(this._nextPlayerId, nextPlayerId, ...entries.map(entry => entry.playerId + 1))
+    const selected = merged.slice(0, 20)
+    this._storage.setItem('scoreHistory', JSON.stringify({ entries: selected, nextPlayerId: next }))
+    this._entries = selected
+    this._nextPlayerId = next
+  }
+
   private store = (): void => this._storage.setItem('scoreHistory', JSON.stringify({ nextPlayerId: this._nextPlayerId, entries: this._entries }))
 }
 
