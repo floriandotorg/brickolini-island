@@ -380,6 +380,7 @@ import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { jukeBoxState } from '../lib/jukebox-state'
 import { locations } from '../lib/locations'
 import { raceResults } from '../lib/race-state.ts'
+import { helicopterState, vehicleReturn } from '../lib/session-state.ts'
 import { switchWorld } from '../lib/switch-world'
 import { Ambulance } from '../lib/world/actors/ambulance'
 import { BumpBuoy } from '../lib/world/actors/bump-buoy.ts'
@@ -787,6 +788,15 @@ export class Act1 extends Isle {
 
   override async init(): Promise<void> {
     await super.init()
+    this._playerMovement.boundaryManager = this.boundaryManager
+    this._playerMovement.canMove = (from, to) => {
+      const actor = this.actors.find(actor => actor !== this.currentVehicle && actor.roi.model.visible && actor.checkCollision(from, to))
+      if (actor != null) {
+        actor.onCollision(null)
+        return false
+      }
+      return true
+    }
 
     const takeOff = this.boundaryManager.getObjectPlacementFromLocation('helicopterTakenOff')
     const land = this.boundaryManager.getObjectPlacementFromLocation('helicopterLanded')
@@ -904,7 +914,7 @@ export class Act1 extends Isle {
     })
 
     this._dashboard.onExit = () => {
-      if (!this._playerMovement.flightMode && this.currentVehicle != null) {
+      if ((!this._playerMovement.flightMode && !(this.currentVehicle instanceof Helicopter)) || (this.currentVehicle instanceof Helicopter && helicopterState.status === 0)) {
         void engine.transition({ keepMusic: true }).then(() => {
           this.currentVehicle?.exit()
           engine.finishTransition()
@@ -916,18 +926,28 @@ export class Act1 extends Isle {
       if (this.currentVehicle instanceof Helicopter) {
         this._playerMovement.flightMode = false
       }
-      this.abortMission()
-      switchWorld({ ending: null })
+      if (this.currentVehicle != null) {
+        this.currentVehicle.info()
+      } else {
+        this.abortMission()
+        void switchWorld({ ending: null })
+      }
     }
 
     this._dashboard.onFlightModeClick = async (mode: 'taking-off' | 'landing') => {
+      const helicopter = this.currentVehicle
       const flightMode = mode === 'taking-off'
-      if (this._playerMovement.flightMode === flightMode) {
+      if (!(helicopter instanceof Helicopter) || helicopterState.status !== (flightMode ? 0 : 2)) {
         return
       }
+      helicopterState.status = flightMode ? 1 : 3
+      this._playerMovement.resetVelocities()
       const animation = flightMode ? HelicopterTakeOff_Anim : HelicopterLand_Anim
       await this.playAnimation(animation)
-      this._playerMovement.flightMode = flightMode
+      if (this.currentVehicle === helicopter) {
+        this._playerMovement.flightMode = flightMode
+        helicopterState.status = flightMode ? 2 : 0
+      }
     }
 
     this.camera.position.set(9, 1.25, -47)
@@ -1005,6 +1025,14 @@ export class Act1 extends Isle {
       this.camera.position.copy(position)
       this.camera.quaternion.copy(quaternion)
     }
+    if (vehicleReturn.type != null) {
+      const type = vehicleReturn.type
+      vehicleReturn.type = null
+      const vehicle = this._buildMeshes.get(type) ?? this.findRoi(type === 'moto' ? 'motobk' : type)?.actor
+      if (vehicle instanceof Vehicle) {
+        await vehicle.enter(false)
+      }
+    }
     if (act1State.value === 'transitionToRacecar' && raceResults.car) {
       const car = this._buildMeshes.get('racecar')
       if (car instanceof Vehicle) {
@@ -1046,6 +1074,10 @@ export class Act1 extends Isle {
         ambulance.roi.moveRoiTo(placement.position, placement.quaternion)
         void ambulance.startMission()
       }
+    }
+
+    if (param?.music != null && act1State.value === 'none' && this.currentVehicle == null) {
+      void engine.switchBackgroundMusic(param.music)
     }
 
     if (jukeBoxState.pendingStart) {
@@ -1109,6 +1141,11 @@ export class Act1 extends Isle {
     }
 
     if (this.isRunningCameraAnimation || (this.missions.some(mission => mission.isInCutscene) && !this.hasReleasedPlayerAnimation)) {
+      return
+    }
+
+    if (this.currentVehicle instanceof Helicopter && helicopterState.status !== 2) {
+      this._dashboard.update(0, 0)
       return
     }
 

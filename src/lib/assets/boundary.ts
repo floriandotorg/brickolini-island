@@ -180,12 +180,54 @@ export class Boundary {
     this.flags = flags
     this.unknown = unknown
     this.up = up
+    this.up.x = -this.up.x
     this.planes = planes
+    for (const plane of this.planes) {
+      plane.x = -plane.x
+    }
     this.unknownVec3 = unknownVec3
     this.unknownFloat = unknownFloat
     this.triggers = triggers
     this.direction = direction
     this.mesh = null
+  }
+
+  public get normal(): THREE.Vector3 {
+    return new THREE.Vector3(this.up.x, this.up.y, this.up.z).normalize()
+  }
+
+  public isInside(position: THREE.Vector3, epsilon = 0.001): boolean {
+    return this.planes.every(plane => plane.x * position.x + plane.y * position.y + plane.z * position.z + plane.w >= -epsilon)
+  }
+
+  public intersect(from: THREE.Vector3, to: THREE.Vector3): { edge: Edge; crossing: THREE.Vector3; point: THREE.Vector3 } | null {
+    let best = Number.POSITIVE_INFINITY
+    let hitEdge: Edge | null = null
+    const delta = to.clone().sub(from)
+    for (let n = 0; n < this.planes.length; ++n) {
+      const plane = this.planes[n]
+      const targetDistance = plane.x * to.x + plane.y * to.y + plane.z * to.z + plane.w
+      if (targetDistance >= -1e-7) {
+        continue
+      }
+      const startDistance = plane.x * from.x + plane.y * from.y + plane.z * from.z + plane.w
+      const difference = targetDistance - startDistance
+      if (Math.abs(difference) < 1e-9) {
+        continue
+      }
+      const fraction = -startDistance / difference
+      if (fraction >= -0.001 && fraction <= 1 && fraction < best) {
+        best = Math.max(0, fraction)
+        hitEdge = this.edges[n]
+      }
+    }
+    if (hitEdge == null) {
+      return null
+    }
+    const a = hitEdge.getCWVertex(this)
+    const b = hitEdge.getCCWVertex(this)
+    const point = new THREE.Line3(a, b).closestPointToPoint(to, true, new THREE.Vector3())
+    return { edge: hitEdge, crossing: from.clone().addScaledVector(delta, best), point }
   }
 
   public createMesh(): THREE.Mesh {

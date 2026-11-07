@@ -15,11 +15,6 @@ export abstract class FuelVehicle extends Vehicle {
     this.m_fuel = 1.0
   }
 
-  public override async enter(): Promise<void> {
-    this.m_fuel = 1.0
-    await super.enter()
-  }
-
   public override update(delta: number): null {
     if (this.drainsOnlyWhenActive && this._isle.currentVehicle !== this) {
       return null

@@ -67,7 +67,7 @@ import { setCursor } from '../lib/cursor.ts'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect, type Timeout } from '../lib/engine'
 import { type PlayerCharacter, PlayerCharacters } from '../lib/save-game'
-import { act1State, helicopterState, infocenterState } from '../lib/session-state.ts'
+import { act1State, helicopterState, infocenterState, vehicleReturn } from '../lib/session-state.ts'
 import { getSettings } from '../lib/settings'
 import { discardCachedWorlds, switchToPreviousWorld, switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
@@ -256,7 +256,11 @@ export class InfoMain extends World {
           void switchWorld('regbook')
           return true
         case 'BigInfo_Ctl':
-          void switchToPreviousWorld()
+          if (vehicleReturn.type != null) {
+            void switchWorld({ spawn: 'infocenterExited' })
+          } else {
+            void switchToPreviousWorld()
+          }
           return true
         default:
           for (const character of PlayerCharacters) {

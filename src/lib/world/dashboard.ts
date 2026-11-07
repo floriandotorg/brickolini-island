@@ -246,30 +246,20 @@ const raceCarDashboards: Record<DashboardColorName, Record<DashboardColorName, I
 const leftToRight = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => ({
   x: 0,
   y: 0,
-  width: width * fill,
-  height: height,
+  width: Math.floor((width - 1) * fill),
+  height: height - 1,
 })
 
-const rightToLeft = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => ({
-  x: width * (1 - fill),
-  y: 0,
-  width: width * fill,
-  height: height,
-})
+const rightToLeft = (_width: number, _height: number, _fill: number) => ({ x: 0, y: 0, width: 0, height: 0 })
 
 const bottomToTop = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => ({
   x: 0,
-  y: height * (1 - fill),
-  width: width,
-  height: height * fill,
+  y: height - Math.floor((height - 1) * fill),
+  width: width - 1,
+  height: Math.floor((height - 1) * fill),
 })
 
-const topToBottom = (width: number, height: number, fill: number): { x: number; y: number; width: number; height: number } => ({
-  x: 0,
-  y: 0,
-  width: width,
-  height: height * fill,
-})
+const topToBottom = rightToLeft
 
 const parseDirection = (value: string): ((width: number, height: number, fill: number) => { x: number; y: number; width: number; height: number }) => {
   switch (value) {
@@ -321,6 +311,7 @@ export class Meter {
   }
 
   public draw(fill: number): void {
+    fill = Math.max(0, Math.min(0.99, fill))
     if (this._fill !== fill) {
       this._fill = fill
       const { x, y, width, height } = this._direction(this._image.width, this._image.height, fill)

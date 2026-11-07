@@ -155,7 +155,7 @@ export class BoundaryManager {
   public ignoreTriggerDirection = false
 
   public update(fromPos: THREE.Vector3, toPos: THREE.Vector3, roi: Roi3D | null): void {
-    const downRay = new THREE.Raycaster(toPos, new THREE.Vector3(0, -1, 0), 0, 1000)
+    const downRay = new THREE.Raycaster(fromPos.clone().add(new THREE.Vector3(0, 0.01, 0)), new THREE.Vector3(0, -1, 0), 0, 1000)
     const hit = downRay.intersectObject(this._boundaryGroup)[0]
     if (hit) {
       const { boundary, debugMesh } = this._meshToBoundary.get(hit.object as THREE.Mesh) ?? {}

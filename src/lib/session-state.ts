@@ -1,5 +1,6 @@
 import { act1State } from './act1-state.ts'
 import { JukeBoxMusic, jukeBoxState } from './jukebox-state.ts'
+import type { VehicleType } from './vehicle-types.ts'
 
 export { act1State, jukeBoxState }
 export type InfocenterStateValue = 'playCutscene' | 'introCancelled' | 'notRegistered' | 'newState' | 'selectedSave' | 'selectedCharacterAndDestination' | 'exitQueried' | 'welcomeAnimation' | 'exiting' | 'playCredits' | 'exitingToIsland' | 'backToInfoAct1'
@@ -7,6 +8,7 @@ export const infocenterState: { state: InfocenterStateValue } = { state: 'newSta
 export const scoreState = { playCubeTutorial: true }
 export const act2State = { state: 0, enabled: false }
 export const act3State = { state: 0 }
+export const vehicleReturn: { type: VehicleType | null } = { type: null }
 export const helicopterState = { status: 0 }
 
 const resetListeners = new Set<() => void>()
@@ -17,6 +19,7 @@ export const onSessionReset = (listener: () => void): void => {
 export const resetSession = (): void => {
   scoreState.playCubeTutorial = true
   helicopterState.status = 0
+  vehicleReturn.type = null
   act1State.value = 'none'
   act2State.state = 0
   act2State.enabled = false

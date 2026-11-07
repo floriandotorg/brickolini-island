@@ -1,7 +1,10 @@
 import * as THREE from 'three'
+import type { Boundary } from '../assets/boundary'
 import { engine } from '../engine'
 import { getSettings } from '../settings'
+import type { BoundaryManager } from './boundary-manager'
 import type { VehicleType } from './dashboard'
+import { NAV_REFERENCE_TICK_HZ, NavController } from './nav-controller.ts'
 
 const CAM_HEIGHT = 1.25
 const MAX_ROT_VEL = 80
@@ -26,6 +29,10 @@ const VEHICLE_MAX_LINEAR_VEL: Record<VehicleType, number> = {
 const WALK_SPEED = 6
 
 export class PlayerMovement {
+  public readonly navigation = new NavController()
+  public boundaryManager: BoundaryManager | null = null
+  public canMove: (from: THREE.Vector3, to: THREE.Vector3) => boolean = () => true
+  private _boundary: Boundary | null = null
   private _linearVel = 0
   private _rotVel = 0
   private _verticalVel = 0
@@ -63,11 +70,7 @@ export class PlayerMovement {
     }
     const { position, quaternion } = value ? this.flightInfo.takeOff : this.flightInfo.land
 
-    if (!value) {
-      position.add(new THREE.Vector3(0, CAM_HEIGHT, 0))
-    }
-
-    this._camera.position.copy(position)
+    this._camera.position.copy(position).add(new THREE.Vector3(0, value ? 0 : CAM_HEIGHT, 0))
     this._camera.quaternion.copy(quaternion)
     this.resetVelocities()
     this._flightMode = value
@@ -75,6 +78,7 @@ export class PlayerMovement {
 
   set linearVelocity(value: number) {
     this._linearVel = value
+    this.navigation.linearVelocity = value
   }
 
   get linearVelocity(): number {
@@ -82,6 +86,8 @@ export class PlayerMovement {
   }
 
   resetVelocities(): void {
+    this.navigation.reset()
+    this._boundary = null
     this._linearVel = 0
     this._rotVel = 0
     this._verticalVel = 0
@@ -200,6 +206,62 @@ export class PlayerMovement {
     }
   }
 
+  private navigateBoundary = (delta: number, vehicleType: VehicleType | null, normalizedSpeed: number): { fromPos: THREE.Vector3; toPos: THREE.Vector3; normalizedSpeed: number } | null => {
+    if (this.boundaryManager == null || this._slewMode || getSettings().freeRoam) {
+      return null
+    }
+    const fromPos = this._camera.position.clone()
+    let boundary = this._boundary
+    if (boundary == null || !boundary.isInside(fromPos) || Math.abs(boundary.normal.dot(fromPos) + boundary.up.w - (this._flightMode ? 0 : CAM_HEIGHT)) > 3) {
+      boundary = this.boundaryManager.getBoundaryFromPosition(fromPos)
+    }
+    if (boundary == null) {
+      return null
+    }
+    const oldUp = boundary.normal
+    const offset = this._flightMode ? 0 : CAM_HEIGHT
+    const position = fromPos.clone().addScaledVector(oldUp, -offset)
+    position.addScaledVector(oldUp, -(oldUp.dot(position) + boundary.up.w))
+    const direction = this._camera.getWorldDirection(new THREE.Vector3()).projectOnPlane(oldUp).normalize()
+    direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(this._rotVel * delta * (oldUp.y < 0 ? -1 : 1)))
+    let target = position.clone().addScaledVector(direction, this._linearVel * delta)
+    const hit = boundary.intersect(position, target)
+    if (hit != null) {
+      const next = hit.edge.faceA === boundary ? hit.edge.faceB : hit.edge.faceA
+      target = hit.point
+      if (hit.edge.isTraversableFromFace(boundary) && next != null) {
+        boundary = next
+      } else {
+        this.linearVelocity = this._linearVel * 0.8
+        const push = hit.point.clone().sub(position.clone().addScaledVector(direction, this._linearVel * delta))
+        if (push.lengthSq() > 1e-9) {
+          direction.addScaledVector(push.normalize(), 0.01).normalize()
+        }
+      }
+    }
+    if (!this.canMove(position, target)) {
+      target = position
+    }
+    const up = boundary.normal
+    direction.projectOnPlane(up).normalize()
+    const right = direction.clone().cross(up).normalize()
+    const matrix = new THREE.Matrix4().makeBasis(right, up, direction.clone().negate())
+    this._camera.quaternion.setFromRotationMatrix(matrix)
+    this._camera.position.copy(target).addScaledVector(up, offset)
+    const ratio = vehicleType === 'bike' ? 3 : vehicleType === 'moto' ? 1.75 : vehicleType === 'skate' ? 3.5 : vehicleType === 'jetski' ? 2 : null
+    if (ratio != null && this._linearVel > 0) {
+      const roll = THREE.MathUtils.degToRad(Math.trunc((-this.navigation.rotationalVelocity * this._linearVel) / (this.navigation.maximumSpeed * ratio)))
+      this._camera.position.addScaledVector(up, CAM_HEIGHT * (Math.cos(roll) - 1)).addScaledVector(right, -CAM_HEIGHT * Math.sin(roll))
+      this._camera.rotateZ(roll)
+    }
+    if (this._flightMode) {
+      this._camera.rotateX(-Math.PI / 6)
+    }
+    this._boundary = boundary
+    this._camera.rotateY(this._lookYaw)
+    return { fromPos, toPos: this._camera.position.clone(), normalizedSpeed }
+  }
+
   update(delta: number, vehicleType: VehicleType | null, maximumSpeed?: number): { fromPos: THREE.Vector3; toPos: THREE.Vector3; normalizedSpeed: number } {
     this._camera.rotateY(-this._lookYaw)
     const speedMultiplier = this._slewMode ? 4 : 1
@@ -217,7 +279,6 @@ export class PlayerMovement {
     const targetPitchVel = this._slewMode ? (engine.isKeyDown('w') ? MAX_ROT_VEL : engine.isKeyDown('s') ? -MAX_ROT_VEL : 0) : 0
 
     const linearAccel = targetLinearVel !== 0 ? MAX_LINEAR_ACCEL * (flags.ctrl ? 4 : 1) : MAX_LINEAR_DECEL
-    const rotAccel = (targetRotVel !== 0 ? MAX_ROT_ACCEL * (flags.ctrl ? 2 : 1) : MAX_ROT_DECEL) * 40
     const pitchAccel = (targetPitchVel !== 0 ? MAX_ROT_ACCEL * (flags.ctrl ? 2 : 1) : MAX_ROT_DECEL) * 40
 
     if (this._slewMode) {
@@ -226,8 +287,10 @@ export class PlayerMovement {
       this._verticalVel = targetVerticalVel
       this._pitchVel = targetPitchVel
     } else {
-      this._linearVel = this._calculateNewVel(targetLinearVel, this._linearVel, linearAccel, delta)
-      this._rotVel = this._calculateNewVel(targetRotVel, this._rotVel, rotAccel, delta)
+      this.navigation.maximumSpeed = maxLinearVel
+      this.navigation.update(delta, flags, pad)
+      this._linearVel = this.navigation.linearVelocity
+      this._rotVel = this.navigation.rotationalVelocity * 0.4 * NAV_REFERENCE_TICK_HZ
       this._verticalVel = this._calculateNewVel(targetVerticalVel, this._verticalVel, linearAccel, delta)
       this._pitchVel = this._calculateNewVel(targetPitchVel, this._pitchVel, pitchAccel, delta)
     }
@@ -236,6 +299,10 @@ export class PlayerMovement {
     const maxVelCurrent = maxLinearVel * (this._slewMode ? 4 : 1)
     const normalizedSpeed = vel / maxVelCurrent
 
+    const bounded = this.navigateBoundary(delta, vehicleType, normalizedSpeed)
+    if (bounded != null) {
+      return bounded
+    }
     this._camera.rotation.y += THREE.MathUtils.degToRad(this._rotVel * delta)
 
     if (this._slewMode) {
@@ -249,7 +316,8 @@ export class PlayerMovement {
     } else {
       this._camera.rotation.x = this._calculateSlopeTilt()
     }
-    this._camera.rotation.z = 0
+    const leanRatio = vehicleType === 'bike' ? 3 : vehicleType === 'moto' ? 1.75 : vehicleType === 'skate' ? 3.5 : vehicleType === 'jetski' ? 2 : null
+    this._camera.rotation.z = leanRatio != null && this._linearVel > 0 ? THREE.MathUtils.degToRad(Math.trunc(-(this.navigation.rotationalVelocity * this._linearVel) / (maxLinearVel * leanRatio))) : 0
 
     const forward = new THREE.Vector3()
     this._camera.getWorldDirection(forward)

@@ -265,6 +265,7 @@ export abstract class Race extends IsleBase {
 
   public override async init(): Promise<void> {
     await super.init()
+    this._playerMovement.boundaryManager = this.boundaryManager
     const ramps: [string, number, string, number][] =
       this._config.vehicleType === 'jetski'
         ? [
@@ -412,6 +413,10 @@ export abstract class Race extends IsleBase {
     sprite.position.y = pos.y - sprite.scale.y / 2
   }
 
+  protected override get playerMovement(): PlayerMovement {
+    return this._playerMovement
+  }
+
   protected override get debugPositionDirection(): { position: THREE.Vector3; direction: THREE.Vector3; slewMode: boolean } | null {
     return this._playerMovement.getDebugInfo()
   }
@@ -498,7 +503,7 @@ export abstract class Race extends IsleBase {
           target.y += 1.25
           const tangentLength = this._config.vehicleType === 'jetski' ? 1 : 5
           const startDirection = this.camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(tangentLength / 3)
-          const up = new THREE.Vector3(-ramp.landing.up.x, ramp.landing.up.y, ramp.landing.up.z)
+          const up = ramp.landing.normal
           const endDirection = ramp.landingEdge
             .getFaceNormal(ramp.landing)
             .cross(up)

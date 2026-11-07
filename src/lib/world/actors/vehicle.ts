@@ -1,7 +1,11 @@
 import * as THREE from 'three'
+import { BikeHorn_Sound, DuneCarHorn_Sound } from '../../../actions/isle'
+import { BeachBlvd_Music, GarageArea_Music, InformationCenter_Music, Jail_Music, JetskiRace_Music, PoliceStation_Music } from '../../../actions/jukebox'
 import { act1State } from '../../act1-state'
-import type { RunAnimationAction } from '../../action-types'
+import type { AudioAction, RunAnimationAction } from '../../action-types'
 import { engine } from '../../engine'
+import { vehicleReturn } from '../../session-state.ts'
+import { switchWorld } from '../../switch-world'
 import { Actor } from '../actor'
 import type { Vehicle as DashboardVehicle, VehicleType } from '../dashboard'
 
@@ -19,10 +23,12 @@ export abstract class Vehicle extends Actor {
   }
 
   override async onClick(): Promise<boolean> {
-    if (!this._isle.canExit) {
+    if (!this._isle.canExit && !(this.type === 'skate' && act1State.value === 'pizza')) {
       return true
     }
-    await this.enter()
+    if (this._isle.currentVehicle !== this) {
+      await this.enter()
+    }
     return true
   }
 
@@ -40,23 +46,36 @@ export abstract class Vehicle extends Actor {
     this.roi.moveRoiTo(groundPosition, this._isle.camera.quaternion)
     this.roi.visible = !this.hideOnExit
 
-    this._isle.camera.position.add(new THREE.Vector3(0, 0, -4).applyQuaternion(this._isle.camera.quaternion))
-    this._isle.placeOnGround(this._isle.camera)
+    const boundary = this._isle.boundaryManager.getBoundaryFromPosition(this._isle.camera.position)
+    const radius = this.roi.model.getWorldBoundingSphere().radius
+    const beside = boundary?.edges.map(edge => groundPosition.clone().addScaledVector(edge.getFaceNormal(boundary), radius)).find(position => boundary.isInside(position)) ?? groundPosition
+    this._isle.camera.position.copy(beside).addScaledVector(boundary?.normal ?? new THREE.Vector3(0, 1, 0), 1.25)
 
     this._isle.dashboard.clear()
     this._isle.currentVehicle = null
 
-    const pizzeria = this._isle.getRoi('pizza').actor
+    const pizzeria = this.type === 'skate' ? this._isle.findRoi('pizza')?.actor : null
     if (pizzeria != null && 'abort' in pizzeria && typeof pizzeria.abort === 'function') {
       pizzeria.abort()
     }
   }
 
+  public info(): void {
+    const type = this.type === 'towtk' || this.type === 'ambul' ? null : this.type
+    this.exit()
+    this._isle.abortMission()
+    vehicleReturn.type = type
+    void switchWorld({ ending: null })
+  }
+
   public async enter(transition = true): Promise<void> {
     if (transition) {
-      await engine.transition()
+      await engine.transition({ keepMusic: true })
     }
 
+    if (this._isle.currentVehicle != null && this._isle.currentVehicle !== this) {
+      this._isle.currentVehicle.exit()
+    }
     this._isle.currentVehicle = this
 
     this.roi.visible = false
@@ -67,6 +86,21 @@ export abstract class Vehicle extends Actor {
 
     await this._isle.dashboard.show(this.dashboard)
     engine.finishTransition()
+    const music: Partial<Record<VehicleType, AudioAction>> = { bike: InformationCenter_Music, moto: PoliceStation_Music, skate: BeachBlvd_Music, dunecar: GarageArea_Music, jetski: JetskiRace_Music, helicopter: Jail_Music }
+    if (music[this.type] != null && !(this.type === 'skate' && act1State.value === 'pizza')) {
+      const action = music[this.type]
+      if (action != null) {
+        void engine.switchBackgroundMusic(action)
+      }
+    }
+    const horn = this.type === 'bike' ? BikeHorn_Sound : this.type === 'dunecar' ? DuneCarHorn_Sound : null
+    if (horn != null) {
+      this._isle.dashboard.onHornToggle = on => {
+        if (on) {
+          void engine.playAudio(horn, 'effects')
+        }
+      }
+    }
 
     if (act1State.value !== 'pizza' && this.explanationAnimation != null && this.explanationAnimationOffset != null && !engine.currentSaveGame.playedExitExplanation) {
       engine.currentSaveGame.playedExitExplanation = true

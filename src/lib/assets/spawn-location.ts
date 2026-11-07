@@ -1,7 +1,15 @@
+import { Beach_Music, CentralNorthRoad_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, PoliceStation_Music, Quiet_Audio } from '../../actions/jukebox'
 import type { IsleParam } from '../../worlds/isle-base'
+import type { AudioAction } from '../action-types'
 
 export const SpawnLocations = [
   'pizzeriaExterior',
+  'unkInPizzeria',
+  'unkFacingPizzeria',
+  'unkCrash48',
+  'unkCrash49',
+  'pepperSpawnAct2',
+  'unkInFrontGasStationFacingLeft2',
   'infocenterExited',
   'jetraceExterior',
   'jetraceFinished',
@@ -28,8 +36,20 @@ export const SpawnLocations = [
 export type SpawnLocation = (typeof SpawnLocations)[number]
 export const isSpawnLocation = (name: string): name is SpawnLocation => SpawnLocations.includes(name as SpawnLocation)
 
-export const getSpawnLocation = (location: SpawnLocation): IsleParam => {
+const getPlacement = (location: SpawnLocation): IsleParam => {
   switch (location) {
+    case 'unkInPizzeria':
+      return { position: { boundaryName: 'edg00_49', source: 1, sourceScale: 0.43, destination: 2, destinationScale: 0.6 } }
+    case 'unkFacingPizzeria':
+      return { position: { boundaryName: 'edg00_191', source: 2, sourceScale: 0.5, destination: 0, destinationScale: 0.55 } }
+    case 'unkCrash48':
+      return getPlacement('helicopterLanded')
+    case 'unkCrash49':
+      return getPlacement('helicopterTakenOff')
+    case 'pepperSpawnAct2':
+      return { position: { boundaryName: 'EDG02_51', source: 0, sourceScale: 0.64, destination: 1, destinationScale: 0.37 } }
+    case 'unkInFrontGasStationFacingLeft2':
+      return { position: { boundaryName: 'edg02_32', source: 0, sourceScale: 0.5, destination: 2, destinationScale: 0.5 } }
     case 'pizzeriaExterior':
       return { position: { boundaryName: 'INT35', source: 2, sourceScale: 0.6, destination: 4, destinationScale: 0.4 } }
     case 'infocenterExited':
@@ -78,3 +98,22 @@ export const getSpawnLocation = (location: SpawnLocation): IsleParam => {
       return { position: { boundaryName: 'INT36', source: 0, sourceScale: 0.2, destination: 4, destinationScale: 0.4 } }
   }
 }
+
+const spawnMetadata: Partial<Record<SpawnLocation, { camLocation: number; music: AudioAction }>> = {
+  pizzeriaExterior: { camLocation: 0x2a, music: Quiet_Audio },
+  unkInPizzeria: { camLocation: 0x27, music: Quiet_Audio },
+  unkFacingPizzeria: { camLocation: 0x26, music: Quiet_Audio },
+  infocenterExited: { camLocation: 0x10, music: InformationCenter_Music },
+  jetraceExterior: { camLocation: 0x17, music: Beach_Music },
+  jetskibuildExited: { camLocation: 0x18, music: Beach_Music },
+  carraceExterior: { camLocation: 0x33, music: CentralNorthRoad_Music },
+  racecarbuildExited: { camLocation: 0x34, music: CentralNorthRoad_Music },
+  carraceFinished: { camLocation: 0x36, music: CentralNorthRoad_Music },
+  garageExterior: { camLocation: 0x08, music: GarageArea_Music },
+  garageExited: { camLocation: 0x0a, music: GarageArea_Music },
+  hospitalExterior: { camLocation: 0, music: Hospital_Music },
+  hospitalExited: { camLocation: 0x0c, music: Hospital_Music },
+  policeExterior: { camLocation: 0x22, music: PoliceStation_Music },
+  policeExited: { camLocation: 0x23, music: PoliceStation_Music },
+}
+export const getSpawnLocation = (location: SpawnLocation): IsleParam => ({ ...getPlacement(location), ...spawnMetadata[location], spawn: location })

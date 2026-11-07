@@ -18,6 +18,8 @@ export abstract class EnterableBuilding extends Entity {
     if (!this._isle.canExit) {
       return true
     }
+    this._isle.currentVehicle?.exit()
+    this._isle.toggleManagedAnimations(false)
     void switchWorld(this.world)
     return true
   }

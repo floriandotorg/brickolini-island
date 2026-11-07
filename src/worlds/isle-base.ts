@@ -31,6 +31,9 @@ import type { PlayerMovement } from '../lib/world/player-movement'
 import { World, type WorldName } from '../lib/world/world'
 
 export type IsleParam = {
+  music?: import('../lib/action-types').AudioAction
+  camLocation?: number
+  spawn?: SpawnLocation
   position: {
     boundaryName: string
     source: number
@@ -175,10 +178,16 @@ export abstract class IsleBase extends World {
 
   public get canExit(): boolean {
     const vehicleType = this._currentVehicle?.type
-    if (vehicleType === 'ambul' || vehicleType === 'towtk') {
+    if (['elevride', 'elevopen', 'seaview', 'observe', 'elevdown', 'garadoor', 'polidoor'].includes(this.name) || vehicleType === 'ambul' || vehicleType === 'towtk') {
       return false
     }
     return act1State.value === 'none'
+  }
+
+  public setFlightMode(flying: boolean): void {
+    if (this.playerMovement?.flightInfo != null) {
+      this.playerMovement.flightMode = flying
+    }
   }
 
   public abortMission(): void {}
@@ -624,6 +633,13 @@ export abstract class IsleBase extends World {
 
   protected get playerMovement(): PlayerMovement | null {
     return null
+  }
+
+  public override gesture(kind: import('../lib/input.ts').Gesture, event: NormalizedMouseEvent): void {
+    super.gesture(kind, event)
+    if (this.playerMovement != null && !this.isRunningCameraAnimation && kind !== 'click') {
+      this.playerMovement.navigation.setTargets((event.normalizedX + 1) * 320, (1 - event.normalizedY) * 240, kind !== 'dragEnd')
+    }
   }
 
   protected override handleSkipKey(): void {
