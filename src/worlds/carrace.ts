@@ -3,11 +3,13 @@ import { _CarRace_World, irtx08ra_PlayWav, srt001rh_RunAnim, srt001sl_RunAnim, s
 import * as carracerActions from '../actions/carracer'
 import { RaceTrackRoad_Music } from '../actions/jukebox'
 import { Action } from '../actions/types'
+import { act1State } from '../lib/act1-state'
 import { isRunAnimationAction } from '../lib/action-types'
 import type { Audio } from '../lib/assets/audio'
 import { getAction } from '../lib/assets/load'
 import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
+import { raceResults } from '../lib/race-state.ts'
 import type { ScoreColor } from '../lib/score.ts'
 import { switchWorld } from '../lib/switch-world'
 import { Race } from './race'
@@ -18,12 +20,29 @@ export class CarRace extends Race {
   private _visit = 0
   private _countdown: Audio | null = null
   constructor() {
-    super('carrace', { wdbWorldName: 'RACC', dtaWorldName: 'RACC', startUpAction: _CarRace_World })
+    super('carrace', {
+      wdbWorldName: 'RACC',
+      dtaWorldName: 'RACC',
+      startUpAction: _CarRace_World,
+      config: {
+        userActorName: 'UserCar_Actor',
+        opponents: [
+          { roiName: 'rhoda', progressLocator: RaceActions.CarLocator2, vehicle: 'rcgreen' },
+          { roiName: 'studs', progressLocator: RaceActions.CarLocator3, vehicle: 'rcblack' },
+        ],
+        progressRect: [364, 340, 492, 350],
+        distance: { offset: 0.036, scale: 0.928 },
+        maxSpeed: 30,
+        vehicleType: 'racecar',
+        ignoreDirection: false,
+      },
+    })
   }
 
   public override async activate(composer: Composer, _param?: unknown): Promise<void> {
     const visit = ++this._visit
     this.raceState = 'waiting'
+    act1State.value = 'transitionToRacecar'
     await super.activate(composer)
 
     await this._dashboard.show({ type: 'racecar' })
@@ -68,6 +87,7 @@ export class CarRace extends Race {
     const studsFinished = this._opponent2Progress.finished
     const rhodaFinished = this._opponent1Progress.finished
     const score: ScoreColor = studsFinished && rhodaFinished ? 'yellow' : studsFinished || rhodaFinished ? 'blue' : 'red'
+    raceResults.car = true
     engine.currentSaveGame.recordScore('carRace', engine.currentSaveGame.player, score)
     this.stopOpponent('studs', 'rcblack', false)
     this.stopOpponent('rhoda', 'rcgreen', false)
@@ -91,6 +111,9 @@ export class CarRace extends Race {
 
   public override escape(): boolean {
     ++this._visit
+    if (this.raceState !== 'finished') {
+      act1State.value = 'none'
+    }
     this.setActorSoundsMuted(true)
     this._countdown?.stop()
     this._countdown = null

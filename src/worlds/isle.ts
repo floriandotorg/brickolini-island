@@ -11,7 +11,7 @@ import type { WorldName } from '../lib/world/world'
 import { CAR_BUILD_VEHICLES, IsleBase } from './isle-base'
 
 export class Isle extends IsleBase {
-  private _buildMeshes = new Map<VehicleType, Actor>()
+  protected _buildMeshes = new Map<VehicleType, Actor>()
 
   constructor(worldName: WorldName, ignoreEntityClick: boolean) {
     super(worldName, { wdbWorldName: 'ACT1', dtaWorldName: 'ACT1', ignoreEntityClick })

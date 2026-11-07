@@ -147,6 +147,8 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
           return import('../worlds/elevator/observe').then(m => new m.Observe())
         case 'elevdown':
           return import('../worlds/elevator/elevdown').then(m => new m.ElevDown())
+        case 'jetrace':
+          return import('../worlds/jetrace').then(m => new m.JetRace())
         case 'carrace':
           return import('../worlds/carrace').then(m => new m.CarRace())
         case 'act2':
@@ -189,7 +191,7 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
   })()
 
   await engine.setWorld(world, param)
-  if (previousName != null && previousName !== normalizedSpawn.name && (previousName === 'carrace' || (previousName === 'act1' && normalizedSpawn.name === 'act2') || (previousName === 'act2' && normalizedSpawn.name === 'copter'))) {
+  if (previousName != null && previousName !== normalizedSpawn.name && (previousName === 'carrace' || previousName === 'jetrace' || (previousName === 'act1' && normalizedSpawn.name === 'act2') || (previousName === 'act2' && normalizedSpawn.name === 'copter'))) {
     discardWorld(previousName)
   }
 }

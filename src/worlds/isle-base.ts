@@ -718,10 +718,7 @@ export abstract class IsleBase extends World {
     }
     const visibility = getExtraValue(action, 'Visibility')
     if (visibility != null) {
-      if (visibility !== 'FALSE') {
-        throw new Error('Visibility should only be FALSE')
-      }
-      model.visible = false
+      model.visible = visibility.toLowerCase() !== 'false'
     }
     let positionalAudio: THREE.PositionalAudio | null = null
     const sound = getExtraValue(action, 'Sound')
@@ -833,6 +830,15 @@ export abstract class IsleBase extends World {
         break
       case 'TowTrack':
         actor = new (await import('../lib/world/actors/towtrack')).TowTrack(model, this)
+        break
+      case 'LegoJetski':
+        actor = new (await import('../lib/world/actors/jetski-racer.ts')).JetskiRacer(model, this)
+        break
+      case 'LegoJetskiRaceActor':
+        actor = new (await import('../lib/world/actors/jetski-racer.ts')).JetskiRaceActor(model, this)
+        break
+      case 'BumpBouy':
+        actor = new (await import('../lib/world/actors/bump-buoy.ts')).BumpBuoy(model, this)
         break
       case 'LegoRaceCar':
         actor = new (await import('../lib/world/actors/race-car')).RaceCar(model, this)

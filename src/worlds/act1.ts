@@ -372,18 +372,23 @@ import {
 } from '../actions/isle'
 // import { CNs001Pe, tns030bd_RunAnim } from '../actions/act2main'
 import { Beach_Music, BeachBlvd_Music, Cave_Music, CentralNorthRoad_Music, CentralRoads_Music, GarageArea_Music, Hospital_Music, InformationCenter_Music, Jail_Music, Park_Music, PoliceStation_Music, Quiet_Audio, RaceTrackRoad_Music, ResidentalArea_Music } from '../actions/jukebox'
+import { BRS303_CloseJailDoor, TRS302_OpenJailDoor } from '../actions/sndanim'
 import { act1State } from '../lib/act1-state'
 import type { DTA } from '../lib/assets/dta'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent } from '../lib/engine'
 import { jukeBoxState } from '../lib/jukebox-state'
 import { locations } from '../lib/locations'
+import { raceResults } from '../lib/race-state.ts'
 import { switchWorld } from '../lib/switch-world'
 import { Ambulance } from '../lib/world/actors/ambulance'
+import { BumpBuoy } from '../lib/world/actors/bump-buoy.ts'
 import { FuelVehicle } from '../lib/world/actors/fuel-vehicle'
 import { Helicopter } from '../lib/world/actors/helicopter'
+import { Jetski } from '../lib/world/actors/jetski'
 import { Pizzeria } from '../lib/world/actors/pizzeria'
 import { TowTrack } from '../lib/world/actors/towtrack'
+import { Vehicle } from '../lib/world/actors/vehicle'
 import type { IsleMission } from '../lib/world/isle-mission.ts'
 import { PlayerMovement } from '../lib/world/player-movement'
 import { Isle } from './isle'
@@ -828,6 +833,19 @@ export class Act1 extends Isle {
         [14, 2],
       ]
 
+      if (name[2] === 'S') {
+        if (data === 302 && act1State.value !== 'pizza') {
+          void this.playAnimation(TRS302_OpenJailDoor)
+        } else if (data === 303) {
+          void this.playAnimation(BRS303_CloseJailDoor)
+        } else if (data === 310) {
+          const buoy = this.findRoi('bouybump')?.actor
+          if (buoy instanceof BumpBuoy) {
+            void buoy.onClick()
+          }
+        }
+      }
+
       if (name[2] === 'M' && this.backgroundMusicTriggerEnabled && !jukeBoxState.active && data >= 1 && data <= triggers.length) {
         if (direction === 'inbound') {
           void engine.switchBackgroundMusic(music[triggers[data - 1][0] - 1])
@@ -986,6 +1004,30 @@ export class Act1 extends Isle {
       const { position, quaternion } = this.boundaryManager.getObjectPlacement(param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
       this.camera.position.copy(position)
       this.camera.quaternion.copy(quaternion)
+    }
+    if (act1State.value === 'transitionToRacecar' && raceResults.car) {
+      const car = this._buildMeshes.get('racecar')
+      if (car instanceof Vehicle) {
+        const placement = this.boundaryManager.getObjectPlacementFromLocation('carraceFinished')
+        car.roi.moveRoiTo(placement.position, placement.quaternion)
+        await car.enter(false)
+        const score = engine.currentSaveGame.getScore('carRace', engine.currentSaveGame.player)
+        void this.playCameraAnimation(score === 3 ? srt001in_RunAnim : score === 2 ? srt002in_RunAnim : srt003in_RunAnim)
+      }
+      raceResults.car = false
+      act1State.value = 'none'
+    }
+    if (act1State.value === 'transitionToJetski' && raceResults.jetski) {
+      const jetski = this._buildMeshes.get('jetski')
+      if (jetski instanceof Jetski) {
+        const placement = this.boundaryManager.getObjectPlacementFromLocation('jetraceFinished')
+        jetski.roi.moveRoiTo(placement.position, placement.quaternion)
+        await jetski.enter(false)
+        const score = engine.currentSaveGame.getScore('jetskiRace', engine.currentSaveGame.player)
+        void this.playCameraAnimation(score === 3 ? sjs012in_RunAnim : score === 2 ? sjs013in_RunAnim : sjs014in_RunAnim)
+      }
+      raceResults.jetski = false
+      act1State.value = 'none'
     }
     if (act1State.value === 'transitionToTowtrack') {
       act1State.value = 'towtrack'

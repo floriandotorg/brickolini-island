@@ -22,6 +22,8 @@ export class SoundCache {
     await loadAudioBuffer(action)
   }
 
+  public has = (key: string): boolean => this._actions.has(key.toLowerCase())
+
   public async play(key: string, attachTo: THREE.Object3D | null, loop = false, delay = 0): Promise<SpatialAudio> {
     const action = this._actions.get(key.toLowerCase())
     if (action == null) {

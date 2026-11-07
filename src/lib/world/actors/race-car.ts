@@ -1,9 +1,9 @@
 import type { IsleBase } from '../../../worlds/isle-base'
 import type { Boundary, Edge } from '../../assets/boundary'
 import type { Roi3D } from '../../assets/model'
-import { PathActor } from './path-actor'
+import { RaceActor } from './race-actor.ts'
 
-export class RaceCar extends PathActor {
+export class RaceCar extends RaceActor {
   private _jumpEdges = new Map<
     Edge,
     {
@@ -38,20 +38,13 @@ export class RaceCar extends PathActor {
     this.addJumpEdge('edg03_112', 2, 'edg03_113', 2)
   }
 
-  public override update(delta: number) {
-    if ('raceStarted' in this._isle && !this._isle.raceStarted) {
-      return { from: this.roi.position.clone(), to: this.roi.position.clone() }
-    }
-    return super.update(delta)
-  }
-
   protected override _switchBoundary(): void {
     const jumpEdge = this._jumpEdges.get(this.destination.edge)
     if (jumpEdge != null) {
       this._destination = {
         boundary: jumpEdge.boundary,
         edge: jumpEdge.edge,
-        scale: this.destination.scale,
+        scale: 1 - this.destination.scale,
       }
 
       this._spline = this._calculateSpline({ forceDistance: 5 })

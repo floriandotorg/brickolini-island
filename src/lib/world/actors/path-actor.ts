@@ -144,23 +144,22 @@ export class PathActor extends Actor {
 
     const nextBoundary = this.destination.edge.getOtherBoundary(this.destination.boundary)
     let edge = this.destination.edge
-    let traversableEdges = 0
+    const useAll = (nextBoundary.flags & 1) === 0
+    const eligible = (candidate: Edge): boolean => {
+      if (!candidate.isTraversable()) {
+        return false
+      }
+      const target = candidate.faceA === nextBoundary ? candidate.faceB : candidate.faceA
+      return target != null && (useAll || (target.flags & 1) !== 0)
+    }
+    const edges: Edge[] = []
     do {
       edge = edge.getCCWEdge(nextBoundary)
-      if (edge.isTraversable()) {
-        ++traversableEdges
+      if (eligible(edge)) {
+        edges.push(edge)
       }
     } while (edge !== this.destination.edge)
-
-    // TODO properly select next edge index from traversableEdges
-    --traversableEdges
-
-    while (traversableEdges > 0) {
-      edge = edge.getCCWEdge(nextBoundary)
-      if (edge.isTraversable()) {
-        --traversableEdges
-      }
-    }
+    edge = edges.find(candidate => candidate !== this.destination.edge) ?? this.destination.edge.getCCWEdge(nextBoundary).getCCWEdge(nextBoundary)
 
     this._destination = {
       boundary: nextBoundary,
@@ -213,7 +212,7 @@ export class PathActor extends Actor {
       this._distanceTraveled = 0
     }
 
-    this._distanceTraveled += (delta * this._speed) / this._spline.getLength()
+    this._distanceTraveled += (delta * this._speed) / Math.max(0.001, this._spline.getLength())
 
     const distancedTraveledClamped = Math.min(this._distanceTraveled, 1)
     const matrix = new THREE.Matrix4()

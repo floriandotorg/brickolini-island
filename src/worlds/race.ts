@@ -1,16 +1,19 @@
 import * as THREE from 'three'
-import { CarLocator2, CarLocator3, Horn_Ctl, Map_Ctl } from '../actions/carrace'
 import { type ActionBase, type ActorAction, type EntityAction, getExtraValue, type ImageAction, isAnimationAction, isAudioAction, isBoundaryAction, isControlAction, isImageAction, isMeterAction, type SerialAction, splitExtraValue } from '../lib/action-types'
 import { type Animation3D, type Animation3DNode, parse3DAnimation } from '../lib/assets/animation'
+import type { Boundary, Edge } from '../lib/assets/boundary'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { ControlsCollection } from '../lib/assets/control'
 import type { DtaWorldName } from '../lib/assets/dta'
 import { getAction } from '../lib/assets/load'
 import type { WdbWorldName } from '../lib/assets/model'
+import { crossesEdge } from '../lib/edge-crossing.ts'
 import { type Composer, Render2D } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
 import { RaceProgress } from '../lib/race-progress.ts'
+import type { VehicleType } from '../lib/vehicle-types.ts'
 import type { Actor } from '../lib/world/actor'
+import { RaceActor } from '../lib/world/actors/race-actor.ts'
 import { Meter } from '../lib/world/dashboard'
 import { PlayerMovement } from '../lib/world/player-movement'
 import type { WorldName } from '../lib/world/world'
@@ -63,7 +66,7 @@ class MapLocator {
   private readonly _object: THREE.Object3D
 
   public constructor(locator: string, geometry: string, object: THREE.Object3D) {
-    const [worldXOffset, worldXLength, worldZOffset, worldZLength, mapWidth, mapHeight, mapXOffset, mapYOffset] = splitExtraValue(geometry).map(s => Number.parseInt(s, 10))
+    const [worldXOffset, worldXLength, worldZOffset, worldZLength, mapWidth, mapHeight, mapXOffset, mapYOffset] = splitExtraValue(geometry).map(s => Number.parseFloat(s))
     this._worldXOffset = worldXOffset
     this._worldXLength = worldXLength
     this._worldZOffset = worldZOffset
@@ -101,8 +104,18 @@ class MapLocator {
 
 type StartUpAction = SerialAction<ActionBase>
 
+export type RaceConfig = {
+  userActorName: string
+  opponents: readonly [{ roiName: string; progressLocator: ImageAction; vehicle: string | null }, { roiName: string; progressLocator: ImageAction; vehicle: string | null }]
+  progressRect: readonly [number, number, number, number]
+  distance: { offset: number; scale: number }
+  maxSpeed: number
+  vehicleType: VehicleType
+  ignoreDirection: boolean
+}
+
 export abstract class Race extends IsleBase {
-  private _playerMovement = new PlayerMovement(
+  protected _playerMovement = new PlayerMovement(
     this.camera,
     this._groundGroup,
     () => this.boundaryManager.walls,
@@ -119,16 +132,23 @@ export abstract class Race extends IsleBase {
   private _distanceMeter: Meter | null = null
   private _progressStart: THREE.Vector3
   private _progressEnd: THREE.Vector3
-  private _opponent1ProgressLocator = createImageSprite(CarLocator2)
-  private _opponent2ProgressLocator = createImageSprite(CarLocator3)
+  private _opponent1ProgressLocator: THREE.Sprite
+  private _opponent2ProgressLocator: THREE.Sprite
   private readonly _startUpAction: StartUpAction
   protected raceState: 'waiting' | 'racing' | 'finished' | 'leaving' = 'waiting'
   public get raceStarted(): boolean {
     return this.raceState === 'racing'
   }
+  private readonly _config: RaceConfig
+  public playerWaypoint = 0
+  private _lastHitSound = Number.NEGATIVE_INFINITY
+  private _lastVoice = Number.NEGATIVE_INFINITY
+  private readonly _voiceIndices = new Map<string, number>()
+  private _playerJump: { curve: THREE.CubicBezierCurve3; progress: number; speed: number } | null = null
+  private readonly _ramps: { boundary: Boundary; edge: Edge; landing: Boundary; landingEdge: Edge }[] = []
   private _hideAnimation: Animation3D | null = null
 
-  constructor(name: WorldName, options: { wdbWorldName: WdbWorldName; dtaWorldName: DtaWorldName; startUpAction: StartUpAction }) {
+  constructor(name: WorldName, options: { wdbWorldName: WdbWorldName; dtaWorldName: DtaWorldName; startUpAction: StartUpAction; config: RaceConfig }) {
     const boundaryPathAction = options.startUpAction.children.find(child => isBoundaryAction(child))
     if (boundaryPathAction == null) {
       throw new Error('No boundary path action defined')
@@ -140,10 +160,12 @@ export abstract class Race extends IsleBase {
     })
 
     this._startUpAction = options.startUpAction
+    this._config = options.config
+    this._opponent1ProgressLocator = createImageSprite(options.config.opponents[0].progressLocator)
+    this._opponent2ProgressLocator = createImageSprite(options.config.opponents[1].progressLocator)
+    this.boundaryManager.ignoreTriggerDirection = options.config.ignoreDirection
 
-    // Rect as defined in carrace code
-    const progressRect = [364, 340, 492, 350]
-    // also the left-top-corner is offset +0.5 to the bottom right and each edge is +1 "longer"
+    const progressRect = [...options.config.progressRect]
     progressRect[0] += 0.5
     progressRect[1] += 0.5
     progressRect[2] += 1.5
@@ -154,12 +176,12 @@ export abstract class Race extends IsleBase {
 
     this._controls.onButtonClicked = (buttonName, event) => {
       switch (buttonName) {
-        case Map_Ctl.name:
+        case 'Map_Ctl':
           if (this._raceMap != null) {
             this._raceMap.group.visible = event.state > 0
           }
           return true
-        case Horn_Ctl.name:
+        case 'Horn_Ctl':
           if (isAudioAction(event.otherAction)) {
             void engine.playAudio(event.otherAction, 'effects')
           }
@@ -170,7 +192,7 @@ export abstract class Race extends IsleBase {
     }
   }
 
-  private _applyVisibility(time: number): void {
+  protected _applyVisibility(time: number): void {
     if (this._hideAnimation == null) {
       throw new Error('Hide animation not initialized')
     }
@@ -181,7 +203,7 @@ export abstract class Race extends IsleBase {
 
         const node = this.worldGroup.getObjectByName(childName)
         if (node == null) {
-          console.warn(`Actor not found: ${childName}`)
+          applyVisibility(child.children, parentName)
           continue
         }
 
@@ -206,6 +228,15 @@ export abstract class Race extends IsleBase {
 
   abstract onEventStartWaypoint(data: number): void
   abstract onEventEndWaypoint(data: number): void
+
+  protected onPlayerWaypoint(_data: number, _lap: number): void {}
+
+  protected onOpponentFinished(index: number): void {
+    const opponent = this._config.opponents[index]
+    if (opponent.vehicle != null) {
+      this.stopOpponent(opponent.roiName, opponent.vehicle, true)
+    }
+  }
 
   protected abstract onPlayerFinished(): Promise<void>
 
@@ -234,6 +265,27 @@ export abstract class Race extends IsleBase {
 
   public override async init(): Promise<void> {
     await super.init()
+    const ramps: [string, number, string, number][] =
+      this._config.vehicleType === 'jetski'
+        ? [
+            ['edg10_61', 2, 'edg10_62', 0],
+            ['edg10_55', 2, 'edg10_58', 0],
+          ]
+        : [
+            ['edg03_21', 2, 'edg03_23', 2],
+            ['edg03_30', 2, 'edg03_31', 1],
+            ['edg03_39', 2, 'edg03_40', 2],
+            ['edg03_91', 2, 'edg03_92', 2],
+            ['edg03_99', 2, 'edg03_100', 2],
+            ['edg03_112', 2, 'edg03_113', 2],
+          ]
+    for (const [start, startEdge, end, endEdge] of ramps) {
+      const boundary = this.boundaryManager.getBoundary(start)
+      const landing = this.boundaryManager.getBoundary(end)
+      if (boundary != null && landing != null) {
+        this._ramps.push({ boundary, edge: boundary.edges[startEdge], landing, landingEdge: landing.edges[endEdge] })
+      }
+    }
 
     this._groundGroup.push(...this.worldGroup.children.filter(child => child.name.startsWith('track')))
 
@@ -243,17 +295,18 @@ export abstract class Race extends IsleBase {
     const imageActions: ImageAction[] = []
 
     await this.handleStartUpAction(this._startUpAction, async child => {
-      if (child.name === 'UserCar_Actor') {
+      if (child.name === this._config.userActorName) {
         this._raceMap?.addLocator(child, this.camera)
         return true
       }
 
       if (isImageAction(child)) {
         imageActions.push(child)
+        return true
       }
 
       if (isControlAction(child)) {
-        this._controls.addControl(child)
+        await this._controls.addControl(child)
         return true
       }
 
@@ -291,16 +344,23 @@ export abstract class Race extends IsleBase {
       }
       if (name[2] === 'D') {
         if (roi == null) {
-          if (this._playerProgress.visit(data) && this._playerProgress.finished) {
-            this.raceState = 'finished'
-            void this.onPlayerFinished()
+          this.playerWaypoint = data
+          if (this._playerProgress.visit(data)) {
+            this.onPlayerWaypoint(data, this._playerProgress.lap)
+            if (this._playerProgress.finished) {
+              this.raceState = 'finished'
+              void this.onPlayerFinished()
+            }
           }
-        } else if (roi.name === 'rhoda') {
-          if (this._opponent1Progress.visit(data) && this._opponent1Progress.finished) {
-            this.stopOpponent('rhoda', 'rcgreen', true)
+        } else {
+          const index = this._config.opponents.findIndex(opponent => opponent.roiName === roi.name)
+          const progress = index === 0 ? this._opponent1Progress : index === 1 ? this._opponent2Progress : null
+          if (roi.actor != null && 'lastWaypoint' in roi.actor) {
+            roi.actor.lastWaypoint = data
           }
-        } else if (roi.name === 'studs' && this._opponent2Progress.visit(data) && this._opponent2Progress.finished) {
-          this.stopOpponent('studs', 'rcblack', true)
+          if (progress?.visit(data) && progress.finished) {
+            this.onOpponentFinished(index)
+          }
         }
       }
 
@@ -376,6 +436,37 @@ export abstract class Race extends IsleBase {
     this._controls.pointerUp()
   }
 
+  private collisionVoice = (name: string, hitter: boolean): void => {
+    if (engine.elapsedTimeMilliseconds - this._lastVoice < 3000) {
+      return
+    }
+    const lists: Record<string, string[]> =
+      this._config.vehicleType === 'jetski'
+        ? { snap: ['svo001sn', 'svo002sn', 'svo004sn', 'svo005sn'], valerie: ['svo001va', 'svo003va', 'svo004va'] }
+        : { studs: hitter ? Array.from({ length: 12 }, (_, n) => `srt${String(n + 18).padStart(3, '0')}sl`) : ['srt006sl', 'srt007sl', 'srt008sl', 'srt009sl', 'srt010sl'], rhoda: hitter ? [] : ['srt004rh', 'srt005rh', 'srt006rh'] }
+    const list = lists[name]
+    if (list == null || list.length === 0) {
+      return
+    }
+    const index = this._voiceIndices.get(name) ?? Math.floor(Math.random() * list.length)
+    const key = list[index]
+    this._voiceIndices.set(name, (index + 1) % list.length)
+    if (this.soundCache.has(key)) {
+      this._lastVoice = this._lastHitSound = engine.elapsedTimeMilliseconds
+      void this.soundCache.play(key, null)
+    }
+  }
+
+  protected override onActorMoved(actor: Actor, from: THREE.Vector3, to: THREE.Vector3): void {
+    if (!(actor instanceof RaceActor) || from.distanceToSquared(to) < 1e-8) {
+      return
+    }
+    const nearest = new THREE.Line3(from, to).closestPointToPoint(this.camera.position, true, new THREE.Vector3())
+    if (nearest.distanceTo(this.camera.position) < 1.5) {
+      this.collisionVoice(actor.roi.name, false)
+    }
+  }
+
   public override update(delta: number): void {
     super.update(delta)
 
@@ -383,12 +474,60 @@ export abstract class Race extends IsleBase {
       return
     }
 
-    const { normalizedSpeed, fromPos, toPos } = this._playerMovement.update(delta, 'racecar')
+    const fromPos = this.camera.position.clone()
+    let normalizedSpeed: number
+    let toPos: THREE.Vector3
+    if (this._playerJump != null) {
+      const jump = this._playerJump
+      jump.progress = Math.min(1, jump.progress + (delta * jump.speed) / Math.max(0.001, jump.curve.getLength()))
+      this.camera.position.copy(jump.curve.getPointAt(jump.progress))
+      this.camera.lookAt(this.camera.position.clone().add(jump.curve.getTangentAt(jump.progress)))
+      toPos = this.camera.position.clone()
+      normalizedSpeed = jump.speed / this._config.maxSpeed
+      if (jump.progress === 1) {
+        this._playerMovement.linearVelocity = jump.speed
+        this._playerJump = null
+      }
+    } else {
+      const movement = this._playerMovement.update(delta, this._config.vehicleType, this._config.maxSpeed)
+      normalizedSpeed = movement.normalizedSpeed
+      toPos = movement.toPos
+      for (const ramp of this._ramps) {
+        if (crossesEdge([fromPos.x, fromPos.z], [toPos.x, toPos.z], [ramp.edge.pointA.x, ramp.edge.pointA.z], [ramp.edge.pointB.x, ramp.edge.pointB.z])) {
+          const target = ramp.landingEdge.getCCWVertex(ramp.landing).clone().lerp(ramp.landingEdge.getCWVertex(ramp.landing), 0.5)
+          target.y += 1.25
+          const tangentLength = this._config.vehicleType === 'jetski' ? 1 : 5
+          const startDirection = this.camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(tangentLength / 3)
+          const up = new THREE.Vector3(-ramp.landing.up.x, ramp.landing.up.y, ramp.landing.up.z)
+          const endDirection = ramp.landingEdge
+            .getFaceNormal(ramp.landing)
+            .cross(up)
+            .normalize()
+            .multiplyScalar(tangentLength / 3)
+          this._playerJump = { curve: new THREE.CubicBezierCurve3(toPos.clone(), toPos.clone().add(startDirection), target.clone().sub(endDirection), target), progress: 0, speed: Math.max(8, Math.abs(this._playerMovement.linearVelocity)) }
+          break
+        }
+      }
+    }
 
-    this.updateActors(delta, fromPos, toPos)
+    for (const actor of this.actors) {
+      if (actor instanceof RaceActor && !actor.stunned && actor.checkCollision(fromPos, toPos)) {
+        actor.onCollision(null)
+        this.collisionVoice(actor.roi.name, true)
+        this.camera.position.copy(fromPos)
+        toPos = fromPos.clone()
+        this._playerMovement.linearVelocity *= 0.8
+        if (engine.elapsedTimeMilliseconds - this._lastHitSound > 1000 && this.soundCache.has('hitactor')) {
+          this._lastHitSound = engine.elapsedTimeMilliseconds
+          void this.soundCache.play('hitactor', null)
+        }
+        break
+      }
+    }
+    void this.updateActors(delta, fromPos, toPos)
 
     this._speedMeter?.draw(normalizedSpeed)
-    const meterProgress = this._playerProgress.progress * 0.928 + 0.036
+    const meterProgress = this._playerProgress.progress === 0 ? 0.036 : this._playerProgress.progress * this._config.distance.scale + this._config.distance.offset
     this._distanceMeter?.draw(meterProgress)
 
     const lerped = new THREE.Vector3()

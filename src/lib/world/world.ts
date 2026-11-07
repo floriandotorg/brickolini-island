@@ -30,7 +30,7 @@ export enum ElevatorEntrance {
   Third = 1,
 }
 
-export type NormalWorld = 'credits' | 'histbook' | 'hospital' | 'garage' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevopen' | 'seaview' | 'observe' | 'elevdown' | 'carrace' | 'act2' | 'jukeboxw'
+export type NormalWorld = 'jetrace' | 'credits' | 'histbook' | 'hospital' | 'garage' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevopen' | 'seaview' | 'observe' | 'elevdown' | 'carrace' | 'act2' | 'jukeboxw'
 export type WorldName = NormalWorld | 'act1' | 'elevride' | 'infomain'
 export type WorldSpawn =
   | {
@@ -311,6 +311,12 @@ export abstract class World {
     this._actors.delete(actor)
   }
 
+  protected get actors(): readonly Actor[] {
+    return [...this._actors]
+  }
+
+  protected onActorMoved(_actor: Actor, _from: THREE.Vector3, _to: THREE.Vector3): void {}
+
   public async updateActors(delta: number, playerFrom: THREE.Vector3, playerTo: THREE.Vector3): Promise<void> {
     for (const actor of this._actors) {
       const result = actor.update(delta)
@@ -326,16 +332,17 @@ export abstract class World {
           other.onCollision(actor.roi)
         }
       }
+      this.onActorMoved(actor, actorFrom, actorTo)
       this.boundaryManager.update(actorFrom, actorTo, actor.roi)
     }
   }
 
-  public async resolveAnimationActors(animation: Animation3D): Promise<{ animationActors: Map<string, AnimationActor>; managedActorNames: string[] }> {
+  public async resolveAnimationActors(animation: Animation3D, substitutions: ReadonlyMap<string, string> = new Map()): Promise<{ animationActors: Map<string, AnimationActor>; managedActorNames: string[] }> {
     const animationActors = new Map<string, AnimationActor>()
     const managedActorNames: string[] = []
 
-    const addActorToList = (type: WDB.ActorType, actor: Roi3D) => {
-      animationActors.set(actor.name, {
+    const addActorToList = (type: WDB.ActorType, actor: Roi3D, name = actor.name) => {
+      animationActors.set(name, {
         type,
         object: actor.model,
         children: new Map(actor.children.map(c => [c.name, c.model])),
@@ -344,6 +351,13 @@ export abstract class World {
     }
 
     for (const actor of animation.actors) {
+      const substitute = substitutions.get(actor.name.toLowerCase())
+      if (substitute != null) {
+        const roi = this.getRoi(substitute)
+        roi.visible = true
+        addActorToList(actor.type ?? WDB.ActorType.Unknown, roi, actor.name)
+        continue
+      }
       switch (actor.type) {
         case WDB.ActorType.Unknown: {
           const node = this.getRoi(actor.name)
@@ -410,7 +424,13 @@ export abstract class World {
 
     const animation = parse3DAnimation(await getAction(animationAction))
 
-    const { animationActors, managedActorNames } = await this.resolveAnimationActors(animation)
+    const substitution = getExtraValue(animationAction, 'subst')
+    const parts = substitution != null ? splitExtraValue(substitution) : []
+    const substitutions = new Map<string, string>()
+    for (let n = 0; n + 1 < parts.length; n += 2) {
+      substitutions.set(parts[n].toLowerCase(), parts[n + 1].toLowerCase())
+    }
+    const { animationActors, managedActorNames } = await this.resolveAnimationActors(animation, substitutions)
 
     const positionalAudioActions = children.filter(c => isPositionalAudioAction(c))
     const audioActions = children.filter(c => isAudioAction(c))

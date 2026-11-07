@@ -4,6 +4,7 @@ export const SpawnLocations = [
   'pizzeriaExterior',
   'infocenterExited',
   'jetraceExterior',
+  'jetraceFinished',
   'jetskibuildExited',
   'carraceExterior',
   'carraceFinished',
@@ -33,6 +34,8 @@ export const getSpawnLocation = (location: SpawnLocation): IsleParam => {
       return { position: { boundaryName: 'INT35', source: 2, sourceScale: 0.6, destination: 4, destinationScale: 0.4 } }
     case 'infocenterExited':
       return { position: { boundaryName: 'INT46', source: 0, sourceScale: 0.5, destination: 2, destinationScale: 0.5 } }
+    case 'jetraceFinished':
+      return { position: { boundaryName: 'EDG10_63', source: 0, sourceScale: 0.26, destination: 1, destinationScale: 0.01 } }
     case 'jetraceExterior':
       return { position: { boundaryName: 'EDG00_46', source: 0, sourceScale: 0.95, destination: 2, destinationScale: 0.19 } }
     case 'jetskibuildExited':

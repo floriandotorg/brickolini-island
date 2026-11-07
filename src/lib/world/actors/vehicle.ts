@@ -52,8 +52,10 @@ export abstract class Vehicle extends Actor {
     }
   }
 
-  public async enter(): Promise<void> {
-    await engine.transition()
+  public async enter(transition = true): Promise<void> {
+    if (transition) {
+      await engine.transition()
+    }
 
     this._isle.currentVehicle = this
 

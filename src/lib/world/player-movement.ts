@@ -73,6 +73,10 @@ export class PlayerMovement {
     this._flightMode = value
   }
 
+  set linearVelocity(value: number) {
+    this._linearVel = value
+  }
+
   get linearVelocity(): number {
     return this._linearVel
   }
@@ -196,10 +200,10 @@ export class PlayerMovement {
     }
   }
 
-  update(delta: number, vehicleType: VehicleType | null): { fromPos: THREE.Vector3; toPos: THREE.Vector3; normalizedSpeed: number } {
+  update(delta: number, vehicleType: VehicleType | null, maximumSpeed?: number): { fromPos: THREE.Vector3; toPos: THREE.Vector3; normalizedSpeed: number } {
     this._camera.rotateY(-this._lookYaw)
     const speedMultiplier = this._slewMode ? 4 : 1
-    const maxLinearVel = vehicleType != null ? VEHICLE_MAX_LINEAR_VEL[vehicleType] : WALK_SPEED
+    const maxLinearVel = maximumSpeed ?? (vehicleType != null ? VEHICLE_MAX_LINEAR_VEL[vehicleType] : WALK_SPEED)
 
     const flags = engine.input.getNavigationFlags()
     const settings = getSettings()
