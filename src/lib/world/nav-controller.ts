@@ -12,6 +12,7 @@ const newVelocity = (target: number, current: number, acceleration: number, delt
 }
 
 export class NavController {
+  public accelerationMultiplier = 1
   public maximumSpeed = 6
   public deadZone = 40
   public linearVelocity = 0
@@ -35,7 +36,7 @@ export class NavController {
       rotation = -targetVelocity(gamepad.x * 6.4, 320, 20, this.deadZone)
       acceleration = linear === 0 ? 50 : Math.max(4, (Math.abs(50 - gamepad.y) * 15) / 50)
     }
-    this.linearVelocity = Math.max(-0.4 * this.maximumSpeed, newVelocity(linear, this.linearVelocity, acceleration, delta))
+    this.linearVelocity = Math.max(-0.4 * this.maximumSpeed, newVelocity(linear, this.linearVelocity, acceleration * this.accelerationMultiplier, delta))
     this.rotationalVelocity = rotation === 0 ? 0 : rotation
   }
 

@@ -379,7 +379,6 @@ export class Act2 extends IsleBase {
       const placement = this.boundaryManager.getObjectPlacement('EDG02_51', 0, 0.64, 1, 0.37)
       this.camera.position.copy(placement.position).add(new THREE.Vector3(0, 1.25, 0))
       this.camera.quaternion.copy(placement.quaternion)
-      this.camera.rotateY(Math.PI)
     } else {
       switch (this._phase) {
         case 'holdingSpeech':

@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import type { Boundary } from '../assets/boundary'
 import { damagedCounter, damagedHeight } from '../destruction-rules'
 import { engine } from '../engine'
 import { defaultBuildingState, HOUSE_VARIANTS, ISLAND_BUILDINGS } from './island-buildings'
@@ -84,6 +85,19 @@ export class Destruction {
     object.visible = this.isAlive(target)
     object.updateMatrix()
   }
+
+  public resolveBuildings = (): { index: number; boundary: Boundary; position: THREE.Vector3 }[] =>
+    ISLAND_BUILDINGS.flatMap((info, index) => {
+      const boundary = this._world.boundaryManager.getBoundary(info.boundary)
+      const position = new THREE.Vector3(...info.shot)
+      if (boundary == null || this.object({ type: 'building', index }) == null || !boundary.isInside(position)) {
+        return []
+      }
+      if (Math.abs(boundary.up.y) > 0.0001) {
+        position.y = -(boundary.up.x * position.x + boundary.up.z * position.z + boundary.up.w) / boundary.up.y
+      }
+      return [{ index, boundary, position }]
+    })
 
   public applyToWorld = (): void => {
     for (let n = 0; n < ISLAND_BUILDINGS.length; ++n) {

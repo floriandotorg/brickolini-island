@@ -72,6 +72,10 @@ export class BoundaryManager {
     }
   }
 
+  public get boundaries(): readonly Boundary[] {
+    return this._boundaries
+  }
+
   public get walls(): THREE.Group {
     return this._wallGroup
   }

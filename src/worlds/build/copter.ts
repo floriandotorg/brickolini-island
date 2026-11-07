@@ -4,6 +4,7 @@ import { HelicopterBuild_Flic, HelicopterBuild_Music } from '../../actions/jukeb
 import { MovieSprite } from '../../lib/assets/movie-sprite'
 import type { Composer } from '../../lib/effect/composer'
 import { engine, type NormalizedMouseEvent } from '../../lib/engine'
+import { switchWorld } from '../../lib/switch-world'
 import { Building } from '../../lib/world/building'
 import { World } from '../../lib/world/world'
 import { buildColorControls, buildDecalControls, Carbuild, type SpeakerAnimations } from './carbuild'
@@ -65,6 +66,11 @@ export class Copter extends World {
       completed: ips003d2_RunAnim,
     }
     this._carbuild = await Carbuild.create(this, this._building, displayPosition, Shelf_Sound, GetBrick_Sound, PlaceBrick_Sound, Rotate_Sound, colorControls, decalControls, 'polidoor', 'helicopter', speakerAnimations, Build_Anim0, Build_Anim1, Build_Anim2)
+
+    this._carbuild.onAct2Exit = async () => {
+      engine.currentSaveGame.act = 3
+      await switchWorld('act3')
+    }
 
     this._building.onButtonClicked = (buttonName, event) => {
       if (this._carbuild == null) {

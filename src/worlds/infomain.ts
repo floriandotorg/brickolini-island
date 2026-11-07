@@ -74,7 +74,7 @@ import { radio } from '../lib/radio'
 import { type PlayerCharacter, PlayerCharacters } from '../lib/save-game'
 import { act1State, helicopterState, infocenterState, vehicleReturn } from '../lib/session-state.ts'
 import { getSettings } from '../lib/settings'
-import { discardCachedWorlds, getPreviousWorldName, rememberPreviousWorld, restorePreviousWorld, switchToPreviousWorld, switchWorld } from '../lib/switch-world'
+import { discardCachedWorlds, discardWorld, getPreviousWorldName, rememberPreviousWorld, restorePreviousWorld, switchToPreviousWorld, switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
 import { World, type WorldSpawn } from '../lib/world/world'
@@ -283,6 +283,8 @@ export class InfoMain extends World {
     }
     if (save.act === 2) {
       await switchWorld('act2')
+    } else if (save.act === 3) {
+      await switchWorld('act3')
     } else if (vehicleReturn.type != null) {
       await switchWorld({ spawn: 'infocenterExited' })
     } else {
@@ -562,6 +564,11 @@ export class InfoMain extends World {
     this.stopCurrentAction()
     const state = infocenterState.state
     if (state === 'selectedSave') {
+      if (engine.currentSaveGame.act === 2) {
+        discardWorld('act2')
+      } else if (engine.currentSaveGame.act === 3) {
+        discardWorld('act3')
+      }
       restorePreviousWorld()
     }
     const pad = Math.floor((7 - engine.currentSaveGame.name.length) / 2)
@@ -609,7 +616,7 @@ export class InfoMain extends World {
         const generation = this._scriptGeneration
         void promise.then(() => {
           if (generation === this._scriptGeneration && engine.currentWorld === this) {
-            void (act === 2 ? switchWorld('act2') : switchToPreviousWorld())
+            void (act === 2 ? switchWorld('act2') : act === 3 ? switchWorld('act3') : switchToPreviousWorld())
           }
         })
       } else {

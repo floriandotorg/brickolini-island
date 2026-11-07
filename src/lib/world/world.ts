@@ -50,7 +50,7 @@ export enum ElevatorEntrance {
   Third = 1,
 }
 
-export type NormalWorld = 'jetrace' | 'credits' | 'histbook' | 'hospital' | 'garage' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevopen' | 'seaview' | 'observe' | 'elevdown' | 'carrace' | 'act2' | 'jukeboxw'
+export type NormalWorld = 'jetrace' | 'credits' | 'histbook' | 'hospital' | 'garage' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevopen' | 'seaview' | 'observe' | 'elevdown' | 'carrace' | 'act2' | 'act3' | 'jukeboxw'
 export type WorldName = NormalWorld | 'act1' | 'elevride' | 'infomain'
 export type WorldSpawn =
   | {
@@ -1109,6 +1109,13 @@ export abstract class World {
   }
 
   protected update(delta: number): void {
+    for (const delay of this._delays) {
+      delay.remaining -= delta * 1000
+      if (delay.remaining <= 0) {
+        this._delays.delete(delay)
+        delay.resolve(true)
+      }
+    }
     for (const { mixer, resolve, lookAtKeys, faceAnimations, pointAtCameraObjects, stopAtTime, metadata } of this._runningAnimations) {
       const releasedPosition = metadata.released ? this.camera.position.clone() : null
       const releasedQuaternion = metadata.released ? this.camera.quaternion.clone() : null
@@ -1201,6 +1208,13 @@ export abstract class World {
     composer.add(this._render)
   }
 
+  private readonly _delays = new Set<{ remaining: number; resolve: (completed: boolean) => void }>()
+  public wait(milliseconds: number): Promise<boolean> {
+    return new Promise(resolve => {
+      this._delays.add({ remaining: milliseconds, resolve })
+    })
+  }
+
   private readonly _deactivationListeners = new Set<() => void>()
 
   public onDeactivate(callback: () => void): void {
@@ -1208,6 +1222,10 @@ export abstract class World {
   }
 
   public deactivate(): void {
+    for (const delay of this._delays) {
+      delay.resolve(false)
+    }
+    this._delays.clear()
     for (const callback of this._deactivationListeners) {
       callback()
     }
@@ -1218,6 +1236,7 @@ export abstract class World {
   }
 
   public dispose(): void {
+    this.deactivate()
     this.skipAllRunningAnimations(true)
     for (const animation of [...this._runningAnimations]) {
       animation.resolve()

@@ -116,6 +116,23 @@ export abstract class Actor extends Entity {
     this._activeAnimationKey = null
   }
 
+  protected bindAnimationActor(key: number, name: string, roi: Roi3D): void {
+    const runtime = this._animationRuntimes.get(key)
+    let actor = runtime?.animationActors?.get(name)
+    if (actor == null && runtime?.animationActors != null) {
+      actor = { type: WDB.ActorType.Unknown, object: roi.model, roi, children: new Map() }
+      runtime.animationActors.set(name, actor)
+    }
+    if (actor != null) {
+      actor.object = roi.model
+      actor.roi = roi
+      actor.children = new Map(roi.children.map(child => [child.name, child.model]))
+    }
+  }
+  protected animationActorNames(key: number): string[] {
+    return this._animationRuntimes.get(key)?.animation?.actors.map(actor => actor.name.toLowerCase()) ?? []
+  }
+
   protected getAnimationDuration(key: number): number {
     return this._animationRuntimes.get(key)?.animation?.duration ?? 0
   }

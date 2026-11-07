@@ -147,7 +147,9 @@ export class Roi3D {
   public constructor(
     public readonly model: RoiModel,
     public name: string,
-  ) {}
+  ) {
+    model.roi3d = this
+  }
 
   public addRoiChild(child: Roi3D): void {
     child.parent = this

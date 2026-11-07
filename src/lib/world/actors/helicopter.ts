@@ -9,6 +9,9 @@ export class Helicopter extends Vehicle {
   protected override dashboard = { type: 'helicopter' } as const
 
   public override async enter(transition = true): Promise<void> {
+    if (this._isle.name === 'act3') {
+      return
+    }
     const placement = this._isle.boundaryManager.getObjectPlacementFromLocation('helicopterLanded')
     this.roi.moveRoiTo(placement.position, placement.quaternion)
     helicopterState.status = 0
@@ -17,7 +20,7 @@ export class Helicopter extends Vehicle {
   }
 
   public override exit(): void {
-    if (this._isle.currentVehicle !== this) {
+    if (this._isle.name === 'act3' || this._isle.currentVehicle !== this) {
       return
     }
     this._isle.setFlightMode(false)

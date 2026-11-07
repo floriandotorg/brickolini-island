@@ -30,6 +30,12 @@ const WALK_SPEED = 6
 
 export class PlayerMovement {
   public readonly navigation = new NavController()
+  public get accelerationMultiplier(): number {
+    return this.navigation.accelerationMultiplier
+  }
+  public set accelerationMultiplier(value: number) {
+    this.navigation.accelerationMultiplier = value
+  }
   public boundaryManager: BoundaryManager | null = null
   public canMove: (from: THREE.Vector3, to: THREE.Vector3) => boolean = () => true
   private _boundary: Boundary | null = null

@@ -167,6 +167,8 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
           return import('../worlds/jetrace').then(m => new m.JetRace())
         case 'carrace':
           return import('../worlds/carrace').then(m => new m.CarRace())
+        case 'act3':
+          return import('../worlds/act3').then(m => new m.Act3())
         case 'act2':
           return import('../worlds/act2').then(m => new m.Act2())
         case 'jukeboxw':
@@ -213,7 +215,11 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
   })()
 
   await engine.setWorld(world, param)
-  if (previousName != null && previousName !== normalizedSpawn.name && (['carrace', 'jetrace', 'copter', 'dunecar', 'jetski', 'racecar'].includes(previousName) || (previousName === 'act1' && normalizedSpawn.name === 'act2') || (previousName === 'act2' && normalizedSpawn.name === 'copter'))) {
+  if (
+    previousName != null &&
+    previousName !== normalizedSpawn.name &&
+    (['carrace', 'jetrace', 'copter', 'dunecar', 'jetski', 'racecar'].includes(previousName) || (previousName === 'act1' && normalizedSpawn.name === 'act2') || (previousName === 'act2' && normalizedSpawn.name === 'copter') || (previousName === 'act3' && engine.currentSaveGame.act === 1))
+  ) {
     discardWorld(previousName)
   }
 }

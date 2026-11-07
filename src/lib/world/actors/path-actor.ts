@@ -69,6 +69,9 @@ export class PathActor extends Actor {
         throw new Error('No current node found or has no cost')
       }
       for (const neighbor of currentNode.neighbors) {
+        if (!neighbor.edge.isTraversableFromFace(currentNode.boundary)) {
+          continue
+        }
         if (neighbor.node.cost == null || neighbor.node.cost.cost > currentNode.cost.cost + 1) {
           neighbor.node.cost = { parent: currentNode, cost: currentNode.cost.cost + 1 }
           if (!queue.includes(neighbor.node)) {
@@ -115,6 +118,75 @@ export class PathActor extends Actor {
     }
     this._finishingPath = false
     this._destination = nextDestination
+  }
+
+  public routeLength(boundaryName: string, position: THREE.Vector3): number | null {
+    const start = this._isle.boundaryManager.getBoundaryFromPosition(this.roi.position.clone().add(new THREE.Vector3(0, 1, 0)))
+    const end = this._isle.boundaryManager.getBoundary(boundaryName)
+    if (start == null || end == null) {
+      return null
+    }
+    const graph = this._isle.boundaryManager.generateGraph()
+    const costs = new Map<Boundary, { distance: number; point: THREE.Vector3 }>([[start, { distance: 0, point: this.roi.position.clone() }]])
+    const pending = [start]
+    while (pending.length > 0) {
+      pending.sort((a, b) => (costs.get(a)?.distance ?? Number.POSITIVE_INFINITY) - (costs.get(b)?.distance ?? Number.POSITIVE_INFINITY))
+      const current = pending.shift()
+      if (current == null) {
+        break
+      }
+      const cost = costs.get(current)
+      if (cost == null) {
+        break
+      }
+      if (current === end) {
+        return cost.distance + cost.point.distanceTo(position)
+      }
+      for (const next of graph.get(current)?.neighbors ?? []) {
+        if (!next.edge.isTraversableFromFace(current)) {
+          continue
+        }
+        const point = next.edge.pointA.clone().lerp(next.edge.pointB, 0.5)
+        const distance = cost.distance + cost.point.distanceTo(point)
+        if (distance < (costs.get(next.node.boundary)?.distance ?? Number.POSITIVE_INFINITY)) {
+          costs.set(next.node.boundary, { distance, point })
+          if (!pending.includes(next.node.boundary)) {
+            pending.push(next.node.boundary)
+          }
+        }
+      }
+    }
+    return null
+  }
+  public tryNavigateTo(boundaryName: string, position: THREE.Vector3, direction: THREE.Vector3): { length: number } | null {
+    const length = this.routeLength(boundaryName, position)
+    if (length == null) {
+      return null
+    }
+    this.navigateTo(boundaryName, position, direction)
+    this.faceTowards(this._path?.destinations[0]?.edge.pointA.clone().lerp(this._path.destinations[0].edge.pointB, 0.5) ?? position)
+    if (!this._finishingPath) {
+      this._spline = null
+    }
+    return { length }
+  }
+  public faceTowards(point: THREE.Vector3): void {
+    const z = this.roi.position.clone().sub(point).normalize()
+    if (z.lengthSq() < 0.0001) {
+      return
+    }
+    const x = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), z).normalize()
+    const y = new THREE.Vector3().crossVectors(z, x).normalize()
+    this.roi.moveRoiTo(this.roi.position, new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z)))
+  }
+  protected clearPath(): void {
+    this._path = null
+    this._finishingPath = false
+    this._destination = null
+    this._spline = null
+  }
+  public get hasArrived(): boolean {
+    return !this.isFollowingPath && this._destination == null
   }
 
   protected chooseEdge(edges: Edge[]): Edge | undefined {

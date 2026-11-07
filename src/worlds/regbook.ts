@@ -111,7 +111,8 @@ export class Name {
       if (n < this._name.length && this._name[n] !== ' ') {
         const texture = letterTextures.get(this._name[n])
         if (texture == null) {
-          throw new Error(`Unknown texture for char '${this._name[n]}'`)
+          this._letters[n].visible = false
+          continue
         }
         this._letters[n].material.map = texture
         this._letters[n].visible = true

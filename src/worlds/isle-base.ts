@@ -8,7 +8,23 @@ import { NoPizaz_Texture, NoPizza_Texture } from '../actions/isle'
 import { Jsuser_Model } from '../actions/jetski'
 import { Rcuser_Model } from '../actions/racecar'
 import { act1State } from '../lib/act1-state'
-import { type ActionBase, type ActorAction, type AnimationAction, type EntityAction, getExtraValue, isActorAction, isAnimationAction, isBoundaryAction, isEntityAction, isPositionalAudioAction, isRunAnimationAction, type ModelAction, type RunAnimationAction, type SerialAction } from '../lib/action-types'
+import {
+  type ActionBase,
+  type ActorAction,
+  type AnimationAction,
+  type EntityAction,
+  getExtraValue,
+  isActorAction,
+  isAnimationAction,
+  isBoundaryAction,
+  isEntityAction,
+  isPositionalAudioAction,
+  isRunAnimationAction,
+  type ModelAction,
+  type ParallelAction,
+  type RunAnimationAction,
+  type SerialAction,
+} from '../lib/action-types'
 import { type Boundary, type Edge, getBoundaries } from '../lib/assets/boundary'
 import { type DTA, type DtaWorldName, loadAnimationInfoFromDTA } from '../lib/assets/dta'
 import { manager } from '../lib/assets/load'
@@ -173,7 +189,7 @@ export abstract class IsleBase extends World {
     this._dtaWorldName = dtaWorldName ?? null
   }
 
-  protected async handleStartUpAction(action: SerialAction<ActionBase>, cb: ((child: ActionBase) => Promise<boolean>) | null = null): Promise<void> {
+  protected async handleStartUpAction(action: SerialAction<ActionBase> | ParallelAction<ActionBase>, cb: ((child: ActionBase) => Promise<boolean>) | null = null): Promise<void> {
     for (const child of action.children) {
       if (cb != null && (await cb(child))) {
         continue
@@ -600,7 +616,7 @@ export abstract class IsleBase extends World {
   }
 
   protected override onAnimationCharactersFinished(names: readonly string[], managed: boolean): void {
-    if (managed) {
+    if (managed && this.allowExtras) {
       this.extras.adoptCharacters(names)
     }
   }
@@ -658,6 +674,11 @@ export abstract class IsleBase extends World {
             new THREE.QuaternionKeyframeTrack('camera.quaternion', [0, 1], [this.camera.quaternion.x, this.camera.quaternion.y, this.camera.quaternion.z, this.camera.quaternion.w, quaternion.x, quaternion.y, quaternion.z, quaternion.w]),
           ]
         })()
+    if ((this.name === 'act2' || this.name === 'act3') && !(await this.wait(750))) {
+      finish()
+      this._cameraAnimationPlaying = false
+      return
+    }
     return this.playAnimation(action, {
       managed: true,
       anchorRoi,
@@ -850,6 +871,21 @@ export abstract class IsleBase extends World {
       case 'Act2PoliceStation':
         entity = new (await import('../lib/world/entities/act2-police')).Act2Police(model)
         break
+      case 'Helicopter':
+        actor = new (await import('../lib/world/actors/helicopter')).Helicopter(model, this)
+        break
+      case 'Act3Actor':
+        actor = new (await import('../lib/world/actors/act3actor')).Act3Actor(model, this)
+        break
+      case 'Act3Cop':
+        actor = new (await import('../lib/world/actors/act3cop')).Act3Cop(model, this)
+        break
+      case 'Act3Brickster':
+        actor = new (await import('../lib/world/actors/act3brickster')).Act3Brickster(model, this)
+        break
+      case 'Act3Shark':
+        actor = new (await import('../lib/world/actors/act3shark')).Act3Shark(model, this)
+        break
       case 'Act2Actor':
         actor = new (await import('../lib/world/actors/act2actor')).Act2Actor(model, this)
         break
@@ -882,7 +918,7 @@ export abstract class IsleBase extends World {
       if (actor == null) {
         throw new Error('Speed can only be used with actors')
       }
-      actor.speed = Number.parseInt(speed, 10)
+      actor.speed = Number.parseFloat(speed)
     }
 
     const animation = getExtraValue(action, 'Animation')
