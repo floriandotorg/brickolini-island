@@ -406,7 +406,7 @@ export class InfoMain extends World {
   }
 
   private placeCharacterFrame(): void {
-    if (engine.currentSaveGame.act !== 1) {
+    if (engine.currentSaveGame.act !== 1 || engine.debugActor != null) {
       this._characterFrame.visible = false
       return
     }

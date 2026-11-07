@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { Water } from 'three/addons/objects/Water.js'
 import type { ModelAction } from '../action-types'
+import { islandModelName, lodIndex } from '../model-quality'
 import { getSettings } from '../settings'
 import type { Actor } from '../world/actor'
 import { BinaryReader } from './binary-reader'
@@ -10,12 +11,53 @@ import { WDB } from './wdb'
 
 let wdb: WDB.File | null = null
 
-const createdMeshes: {
-  meshes: THREE.Mesh[]
-  lod: WDB.Lod
-  texture: string | THREE.Texture | null
-  customColor: WDB.Color | null
-}[] = []
+type CreatedMeshes = { meshes: THREE.Mesh[]; lod: WDB.Lod; texture: string | THREE.Texture | null; customColor: WDB.Color | null; type: 'model' | 'part' }
+const createdMeshes: CreatedMeshes[] = []
+const modelLods = new Map<RoiModel, { lods: readonly WDB.Lod[]; entry: CreatedMeshes }>()
+let maximumLod: number | null = null
+const selectLod = (lods: readonly WDB.Lod[]): WDB.Lod | undefined => lods[lodIndex(lods.length, maximumLod, getSettings().islandQuality)]
+const trackLods = (model: RoiModel, lods: readonly WDB.Lod[], entry: CreatedMeshes): void => {
+  createdMeshes.push(entry)
+  modelLods.set(model, { lods, entry })
+}
+export const setMaximumLod = (maximum: number): void => {
+  maximumLod = maximum
+  for (const [model, { lods, entry }] of modelLods) {
+    const lod = selectLod(lods)
+    if (lod == null || lod === entry.lod || model.children.some(child => child instanceof Water)) {
+      continue
+    }
+    const meshes = createGeometryAndMaterials(lod, entry.customColor, entry.texture, entry.type).map(([geometry, material], n) => {
+      const mesh = new THREE.Mesh(geometry, material)
+      mesh.name = `${model.name}-${n + 1}`
+      mesh.castShadow = getSettings().graphics.shadows
+      mesh.receiveShadow = mesh.castShadow
+      return mesh
+    })
+    model.remove(...entry.meshes)
+    model.add(...meshes)
+    const children = [...model.children]
+    model.children.splice(0, model.children.length, ...meshes, ...children.filter(child => !meshes.some(mesh => mesh === child)))
+    entry.meshes = meshes
+    entry.lod = lod
+    model.offsetIndex = lod.meshesBeforeOffset.length
+  }
+}
+export const forgetModelLods = (object: THREE.Object3D): void => {
+  object.traverse(child => {
+    if (!(child instanceof RoiModel)) {
+      return
+    }
+    const definition = modelLods.get(child)
+    if (definition != null) {
+      modelLods.delete(child)
+      const index = createdMeshes.indexOf(definition.entry)
+      if (index >= 0) {
+        createdMeshes.splice(index, 1)
+      }
+    }
+  })
+}
 
 if (import.meta.hot) {
   import.meta.hot.accept('./mesh', newModule => {
@@ -23,8 +65,8 @@ if (import.meta.hot) {
       return
     }
 
-    for (const { meshes, lod, texture, customColor } of createdMeshes) {
-      const geometryAndMaterials = newModule.createGeometryAndMaterials(lod, customColor, texture, 'model')
+    for (const { meshes, lod, texture, customColor, type } of createdMeshes) {
+      const geometryAndMaterials = newModule.createGeometryAndMaterials(lod, customColor, texture, type)
       if (geometryAndMaterials.length !== meshes.length) {
         import.meta.hot?.invalidate()
         return
@@ -122,6 +164,10 @@ export class RoiModel extends THREE.Group {
       this.boundingSphere = object.boundingSphere.clone()
       this.boundingBox = object.boundingBox.clone()
       this._roi3d = null
+      const definition = modelLods.get(object)
+      if (definition != null) {
+        trackLods(this, definition.lods, { ...definition.entry, meshes: this.children.filter((child): child is THREE.Mesh => child instanceof THREE.Mesh) })
+      }
     }
     return this
   }
@@ -340,7 +386,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
         return null
     }
   })()
-  const lod = lods?.at(-1)
+  const lod = lods == null ? undefined : selectLod(lods)
   if (lod != null) {
     roiModel.offsetIndex = lod.meshesBeforeOffset.length
     const customColor: WDB.Color | null = colorFromName(roi.textureName)
@@ -382,7 +428,9 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
       roiModel.add(mesh)
       meshes.push(mesh)
     }
-    createdMeshes.push({ meshes, lod, texture: null, customColor })
+    if (lods != null) {
+      trackLods(roiModel, lods, { meshes, lod, texture: null, customColor, type: 'model' })
+    }
     roiModel.hasLod = lod != null
   }
 
@@ -409,8 +457,12 @@ export const getWorld = async (name: WdbWorldName): Promise<THREE.Group> => {
   }
   const group = new THREE.Group()
   group.name = `${name.toLowerCase()}_world`
+  const island = islandModelName(
+    world.models.map(model => model.roi.name),
+    getSettings().islandQuality,
+  )
   for (const model of world.models) {
-    if (model.roi.name.toLowerCase() === 'isle' || model.roi.name.toLowerCase() === 'isle_lo') {
+    if (['isle', 'isle_lo', 'isle_hi'].includes(model.roi.name.toLowerCase()) && model.roi.name !== island) {
       continue
     }
 
@@ -419,7 +471,7 @@ export const getWorld = async (name: WdbWorldName): Promise<THREE.Group> => {
     const rootRoi = await roiToMesh(model.roi, world.parts, model.animation.tree)
     for (const roi of rootRoi.getAllModels()) {
       roi.applyMatrix4(matrix)
-      roi.visible = model.visible
+      roi.visible = model.roi.name === island || model.visible
     }
     group.add(...rootRoi.getAllModels())
   }
@@ -433,7 +485,7 @@ export const getWorld = async (name: WdbWorldName): Promise<THREE.Group> => {
 }
 
 const getPart = async (name: string, part: WDB.Part, color: WDB.Color | null, texture: string | THREE.Texture | null): Promise<Roi3D> => {
-  const lod = part.lods.at(-1)
+  const lod = selectLod(part.lods)
   if (!lod) {
     throw new Error(`Couldn't find lod and children for part ${name}`)
   }
@@ -462,7 +514,7 @@ const getPart = async (name: string, part: WDB.Part, color: WDB.Color | null, te
     }
   }
   result.model.boundingBox.getBoundingSphere(result.model.boundingSphere)
-  createdMeshes.push({ meshes, lod, texture, customColor: color })
+  trackLods(result.model, part.lods, { meshes, lod, texture, customColor: color, type: 'part' })
   return result
 }
 

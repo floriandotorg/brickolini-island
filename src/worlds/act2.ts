@@ -177,9 +177,7 @@ export class Act2 extends IsleBase {
         const info = this.animationInfos.find(info => info.objectId === action.id)
         const finish = info == null ? () => {} : this.ambient.begin(info)
         try {
-          if (await this.wait(750)) {
-            await this.playAnimation(action, { managed: true, capturesPlayer: info?.hasCameraAnimation ?? true, lockCamera: info?.hasCameraAnimation ?? true, location, rotation })
-          }
+          await this.playAnimation(action, { managed: true, transitionSounds: true, capturesPlayer: info?.hasCameraAnimation ?? true, lockCamera: info?.hasCameraAnimation ?? true, location, rotation })
         } finally {
           finish()
         }

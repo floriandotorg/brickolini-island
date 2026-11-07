@@ -26,6 +26,8 @@ export const ISLAND_BUILDINGS = [
 
 export const HOUSE_VARIANTS = ['haus1', 'haus4', 'haus5', 'haus6', 'haus7'] as const
 
+export const activeHouseVariant = (state: BuildingState): number => (getSettings().islandQuality === 'high' ? state.nextVariant : 0)
+
 export const defaultBuildingState = (): BuildingState => ({ nextVariant: 0, entries: ISLAND_BUILDINGS.map(() => ({ sound: 4, move: 0, mood: 1, counter: -1 })) })
 
 export class IslandBuildings {
@@ -46,8 +48,8 @@ export class IslandBuildings {
     for (let n = 0; n < HOUSE_VARIANTS.length; ++n) {
       const roi = this._world.findRoi(HOUSE_VARIANTS[n])
       if (roi != null) {
-        roi.visible = state.entries[12].counter !== 0 && n === state.nextVariant
-        roi.model.position.y = ISLAND_BUILDINGS[12].y
+        roi.visible = state.entries[12].counter !== 0 && n === activeHouseVariant(state)
+        roi.model.position.y = ISLAND_BUILDINGS[12].y - (state.entries[12].counter < 0 ? 0 : ISLAND_BUILDINGS[12].downshift - state.entries[12].counter)
       }
     }
   }
@@ -86,7 +88,7 @@ export class IslandBuildings {
     }
     save.buildings = state
     this.refresh()
-    const roi = this._world.findRoi(index === 12 ? HOUSE_VARIANTS[state.nextVariant] : info.name)
+    const roi = this._world.findRoi(index === 12 ? HOUSE_VARIANTS[activeHouseVariant(state)] : info.name)
     if (roi != null && !this._animating.has(index)) {
       this._animating.add(index)
       try {

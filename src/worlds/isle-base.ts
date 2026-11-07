@@ -12,10 +12,12 @@ import {
   type ActionBase,
   type ActorAction,
   type AnimationAction,
+  type AudioAction,
   type EntityAction,
   getExtraValue,
   isActorAction,
   isAnimationAction,
+  isAudioAction,
   isBoundaryAction,
   isEntityAction,
   isPositionalAudioAction,
@@ -122,6 +124,7 @@ export abstract class IsleBase extends World {
   private readonly _wdbWorldName: WdbWorldName | null
   private readonly _dtaWorldName: DtaWorldName | null
   private _currentVehicle: Vehicle | null = null
+  private readonly _transitionSounds = new Map<string, AudioAction>()
   private _cachedAnimations = new Map<string, AnimationAction>()
   protected _cameraAnimationPlaying = false
   protected _jukeboxEntity: import('../lib/world/entities/jukebox').JukeBoxEntity | null = null
@@ -201,6 +204,9 @@ export abstract class IsleBase extends World {
         await this.handleActorAction(child)
       } else if (isAnimationAction(child)) {
         this._cachedAnimations.set(child.name.toLowerCase(), child)
+      } else if (isAudioAction(child) && child.name.startsWith('TransitionSound')) {
+        this._transitionSounds.set(child.name, child)
+      } else if (child.name === 'SoundAndAnim') {
       } else if (child.presenter === 'LegoLoadCacheSoundPresenter' && isPositionalAudioAction(child)) {
         await this.cachePositionalAudio(child)
       } else {
@@ -371,9 +377,12 @@ export abstract class IsleBase extends World {
     }
 
     // spell-checker: ignore brdg jailbrdg racebrdg
-    for (const name of ['isle_hi', 'inf-brdg', 'jailbrdg', 'racebrdg']) {
+    for (const name of ['isle_hi', 'isle', 'isle_lo', 'inf-brdg', 'jailbrdg', 'racebrdg']) {
       const object = this.scene.getObjectByName(name)
       if (object == null || !(object instanceof THREE.Object3D)) {
+        continue
+      }
+      if (['isle_hi', 'isle', 'isle_lo'].includes(name) && !object.visible) {
         continue
       }
       this._groundGroup.push(object)
@@ -652,12 +661,32 @@ export abstract class IsleBase extends World {
     return this.playCameraAnimation(action, undefined, undefined, false, undefined, [], false)
   }
 
+  protected override playAnimationTransitionSound(kind: 'start' | 'end'): void {
+    const action = this._transitionSounds.get(kind === 'start' ? 'TransitionSound2' : 'TransitionSound1')
+    if (action != null && engine.hasWorld && engine.currentWorld === this) {
+      void this.playAudio(action, 'effects')
+    }
+  }
+  public async playDebugAnimation(action: RunAnimationAction, followCamera: boolean): Promise<void> {
+    if (followCamera) {
+      await this.playCameraAnimation(action, undefined, undefined, false, undefined, [], true, true)
+      return
+    }
+    const info = this.animationInfos.find(info => info.objectId === action.id)
+    const finish = info == null ? () => {} : this.ambient.begin(info)
+    try {
+      await this.playAnimation(action, { managed: true, ignoreCamera: true, transitionSounds: true })
+    } finally {
+      finish()
+    }
+  }
+
   public async getRunAnimation(id: number): Promise<RunAnimationAction | null> {
     const script = this.name === 'act2' ? await import('../actions/act2main') : this._dtaWorldName === 'ACT3' ? await import('../actions/act3') : await import('../actions/isle')
     return Object.values(script).find((action): action is RunAnimationAction => isRunAnimationAction(action) && action.id === id) ?? null
   }
 
-  public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location, lockOnly = false, anchorRoi?: Roi3D, holdManagedActorNames: readonly string[] = [], localActors = true): Promise<void> {
+  public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location, lockOnly = false, anchorRoi?: Roi3D, holdManagedActorNames: readonly string[] = [], localActors = true, transitionSounds = this.name === 'act2' || this.name === 'act3'): Promise<void> {
     if (animationInfo == null) {
       animationInfo = this.animationInfos.find(a => a.objectId === action.id)
       if (animationInfo == null) {
@@ -705,13 +734,9 @@ export abstract class IsleBase extends World {
             new THREE.QuaternionKeyframeTrack('camera.quaternion', [0, 1], [this.camera.quaternion.x, this.camera.quaternion.y, this.camera.quaternion.z, this.camera.quaternion.w, quaternion.x, quaternion.y, quaternion.z, quaternion.w]),
           ]
         })()
-    if ((this.name === 'act2' || this.name === 'act3') && !(await this.wait(750))) {
-      finish()
-      this._cameraAnimationPlaying = false
-      return
-    }
     return this.playAnimation(action, {
       managed: true,
+      transitionSounds,
       localActors,
       anchorRoi,
       holdManagedActorNames,

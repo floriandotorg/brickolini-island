@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import type { Boundary } from '../assets/boundary'
 import { damagedCounter, damagedHeight } from '../destruction-rules'
 import { engine } from '../engine'
-import { defaultBuildingState, HOUSE_VARIANTS, ISLAND_BUILDINGS } from './island-buildings'
+import { activeHouseVariant, defaultBuildingState, HOUSE_VARIANTS, ISLAND_BUILDINGS } from './island-buildings'
 import { Plants } from './plants'
 import type { World } from './world'
 
@@ -29,7 +29,7 @@ export class Destruction {
       return Plants.getPlacement(this._world, target.index)?.group ?? null
     }
     const state = engine.currentSaveGame.buildings ?? defaultBuildingState()
-    const name = target.index === 12 ? HOUSE_VARIANTS[state.nextVariant] : ISLAND_BUILDINGS[target.index].name
+    const name = target.index === 12 ? HOUSE_VARIANTS[activeHouseVariant(state)] : ISLAND_BUILDINGS[target.index].name
     return this._world.findRoi(name)?.model ?? null
   }
 

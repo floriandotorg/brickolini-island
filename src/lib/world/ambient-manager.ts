@@ -83,7 +83,7 @@ export class AmbientManager {
     if (location != null && (location.frequency === 0 || (location.animationPlayedAtLocation && location.frequency < Math.floor(Math.random() * 100)))) {
       return
     }
-    const info = selectLocationAnimation(this._world.animationInfos, locationIndex, engine.currentSaveGame.playerUnsafe, engine.currentPlayerMask)
+    const info = selectLocationAnimation(this._world.animationInfos, locationIndex, engine.currentCharacterName, engine.currentPlayerMask)
     if (info == null) {
       return
     }
@@ -132,7 +132,7 @@ export class AmbientManager {
         .filter(
           info =>
             info.active &&
-            !info.modelInfo.some(model => model.name.toLowerCase() === engine.currentSaveGame.playerUnsafe || (model.name.toLowerCase() === 'pep' && engine.currentSaveGame.playerUnsafe === 'pepper')) &&
+            !info.modelInfo.some(model => model.name.toLowerCase() === engine.currentCharacterName || (model.name.toLowerCase() === 'pep' && engine.currentCharacterName === 'pepper')) &&
             (info.actorMask & engine.currentPlayerMask) !== 0 &&
             info.name.slice(-2).toLowerCase() === name &&
             (vehicle == null || slot.riding === info.modelInfo.some(model => model.canBeIndexed !== 0 && extraVehicles.some(vehicleName => vehicleName === model.name.toLowerCase()) && model.name.toLowerCase() === vehicle)),

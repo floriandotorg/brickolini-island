@@ -5,7 +5,7 @@ import { type ManagedAnimation, skipDecision } from '../animation-skip.ts'
 import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, findRecursively, getBeforeAndAfter, getTransformsAtTime, parse3DAnimation } from '../assets/animation'
 import type { Audio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
-import { calculateTransformationMatrix, getGlobalPart, Roi3D, RoiModel } from '../assets/model'
+import { calculateTransformationMatrix, forgetModelLods, getGlobalPart, Roi3D, RoiModel } from '../assets/model'
 import type { SpawnLocation } from '../assets/spawn-location'
 import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
@@ -313,6 +313,21 @@ export abstract class World {
   public releaseActor(name: string): void {
     if (isCharacterName(name)) {
       this._characters.release(name)
+    }
+  }
+
+  public async playAudio(action: AudioAction, audioType: AudioType): Promise<void> {
+    const audio = await engine.playAudio(action, audioType)
+    if (!engine.hasWorld || engine.currentWorld !== this) {
+      audio.stop()
+      return
+    }
+    this._runningAudios.push(audio)
+    audio.onEnded = () => {
+      const index = this._runningAudios.indexOf(audio)
+      if (index >= 0) {
+        this._runningAudios.splice(index, 1)
+      }
     }
   }
 
@@ -731,11 +746,15 @@ export abstract class World {
       holdManagedActorNames,
       anchorRoi,
       managed = false,
+      transitionSounds = false,
+      ignoreCamera = false,
       localActors = true,
       capturesPlayer = false,
       animationLocation = -1,
     }: {
       managed?: boolean
+      transitionSounds?: boolean
+      ignoreCamera?: boolean
       localActors?: boolean
       capturesPlayer?: boolean
       animationLocation?: number
@@ -780,7 +799,12 @@ export abstract class World {
         this._pendingActions.finish(pending)
         throw error
       })
-      if (signal?.aborted || pending.cancelled) {
+      let transitionCompleted = true
+      if (transitionSounds && !pending.cancelled && !signal?.aborted) {
+        this.playAnimationTransitionSound('start')
+        transitionCompleted = await this.wait(750)
+      }
+      if (signal?.aborted || pending.cancelled || !transitionCompleted) {
         for (const name of managedActorNames) {
           this.releaseActor(name)
         }
@@ -795,7 +819,9 @@ export abstract class World {
       const collisionCenter = new THREE.Vector3(...animation.center).add(builtLocation)
       const collisionRadius = animation.radius
 
-      this.setupCameraForAnimation(animation.tree)
+      if (!ignoreCamera) {
+        this.setupCameraForAnimation(animation.tree)
+      }
 
       const nonPositionalAudios = await Promise.all(audioActions.map(audio => engine.playAudio(audio, 'animations')))
 
@@ -825,11 +851,11 @@ export abstract class World {
       this._pendingActions.finish(pending)
       const sentinel = audioActions.length > 0 || audios.length > 0 ? engine.lowerBackgroundMusic() : null
 
-      const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
+      const clip = new THREE.AnimationClip(animation.tree.name, -1, ignoreCamera ? tracks.filter(track => !track.name.startsWith('camera.')) : tracks)
       await this.playAnimationClip(this.scene, clip, {
         audios,
         nonPositionalAudios,
-        lookAtKeys,
+        lookAtKeys: ignoreCamera ? undefined : lookAtKeys,
         faceAnimations,
         pointAtCameraObjects,
         roisToHideOnStop,
@@ -854,13 +880,16 @@ export abstract class World {
             }
           }
           this.onAnimationCharactersFinished(managedActorNames, managed, localActors)
+          if (transitionSounds) {
+            this.playAnimationTransitionSound('end')
+          }
         },
         onRelease: () => {
           if (sentinel != null) {
             engine.raiseBackgroundMusic(sentinel)
           }
         },
-        metadata: { managed, capturesPlayer, location: animationLocation, hasCameraTrack: animation.cameraAnimation != null, released: false },
+        metadata: { managed, capturesPlayer, location: animationLocation, hasCameraTrack: !ignoreCamera && animation.cameraAnimation != null, released: false },
       })
       if (sentinel != null) {
         engine.raiseBackgroundMusic(sentinel)
@@ -869,6 +898,8 @@ export abstract class World {
       this._pendingActions.finish(pending)
     }
   }
+
+  protected playAnimationTransitionSound(_kind: 'start' | 'end'): void {}
 
   protected onAnimationCharactersFinished(_names: readonly string[], _managed: boolean, _localActors: boolean): void {}
 
@@ -981,6 +1012,7 @@ export abstract class World {
   public removeFromParents(objects: THREE.Object3D | THREE.Object3D[]): void {
     for (const object of Array.isArray(objects) ? objects : [objects]) {
       this._clickListeners.delete(object)
+      forgetModelLods(object)
       object.removeFromParent()
     }
   }
@@ -1093,7 +1125,7 @@ export abstract class World {
 
     const saveGame = engine.currentSaveGame
     this._debugSaveGame.textContent = saveGame.name
-    this._debugPlayer.textContent = saveGame.playerUnsafe ?? '—'
+    this._debugPlayer.textContent = engine.debugActor ?? saveGame.playerUnsafe ?? ''
   }
 
   protected update(delta: number): void {
@@ -1235,6 +1267,7 @@ export abstract class World {
     this._clickListeners.clear()
     this._characters.clear()
     this.soundCache.dispose()
+    forgetModelLods(this.scene)
     this.scene.clear()
   }
 

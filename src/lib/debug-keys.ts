@@ -1,6 +1,6 @@
 import * as THREE from 'three'
-import { isAnimationAction, isNestedAnimationAction, isRunAnimationAction } from './action-types'
-import { calculateTransformationMatrix } from './assets/model'
+import { isAnimationAction, isModelAction, isNestedAnimationAction, isRunAnimationAction } from './action-types'
+import { calculateTransformationMatrix, getModel, setMaximumLod } from './assets/model'
 import { engine } from './engine'
 import { locations } from './locations'
 import { PlayerCharacters } from './save-game'
@@ -14,6 +14,7 @@ let digits = ''
 let followCamera = false
 let fps: HTMLDivElement | null = null
 let resetPlants = false
+let lastAnimationId = -1
 
 const playAction = async (script: string, id: number): Promise<void> => {
   const world = engine.currentWorld
@@ -22,12 +23,23 @@ const playAction = async (script: string, id: number): Promise<void> => {
     return
   }
   const actions = await load()
-  const action = Object.values(actions).find(action => (isRunAnimationAction(action) || isAnimationAction(action) || isNestedAnimationAction(action)) && action.id === id)
+  const action = Object.values(actions).find(action => (isRunAnimationAction(action) || isAnimationAction(action) || isNestedAnimationAction(action) || isModelAction(action)) && action.id === id)
   if (world !== engine.currentWorld) {
     return
   }
-  if (isRunAnimationAction(action) && followCamera && 'playCameraAnimation' in world && typeof world.playCameraAnimation === 'function') {
-    await world.playCameraAnimation(action)
+  if (isModelAction(action)) {
+    const roi = await getModel(action)
+    if (world !== engine.currentWorld) {
+      world.removeFromParents(roi.getAllModels())
+      return
+    }
+    world.scene.add(...roi.getAllModels())
+    const transform = calculateTransformationMatrix([-action.location[0], action.location[1], action.location[2]], [-action.direction[0], action.direction[1], action.direction[2]], [-action.up[0], action.up[1], action.up[2]])
+    transform.decompose(roi.model.position, roi.model.quaternion, roi.model.scale)
+    world.onDeactivate(() => world.removeFromParents(roi.getAllModels()))
+  } else if (isRunAnimationAction(action) && 'playDebugAnimation' in world && typeof world.playDebugAnimation === 'function') {
+    lastAnimationId = id
+    await world.playDebugAnimation(action, followCamera)
   } else if (isRunAnimationAction(action) || isAnimationAction(action) || isNestedAnimationAction(action)) {
     await world.playAnimation(action)
   }
@@ -107,6 +119,16 @@ export const handleDebugKey = (code: string): boolean => {
     digits = ''
     return true
   }
+  if (code === 'KeyA' && command === 'animation' && 'animationInfos' in world && Array.isArray(world.animationInfos)) {
+    const ids: number[] = world.animationInfos.flatMap((entry: unknown) => (entry != null && typeof entry === 'object' && 'objectId' in entry && typeof entry.objectId === 'number' ? [entry.objectId] : []))
+    const id = ids.find(id => id > lastAnimationId) ?? ids[0]
+    command = null
+    digits = ''
+    if (id != null) {
+      void playAction(world.name === 'act1' ? 'isle' : world.name === 'act2' ? 'act2main' : world.name, id)
+    }
+    return true
+  }
   digits = ''
   if (code === 'KeyC' || code === 'KeyV' || code === 'KeyG' || code === 'KeyL') {
     command = code === 'KeyC' ? 'location' : code === 'KeyV' ? 'animation' : code === 'KeyG' ? 'act' : 'light'
@@ -134,6 +156,10 @@ export const handleDebugKey = (code: string): boolean => {
     camera.rotateZ(code === 'KeyJ' ? Math.PI / 12 : -Math.PI / 12)
     return true
   }
+  if (code === 'KeyF' || code === 'KeyH' || code === 'KeyX') {
+    setMaximumLod(code === 'KeyF' ? 0 : code === 'KeyH' ? 5 : 3.6)
+    return true
+  }
   if (code === 'KeyN') {
     world.render3d = !world.render3d
     return true
@@ -147,7 +173,12 @@ export const handleDebugKey = (code: string): boolean => {
     engine.currentSaveGame.dirty = !engine.currentSaveGame.dirty
     return true
   }
+  if (code === 'NumpadDivide') {
+    engine.debugActor = 'brickstr'
+    return true
+  }
   if (code === 'NumpadMultiply') {
+    engine.debugActor = null
     const current = engine.currentSaveGame.playerUnsafe
     const index = current == null ? -1 : PlayerCharacters.indexOf(current)
     engine.currentSaveGame.player = PlayerCharacters[(index + 1) % PlayerCharacters.length]

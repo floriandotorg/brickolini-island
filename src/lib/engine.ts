@@ -136,6 +136,10 @@ const createNormalizedMouseEvent = (event: MouseEvent, canvas: HTMLCanvasElement
 }
 
 class Engine {
+  public debugActor: 'brickstr' | null = null
+  public get currentCharacterName(): string | null {
+    return this.debugActor ?? this.currentSaveGame.playerUnsafe
+  }
   private _state: 'cutscene' | 'transition' | 'game' = 'game'
   private _timer = new THREE.Timer()
   private _cutsceneVideo: HTMLVideoElement
@@ -188,6 +192,9 @@ class Engine {
   }
 
   public get currentPlayerId(): number {
+    if (this.debugActor === 'brickstr') {
+      return 6
+    }
     switch (this.currentSaveGame.playerUnsafe) {
       case null:
         return 0
@@ -212,6 +219,7 @@ class Engine {
   }
 
   public loadSaveGame(name: string): void {
+    this.debugActor = null
     const save = SaveGame.create(name)
     getScoreHistory().update(this._currentSaveGame)
     const index = this.playerDirectory.find(name)

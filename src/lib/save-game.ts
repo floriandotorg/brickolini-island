@@ -5,7 +5,7 @@ import { type ScoreColor, type ScoreMission, scoreColorValue } from './score.ts'
 import { getScoreHistory } from './score-history.ts'
 import { type VehicleType, VehicleTypes } from './vehicle-types.ts'
 
-export const PlayerCharacters = ['pepper', 'papa', 'mama', 'nick', 'laura'] as const
+export const PlayerCharacters = ['pepper', 'mama', 'papa', 'nick', 'laura'] as const
 export type PlayerCharacter = (typeof PlayerCharacters)[number]
 export const isPlayerCharacter = (value: string): value is PlayerCharacter => PlayerCharacters.some(player => player === value)
 

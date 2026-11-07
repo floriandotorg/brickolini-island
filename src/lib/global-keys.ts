@@ -1,4 +1,4 @@
-import { Vector3 } from 'three'
+import { Quaternion, Vector3 } from 'three'
 import { handleDebugKey } from './debug-keys.ts'
 import { engine } from './engine'
 import { infocenterState } from './session-state.ts'
@@ -32,10 +32,10 @@ const spawnCharacter = async (forward: boolean): Promise<void> => {
       return
     }
     const direction = world.camera.getWorldDirection(new Vector3())
-    character.model.position.copy(world.camera.position).add(direction.multiplyScalar(2))
-    character.model.position.y = world.camera.position.y + direction.y / 2 - 1
-    character.model.quaternion.copy(world.camera.quaternion)
-    character.model.rotateY(Math.PI)
+    const position = world.camera.position.clone().add(new Vector3(2 * direction.x, direction.y - 1, 2 * direction.z))
+    const quaternion = world.camera.quaternion.clone().multiply(new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI))
+    character.moveRoiTo(position, quaternion)
+    character.visible = true
     spawned = { world, name }
   } finally {
     spawning = false

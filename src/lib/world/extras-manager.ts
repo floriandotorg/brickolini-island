@@ -204,7 +204,7 @@ export class ExtrasManager {
       const id = (anim.extraCharacterId + n + 1) % extraCharacters.length
       const character = extraCharacters[id]
       const active = this._world.animationInfos.some(info => info.location === -1 && info.modelInfo.some(model => model.name.slice(0, 2).toLowerCase() === character.name.slice(0, 2)))
-      if (active !== wantActive || !character.canSpawnAsExtra || !this._enabled.has(character.name) || character.name === engine.currentSaveGame.playerUnsafe || this._world.characterExists(character.name)) {
+      if (active !== wantActive || !character.canSpawnAsExtra || !this._enabled.has(character.name) || character.name === engine.currentCharacterName || this._world.characterExists(character.name)) {
         continue
       }
       this._adding = true

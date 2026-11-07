@@ -33,7 +33,7 @@ export class Isle extends IsleBase {
 
     await this.handleStartUpAction(_Isle)
 
-    const isle = this.scene.getObjectByName('isle_hi')
+    const isle = this.worldGroup.children.find(object => ['isle_hi', 'isle', 'isle_lo'].includes(object.name) && object.visible)
     if (isle == null || !(isle instanceof THREE.Object3D)) {
       throw new Error('Isle mesh not found')
     }
