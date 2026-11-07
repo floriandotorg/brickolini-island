@@ -174,7 +174,15 @@ export class Act2 extends IsleBase {
       if (location == null) {
         await this.playCameraAnimation(action)
       } else {
-        await this.playAnimation(action, { managed: true, capturesPlayer: true, lockCamera: true, location, rotation })
+        const info = this.animationInfos.find(info => info.objectId === action.id)
+        const finish = info == null ? () => {} : this.ambient.begin(info)
+        try {
+          if (await this.wait(750)) {
+            await this.playAnimation(action, { managed: true, capturesPlayer: info?.hasCameraAnimation ?? true, lockCamera: info?.hasCameraAnimation ?? true, location, rotation })
+          }
+        } finally {
+          finish()
+        }
       }
     } finally {
       if (generation === this._generation && this._enabled) {

@@ -137,3 +137,17 @@ test('save data validates corruption, migrates ambulance scores, and isolates pl
   assert.equal(store.getItem('scoreHistory'), historyBeforeDelete)
   assert.notEqual(store.getItem('saves.SECOND.playerId'), null)
 })
+
+test('corrupt customization indexes fall back before loading meshes', async () => {
+  const store = storage()
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: store })
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { location: { search: '' } } })
+  const { SaveGame } = await import('../src/lib/save-game.ts')
+  const save = SaveGame.create('BOUNDS')
+  save.setCharacterVariant('nick', { sound: 0, move: 0, mood: 0, hatPart: -1, hatColor: 0, torsoColor: 0, armLeftColor: 0, armRightColor: 0, legLeftColor: 0, legRightColor: 0 })
+  assert.equal(save.getCharacterVariant('nick'), null)
+  save.buildings = { nextVariant: 90, entries: Array.from({ length: 16 }, () => ({ sound: 4, move: 0, mood: 1, counter: -1 })) }
+  assert.equal(save.buildings, null)
+  save.plants = Array.from({ length: 81 }, () => ({ variant: 0, color: 0, sound: 0, move: 0, mood: 0, counter: -2 }))
+  assert.equal(save.plants, null)
+})

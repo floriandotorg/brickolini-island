@@ -124,7 +124,7 @@ export class ExtrasManager {
     this.slots[index] = null
   }
 
-  private _offscreenPlacement(): { boundary: Boundary; src: number; srcScale: number; dest: number; destScale: number } | null {
+  private _offscreenPlacement(mode: number, bothEdgesHidden: boolean): { boundary: Boundary; src: number; srcScale: number; dest: number; destScale: number } | null {
     const start = this._world.boundaryManager.getBoundaryFromPosition(this._world.camera.position)
     if (start == null) {
       return null
@@ -141,10 +141,14 @@ export class ExtrasManager {
       return null
     }
     const scale = 0.25 + Math.random() * 0.5
-    const clockwise = Math.random() < 0.5
+    const clockwise = mode === 1
     for (let n = 0; n < 12; ++n) {
       const position = candidate.getCWVertex(boundary).clone().lerp(candidate.getCCWVertex(boundary), scale)
-      if (candidate.isTraversableIntoFaceWithMask(boundary, 1) && !this._world.isBoxInFrustum(new THREE.Box3().setFromCenterAndSize(position, new THREE.Vector3(2, 2, 2)))) {
+      if (
+        candidate.isTraversableIntoFaceWithMask(boundary, 1) &&
+        !this._world.isBoxInFrustum(new THREE.Box3().setFromCenterAndSize(position, new THREE.Vector3(2, 2, 2))) &&
+        (!bothEdgesHidden || !this._world.isBoxInFrustum(new THREE.Box3().setFromCenterAndSize(previous.getCWVertex(boundary).clone().lerp(previous.getCCWVertex(boundary), scale), new THREE.Vector3(2, 2, 2))))
+      ) {
         return { boundary, src: boundary.edges.indexOf(candidate), srcScale: scale, dest: boundary.edges.indexOf(previous), destScale: scale }
       }
       const neighbor: Boundary | undefined = candidate.faceA === boundary ? candidate.faceB : candidate.faceA
@@ -173,7 +177,8 @@ export class ExtrasManager {
       return
     }
     this.purge(false)
-    let placement = this._offscreenPlacement()
+    const mode = Math.random() < 0.5 ? 1 : 2
+    let placement = location < 0 ? this._offscreenPlacement(mode, this._selector % 4 === 1) : null
     if (location >= 0) {
       const loc = locations[location]
       placement = null
@@ -194,11 +199,11 @@ export class ExtrasManager {
       return
     }
     const anim = engine.currentSaveGame.anim
+    const wantActive = (location < 0 && this._selector % 4 >= 2) || Math.random() < 0.5
     for (let n = 0; n < extraCharacters.length; ++n) {
       const id = (anim.extraCharacterId + n + 1) % extraCharacters.length
       const character = extraCharacters[id]
       const active = this._world.animationInfos.some(info => info.location === -1 && info.modelInfo.some(model => model.name.slice(0, 2).toLowerCase() === character.name.slice(0, 2)))
-      const wantActive = location < 0 && this._selector % 4 >= 2
       if (active !== wantActive || !character.canSpawnAsExtra || !this._enabled.has(character.name) || character.name === engine.currentSaveGame.playerUnsafe || this._world.characterExists(character.name)) {
         continue
       }
@@ -207,7 +212,7 @@ export class ExtrasManager {
         if (this._selector % 4 === 1) {
           placement = { ...placement, src: placement.dest, srcScale: placement.destScale, dest: placement.src, destScale: placement.srcScale }
         }
-        await this._place(index, id, placement, false)
+        await this._place(index, id, placement, false, -1, this._selector % 4 === 0 ? (mode === 1 ? 2 : 1) : mode)
         ++this._selector
         engine.currentSaveGame.anim = { ...anim, extraCharacterId: id }
       } finally {
@@ -217,13 +222,13 @@ export class ExtrasManager {
     }
   }
 
-  private async _place(index: number, id: number, placement: { boundary: Boundary; src: number; srcScale: number; dest: number; destScale: number }, scripted: boolean, speed = -1): Promise<void> {
+  private async _place(index: number, id: number, placement: { boundary: Boundary; src: number; srcScale: number; dest: number; destScale: number }, scripted: boolean, speed = -1, mode?: number): Promise<void> {
     this._remove(index)
     const character = extraCharacters[id]
     const roi = await this._world.getCharacter(character.name)
     roi.visible = false
     const actor = new ExtraActor(roi, this._world)
-    actor.walkingMode = Math.random() < 0.5 ? 1 : 2
+    actor.walkingMode = mode ?? (Math.random() < 0.5 ? 1 : 2)
     const data = placement.boundary.getActorPlacement(placement.src, placement.srcScale, placement.dest, placement.destScale)
     const position = new THREE.Vector3()
     const quaternion = new THREE.Quaternion()

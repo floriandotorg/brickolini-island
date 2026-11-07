@@ -426,7 +426,7 @@ export abstract class IsleBase extends World {
 
     const noPizzaSign = this.scene.getObjectByName('nopizza')?.children[0]
     if (noPizzaSign instanceof THREE.Mesh) {
-      noPizzaSign.material.map = engine.currentSaveGame.player === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
+      noPizzaSign.material.map = engine.currentSaveGame.playerUnsafe === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
     }
   }
 

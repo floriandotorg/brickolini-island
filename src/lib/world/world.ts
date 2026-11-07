@@ -11,9 +11,11 @@ import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
 import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
 import { PendingActions } from '../pending-actions'
+import { ReferenceCache } from '../reference-cache'
 import { Actor, ColliderType } from './actor'
+import { ExtraActor } from './actors/extra-actor'
 import { BoundaryManager } from './boundary-manager'
-import { Character, type CharacterName } from './character'
+import { Character, type CharacterName, isCharacterName } from './character'
 import { CollisionResolver, type SphereCollider } from './collision'
 import type { PlayerMovement } from './player-movement'
 
@@ -138,7 +140,11 @@ export abstract class World {
   }
 
   private _runningAudios: Audio[] = []
-  private _characters = new Map<string, { character: Character; refCount: number }>()
+  private readonly _characters = new ReferenceCache<CharacterName, Character>(
+    name => Character.create(this, name),
+    character => this.scene.add(character.model),
+    character => this.removeFromParents(character.getAllModels()),
+  )
   private _worldGroup: THREE.Group | null = null
   private _boundaryManager = new BoundaryManager(this)
 
@@ -272,15 +278,7 @@ export abstract class World {
   }
 
   public async getCharacter(name: CharacterName): Promise<Character> {
-    const existing = this._characters.get(name)
-    if (existing != null) {
-      ++existing.refCount
-      return existing.character
-    }
-    const actor = await Character.create(this, name)
-    this._characters.set(name, { character: actor, refCount: 1 })
-    this.scene.add(actor.model)
-    return actor
+    return this._characters.acquire(name)
   }
 
   public resumeHeldActor(name: string): void {
@@ -296,11 +294,11 @@ export abstract class World {
   }
 
   public characterExists(name: string): boolean {
-    return this._characters.has(name)
+    return isCharacterName(name) && this._characters.has(name)
   }
 
   public characterRefCount(name: string): number {
-    return this._characters.get(name)?.refCount ?? 0
+    return isCharacterName(name) ? this._characters.refCount(name) : 0
   }
 
   public isBoxInFrustum(box: THREE.Box3): boolean {
@@ -313,26 +311,8 @@ export abstract class World {
   }
 
   public releaseActor(name: string): void {
-    const entry = this._characters.get(name)
-    if (entry == null) {
-      throw new Error(`Trying to release an actor that was already released: ${name}`)
-    }
-
-    --entry.refCount
-    if (entry.refCount <= 0) {
-      entry.character.model.removeFromParent()
-      this._characters.delete(name)
-    }
-  }
-
-  public async playAudio(action: AudioAction, audioType: AudioType): Promise<void> {
-    const audio = await engine.playAudio(action, audioType)
-    this._runningAudios.push(audio)
-    audio.onEnded = () => {
-      const index = this._runningAudios.indexOf(audio)
-      if (index >= 0) {
-        this._runningAudios.splice(index, 1)
-      }
+    if (isCharacterName(name)) {
+      this._characters.release(name)
     }
   }
 
@@ -391,7 +371,6 @@ export abstract class World {
         actor.update(delta)
         continue
       }
-      const actorQuaternion = actor.roi.getWorldQuaternion()
       const result = actor.update(delta)
       if (result == null) {
         continue
@@ -399,6 +378,10 @@ export abstract class World {
       const { from: actorFrom, to: actorTo } = result
       const moverRadius = actor.roi.model.getWorldBoundingSphere().radius
       let collided = this._checkAnimatedCollisions(actorFrom, actorTo, actor.roi, moverRadius)
+      if (!collided && actor instanceof ExtraActor && actorFrom.distanceToSquared(actorTo) > 0.001 && actor.blocksPlayer(actorFrom, actorTo)) {
+        actor.onCollision(null, true)
+        collided = true
+      }
       if (!collided) {
         const moverCollideBox = actor.colliderType === ColliderType.Box
         for (const other of this._actors) {
@@ -412,7 +395,7 @@ export abstract class World {
         }
       }
       if (collided) {
-        actor.roi.moveRoiTo(actorFrom, actorQuaternion)
+        actor.roi.moveRoiTo(actorFrom)
         this.boundaryManager.update(actorFrom, actorFrom, actor.roi)
         continue
       }

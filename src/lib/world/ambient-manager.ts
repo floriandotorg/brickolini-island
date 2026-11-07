@@ -132,6 +132,7 @@ export class AmbientManager {
         .filter(
           info =>
             info.active &&
+            !info.modelInfo.some(model => model.name.toLowerCase() === engine.currentSaveGame.playerUnsafe || (model.name.toLowerCase() === 'pep' && engine.currentSaveGame.playerUnsafe === 'pepper')) &&
             (info.actorMask & engine.currentPlayerMask) !== 0 &&
             info.name.slice(-2).toLowerCase() === name &&
             (vehicle == null || slot.riding === info.modelInfo.some(model => model.canBeIndexed !== 0 && extraVehicles.some(vehicleName => vehicleName === model.name.toLowerCase()) && model.name.toLowerCase() === vehicle)),

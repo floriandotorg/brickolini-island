@@ -1448,6 +1448,7 @@ export const ACTORS: {
 }
 
 export type CharacterName = keyof typeof ACTORS
+export const isCharacterName = (name: string): name is CharacterName => Object.hasOwn(ACTORS, name)
 
 // spellchecker: enable
 

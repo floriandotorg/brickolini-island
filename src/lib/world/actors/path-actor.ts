@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import type { Boundary, Edge } from '../../assets/boundary'
+import { pathFraction } from '../../walking-policy'
 import { Actor } from '../actor'
 import type { BoundaryGraphNode } from '../boundary-manager'
 
@@ -291,6 +292,10 @@ export class PathActor extends Actor {
     }
   }
 
+  protected get useArcLength(): boolean {
+    return true
+  }
+
   public override update(delta: number): { from: THREE.Vector3; to: THREE.Vector3 } {
     super.update(delta)
 
@@ -306,19 +311,19 @@ export class PathActor extends Actor {
       this._distanceTraveled = 0
     }
 
-    this._distanceTraveled += (delta * this._speed) / Math.max(0.001, this._spline.getLength())
+    this._distanceTraveled = pathFraction(this._distanceTraveled, delta, this._speed, this.useArcLength ? this._spline.getLength() : this._spline.v0.distanceTo(this._spline.v3))
 
     const distancedTraveledClamped = Math.min(this._distanceTraveled, 1)
     const matrix = new THREE.Matrix4()
     const worldUp = this.destination.boundary.normal
-    const dir = this._spline.getTangentAt(distancedTraveledClamped).multiplyScalar(-1).normalize()
+    const dir = (this.useArcLength ? this._spline.getTangentAt(distancedTraveledClamped) : this._spline.getTangent(distancedTraveledClamped)).multiplyScalar(-1).normalize()
     const right = new THREE.Vector3().crossVectors(worldUp, dir).normalize()
     const up = new THREE.Vector3().crossVectors(dir, right).normalize()
     matrix.makeBasis(right, up, dir)
     const quaternion = new THREE.Quaternion()
     quaternion.setFromRotationMatrix(matrix)
     const from = this.roi.position.clone()
-    const to = this._spline.getPointAt(distancedTraveledClamped)
+    const to = this.useArcLength ? this._spline.getPointAt(distancedTraveledClamped) : this._spline.getPoint(distancedTraveledClamped)
     this.roi.moveRoiTo(to, quaternion)
 
     if (this._distanceTraveled >= 1) {

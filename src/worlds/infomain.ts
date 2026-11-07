@@ -355,9 +355,9 @@ export class InfoMain extends World {
   }
 
   private async playCharacterMovie(characterMovie: { children: readonly [CharacterMovieAction, CharacterMovieAction, CharacterMovieAction] }, selectionAnimation: RunAnimationAction): Promise<void> {
-    const isCancelled = (): boolean => this._characterMovieState === CharacterMovieState.cancelled
+    const isCancelled = (): boolean => this._characterMovieState === CharacterMovieState.cancelled || generation !== this._scriptGeneration || engine.currentWorld !== this
     const play = async (movie: MovieSprite): Promise<void> => {
-      if (this._characterMovieState !== CharacterMovieState.cancelled) {
+      if (!isCancelled()) {
         await movie.play(this._building.scene)
       }
     }
@@ -365,7 +365,8 @@ export class InfoMain extends World {
     if (this._characterMovieState === CharacterMovieState.playing) {
       return
     }
-    this.skipAllRunningAnimations()
+    this.stopCurrentAction()
+    const generation = this._scriptGeneration
     this._welcomeTimeout = null
     this._characterMovieState = CharacterMovieState.playing
     engine.input.disable()
@@ -374,6 +375,9 @@ export class InfoMain extends World {
     setCursor('none')
     const promises = [MovieSprite.createCharacterMovie(characterMovie.children[0], -0.252), MovieSprite.createCharacterMovie(characterMovie.children[1], -0.251), MovieSprite.createCharacterMovie(characterMovie.children[2], -0.25)]
     const [start, movie, end] = await Promise.all(promises)
+    if (isCancelled()) {
+      return
+    }
     this._characterMovie = [start, movie, end]
     engine.pauseBackgroundMusic()
     await play(start)
@@ -382,8 +386,13 @@ export class InfoMain extends World {
     movie.removeFromParent()
     await play(end)
     end.removeFromParent()
-    engine.resumeBackgroundMusic()
+    if (generation === this._scriptGeneration) {
+      engine.resumeBackgroundMusic()
+    }
     const cancelled = isCancelled()
+    if (generation !== this._scriptGeneration) {
+      return
+    }
     this._characterMovieState = CharacterMovieState.idle
     this._characterMovie = null
     if (engine.currentWorld === this) {
@@ -762,6 +771,7 @@ export class InfoMain extends World {
     super.skipAllRunningAnimations(force)
     this._characterMovieState = CharacterMovieState.cancelled
     if (this._characterMovie != null) {
+      engine.resumeBackgroundMusic()
       this._characterMovie[0].stop()
       this._characterMovie[1].stop()
       this._characterMovie[2].stop()

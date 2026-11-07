@@ -12,7 +12,7 @@ import { MosaicEffect } from './effect/mosaic'
 import { handleGlobalKey } from './global-keys.ts'
 import { InputManager } from './input.ts'
 import { PlayerDirectory } from './player-directory.ts'
-import { SaveGame } from './save-game'
+import { isPlayerCharacter, SaveGame } from './save-game'
 import { getScoreHistory } from './score-history.ts'
 import { resetSession } from './session-state.ts'
 import { getSettings } from './settings'
@@ -579,6 +579,11 @@ class Engine {
     const preloadedSave = getURLParam('save')
     if (preloadedSave != null) {
       this.loadSaveGame(preloadedSave.toUpperCase())
+    }
+
+    const requestedPlayer = getURLParam('player')
+    if (requestedPlayer != null && isPlayerCharacter(requestedPlayer)) {
+      this.currentSaveGame.player = requestedPlayer
     }
 
     this._gains = {

@@ -7,7 +7,7 @@ import { type VehicleType, VehicleTypes } from './vehicle-types.ts'
 
 export const PlayerCharacters = ['pepper', 'papa', 'mama', 'nick', 'laura'] as const
 export type PlayerCharacter = (typeof PlayerCharacters)[number]
-const isPlayerCharacter = (value: string): value is PlayerCharacter => PlayerCharacters.some(player => player === value)
+export const isPlayerCharacter = (value: string): value is PlayerCharacter => PlayerCharacters.some(player => player === value)
 
 export type VehiclePlacement = { position: THREE.Vector3; quaternion: THREE.Quaternion }
 
@@ -26,7 +26,8 @@ const hasIntegers = <K extends string>(value: unknown, keys: readonly K[]): valu
 const characterKeys = ['sound', 'move', 'mood', 'hatPart', 'hatColor', 'torsoColor', 'armLeftColor', 'armRightColor', 'legLeftColor', 'legRightColor'] as const
 const plantKeys = ['variant', 'color', 'sound', 'move', 'mood', 'counter'] as const
 const buildingKeys = ['sound', 'move', 'mood', 'counter'] as const
-const isPlant = (value: unknown): value is PlantState => hasIntegers(value, plantKeys) && value.variant >= 0 && value.variant <= 3 && value.color >= 0 && value.color <= 4
+const isClickState = (value: { sound: number; move: number; mood: number }, sounds: number, moves: number): boolean => value.sound >= 0 && value.sound < sounds && value.move >= 0 && value.move < moves && value.mood >= 0 && value.mood < 4
+const isPlant = (value: unknown): value is PlantState => hasIntegers(value, plantKeys) && value.variant >= 0 && value.variant <= 3 && value.color >= 0 && value.color <= 4 && isClickState(value, 8, 3) && value.counter >= -1 && value.counter <= 3
 
 export class SaveGame {
   public dirty = false
@@ -253,7 +254,7 @@ export class SaveGame {
   public getCharacterVariant = (name: string): CharacterVariant | null => {
     const characters = this.getJson(isRecord, {}, 'characters')
     const value = characters[name]
-    return hasIntegers(value, characterKeys) ? value : null
+    return hasIntegers(value, characterKeys) && isClickState(value, 9, 4) && value.hatPart >= 0 && value.hatPart <= 20 && characterKeys.filter(key => key.endsWith('Color')).every(key => value[key] >= 0 && value[key] < 8) ? value : null
   }
 
   public setCharacterVariant = (name: string, value: CharacterVariant): void => {
@@ -270,7 +271,12 @@ export class SaveGame {
   }
 
   public get buildings(): BuildingState | null {
-    return this.getJson((value): value is BuildingState => isRecord(value) && isInteger(value.nextVariant) && Array.isArray(value.entries) && value.entries.length === 16 && value.entries.every(entry => hasIntegers(entry, buildingKeys)), null, 'buildings')
+    return this.getJson(
+      (value): value is BuildingState =>
+        isRecord(value) && isInteger(value.nextVariant) && value.nextVariant >= 0 && value.nextVariant < 5 && Array.isArray(value.entries) && value.entries.length === 16 && value.entries.every(entry => hasIntegers(entry, buildingKeys) && isClickState(entry, 6, 3) && entry.counter >= -1 && entry.counter <= 5),
+      null,
+      'buildings',
+    )
   }
 
   public set buildings(value: BuildingState | null) {

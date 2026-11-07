@@ -28,7 +28,14 @@ export const selectLocationAnimation = <T extends AnimationCandidate>(entries: r
   }
   let best: T | null = null
   for (const entry of entries.slice(...range)) {
-    if (entry.active && (entry.actorMask & mask) !== 0 && !entry.modelInfo.some(model => model.name.toLowerCase() === player) && entry.name[0] !== 'I' && (entry.numPlayed === 0 || entry.name[0] !== 'i') && (best == null || entry.numPlayed < best.numPlayed)) {
+    if (
+      entry.active &&
+      (entry.actorMask & mask) !== 0 &&
+      !entry.modelInfo.some(model => model.name.toLowerCase() === player || (model.name.toLowerCase() === 'pep' && player === 'pepper')) &&
+      entry.name[0] !== 'I' &&
+      (entry.numPlayed === 0 || entry.name[0] !== 'i') &&
+      (best == null || entry.numPlayed < best.numPlayed)
+    ) {
       best = entry
     }
   }
