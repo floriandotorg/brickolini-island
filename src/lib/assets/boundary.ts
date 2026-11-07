@@ -237,14 +237,14 @@ export class Boundary {
       throw new Error('Edge not found')
     }
 
-    const start = sourceEdge.pointA.clone().lerp(sourceEdge.pointB, srcScale)
-    const end = destinationEdge.pointA.clone().lerp(destinationEdge.pointB, destScale)
+    const start = sourceEdge.getCWVertex(this).clone().lerp(sourceEdge.getCCWVertex(this), srcScale)
+    const end = destinationEdge.getCWVertex(this).clone().lerp(destinationEdge.getCCWVertex(this), destScale)
 
     const dir = start.clone()
     dir.sub(end)
     dir.normalize()
 
-    const right = new THREE.Vector3(this.up.x, this.up.y, this.up.z).cross(dir)
+    const right = new THREE.Vector3(this.up.x, this.up.y, this.up.z).cross(dir).normalize()
     const matrix = new THREE.Matrix4()
     matrix.set(right.x, this.up.x, dir.x, start.x, right.y, this.up.y, dir.y, start.y, right.z, this.up.z, dir.z, start.z, 0, 0, 0, 1)
 

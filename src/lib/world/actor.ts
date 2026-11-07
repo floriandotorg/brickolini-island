@@ -4,6 +4,7 @@ import type { AnimationAction } from '../action-types'
 import { type Animation3D, type AnimationActor, getChildTransformsAtTime, parse3DAnimation } from '../assets/animation'
 import { getAction } from '../assets/load'
 import type { Roi3D } from '../assets/model'
+import { advanceCycleTime, selectSpeedTier } from '../locomotion.ts'
 import { Entity } from './entity'
 
 export enum ColliderType {
@@ -67,18 +68,7 @@ export abstract class Actor extends Entity {
   }
 
   private _selectAnimationKey(): number | null {
-    if (this._animationRuntimes.size === 0) {
-      return null
-    }
-    const sorted = [...this._animationRuntimes.keys()].sort((a, b) => a - b)
-    const speed = Math.max(this._speed, 0)
-    let selected = sorted[0]
-    for (const key of sorted) {
-      if (key <= speed) {
-        selected = key
-      }
-    }
-    return selected
+    return selectSpeedTier([...this._animationRuntimes.keys()], this._speed)
   }
 
   protected updateAnimation(delta: number): void {
@@ -100,12 +90,8 @@ export abstract class Actor extends Entity {
       return
     }
 
-    runtime.time += delta * 1000
-
     const durationMs = this._getAnimationDurationMs(runtime.animation.tree)
-    if (durationMs > 0) {
-      runtime.time = runtime.time % durationMs
-    }
+    runtime.time = advanceCycleTime(runtime.time, delta, this._speed, durationMs)
 
     const baseTransform = new THREE.Matrix4()
     baseTransform.makeRotationFromQuaternion(this.roi.getWorldQuaternion(new THREE.Quaternion()))

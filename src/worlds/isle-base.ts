@@ -512,7 +512,7 @@ export abstract class IsleBase extends World {
         const index = engine.currentSaveGame.sunPosition
         applyLights(index, this._sun.sunLight, this._sun.directionalLight)
         if (this._temporarySkyColor == null) {
-          this._applySkyColor({ h: 0.56, s: 0.54, l: 0.68 })
+          this.applySavedSkyColor()
         }
         break
       }
@@ -571,6 +571,16 @@ export abstract class IsleBase extends World {
     }
   }
 
+  public setSkyHsv(h: number, s: number, v: number): void {
+    engine.currentSaveGame.backgroundColor = { h, s, v }
+    this.applySavedSkyColor()
+  }
+
+  private applySavedSkyColor = (): void => {
+    const { h, s, v } = engine.currentSaveGame.backgroundColor
+    this._applySkyColor({ h, s: v, l: s })
+  }
+
   public setTemporarySkyColor(hsl: { h: number; s: number; l: number }): void {
     this._temporarySkyColor = hsl
     this._applySkyColor(hsl)
@@ -579,7 +589,7 @@ export abstract class IsleBase extends World {
   public resetTemporarySkyColor(): void {
     this._temporarySkyColor = null
     if (this._sun.type === 'original') {
-      this._applySkyColor({ h: 0.56, s: 0.54, l: 0.68 })
+      this.applySavedSkyColor()
     } else if (this._sun.type === 'modern') {
       this._sun.sky.visible = true
       this.scene.background = null

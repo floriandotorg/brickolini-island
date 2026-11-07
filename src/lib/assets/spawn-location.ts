@@ -60,7 +60,7 @@ export const getSpawnLocation = (location: SpawnLocation): IsleParam => {
     case 'jetskiSpawn':
       return { position: { boundaryName: 'EDG10_70', source: 3, sourceScale: 0.25, destination: 0, destinationScale: 0.7 } }
     case 'helicopterTakenOff':
-      return { position: { boundaryName: 'inv_05', source: 2, sourceScale: 0.25, destination: 0, destinationScale: 0.19 } }
+      return { position: { boundaryName: 'inv_05', source: 2, sourceScale: 0.75, destination: 0, destinationScale: 0.19 } }
     case 'helicopterLanded':
       return { position: { boundaryName: 'edg02_51', source: 2, sourceScale: 0.63, destination: 0, destinationScale: 0.4 } }
     case 'helicopterExited':

@@ -411,6 +411,5 @@ export abstract class Race extends IsleBase {
 
     this._raceMap?.update()
     this.boundaryManager.update(fromPos, toPos, null)
-    this.updateActors(delta, fromPos, toPos)
   }
 }

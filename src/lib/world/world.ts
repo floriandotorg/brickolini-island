@@ -318,9 +318,9 @@ export abstract class World {
         continue
       }
       const { from: actorFrom, to: actorTo } = result
-      for (const actor of this._actors) {
-        if (actor.checkCollision(actorFrom, actorTo)) {
-          actor.onCollision(actor.roi)
+      for (const other of this._actors) {
+        if (other !== actor && other.checkCollision(actorFrom, actorTo)) {
+          other.onCollision(actor.roi)
         }
       }
       this.boundaryManager.update(actorFrom, actorTo, actor.roi)
