@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { act1State } from '../../act1-state'
 import type { RunAnimationAction } from '../../action-types'
 import { engine } from '../../engine'
 import { Actor } from '../actor'
@@ -9,6 +10,9 @@ export abstract class Vehicle extends Actor {
   protected abstract readonly dashboard: DashboardVehicle
   protected abstract readonly explanationAnimation: RunAnimationAction | null
   protected abstract readonly explanationAnimationOffset: THREE.Vector3 | null
+
+  protected hideOnExit = false
+  protected persistPlacement = true
 
   public get fuel(): number {
     return 0
@@ -28,9 +32,13 @@ export abstract class Vehicle extends Actor {
     }
 
     const groundPosition = this._isle.getGroundPosition()
-    engine.currentSaveGame.setVehiclePlacement(this.type, { position: groundPosition, quaternion: this._isle.camera.quaternion })
+    if (this.persistPlacement) {
+      engine.currentSaveGame.setVehiclePlacement(this.type, { position: groundPosition, quaternion: this._isle.camera.quaternion })
+    } else {
+      engine.currentSaveGame.clearVehiclePlacement(this.type)
+    }
     this.roi.moveRoiTo(groundPosition, this._isle.camera.quaternion)
-    this.roi.visible = true
+    this.roi.visible = !this.hideOnExit
 
     this._isle.camera.position.add(new THREE.Vector3(0, 0, -4).applyQuaternion(this._isle.camera.quaternion))
     this._isle.placeOnGround(this._isle.camera)
@@ -58,7 +66,7 @@ export abstract class Vehicle extends Actor {
     await this._isle.dashboard.show(this.dashboard)
     engine.finishTransition()
 
-    if (this.explanationAnimation != null && this.explanationAnimationOffset != null && !engine.currentSaveGame.playedExitExplanation) {
+    if (act1State.value !== 'pizza' && this.explanationAnimation != null && this.explanationAnimationOffset != null && !engine.currentSaveGame.playedExitExplanation) {
       engine.currentSaveGame.playedExitExplanation = true
 
       const forward = new THREE.Vector3()

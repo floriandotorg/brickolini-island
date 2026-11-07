@@ -77,6 +77,9 @@ export class Ambulance extends FuelVehicle {
   protected override explanationAnimation = null
   protected override explanationAnimationOffset = null
   protected override drainsOnlyWhenActive = true
+  protected override hideOnExit = true
+  protected override persistPlacement = false
+  private _generation = 0
 
   private _missionState: RunningState | { state: 'idle' } = { state: 'idle' }
   private _beachDone = false
@@ -107,6 +110,8 @@ export class Ambulance extends FuelVehicle {
   }
 
   public override async init(): Promise<void> {
+    engine.currentSaveGame.clearVehiclePlacement(this.type)
+    this.roi.visible = false
     const psGate = this.act1.findRoi('ps-gate')
     if (psGate != null) {
       this.act1.addClickListener(psGate, async () => this.handlePickupClick('ps-gate'))
@@ -125,9 +130,9 @@ export class Ambulance extends FuelVehicle {
         if (this._beachDone && this._policeDone) {
           void this._returnToHospital()
         } else if (this._beachDone && !this._policeDone) {
-          this._playSpeech(Avo915In_PlayWav)
-        } else if (!this._beachDone && this._policeDone) {
           this._playSpeech(Avo916In_PlayWav)
+        } else if (!this._beachDone && this._policeDone) {
+          this._playSpeech(Avo915In_PlayWav)
         }
       }
     })
@@ -138,11 +143,15 @@ export class Ambulance extends FuelVehicle {
       return
     }
 
+    const generation = ++this._generation
+    this.act1.allowExtras = false
     this._inCutscene = true
     this._missionState = { state: 'starting', startTime: 0 }
 
     await this._playCutsceneAnimation(hho027en_RunAnim)
-    await this._enterDrivingState('hospitalExited', true)
+    if (generation === this._generation) {
+      await this._enterDrivingState('hospitalExited', true)
+    }
   }
 
   public handleSpace(): void {
@@ -192,9 +201,14 @@ export class Ambulance extends FuelVehicle {
   }
 
   private async _enterDrivingState(spawn: SpawnLocation, isFirst: boolean): Promise<void> {
+    const generation = this._generation
+    const startTime = this._missionState.state === 'starting' ? engine.elapsedTimeMilliseconds : this._missionState.state === 'idle' ? 0 : this._missionState.startTime
     const placement = this.act1.boundaryManager.getObjectPlacementFromLocation(spawn)
     this.roi.moveRoiTo(placement.position, placement.quaternion)
     await this.enter()
+    if (generation !== this._generation) {
+      return
+    }
 
     this._isle.dashboard.onHornToggle = (on: boolean) => {
       void this._setHorn(on)
@@ -203,7 +217,7 @@ export class Ambulance extends FuelVehicle {
     this._inCutscene = false
     this._missionState = {
       state: 'entered',
-      startTime: this._missionState.state === 'starting' ? engine.elapsedTimeMilliseconds : (this._missionState as RunningState).startTime,
+      startTime,
     }
     this.act1.cameraAnimationTriggerEnabled = false
     this.act1.backgroundMusicTriggerEnabled = false
@@ -215,7 +229,7 @@ export class Ambulance extends FuelVehicle {
     const sceneLine = isFirst ? ham033cl_PlayWav : this._beachDone && this._policeDone ? (Math.random() < 0.5 ? ham076cl_PlayWav : ham088cl_PlayWav) : Math.random() < 0.5 ? ham075cl_PlayWav : ham113cl_PlayWav
     this._playSpeech(sceneLine)
 
-    if (!this._beachDone || !this._policeDone) {
+    if (isFirst) {
       void this.act1.playAnimation(pns018rd_RunAnim, { overrideLoop: THREE.LoopRepeat })
     }
   }
@@ -267,20 +281,20 @@ export class Ambulance extends FuelVehicle {
       return
     }
     const state = this._missionState
+    const generation = this._generation
     this._missionState = { ...state, state: 'pickup', site, phase: 'waiting' }
 
     this._inCutscene = true
     this._stopSpeech()
     this._hornAudio?.stop()
     this.exit()
-    this.act1.skipAllRunningAnimations(true)
 
     if (site === 'police') {
       await this._playCutsceneAnimation(hps116bd_RunAnim)
-      if (this._missionState.state === 'pickup' && this._missionState.phase === 'waiting') {
+      if (generation === this._generation && this._missionState.state === 'pickup' && this._missionState.phase === 'waiting') {
         this._playSpeech(Avo923In_PlayWav)
       }
-      while (this._missionState.state === 'pickup' && this._missionState.phase === 'waiting') {
+      while (generation === this._generation && this._missionState.state === 'pickup' && this._missionState.phase === 'waiting') {
         await this._playLoopingCutsceneAnimation(hps118re_RunAnim)
       }
     } else {
@@ -288,11 +302,11 @@ export class Ambulance extends FuelVehicle {
       const approach = beachApproachAnimations[player]
       await this._playCutsceneAnimation(approach)
       const loopAnim = player === 'papa' ? hpz052ma_RunAnim : hpz053pa_RunAnim
-      while (this._missionState.state === 'pickup' && this._missionState.phase === 'waiting') {
+      while (generation === this._generation && this._missionState.state === 'pickup' && this._missionState.phase === 'waiting') {
         await this._playLoopingCutsceneAnimation(loopAnim)
       }
     }
-    if (this._missionState.state !== 'pickup') {
+    if (generation !== this._generation || this._missionState.state !== 'pickup') {
       this._inCutscene = false
       return
     }
@@ -300,7 +314,7 @@ export class Ambulance extends FuelVehicle {
     const finish = site === 'beach' ? (engine.currentSaveGame.player === 'papa' ? hpz057ma_RunAnim : hpz055pa_RunAnim) : hps117bd_RunAnim
     await this._playCutsceneAnimation(finish)
 
-    if (this._missionState.state !== 'pickup') {
+    if (generation !== this._generation || this._missionState.state !== 'pickup') {
       this._inCutscene = false
       return
     }
@@ -313,7 +327,7 @@ export class Ambulance extends FuelVehicle {
     await this._enterDrivingState(nextSpawn, false)
 
     if (this._beachDone && this._policeDone) {
-      this.act1.skipAllRunningAnimations(true)
+      this.act1.stopAnimationsInRange(pns018rd_RunAnim.siFile, pns018rd_RunAnim.id)
     }
   }
 
@@ -325,6 +339,8 @@ export class Ambulance extends FuelVehicle {
     const elapsed = engine.elapsedTimeMilliseconds - state.startTime
     const color: ScoreColor = elapsed < redFinishTime ? 'red' : elapsed < blueFinishTime ? 'blue' : 'yellow'
 
+    const generation = this._generation
+    this._updateScore(color)
     this._missionState = { ...state, state: 'returning', color }
     this._inCutscene = true
     this._stopSpeech()
@@ -334,9 +350,10 @@ export class Ambulance extends FuelVehicle {
 
     const finishAnimation = color === 'red' ? hho142cl_RunAnim : color === 'blue' ? hho143cl_RunAnim : hho144cl_RunAnim
     await this._playCutsceneAnimation(finishAnimation)
-    this._inCutscene = false
-    this._updateScore(color)
-    this.reset()
+    if (generation === this._generation) {
+      this._inCutscene = false
+      this.reset()
+    }
   }
 
   private _updateScore(color: ScoreColor): void {
@@ -345,6 +362,9 @@ export class Ambulance extends FuelVehicle {
   }
 
   public reset(): void {
+    ++this._generation
+    this.act1.allowExtras = true
+    this.act1.stopAnimationsInRange(pns018rd_RunAnim.siFile, pns018rd_RunAnim.id)
     this._stopSpeech()
     this._hornAudio?.stop()
     this._hornAudio = null

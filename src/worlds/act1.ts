@@ -382,6 +382,8 @@ import { switchWorld } from '../lib/switch-world'
 import { Ambulance } from '../lib/world/actors/ambulance'
 import { FuelVehicle } from '../lib/world/actors/fuel-vehicle'
 import { Helicopter } from '../lib/world/actors/helicopter'
+import { Pizzeria } from '../lib/world/actors/pizzeria'
+import type { IsleMission } from '../lib/world/isle-mission.ts'
 import { PlayerMovement } from '../lib/world/player-movement'
 import { Isle } from './isle'
 import type { IsleParam } from './isle-base'
@@ -934,9 +936,16 @@ export class Act1 extends Isle {
   }
 
   public override abortMission(): void {
-    if (act1State.value !== 'none') {
-      this.ambulance?.abort()
+    for (const mission of this.missions) {
+      if (mission.missionActive) {
+        mission.abort()
+      }
     }
+  }
+
+  private get missions(): IsleMission[] {
+    const pizza = this.findRoi('pizza')?.actor
+    return [this.ambulance, pizza instanceof Pizzeria ? pizza : null].filter((mission): mission is Ambulance | Pizzeria => mission != null)
   }
 
   private static readonly PICKUP_ROI_NAMES = new Set(['ps-gate', 'gd'])
@@ -965,6 +974,10 @@ export class Act1 extends Isle {
 
   public override async activate(composer: Composer, param?: IsleParam): Promise<void> {
     await super.activate(composer, param)
+    const pizza = this.findRoi('pizpie')
+    if (pizza != null) {
+      pizza.visible = false
+    }
     if (param != null) {
       const { position, quaternion } = this.boundaryManager.getObjectPlacement(param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
       this.camera.position.copy(position)
@@ -988,6 +1001,11 @@ export class Act1 extends Isle {
     }
   }
 
+  public override deactivate(): void {
+    this.abortMission()
+    super.deactivate()
+  }
+
   public override getGroundPosition(): THREE.Vector3 {
     return this._playerMovement.getGroundPosition(this.camera.position, new THREE.Vector3(0, 0, 0))
   }
@@ -996,19 +1014,13 @@ export class Act1 extends Isle {
     this._playerMovement.placeOnGround(object)
   }
 
-  public override keyDown(event: KeyboardEvent): void {
-    super.keyDown(event)
-    if (event.key === 'Space' && !event.repeat) {
-      const ambulance = this.ambulance
-      if (ambulance?.isInCutscene) {
-        ambulance.handleSpace()
-      }
-    }
-  }
-
   public override keyPressed(key: string): void {
-    if (key === 'Space' && this.ambulance != null && this.ambulance.isInCutscene) {
-      return
+    if (key === 'Space') {
+      const mission = this.missions.find(mission => mission.isInCutscene)
+      if (mission != null) {
+        mission.handleSpace()
+        return
+      }
     }
 
     super.keyPressed(key)
@@ -1039,7 +1051,7 @@ export class Act1 extends Isle {
       ambulance.abort()
     }
 
-    if (this.isRunningCameraAnimation || (this.ambulance?.isInCutscene ?? false)) {
+    if (this.isRunningCameraAnimation || this.missions.some(mission => mission.isInCutscene)) {
       return
     }
 

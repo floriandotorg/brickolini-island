@@ -88,6 +88,7 @@ export abstract class World {
   private _clickListeners = new Map<THREE.Object3D, () => Promise<boolean>>()
   private _actors = new Set<Actor>()
   private _runningAnimations: {
+    action?: { id: number; siFile: string }
     mixer: THREE.AnimationMixer
     clipAction: THREE.AnimationAction
     audios: THREE.PositionalAudio[]
@@ -585,7 +586,7 @@ export abstract class World {
     const sentinel = audioActions.length > 0 || audios.length > 0 ? engine.lowerBackgroundMusic() : null
 
     const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
-    await this.playAnimationClip(this.scene, clip, { audios, nonPositionalAudios, lookAtKeys, faceAnimations, pointAtCameraObjects, roisToHideOnStop, managedActorNames, lockCamera, unskippable, loop })
+    await this.playAnimationClip(this.scene, clip, { audios, nonPositionalAudios, lookAtKeys, faceAnimations, pointAtCameraObjects, roisToHideOnStop, managedActorNames, lockCamera, unskippable, loop, action })
     if (sentinel != null) {
       engine.raiseBackgroundMusic(sentinel)
     }
@@ -595,6 +596,7 @@ export abstract class World {
     root: THREE.Object3D,
     clip: THREE.AnimationClip,
     {
+      action,
       audios = [],
       nonPositionalAudios = [],
       lookAtKeys,
@@ -608,6 +610,7 @@ export abstract class World {
       stopAtTime,
       loop,
     }: {
+      action?: { id: number; siFile: string }
       audios?: THREE.PositionalAudio[]
       nonPositionalAudios?: Audio[]
       lookAtKeys?: WDB.Animation.VertexKey[]
@@ -656,7 +659,7 @@ export abstract class World {
         resolve()
       }
 
-      this._runningAnimations.push({ mixer, clipAction, audios, nonPositionalAudios, resolve: removeMe, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, stopAtTime })
+      this._runningAnimations.push({ action, mixer, clipAction, audios, nonPositionalAudios, resolve: removeMe, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, stopAtTime })
       mixer.addEventListener('finished', removeMe)
     })
   }
@@ -954,6 +957,20 @@ export abstract class World {
 
     if (key === 'KeyP' && import.meta.env.DEV) {
       this.skipAllRunningAnimations(true)
+    }
+  }
+
+  public stopAnimationsInRange(siFile: string, firstId: number, lastId = firstId): void {
+    for (const running of [...this._runningAnimations]) {
+      if (running.action?.siFile === siFile && running.action.id >= firstId && running.action.id <= lastId) {
+        if (running.clipAction.loop === THREE.LoopOnce) {
+          running.mixer.setTime(running.stopAtTime ?? running.clipAction.getClip().duration)
+        }
+        for (const audio of [...running.audios, ...running.nonPositionalAudios]) {
+          audio.stop()
+        }
+        running.resolve()
+      }
     }
   }
 

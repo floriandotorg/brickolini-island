@@ -26,6 +26,7 @@ import type { RunAnimationAction } from '../lib/action-types'
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type Interval, type NormalizedMouseEvent } from '../lib/engine'
+import { hospitalVisit } from '../lib/mission-rules.ts'
 import type { PlayerCharacter } from '../lib/save-game'
 import { getSettings } from '../lib/settings'
 import { switchWorld } from '../lib/switch-world'
@@ -42,20 +43,26 @@ const acceptanceLines: Record<PlayerCharacter, [RunAnimationAction, RunAnimation
   laura: [hho025cl_RunAnim, hho026cl_RunAnim],
 }
 
-const maxVisits = 5
-
 export class Hospital extends World {
   private readonly _building = new Building()
   private _copLed: { sprite: THREE.Sprite; interval: Interval } | null = null
   private _pizzaLed: { sprite: THREE.Sprite; interval: Interval } | null = null
-  private _accepted = false
+  public interactionMode = 0
+  private _generation = 0
+  private _readyTime = 0
+  private _flashing = false
+  private _visit = 0
+  private _short = false
+  private _leaving = false
 
   constructor() {
     super('hospital')
   }
 
   public override escape(): boolean {
-    this.skipAllRunningAnimations(true)
+    ++this._generation
+    this._leaving = true
+    this.stopAnimationsInRange('hospital', 500, 515)
     return true
   }
 
@@ -65,7 +72,6 @@ export class Hospital extends World {
       world: this,
       startUpAction: _StartUp,
       backgroundMusic: Hospital_Music,
-      exitSpawnPoint: { spawn: 'hospitalExited' },
       noLights: true,
     })
 
@@ -85,45 +91,113 @@ export class Hospital extends World {
       leftPointLight.shadow.radius = 1.5
     }
 
-    const player = engine.currentSaveGame.player
-    const visit = Math.min(engine.currentSaveGame.getHospitalVisitCount(player), maxVisits - 1)
-    engine.currentSaveGame.setHospitalVisitCount(player, Math.min(engine.currentSaveGame.getHospitalVisitCount(player) + 1, maxVisits))
-
-    const doctor = await this.getCharacter('cl')
-    this.addClickListener(doctor, async () => {
-      if (this._accepted) {
-        return true
+    const target = this.findRoi('actor_ha') ?? this.findRoi('*actor_ha')
+    if (target == null) {
+      throw new Error('Hospital quest target actor_ha missing')
+    }
+    this.addClickListener(target, async () => {
+      if (this.interactionMode !== 1 || this._leaving) {
+        return false
       }
-      this._accepted = true
-      this.skipAllRunningAnimations(true)
-      const acceptance = acceptanceLines[player][visit < 2 ? 0 : 1]
-      await this.playAnimation(acceptance)
-      act1State.value = 'transitionToAmbulance'
-      void switchWorld({ spawn: 'hospitalExited' })
+      this.interactionMode = 3
+      const generation = this._generation
+      this.stopAnimationsInRange('hospital', 500, 515)
+      if (!this._short) {
+        const variant = hospitalVisit(this._visit).acceptance
+        await this.playAnimation(acceptanceLines[engine.currentSaveGame.player][variant])
+      }
+      if (generation === this._generation && !this._leaving) {
+        this._leaving = true
+        act1State.value = 'transitionToAmbulance'
+        void switchWorld({ spawn: 'hospitalExited' })
+      }
       return true
     })
-
-    this._building.exitAnimation = hho016cl_RunAnim
-
-    void (async () => {
-      if (visit < 3) {
-        await this.playAnimation(introAnimations[visit] ?? hho002cl_RunAnim)
-        if (this._accepted) {
-          return
-        }
-        await this.playAnimation(hho006cl_RunAnim)
-      } else {
-        await this.playAnimation(hho003cl_RunAnim)
+    this._building.onButtonClicked = (name, event) => {
+      if (event.state !== 1 || (name !== 'Door_Ctl' && name !== 'Info_Ctl')) {
+        return false
       }
-    })()
+      void this.leave(name === 'Info_Ctl')
+      return true
+    }
+  }
+
+  private leave = async (info: boolean): Promise<void> => {
+    if (this._leaving) {
+      return
+    }
+    this._leaving = true
+    const goodbye = this.interactionMode === 1
+    const generation = ++this._generation
+    this.stopAnimationsInRange('hospital', 500, 515)
+    if (goodbye) {
+      await this.playAnimation(hho016cl_RunAnim)
+    }
+    if (generation === this._generation) {
+      void switchWorld(info ? { ending: null } : { spawn: 'hospitalExited' })
+    }
   }
 
   public override activate(composer: Composer): void {
     this._building.activate(composer)
     super.activate(composer)
+    const generation = ++this._generation
+    this._leaving = false
+    this._flashing = false
+    this._readyTime = engine.elapsedTimeMilliseconds
+    if (this._copLed != null) {
+      this._copLed.sprite.visible = false
+    }
+    if (this._pizzaLed != null) {
+      this._pizzaLed.sprite.visible = false
+    }
+    const save = engine.currentSaveGame
+    const player = save.playerUnsafe ?? 'laura'
+    this._visit = save.getHospitalVisitCount(player)
+    const visit = hospitalVisit(this._visit)
+    save.setHospitalVisitCount(player, visit.next)
+    this._short = visit.short
+    this.interactionMode = visit.short ? 1 : 0
+    void (async () => {
+      await this.playAnimation(visit.short ? hho003cl_RunAnim : introAnimations[this._visit])
+      if (generation !== this._generation || visit.short || this._leaving) {
+        return
+      }
+      this._flashing = true
+      if (this._copLed != null) {
+        this._copLed.interval = engine.createInterval(300)
+      }
+      if (this._pizzaLed != null) {
+        this._pizzaLed.interval = engine.createInterval(200)
+      }
+      await this.playAnimation(hho006cl_RunAnim)
+      if (generation === this._generation && !this._leaving) {
+        this.interactionMode = 1
+      }
+    })()
+  }
+
+  public override keyPressed(key: string): void {
+    if (key === 'Space') {
+      if (engine.elapsedTimeMilliseconds - this._readyTime >= 300) {
+        this.stopAnimationsInRange('hospital', 500, 515)
+      }
+      return
+    }
+    super.keyPressed(key)
+  }
+
+  public override deactivate(): void {
+    ++this._generation
+    this._leaving = true
+    this.stopAnimationsInRange('hospital', 500, 515)
+    super.deactivate()
   }
 
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
+    if (this.interactionMode === 3 || this._leaving) {
+      return
+    }
     if (this._building.pointerDown(event.normalizedX, event.normalizedY)) {
       return
     }
@@ -136,10 +210,10 @@ export class Hospital extends World {
 
   protected override update(delta: number): void {
     super.update(delta)
-    if (this._copLed?.interval.resetExpired()) {
+    if (this._flashing && this._copLed?.interval.resetExpired()) {
       this._copLed.sprite.visible = !this._copLed.sprite.visible
     }
-    if (this._pizzaLed?.interval.resetExpired()) {
+    if (this._flashing && this._pizzaLed?.interval.resetExpired()) {
       this._pizzaLed.sprite.visible = !this._pizzaLed.sprite.visible
     }
   }

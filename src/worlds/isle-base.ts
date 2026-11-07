@@ -409,7 +409,12 @@ export abstract class IsleBase extends World {
     }
   }
 
+  public allowExtras = true
+
   private _spawnExtras(): void {
+    if (!this.allowExtras) {
+      return
+    }
     const arr = [...Array(11).keys()]
     for (let n = 0; n < 5; ++n) {
       let r = Math.floor(Math.random() * 5)
