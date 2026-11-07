@@ -185,7 +185,7 @@ export class Act3 extends IsleBase {
       act3State.state = 1
       const generation = ++this._generation
       const briefings = [actions.tlp053in_RunAnim, actions.tlp064la_RunAnim, actions.tlp068in_RunAnim]
-      void this.playCameraAnimation(briefings[Math.floor(Math.random() * briefings.length)]).then(() => {
+      void this.playHeldCameraAnimation(briefings[Math.floor(Math.random() * briefings.length)]).then(() => {
         if (generation === this._generation && this._enabled) {
           this.takeOff()
         }

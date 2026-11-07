@@ -69,7 +69,7 @@ export const handleDebugKey = (code: string): boolean => {
         camera.rotateY(Math.PI)
       }
     } else if (command === 'animation' && digits.length === 3) {
-      void playAction(world.name === 'act1' || world.name === 'act2' ? 'isle' : world.name, Number(digits))
+      void playAction(world.name === 'act1' ? 'isle' : world.name === 'act2' ? 'act2main' : world.name, Number(digits))
     } else if (command === 'act') {
       const act = Number(digits)
       if (act === 1) {
@@ -79,6 +79,9 @@ export const handleDebugKey = (code: string): boolean => {
         engine.currentSaveGame.act = 2
         act2State.enabled = true
         void switchWorld('act2')
+      } else if (act === 3) {
+        engine.currentSaveGame.act = 3
+        void switchWorld('act3')
       } else if (act === 4 || act === 5) {
         act3State.state = act === 4 ? 2 : 3
         void switchWorld({ ending: act === 4 ? 'good' : 'bad' })
@@ -114,7 +117,7 @@ export const handleDebugKey = (code: string): boolean => {
     return true
   }
   if (code === 'KeyA') {
-    void playAction(world.name === 'act1' || world.name === 'act2' ? 'isle' : world.name, 1)
+    void playAction(world.name === 'act1' ? 'isle' : world.name === 'act2' ? 'act2main' : world.name, 1)
     command = null
     return true
   }

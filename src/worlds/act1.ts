@@ -998,7 +998,7 @@ export class Act1 extends Isle {
         car.roi.moveRoiTo(placement.position, placement.quaternion)
         await car.enter(false)
         const score = engine.currentSaveGame.getScore('carRace', engine.currentSaveGame.player)
-        void this.playCameraAnimation(score === 3 ? srt001in_RunAnim : score === 2 ? srt002in_RunAnim : srt003in_RunAnim)
+        void this.playHeldCameraAnimation(score === 3 ? srt001in_RunAnim : score === 2 ? srt002in_RunAnim : srt003in_RunAnim)
       }
       raceResults.car = false
       act1State.value = 'none'
@@ -1010,7 +1010,7 @@ export class Act1 extends Isle {
         jetski.roi.moveRoiTo(placement.position, placement.quaternion)
         await jetski.enter(false)
         const score = engine.currentSaveGame.getScore('jetskiRace', engine.currentSaveGame.player)
-        void this.playCameraAnimation(score === 3 ? sjs012in_RunAnim : score === 2 ? sjs013in_RunAnim : sjs014in_RunAnim)
+        void this.playHeldCameraAnimation(score === 3 ? sjs012in_RunAnim : score === 2 ? sjs013in_RunAnim : sjs014in_RunAnim)
       }
       raceResults.jetski = false
       act1State.value = 'none'

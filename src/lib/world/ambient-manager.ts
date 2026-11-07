@@ -57,12 +57,12 @@ export class AmbientManager {
     }
   }
 
-  public begin(info: DTA.AnimationInfo): () => void {
+  public begin(info: DTA.AnimationInfo, localActors = true): () => void {
     this._running.add(info)
     this._lastAction = this._time
     ++info.numPlayed
     this.persist()
-    const returnExtras = this._world.extras.borrowForAnimation(info.modelInfo.map(model => model.name))
+    const returnExtras = localActors ? this._world.extras.borrowForAnimation(info.modelInfo.map(model => model.name)) : () => {}
     return () => {
       returnExtras()
       this._running.delete(info)

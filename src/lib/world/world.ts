@@ -511,8 +511,11 @@ export abstract class World {
           break
         }
         case WDB.ActorType.ManagedActor: {
-          const actorName = actor.name.replace(/^\*/, '')
-          const minifig = await this.getCharacter(actorName as CharacterName)
+          const actorName = actor.name.replace(/^\*/, '').toLowerCase()
+          if (!isCharacterName(actorName)) {
+            throw new Error(`Unknown animation character: ${actorName}`)
+          }
+          const minifig = await this.getCharacter(actorName)
           managedActorNames.push(actorName)
           if (actor.name.startsWith('*')) {
             minifig.visible = false
@@ -728,10 +731,12 @@ export abstract class World {
       holdManagedActorNames,
       anchorRoi,
       managed = false,
+      localActors = true,
       capturesPlayer = false,
       animationLocation = -1,
     }: {
       managed?: boolean
+      localActors?: boolean
       capturesPlayer?: boolean
       animationLocation?: number
       location?: THREE.Vector3
@@ -830,7 +835,7 @@ export abstract class World {
         roisToHideOnStop,
         managedActorNames,
         roisToRemoveOnStop,
-        holdManagedActorNames,
+        holdManagedActorNames: localActors ? holdManagedActorNames : [...managedActorNames, ...(holdManagedActorNames ?? [])],
         collisionRois,
         collisionCenter,
         collisionRadius,
@@ -848,7 +853,7 @@ export abstract class World {
               actor.roi.syncAnimationPose(pose.position, pose.quaternion)
             }
           }
-          this.onAnimationCharactersFinished(managedActorNames, managed)
+          this.onAnimationCharactersFinished(managedActorNames, managed, localActors)
         },
         onRelease: () => {
           if (sentinel != null) {
@@ -865,7 +870,7 @@ export abstract class World {
     }
   }
 
-  protected onAnimationCharactersFinished(_names: readonly string[], _managed: boolean): void {}
+  protected onAnimationCharactersFinished(_names: readonly string[], _managed: boolean, _localActors: boolean): void {}
 
   public async playAnimationClip(
     root: THREE.Object3D,

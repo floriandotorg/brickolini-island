@@ -46,6 +46,10 @@ export abstract class Actor extends Entity {
     ++this._suspendCount
   }
 
+  public releaseSuspension(): void {
+    this._suspendCount = 0
+  }
+
   public resume(): void {
     if (this._suspendCount === 0) {
       return

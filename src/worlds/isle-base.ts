@@ -40,7 +40,7 @@ import { type Actor, ColliderType } from '../lib/world/actor'
 import { PathActor } from '../lib/world/actors/path-actor'
 import type { Vehicle } from '../lib/world/actors/vehicle'
 import { AmbientManager } from '../lib/world/ambient-manager'
-import type { Character, CharacterName } from '../lib/world/character'
+import { type Character, type CharacterName, isCharacterName } from '../lib/world/character'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
 import type { Entity } from '../lib/world/entity'
 import { ExtrasManager } from '../lib/world/extras-manager'
@@ -399,6 +399,7 @@ export abstract class IsleBase extends World {
   public override deactivate(): void {
     this.ambient.persist()
     this.toggleManagedAnimations(false)
+    this.releaseHeldCharacters()
     this.extras.suspend()
     super.deactivate()
   }
@@ -615,10 +616,40 @@ export abstract class IsleBase extends World {
     this._cameraAnimationPlaying = this.isRunningCameraAnimation
   }
 
-  protected override onAnimationCharactersFinished(names: readonly string[], managed: boolean): void {
-    if (managed && this.allowExtras) {
-      this.extras.adoptCharacters(names)
+  private readonly _heldCharacters = new Set<CharacterName>()
+  private releaseHeldCharacters(): void {
+    for (const name of this._heldCharacters) {
+      this.findRoi(name)?.actor?.releaseSuspension()
+      this.releaseActor(name)
     }
+    this._heldCharacters.clear()
+  }
+  protected override onAnimationCharactersFinished(names: readonly string[], managed: boolean, localActors: boolean): void {
+    if (!managed) {
+      return
+    }
+    if (!localActors) {
+      for (const name of names) {
+        if (isCharacterName(name) && !this._heldCharacters.has(name)) {
+          void this.getCharacter(name)
+          this._heldCharacters.add(name)
+        }
+      }
+      return
+    }
+    const held = [...this._heldCharacters]
+    for (const name of held) {
+      this.findRoi(name)?.actor?.releaseSuspension()
+    }
+    if (this.allowExtras) {
+      this.extras.adoptCharacters([...new Set([...names, ...held])])
+      this.extras.borrowForAnimation(held.filter(name => !names.includes(name)))()
+    }
+    this.releaseHeldCharacters()
+  }
+
+  public playHeldCameraAnimation(action: RunAnimationAction): Promise<void> {
+    return this.playCameraAnimation(action, undefined, undefined, false, undefined, [], false)
   }
 
   public async getRunAnimation(id: number): Promise<RunAnimationAction | null> {
@@ -626,7 +657,7 @@ export abstract class IsleBase extends World {
     return Object.values(script).find((action): action is RunAnimationAction => isRunAnimationAction(action) && action.id === id) ?? null
   }
 
-  public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location, lockOnly = false, anchorRoi?: Roi3D, holdManagedActorNames: readonly string[] = []): Promise<void> {
+  public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location, lockOnly = false, anchorRoi?: Roi3D, holdManagedActorNames: readonly string[] = [], localActors = true): Promise<void> {
     if (animationInfo == null) {
       animationInfo = this.animationInfos.find(a => a.objectId === action.id)
       if (animationInfo == null) {
@@ -638,7 +669,7 @@ export abstract class IsleBase extends World {
     this.playerMovement?.resetVelocities()
 
     this._cameraAnimationPlaying = true
-    const finish = this.ambient.begin(animationInfo)
+    const finish = this.ambient.begin(animationInfo, localActors)
     const previousPosition = this.camera.position.clone()
     const previousQuaternion = this.camera.quaternion.clone()
     if (location != null) {
@@ -681,6 +712,7 @@ export abstract class IsleBase extends World {
     }
     return this.playAnimation(action, {
       managed: true,
+      localActors,
       anchorRoi,
       holdManagedActorNames,
       capturesPlayer: lockOnly || animationInfo.hasCameraAnimation,

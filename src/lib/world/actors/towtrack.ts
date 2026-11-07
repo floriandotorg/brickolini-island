@@ -180,9 +180,9 @@ export class TowTrack extends FuelVehicle implements IsleMission {
     }
   }
 
-  private play = async (action: RunAnimationAction): Promise<void> => {
+  private play = async (action: RunAnimationAction, localActors = true): Promise<void> => {
     this._currentAnimation = action
-    await this.act1.playCameraAnimation(action)
+    await (localActors ? this.act1.playCameraAnimation(action) : this.act1.playHeldCameraAnimation(action))
     if (this._currentAnimation === action) {
       this._currentAnimation = null
     }
@@ -232,7 +232,7 @@ export class TowTrack extends FuelVehicle implements IsleMission {
       this.act1.cameraAnimationTriggerEnabled = true
       this.act1.backgroundMusicTriggerEnabled = true
     }
-    await this.play(characterFinishes[color][towFinishIndex(player)])
+    await this.play(characterFinishes[color][towFinishIndex(player)], false)
     if (generation === this._generation) {
       this.cleanUp()
     }
