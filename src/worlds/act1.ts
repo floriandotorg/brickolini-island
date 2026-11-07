@@ -383,6 +383,7 @@ import { Ambulance } from '../lib/world/actors/ambulance'
 import { FuelVehicle } from '../lib/world/actors/fuel-vehicle'
 import { Helicopter } from '../lib/world/actors/helicopter'
 import { Pizzeria } from '../lib/world/actors/pizzeria'
+import { TowTrack } from '../lib/world/actors/towtrack'
 import type { IsleMission } from '../lib/world/isle-mission.ts'
 import { PlayerMovement } from '../lib/world/player-movement'
 import { Isle } from './isle'
@@ -945,7 +946,8 @@ export class Act1 extends Isle {
 
   private get missions(): IsleMission[] {
     const pizza = this.findRoi('pizza')?.actor
-    return [this.ambulance, pizza instanceof Pizzeria ? pizza : null].filter((mission): mission is Ambulance | Pizzeria => mission != null)
+    const tow = this.findRoi('towtk')?.actor
+    return [this.ambulance, pizza instanceof Pizzeria ? pizza : null, tow instanceof TowTrack ? tow : null].filter((mission): mission is Ambulance | Pizzeria | TowTrack => mission != null)
   }
 
   private static readonly PICKUP_ROI_NAMES = new Set(['ps-gate', 'gd'])
@@ -974,14 +976,23 @@ export class Act1 extends Isle {
 
   public override async activate(composer: Composer, param?: IsleParam): Promise<void> {
     await super.activate(composer, param)
-    const pizza = this.findRoi('pizpie')
-    if (pizza != null) {
-      pizza.visible = false
+    for (const name of ['pizpie', 'rcred', 'towtk', 'stretch', 'bird']) {
+      const roi = this.findRoi(name)
+      if (roi != null) {
+        roi.visible = false
+      }
     }
     if (param != null) {
       const { position, quaternion } = this.boundaryManager.getObjectPlacement(param.position.boundaryName, param.position.source, param.position.sourceScale, param.position.destination, param.position.destinationScale)
       this.camera.position.copy(position)
       this.camera.quaternion.copy(quaternion)
+    }
+    if (act1State.value === 'transitionToTowtrack') {
+      act1State.value = 'towtrack'
+      const tow = this.findRoi('towtk')?.actor
+      if (tow instanceof TowTrack) {
+        void tow.startMission()
+      }
     }
     if (act1State.value === 'transitionToAmbulance') {
       act1State.value = 'ambulance'
@@ -1046,6 +1057,10 @@ export class Act1 extends Isle {
       this._water.material.uniforms.time.value += delta * 0.1
     }
 
+    const tow = this.findRoi('towtk')?.actor
+    if (tow instanceof TowTrack && tow.missionActive && !tow.isInCutscene && this.currentVehicle !== tow) {
+      tow.abort()
+    }
     const ambulance = this.ambulance
     if (act1State.value === 'ambulance' && ambulance != null && ambulance.missionActive && !ambulance.isInCutscene && this.currentVehicle !== ambulance) {
       ambulance.abort()

@@ -9,6 +9,7 @@ export const SpawnLocations = [
   'racecarbuildExited',
   'garageExterior',
   'garageExited',
+  'towTrackHookedUp',
   'hospitalExterior',
   'hospitalExited',
   'policeExterior',
@@ -41,6 +42,8 @@ export const getSpawnLocation = (location: SpawnLocation): IsleParam => {
       return { position: { boundaryName: 'INT16', source: 4, sourceScale: 0.1, destination: 2, destinationScale: 0 } }
     case 'garageExterior':
       return { position: { boundaryName: 'INT24', source: 0, sourceScale: 0.55, destination: 2, destinationScale: 0.71 } }
+    case 'towTrackHookedUp':
+      return { position: { boundaryName: 'edg02_19', source: 2, sourceScale: 0.5, destination: 0, destinationScale: 0.5 } }
     case 'garageExited':
       return { position: { boundaryName: 'INT24', source: 2, sourceScale: 0.73, destination: 4, destinationScale: 0.71 } }
     case 'hospitalExterior':
