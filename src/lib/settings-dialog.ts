@@ -115,6 +115,22 @@ if (toneMappingCheckbox == null || !(toneMappingCheckbox instanceof HTMLInputEle
   throw new Error('Tone mapping checkbox not found')
 }
 
+const graphicsCheckboxIds = {
+  textureFiltering: 'texture-filtering-checkbox',
+  highDpi: 'high-dpi-checkbox',
+  distanceFog: 'distance-fog-checkbox',
+  contactShadows: 'contact-shadows-checkbox',
+  ambientOcclusion: 'ambient-occlusion-checkbox',
+} as const
+const graphicsKeys = ['textureFiltering', 'highDpi', 'distanceFog', 'contactShadows', 'ambientOcclusion'] as const
+const graphicsCheckbox = (key: (typeof graphicsKeys)[number]): HTMLInputElement => {
+  const element = document.getElementById(graphicsCheckboxIds[key])
+  if (!(element instanceof HTMLInputElement)) {
+    throw new Error(`Graphics checkbox missing: ${key}`)
+  }
+  return element
+}
+
 const freeRoamCheckbox = document.getElementById('free-roam-checkbox')
 if (freeRoamCheckbox == null || !(freeRoamCheckbox instanceof HTMLInputElement)) {
   throw new Error('Free roam checkbox not found')
@@ -178,6 +194,9 @@ const updateControlsFromSettings = () => {
   shadowsCheckbox.checked = settings.graphics.shadows
   postProcessingCheckbox.checked = settings.graphics.postProcessing
   toneMappingCheckbox.checked = settings.graphics.toneMapping === 'filmic'
+  for (const key of graphicsKeys) {
+    graphicsCheckbox(key).checked = settings.graphics[key]
+  }
   freeRoamCheckbox.checked = settings.freeRoam
   fillCheckbox.checked = settings.fill
   for (const audioType of AudioTypes) {
@@ -196,6 +215,11 @@ const updateSettingsFromCheckboxes = () => {
       shadows: shadowsCheckbox.checked,
       postProcessing: postProcessingCheckbox.checked,
       toneMapping: toneMappingCheckbox.checked ? 'filmic' : 'none',
+      textureFiltering: graphicsCheckbox('textureFiltering').checked,
+      highDpi: graphicsCheckbox('highDpi').checked,
+      distanceFog: graphicsCheckbox('distanceFog').checked,
+      contactShadows: graphicsCheckbox('contactShadows').checked,
+      ambientOcclusion: graphicsCheckbox('ambientOcclusion').checked,
     },
     volume: {
       music: Number.parseFloat(volumeSliders.music.value),
@@ -255,7 +279,7 @@ presetSelect.addEventListener('change', () => {
   updateControlsFromSettings()
 })
 
-for (const checkbox of [realisticWaterCheckbox, sunCheckbox, hdTexturesCheckbox, pbrMaterialsCheckbox, shadowsCheckbox, postProcessingCheckbox, toneMappingCheckbox]) {
+for (const checkbox of [realisticWaterCheckbox, sunCheckbox, hdTexturesCheckbox, pbrMaterialsCheckbox, shadowsCheckbox, postProcessingCheckbox, toneMappingCheckbox, ...graphicsKeys.map(graphicsCheckbox)]) {
   checkbox.addEventListener('change', () => {
     setPreset('custom')
     presetSelect.value = 'custom'

@@ -12,6 +12,11 @@ export interface Settings {
     shadows: boolean
     postProcessing: boolean
     toneMapping: 'none' | 'filmic'
+    textureFiltering: boolean
+    highDpi: boolean
+    distanceFog: boolean
+    contactShadows: boolean
+    ambientOcclusion: boolean
   }
   volume: Record<AudioType, number>
   music: boolean
@@ -39,6 +44,9 @@ export const setSettings = (settings: Partial<Settings>) => {
     localStorage.setItem('settings.graphics.shadows', settings.graphics.shadows ? 'true' : 'false')
     localStorage.setItem('settings.graphics.postProcessing', settings.graphics.postProcessing ? 'true' : 'false')
     localStorage.setItem('settings.graphics.toneMapping', settings.graphics.toneMapping)
+    for (const key of ['textureFiltering', 'highDpi', 'distanceFog', 'contactShadows', 'ambientOcclusion'] as const) {
+      localStorage.setItem(`settings.graphics.${key}`, String(settings.graphics[key]))
+    }
   }
   if (settings.volume != null) {
     for (const [audioType, volume] of Object.entries(settings.volume)) {
@@ -58,13 +66,13 @@ export const setPreset = (preset: Preset) => {
 
   switch (preset) {
     case 'original':
-      setSettings({ graphics: { preset: 'original', realisticWater: false, sun: false, hdTextures: false, pbrMaterials: false, shadows: false, toneMapping: 'none', postProcessing: false } })
+      setSettings({ graphics: { preset: 'original', realisticWater: false, sun: false, hdTextures: false, pbrMaterials: false, shadows: false, toneMapping: 'none', postProcessing: false, textureFiltering: false, highDpi: false, distanceFog: false, contactShadows: false, ambientOcclusion: false } })
       break
     case 'hd':
-      setSettings({ graphics: { preset: 'hd', realisticWater: false, sun: false, hdTextures: true, pbrMaterials: false, shadows: true, toneMapping: 'filmic', postProcessing: false } })
+      setSettings({ graphics: { preset: 'hd', realisticWater: false, sun: false, hdTextures: true, pbrMaterials: false, shadows: true, toneMapping: 'filmic', postProcessing: false, textureFiltering: true, highDpi: true, distanceFog: true, contactShadows: true, ambientOcclusion: false } })
       break
     case 'next-gen':
-      setSettings({ graphics: { preset: 'next-gen', realisticWater: true, sun: true, hdTextures: true, pbrMaterials: true, shadows: true, toneMapping: 'filmic', postProcessing: true } })
+      setSettings({ graphics: { preset: 'next-gen', realisticWater: true, sun: true, hdTextures: true, pbrMaterials: true, shadows: true, toneMapping: 'filmic', postProcessing: true, textureFiltering: true, highDpi: true, distanceFog: true, contactShadows: true, ambientOcclusion: true } })
       break
     case 'custom':
       localStorage.setItem('settings.graphics.preset', 'custom')
@@ -75,6 +83,13 @@ export const setPreset = (preset: Preset) => {
 export const getSettings = (): Settings => {
   if (!['original', 'hd', 'next-gen', 'custom'].includes(localStorage.getItem('settings.graphics.preset') ?? '')) {
     setPreset('hd')
+  }
+
+  const preset = localStorage.getItem('settings.graphics.preset')
+  const enhanced = preset !== 'original'
+  const graphicsOption = (key: string, fallback: boolean): boolean => {
+    const value = localStorage.getItem(`settings.graphics.${key}`)
+    return value == null ? fallback : value === 'true'
   }
 
   const parseVolume = (audioType: AudioType): number => {
@@ -93,6 +108,11 @@ export const getSettings = (): Settings => {
       shadows: localStorage.getItem('settings.graphics.shadows') === 'true',
       toneMapping: localStorage.getItem('settings.graphics.toneMapping') as 'none' | 'filmic',
       postProcessing: localStorage.getItem('settings.graphics.postProcessing') === 'true',
+      textureFiltering: graphicsOption('textureFiltering', enhanced),
+      highDpi: graphicsOption('highDpi', enhanced),
+      distanceFog: graphicsOption('distanceFog', enhanced),
+      contactShadows: graphicsOption('contactShadows', enhanced),
+      ambientOcclusion: graphicsOption('ambientOcclusion', preset === 'next-gen'),
     },
     volume: {
       music: parseVolume('music'),

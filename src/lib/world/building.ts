@@ -32,6 +32,7 @@ import { radio } from '../radio.ts'
 import { getSettings } from '../settings'
 import { switchWorld } from '../switch-world'
 import type { CharacterName } from './character'
+import { configureShadow } from './lighting.ts'
 import type { NormalWorld, World, WorldSpawn } from './world'
 
 export class Building {
@@ -145,15 +146,7 @@ export class Building {
         world.scene.add(sunLight)
         const directionalLight = new THREE.DirectionalLight(0xffffff)
         if (getSettings().graphics.shadows) {
-          directionalLight.castShadow = true
-          directionalLight.shadow.mapSize.set(4096, 4096)
-          directionalLight.shadow.radius = 1.5
-          directionalLight.shadow.camera.near = 0.5
-          directionalLight.shadow.camera.far = 500
-          directionalLight.shadow.camera.left = -200
-          directionalLight.shadow.camera.right = 200
-          directionalLight.shadow.camera.top = 200
-          directionalLight.shadow.camera.bottom = -200
+          configureShadow(directionalLight)
         }
         world.scene.add(directionalLight)
       }

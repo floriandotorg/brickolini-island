@@ -21,6 +21,8 @@
   left: 50%;
   transform: translate(-50%, -50%);
   max-width: 500px;
+  max-height: 90dvh;
+  overflow-y: auto;
 }
 
 .xr-button {

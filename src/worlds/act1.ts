@@ -1115,10 +1115,6 @@ export class Act1 extends Isle {
   public override update(delta: number): void {
     super.update(delta)
 
-    if (this._water != null) {
-      this._water.material.uniforms.time.value += delta * 0.1
-    }
-
     const tow = this.findRoi('towtk')?.actor
     if (tow instanceof TowTrack && tow.missionActive && !tow.isInCutscene && this.currentVehicle !== tow) {
       tow.abort()

@@ -310,6 +310,10 @@ export abstract class World {
     this._actors.add(actor)
   }
 
+  protected get characters(): readonly Character[] {
+    return this._characters.values()
+  }
+
   public releaseActor(name: string): void {
     if (isCharacterName(name)) {
       this._characters.release(name)
@@ -1278,6 +1282,7 @@ export abstract class World {
     this._characters.clear()
     this.soundCache.dispose()
     forgetModelLods(this.scene)
+    this._render.dispose()
     this.scene.clear()
   }
 

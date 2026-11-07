@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { Sky } from 'three/addons/objects/Sky.js'
-import type { Water } from 'three/addons/objects/Water.js'
+import { Water } from 'three/addons/objects/Water.js'
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator.js'
 import { Chptr_Model } from '../actions/copter'
 import { DuneBugy_Model } from '../actions/dunecar'
@@ -43,10 +43,12 @@ import { PathActor } from '../lib/world/actors/path-actor'
 import type { Vehicle } from '../lib/world/actors/vehicle'
 import { AmbientManager } from '../lib/world/ambient-manager'
 import { type Character, type CharacterName, isCharacterName } from '../lib/world/character'
+import { ContactShadows } from '../lib/world/contact-shadows.ts'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
 import type { Entity } from '../lib/world/entity'
 import { ExtrasManager } from '../lib/world/extras-manager'
 import { IslandBuildings } from '../lib/world/island-buildings'
+import { configureShadow } from '../lib/world/lighting.ts'
 import { Plants } from '../lib/world/plants'
 import type { PlayerMovement } from '../lib/world/player-movement'
 import { World, type WorldName } from '../lib/world/world'
@@ -112,7 +114,8 @@ export abstract class IsleBase extends World {
         type: 'none'
       } = { type: 'none' }
   protected _ambientLight: THREE.AmbientLight | null = null
-  protected _water: Water | null = null
+  private readonly _waters = new Set<Water>()
+  private _contactShadows: ContactShadows | null = null
   private _temporarySkyColor: { h: number; s: number; l: number } | null = null
   protected _isleMesh: THREE.Object3D | null = null
   protected _bikeRoi: Roi3D | null = null
@@ -160,7 +163,7 @@ export abstract class IsleBase extends World {
   public cameraAnimationTriggerEnabled = true
 
   public set water(water: Water) {
-    this._water = water
+    this._waters.add(water)
   }
 
   public get animationInfos(): DTA.AnimationInfo[] {
@@ -313,6 +316,17 @@ export abstract class IsleBase extends World {
     }
 
     const settings = getSettings()
+    this.scene.traverse(object => {
+      if (object instanceof Water) {
+        this._waters.add(object)
+      }
+    })
+    if (settings.graphics.distanceFog) {
+      this.scene.fog = new THREE.Fog(0xa8cddd, 100, 380)
+    }
+    if (settings.graphics.contactShadows) {
+      this._contactShadows = new ContactShadows(this.scene, settings.graphics.shadows ? 0.12 : 0.25)
+    }
     if (settings.graphics.sun) {
       const sky = new Sky()
       sky.scale.setScalar(10000)
@@ -329,15 +343,7 @@ export abstract class IsleBase extends World {
 
       const sunLight = new THREE.DirectionalLight()
       if (settings.graphics.shadows) {
-        sunLight.castShadow = true
-        sunLight.shadow.mapSize.set(4096, 4096)
-        sunLight.shadow.radius = 1.5
-        sunLight.shadow.camera.near = 0.5
-        sunLight.shadow.camera.far = 500
-        sunLight.shadow.camera.left = -200
-        sunLight.shadow.camera.right = 200
-        sunLight.shadow.camera.top = 200
-        sunLight.shadow.camera.bottom = -200
+        configureShadow(sunLight)
       }
       this.scene.add(sunLight)
 
@@ -355,15 +361,7 @@ export abstract class IsleBase extends World {
       this.scene.add(sunLight)
       const directionalLight = new THREE.DirectionalLight(0xffffff)
       if (settings.graphics.shadows) {
-        directionalLight.castShadow = true
-        directionalLight.shadow.mapSize.set(4096, 4096)
-        directionalLight.shadow.radius = 1.5
-        directionalLight.shadow.camera.near = 0.5
-        directionalLight.shadow.camera.far = 500
-        directionalLight.shadow.camera.left = -200
-        directionalLight.shadow.camera.right = 200
-        directionalLight.shadow.camera.top = 200
-        directionalLight.shadow.camera.bottom = -200
+        configureShadow(directionalLight)
       }
       this.scene.add(directionalLight)
 
@@ -506,6 +504,13 @@ export abstract class IsleBase extends World {
       case 'original': {
         const index = engine.currentSaveGame.sunPosition
         applyLights(index, this._sun.sunLight, this._sun.directionalLight)
+        if (getSettings().graphics.preset !== 'original') {
+          this._sun.directionalLight.target.position.set(0, 0, 0)
+          this._sun.directionalLight.position.copy(this._sun.sunLight.position)
+        }
+        for (const water of this._waters) {
+          water.material.uniforms.sunDirection.value.copy(this._sun.sunLight.position).normalize()
+        }
         if (this._temporarySkyColor == null) {
           this.applySavedSkyColor()
         }
@@ -538,26 +543,20 @@ export abstract class IsleBase extends World {
         const lightPhi = THREE.MathUtils.degToRad(90 - lightElevationDeg)
         const lightDir = new THREE.Vector3().setFromSphericalCoords(1, lightPhi, theta)
 
+        this._sun.sunLight.target.position.set(0, 0, 0)
         this._sun.sunLight.position.copy(lightDir).multiplyScalar(100)
         this._sun.sunLight.intensity = intensity
         this._sun.sunLight.color.copy(color)
 
-        if (getSettings().graphics.shadows && this._sun.sunLight.shadow) {
-          const frustumScale = 1 + (1 - elevationDeg / 90) * 3
-          const baseFrustum = 200
-          const scaledFrustum = baseFrustum * frustumScale
-
-          this._sun.sunLight.shadow.camera.left = -scaledFrustum
-          this._sun.sunLight.shadow.camera.right = scaledFrustum
-          this._sun.sunLight.shadow.camera.top = scaledFrustum
-          this._sun.sunLight.shadow.camera.bottom = -scaledFrustum
-
-          this._sun.sunLight.shadow.camera.far = 500 + (1 - elevationDeg / 90) * 500
+        if (this.scene.fog != null && this._temporarySkyColor == null) {
+          this.scene.fog.color
+            .set(0xa8cddd)
+            .lerp(color, 0.12)
+            .multiplyScalar(0.6 + intensity * 0.4)
         }
-
-        if (this._water != null) {
-          this._water.material.uniforms.sunColor.value.copy(color)
-          this._water.material.uniforms.sunDirection.value.copy(sunDir.normalize())
+        for (const water of this._waters) {
+          water.material.uniforms.sunColor.value.copy(color)
+          water.material.uniforms.sunDirection.value.copy(sunDir)
         }
         break
       }
@@ -594,6 +593,7 @@ export abstract class IsleBase extends World {
   private _applySkyColor(hsl: { h: number; s: number; l: number }): void {
     const color = new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l).convertSRGBToLinear()
     this.scene.background = color
+    this.scene.fog?.color.copy(color)
     if (this._sun.type === 'original') {
       const lightColor = new THREE.Color(Math.min(color.r * (1 / 0.23), 1), Math.min(color.g * (1 / 0.63), 1), Math.min(color.b * (1 / 0.85), 1))
       this._sun.directionalLight.color = lightColor
@@ -1035,8 +1035,24 @@ export abstract class IsleBase extends World {
     this.ambient.tick(delta)
     this.extras.tick(delta)
 
-    if (this._water != null) {
-      this._water.material.uniforms.time.value += delta * 0.1
+    for (const water of this._waters) {
+      water.material.uniforms.time.value += delta * 0.35
     }
+    if (this._contactShadows != null) {
+      const sources = new Set<Roi3D>([...this.actors.map(actor => actor.roi), ...this.characters])
+      for (const vehicle of ['bike', 'moto', 'skate', 'ambul', 'towtk'] as const) {
+        const roi = this.getVehicleRoi(vehicle)
+        if (roi != null) {
+          sources.add(roi)
+        }
+      }
+      this._contactShadows.update(sources, this._groundGroup, this.camera, engine.elapsedTimeSeconds)
+    }
+  }
+
+  public override dispose(): void {
+    this._contactShadows?.dispose()
+    this._waters.clear()
+    super.dispose()
   }
 }

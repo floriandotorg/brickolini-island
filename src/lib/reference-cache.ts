@@ -38,6 +38,15 @@ export class ReferenceCache<K, T> {
     this._entries.set(key, entry)
     return entry.promise
   }
+  public values(): T[] {
+    const values: T[] = []
+    for (const entry of this._entries.values()) {
+      if (entry.value !== undefined) {
+        values.push(entry.value)
+      }
+    }
+    return values
+  }
   public has(key: K): boolean {
     return this._entries.has(key)
   }

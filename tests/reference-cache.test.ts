@@ -48,6 +48,24 @@ test('clearing during a load disposes its result without attaching it', async ()
   assert.equal(cache.has('laura'), false)
 })
 
+test('values includes only loaded entries that are still retained', async () => {
+  const cache = new ReferenceCache(
+    async (name: string) => name,
+    () => {},
+    () => {},
+  )
+  const pending = cache.acquire('nick')
+  assert.deepEqual(cache.values(), [])
+  await pending
+  assert.deepEqual(cache.values(), ['nick'])
+  await cache.acquire('laura')
+  assert.deepEqual(cache.values(), ['nick', 'laura'])
+  cache.release('nick')
+  assert.deepEqual(cache.values(), ['laura'])
+  cache.clear()
+  assert.deepEqual(cache.values(), [])
+})
+
 test('failed creation can be retried', async () => {
   let attempts = 0
   const cache = new ReferenceCache(

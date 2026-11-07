@@ -1,26 +1,12 @@
 import * as THREE from 'three'
 import { type LetterboxAnchor, letterboxBounds, RESOLUTION_RATIO } from '../engine'
+import { getSettings } from '../settings.ts'
+import { updateFocusedShadow } from '../world/lighting.ts'
+import type { Effect } from './effect.ts'
 import effectFrag from './shader/effect.glsl'
+import { WorldShadingEffect } from './world-shading.ts'
 
-export abstract class Effect {
-  private _material: THREE.ShaderMaterial | null = null
-
-  abstract get fragmentShader(): string
-  get uniforms(): Record<string, THREE.IUniform> {
-    return {}
-  }
-
-  set material(material: THREE.ShaderMaterial) {
-    this._material = material
-  }
-
-  get material(): THREE.ShaderMaterial {
-    if (this._material == null) {
-      throw new Error('Material not set')
-    }
-    return this._material
-  }
-}
+export { Effect } from './effect.ts'
 
 const compileFragmentShader = (effects: Effect[]) =>
   effectFrag.replace('/// EFFECTS', effects.map((effect, n) => effect.fragmentShader.replace('void mainImage', `void main${n + 1}`)).join('\n')).replace('/// PIPELINE', effects.map((_, n) => `main${n + 1}(inputColor, outputColor);\ninputColor = outputColor;`).join('\n'))
@@ -44,24 +30,42 @@ export abstract class Render {
   public get shader(): string {
     return compileFragmentShader(this._effects)
   }
+
+  public bindEffects(): void {
+    for (const effect of this._effects) {
+      effect.material = this.material
+      Object.assign(this.material.uniforms, effect.uniforms)
+    }
+  }
+
+  public dispose(): void {
+    this.material.dispose()
+  }
 }
 
 export class Render3D extends Render {
   public scene = new THREE.Scene()
   public camera = new THREE.PerspectiveCamera(75, RESOLUTION_RATIO)
 
+  private _depth = new THREE.DepthTexture(1, 1, THREE.UnsignedIntType)
   private _renderTarget = new THREE.WebGLRenderTarget(1, 1, {
     format: THREE.RGBAFormat,
-    type: THREE.FloatType,
+    type: THREE.HalfFloatType,
+    depthTexture: this._depth,
     stencilBuffer: false,
     samples: 4,
   })
+  private _focusedShadows = getSettings().graphics.preset !== 'original'
 
   constructor() {
     super()
     this.scene.add(this.camera)
     this.camera.name = 'camera'
     this.camera.rotation.order = 'YXZ'
+    const graphics = getSettings().graphics
+    if (graphics.ambientOcclusion || graphics.toneMapping === 'filmic') {
+      this.addEffect(new WorldShadingEffect(this.camera, this._depth, graphics.ambientOcclusion, graphics.toneMapping === 'filmic'))
+    }
   }
 
   public get texture(): THREE.Texture {
@@ -75,9 +79,22 @@ export class Render3D extends Render {
   }
 
   public render(renderer: THREE.WebGLRenderer): void {
+    if (this._focusedShadows) {
+      this.scene.traverse(object => {
+        if (object instanceof THREE.DirectionalLight && object.castShadow) {
+          updateFocusedShadow(object, this.camera)
+        }
+      })
+    }
     renderer.setRenderTarget(this._renderTarget)
     renderer.render(this.scene, this.camera)
     renderer.setRenderTarget(null)
+  }
+
+  public override dispose(): void {
+    super.dispose()
+    this._renderTarget.dispose()
+    this._depth.dispose()
   }
 }
 
@@ -89,7 +106,7 @@ export class Render2D extends Render {
   private _bounds = { left: -1, right: 1, top: 1, bottom: -1 }
 
   private _renderTarget = new THREE.WebGLRenderTarget(1, 1, {
-    type: THREE.FloatType,
+    type: THREE.HalfFloatType,
     stencilBuffer: false,
   })
 
@@ -120,6 +137,11 @@ export class Render2D extends Render {
     }
   }
 
+  public override dispose(): void {
+    super.dispose()
+    this._renderTarget.dispose()
+  }
+
   public contentNDC(ndcX: number, ndcY: number): [number, number] {
     const { left, right, top, bottom } = this._bounds
     const x = ((ndcX + 1) / 2) * (right - left) + left
@@ -129,7 +151,6 @@ export class Render2D extends Render {
 }
 
 export class Composer {
-  private _canvas: HTMLCanvasElement
   private _renderer: THREE.WebGLRenderer
   private _scene = new THREE.Scene()
   private _camera = new THREE.OrthographicCamera()
@@ -140,9 +161,11 @@ export class Composer {
 
   private _pipeline: Render[] = []
   private _effects: Effect[] = []
+  private _width = 1
+  private _height = 1
 
   private _renderTarget = new THREE.WebGLRenderTarget(1, 1, {
-    type: THREE.FloatType,
+    type: THREE.HalfFloatType,
     stencilBuffer: false,
   })
 
@@ -151,8 +174,9 @@ export class Composer {
   }
 
   constructor(canvas: HTMLCanvasElement, renderer: THREE.WebGLRenderer) {
-    this._canvas = canvas
     this._renderer = renderer
+    this._width = canvas.width
+    this._height = canvas.height
 
     this._postMaterial = new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
@@ -185,6 +209,8 @@ export class Composer {
   }
 
   public resize(width: number, height: number): void {
+    this._width = width
+    this._height = height
     this._renderTarget.setSize(width, height)
 
     for (const render of this._pipeline) {
@@ -193,8 +219,9 @@ export class Composer {
   }
 
   public add(render: Render): void {
-    render.resize(this._canvas.clientWidth, this._canvas.clientHeight)
+    render.resize(this._width, this._height)
     this._pipeline.push(render)
+    render.material.dispose()
     render.material = new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
       fragmentShader: render.shader,
@@ -204,12 +231,18 @@ export class Composer {
       },
       transparent: true,
     })
+    render.bindEffects()
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), render.material)
     mesh.position.z = -100 + this._pipeline.length
     this._scene.add(mesh)
   }
 
   public resetPipeline(): void {
+    for (const object of this._scene.children) {
+      if (object instanceof THREE.Mesh) {
+        object.geometry.dispose()
+      }
+    }
     this._scene.clear()
     this._pipeline = []
   }

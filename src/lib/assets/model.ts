@@ -4,6 +4,7 @@ import type { ModelAction } from '../action-types'
 import { islandModelName, lodIndex } from '../model-quality'
 import { getSettings } from '../settings'
 import type { Actor } from '../world/actor'
+import { createIslandWater } from '../world/water.ts'
 import { BinaryReader } from './binary-reader'
 import { getAction, getFile, getFileUrl } from './load'
 import { colorFromName, createGeometryAndMaterials } from './mesh'
@@ -394,15 +395,9 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
     let n = 0
     for (const [geometry, material] of createGeometryAndMaterials(lod, customColor, null, 'model')) {
       if (getSettings().graphics.realisticWater && material.name.toLowerCase() === 'ocean flat') {
-        const mesh = new Water(geometry, {
-          textureWidth: 512,
-          textureHeight: 512,
-          waterNormals: new THREE.TextureLoader().load('hd/textures/waternormals.jpg', texture => {
-            texture.wrapS = texture.wrapT = THREE.RepeatWrapping
-          }),
-          distortionScale: 5,
-        })
-        mesh.material.uniforms.size.value = 7
+        const mesh = createIslandWater(geometry)
+        geometry.dispose()
+        material.dispose()
         mesh.name = `${roiModel.name}-${++n}`.toLowerCase()
         roiModel.add(mesh)
         continue

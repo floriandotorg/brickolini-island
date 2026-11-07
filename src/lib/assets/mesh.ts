@@ -4,6 +4,7 @@ export { type ColorName, ColorNames, type ColorTableName, ColorTableNames, getDe
 
 import * as THREE from 'three'
 import { engine } from '../engine'
+import { getSurfaceProperties } from '../graphics.ts'
 import { VehicleTextureSlots } from '../save-game'
 import { getSettings } from '../settings'
 import { getFileUrl, manager } from './load'
@@ -90,8 +91,10 @@ const createTexture = (name: string, source: 'model' | 'part' | 'image'): THREE.
     texture.wrapT = THREE.RepeatWrapping
     texture.magFilter = THREE.NearestFilter
     texture.minFilter = THREE.NearestFilter
-    if (getSettings().graphics.toneMapping === 'filmic') {
-      texture.anisotropy = engine.renderer.capabilities.getMaxAnisotropy()
+    if (getSettings().graphics.textureFiltering) {
+      texture.magFilter = THREE.LinearFilter
+      texture.minFilter = THREE.LinearMipmapLinearFilter
+      texture.anisotropy = Math.min(8, engine.renderer.capabilities.getMaxAnisotropy())
     }
   })
   result.name = name.toLowerCase()
@@ -104,19 +107,7 @@ const createGeometryAndMaterial = (modelMesh: WDB.Mesh, customColor: WDB.Color |
   const uvs: number[] = modelMesh.uvs.flat()
   const material = (() => {
     if (getSettings().graphics.pbrMaterials && modelMesh.shading !== WDB.Shading.WireFrame) {
-      const material = new THREE.MeshPhysicalMaterial({ flatShading: modelMesh.shading === WDB.Shading.Flat, metalness: 0, roughness: 1 })
-
-      if (['grass', 'rock', 'sand', 'ocean', 'cave', 'beach', 'mites', 'pebble'].every(m => !modelMesh.materialName.toLowerCase().includes(m))) {
-        material.roughness = modelMesh.materialName.toLowerCase().includes('windo blue') ? 0 : 0.1
-        material.metalness = modelMesh.materialName.toLowerCase().includes('windo blue') ? 0.4 : 0
-        material.clearcoat = 0.7
-        material.clearcoatRoughness = modelMesh.materialName.toLowerCase().includes('windo blue') ? 0 : 0.1
-        material.specularIntensity = 0.4
-        material.iridescence = 1
-        material.reflectivity = modelMesh.materialName.toLowerCase().includes('windo blue') ? 1 : 0.5
-      }
-
-      return material
+      return new THREE.MeshPhysicalMaterial({ flatShading: modelMesh.shading === WDB.Shading.Flat, ...getSurfaceProperties(modelMesh.materialName) })
     }
 
     switch (modelMesh.shading) {

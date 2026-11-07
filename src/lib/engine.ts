@@ -10,6 +10,7 @@ import { Composer, Render2D } from './effect/composer'
 import { FilmGrainEffect } from './effect/film-grain'
 import { MosaicEffect } from './effect/mosaic'
 import { handleGlobalKey } from './global-keys.ts'
+import { getRenderSize } from './graphics.ts'
 import { InputManager } from './input.ts'
 import { PlayerDirectory } from './player-directory.ts'
 import { isPlayerCharacter, SaveGame } from './save-game'
@@ -795,9 +796,12 @@ class Engine {
     this._canvas.style.left = `${(window.innerWidth - width) / 2}px`
     this._canvas.style.top = `${(window.innerHeight - height) / 2}px`
 
-    this._renderer.setSize(width, height, false)
-    this._composer.resize(width, height)
-    this._cutsceneComposer.resize(width, height)
+    const size = getRenderSize(width, height, window.devicePixelRatio, getSettings().graphics.highDpi, this._renderer.capabilities.maxTextureSize)
+    this._canvas.style.width = `${width}px`
+    this._canvas.style.height = `${height}px`
+    this._renderer.setSize(size.width, size.height, false)
+    this._composer.resize(size.width, size.height)
+    this._cutsceneComposer.resize(size.width, size.height)
     this._world?.resize(width, height)
   }
 
