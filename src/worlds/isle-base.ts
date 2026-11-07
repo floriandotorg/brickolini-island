@@ -409,6 +409,24 @@ export abstract class IsleBase extends World {
     }
   }
 
+  private _spawnExtras(): void {
+    const arr = [...Array(11).keys()]
+    for (let n = 0; n < 5; ++n) {
+      let r = Math.floor(Math.random() * 5)
+
+      for (const j of arr) {
+        if (r-- === 0) {
+          this._spawnExtraCharacter(j)
+          arr.splice(arr.indexOf(j), 1)
+        }
+      }
+    }
+  }
+
+  private _spawnExtraCharacter(cycleIndex: number): void {
+    console.log(cycleIndex)
+  }
+
   public override async activate(composer: Composer, _param?: unknown): Promise<void> {
     super.activate(composer, _param)
 
@@ -418,6 +436,8 @@ export abstract class IsleBase extends World {
     if (noPizzaSign instanceof THREE.Mesh) {
       noPizzaSign.material.map = engine.currentSaveGame.player === 'pepper' ? createTexture(NoPizaz_Texture) : createTexture(NoPizza_Texture)
     }
+
+    this._spawnExtras()
   }
 
   public getVehicleRoi(vehicle: VehicleType): Roi3D | null {

@@ -934,7 +934,7 @@ export class Act1 extends Isle {
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
     const ambulance = this.ambulance
     if (act1State.value === 'ambulance' && ambulance != null && ambulance.isInPickupPhase) {
-      this._dashboard.pointerDown(event.normalizedX, event.normalizedY)
+      this._dashboard.pointerDown(event)
       const name = this.pickRoiNameAt(event.normalizedX, event.normalizedY, Act1.PICKUP_ROI_NAMES)
       if (name != null) {
         ambulance.handlePickupClick(name)
