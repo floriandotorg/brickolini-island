@@ -16,6 +16,11 @@ export class Garage extends World {
     super('garage')
   }
 
+  public override escape(): boolean {
+    this.skipAllRunningAnimations(true)
+    return true
+  }
+
   public override async init(): Promise<void> {
     await super.init()
     await this._building.init({

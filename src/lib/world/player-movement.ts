@@ -30,6 +30,7 @@ export class PlayerMovement {
   private _rotVel = 0
   private _verticalVel = 0
   private _pitchVel = 0
+  private _lookYaw = 0
   private _slewMode = false
   private _flightMode = false
   public flightInfo: {
@@ -196,17 +197,24 @@ export class PlayerMovement {
   }
 
   update(delta: number, vehicleType: VehicleType | null): { fromPos: THREE.Vector3; toPos: THREE.Vector3; normalizedSpeed: number } {
+    this._camera.rotateY(-this._lookYaw)
     const speedMultiplier = this._slewMode ? 4 : 1
     const maxLinearVel = vehicleType != null ? VEHICLE_MAX_LINEAR_VEL[vehicleType] : WALK_SPEED
 
-    const targetLinearVel = (engine.isKeyDown('ArrowUp') ? maxLinearVel : engine.isKeyDown('ArrowDown') ? -maxLinearVel : 0) * speedMultiplier
-    const targetRotVel = engine.isKeyDown('ArrowLeft') ? MAX_ROT_VEL : engine.isKeyDown('ArrowRight') ? -MAX_ROT_VEL : 0
+    const flags = engine.input.getNavigationFlags()
+    const settings = getSettings()
+    const pad = settings.gamepad ? engine.input.getGamepad(navigator.getGamepads(), settings.gamepadIndex) : null
+    if (pad?.pov != null) {
+      this._lookYaw = -THREE.MathUtils.degToRad(pad.pov)
+    }
+    const targetLinearVel = (flags.up ? maxLinearVel : flags.down ? -maxLinearVel : pad != null ? ((50 - pad.y) / 50) * maxLinearVel : 0) * speedMultiplier
+    const targetRotVel = flags.left ? MAX_ROT_VEL : flags.right ? -MAX_ROT_VEL : pad != null ? ((50 - pad.x) / 50) * MAX_ROT_VEL : 0
     const targetVerticalVel = this._slewMode ? (engine.isKeyDown('q') ? maxLinearVel * speedMultiplier : engine.isKeyDown('e') ? -maxLinearVel * speedMultiplier : 0) : 0
     const targetPitchVel = this._slewMode ? (engine.isKeyDown('w') ? MAX_ROT_VEL : engine.isKeyDown('s') ? -MAX_ROT_VEL : 0) : 0
 
-    const linearAccel = targetLinearVel !== 0 ? MAX_LINEAR_ACCEL : MAX_LINEAR_DECEL
-    const rotAccel = (targetRotVel !== 0 ? MAX_ROT_ACCEL : MAX_ROT_DECEL) * 40
-    const pitchAccel = (targetPitchVel !== 0 ? MAX_ROT_ACCEL : MAX_ROT_DECEL) * 40
+    const linearAccel = targetLinearVel !== 0 ? MAX_LINEAR_ACCEL * (flags.ctrl ? 4 : 1) : MAX_LINEAR_DECEL
+    const rotAccel = (targetRotVel !== 0 ? MAX_ROT_ACCEL * (flags.ctrl ? 2 : 1) : MAX_ROT_DECEL) * 40
+    const pitchAccel = (targetPitchVel !== 0 ? MAX_ROT_ACCEL * (flags.ctrl ? 2 : 1) : MAX_ROT_DECEL) * 40
 
     if (this._slewMode) {
       this._linearVel = targetLinearVel
@@ -267,6 +275,7 @@ export class PlayerMovement {
       this.placeOnGround(this._camera)
     }
 
+    this._camera.rotateY(this._lookYaw)
     return { fromPos, toPos, normalizedSpeed }
   }
 }

@@ -1,5 +1,6 @@
 import type { IsleParam } from '../worlds/isle-base'
 import { getSpawnLocation } from './assets/spawn-location'
+import { setCursor } from './cursor.ts'
 import { engine } from './engine'
 import { onSessionReset } from './session-state.ts'
 import type { ElevatorEntrance, NormalWorld, World, WorldName, WorldSpawn } from './world/world'
@@ -75,7 +76,25 @@ export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
   throw new Error(`Unknown world spawn ${spawn}`)
 }
 
+let switching = false
+
 const switchWorldInner = async (normalizedSpawn: WorldSpawnInner) => {
+  if (switching) {
+    return
+  }
+  switching = true
+  setCursor('busy')
+  try {
+    await loadWorld(normalizedSpawn)
+  } catch (error) {
+    engine.finishTransition()
+    throw error
+  } finally {
+    switching = false
+  }
+}
+
+const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
   const transition = engine.hasWorld ? engine.transition() : Promise.resolve()
 
   if (!worlds.has(normalizedSpawn.name)) {

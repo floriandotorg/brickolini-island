@@ -55,7 +55,8 @@ export abstract class Vehicle extends Actor {
     this._isle.camera.quaternion.copy(this.roi.model.quaternion)
     this._isle.placeOnGround(this._isle.camera)
 
-    void this._isle.dashboard.show(this.dashboard)
+    await this._isle.dashboard.show(this.dashboard)
+    engine.finishTransition()
 
     if (this.explanationAnimation != null && this.explanationAnimationOffset != null && !engine.currentSaveGame.playedExitExplanation) {
       engine.currentSaveGame.playedExitExplanation = true

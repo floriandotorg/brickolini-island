@@ -565,7 +565,8 @@ export abstract class World {
 
     const audios: THREE.PositionalAudio[] = await Promise.all(
       positionalAudioActions.map(async audio => {
-        const character = this.getRoi(audio.extra)
+        const extra = audio.extra === 'FROM_PARENT' ? action.extra : audio.extra
+        const character = this.getRoi(extra ?? '')
         if (character == null) {
           throw new Error(`Actor not found: ${audio.extra}`)
         }
@@ -680,7 +681,17 @@ export abstract class World {
     }
   }
 
-  public async pointerDown(event: NormalizedMouseEvent): Promise<void> {
+  private _allowClick = false
+
+  public beginPointer(): void {
+    this._allowClick = false
+  }
+
+  public async pointerDown(_event: NormalizedMouseEvent): Promise<void> {
+    this._allowClick = true
+  }
+
+  public async click(event: NormalizedMouseEvent): Promise<void> {
     this._raycaster.setFromCamera(new THREE.Vector2(event.ndcX, event.ndcY), this._render.camera)
     let hit: THREE.Object3D | null = this._raycaster.intersectObjects(Array.from(this._clickListeners.keys()))[0]?.object
     while (hit != null) {
@@ -865,37 +876,58 @@ export abstract class World {
     this._actors.clear()
     this._clickListeners.clear()
     this._characters.clear()
-    this._cachedPositionalAudios.clear()
+    this.soundCache.dispose()
     this.scene.clear()
   }
 
-  private readonly _cachedPositionalAudios = new Map<string, Promise<THREE.PositionalAudio>>()
+  public readonly soundCache = engine.createSoundCache()
 
   public async cachePositionalAudio(action: PositionalAudioAction): Promise<void> {
-    this._cachedPositionalAudios.set((action.filename.split(/[\\/]/).pop() ?? '').replace(/\.wav$/i, '').toLowerCase(), engine.getPositionalAudio(action, 'effects'))
+    await this.soundCache.register(action)
   }
 
-  public async playPositionalAudio(action: PositionalAudioAction | string, parent: THREE.Object3D, delay?: number, type: AudioType = 'effects'): Promise<THREE.PositionalAudio> {
-    const audio = await (typeof action === 'string' ? (await this._cachedPositionalAudios.get(action))?.clone() : engine.getPositionalAudio(action, type))
-    if (audio == null) {
-      throw new Error(`Positional audio not found: ${action}`)
+  public async playPositionalAudio(action: PositionalAudioAction | string, parent: THREE.Object3D, delay = 0, type: AudioType = 'effects'): Promise<THREE.PositionalAudio> {
+    if (typeof action === 'string') {
+      return this.soundCache.play(action, parent, false, delay)
     }
+    const audio = await engine.getPositionalAudio(action, type)
     parent.add(audio)
+    const onEnded = audio.onEnded.bind(audio)
     audio.onEnded = () => {
-      parent.remove(audio)
+      onEnded()
+      audio.removeFromParent()
     }
     audio.play(delay)
     return audio
   }
 
+  public get render3d(): boolean {
+    return this.scene.visible
+  }
+
+  public set render3d(value: boolean) {
+    this.scene.visible = value
+  }
+
   public resize(_width: number, _height: number): void {}
 
-  public keyPressed(key: string): void {
-    if (key === 'd' && import.meta.env.DEV) {
+  public escape(): boolean {
+    return false
+  }
+
+  public gesture(kind: import('../input.ts').Gesture, event: NormalizedMouseEvent): void {
+    if (kind === 'click' && this._allowClick) {
+      this._allowClick = false
+      void this.click(event)
+    }
+  }
+
+  public keyPressed(key: string, _character?: string): void {
+    if (key === 'KeyD' && import.meta.env.DEV) {
       engine.debugMode = !engine.debugMode
     }
 
-    if (key === 'c') {
+    if (key === 'KeyC' && import.meta.env.DEV) {
       switch (engine.currentSaveGame.player) {
         case 'pepper':
           engine.currentSaveGame.player = 'papa'
@@ -916,11 +948,11 @@ export abstract class World {
       console.info(`Current actor: ${engine.currentSaveGame.player}`)
     }
 
-    if (key === ' ') {
+    if (key === 'Space') {
       this.skipAllRunningAnimations()
     }
 
-    if (key === 'p') {
+    if (key === 'KeyP' && import.meta.env.DEV) {
       this.skipAllRunningAnimations(true)
     }
   }

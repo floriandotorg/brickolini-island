@@ -1,20 +1,26 @@
 import * as THREE from 'three'
 import type { AudioAction, CompositeMediaAction, ImageAction, PositionalAudioAction } from './action-types'
-import { type Audio, getAudio, getPositionalAudio } from './assets/audio'
+import { type Audio, getAudio, getPositionalAudio, type SpatialAudio } from './assets/audio'
 import { getActionFileUrl } from './assets/load'
+import { BackgroundMusic } from './audio/music.ts'
+import { SoundCache } from './audio/sound-cache.ts'
+import { setCursor } from './cursor.ts'
+import { updateDebugFps } from './debug-keys.ts'
 import { Composer, Render2D } from './effect/composer'
 import { FilmGrainEffect } from './effect/film-grain'
 import { MosaicEffect } from './effect/mosaic'
+import { handleGlobalKey } from './global-keys.ts'
+import { InputManager } from './input.ts'
 import { PlayerDirectory } from './player-directory.ts'
 import { SaveGame } from './save-game'
 import { getScoreHistory } from './score-history.ts'
 import { resetSession } from './session-state.ts'
 import { getSettings } from './settings'
+import { Transition, type TransitionOptions } from './transition.ts'
 import type { VehicleType } from './world/dashboard'
 import type { World } from './world/world'
 
 export const RESOLUTION_RATIO = 4 / 3
-const BACKGROUND_MUSIC_FADE_TIME = 2
 const BACKGROUND_MUSIC_FADE_TIME_SETTINGS = 0.5
 
 export const ORIGINAL_TOTAL_WIDTH: number = 640
@@ -112,7 +118,7 @@ export type Interval = Timeout & {
   resetExpired: () => boolean
 }
 
-export type Sentinel = symbol & { __brand: 'Sentinel' }
+export type Sentinel = symbol
 
 export type NormalizedMouseEvent = {
   normalizedX: number
@@ -143,18 +149,26 @@ class Engine {
   private _cutsceneRender = new Render2D()
   private _cutsceneMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
   private _world: World | null = null
-  private _keyStates: Set<string> = new Set()
-  private _backgroundAudio: { actionId: number; audio: Audio } | null = null
+  public readonly input = new InputManager()
+  public readonly music = new BackgroundMusic<AudioAction>(action => this.getAudio(action, 'music'))
+  private readonly _pauseReasons = new Set<string>()
+  private _elapsed = 0
+  private _skipDelta = false
+  private readonly _videos = new Set<HTMLVideoElement>()
+  private readonly _pausedVideos = new Set<HTMLVideoElement>()
+  private readonly _musicVideos = new Map<HTMLVideoElement, () => void>()
+  private _transition: Transition | null = null
   private readonly _backgroundMusicChangedListeners = new Set<(actionId: number | null) => void>()
   private _transitionStart = 0
-  private _transitionSpeedMs = 50
+  private _transitionPromise: Promise<void> | null = null
   private _transitionPromiseResolve: (() => void) | null = null
   private _currentSaveGame = SaveGame.UnloadedSave
   private readonly _gains: Record<AudioType, GainNode>
-  private readonly _backgroundLowerGain: GainNode
   private readonly _backgroundLowerSentinels = new Set<Sentinel>()
   private readonly _respawnVehicle = new Set<VehicleType>()
 
+  private readonly _positionalSounds = new Set<SpatialAudio>()
+  private readonly _cameraPosition = new THREE.Vector3()
   public debugMode = false
   public readonly playerDirectory: PlayerDirectory
 
@@ -213,40 +227,15 @@ class Engine {
   }
 
   public storeSaveGames(): void {
+    if (!this.currentSaveGame.isUnloaded) {
+      getScoreHistory().update(this.currentSaveGame)
+    }
     this.playerDirectory.store()
+    this.currentSaveGame.dirty = false
   }
 
-  public async switchBackgroundMusic(action: AudioAction): Promise<void> {
-    if (this._backgroundAudio?.actionId === action.id) {
-      return
-    }
-
-    const audio = await this.getAudio(action, 'music')
-    // not every track has looping enabled from the action unfortunately
-    audio.loop = true
-    const sourceVolume = action.volume / 100
-
-    if (this._backgroundAudio == null) {
-      this._backgroundAudio = { actionId: action.id, audio }
-      this._backgroundAudio.audio.gain.value = sourceVolume
-      this._backgroundAudio.audio.play()
-      this._notifyBackgroundMusicChanged(action.id)
-      return
-    }
-
-    const now = this._audioListener.context.currentTime
-    const fadeEnd = now + BACKGROUND_MUSIC_FADE_TIME
-
-    this._backgroundAudio.audio.gain.cancelScheduledValues(now)
-    this._backgroundAudio.audio.gain.setValueAtTime(this._backgroundAudio.audio.gain.value, now)
-    this._backgroundAudio.audio.gain.linearRampToValueAtTime(0, fadeEnd)
-    this._backgroundAudio.audio.stop(BACKGROUND_MUSIC_FADE_TIME)
-
-    this._backgroundAudio = { actionId: action.id, audio }
-    this._backgroundAudio.audio.gain.setValueAtTime(0, now)
-    this._backgroundAudio.audio.gain.linearRampToValueAtTime(sourceVolume, fadeEnd)
-    this._backgroundAudio.audio.play()
-    this._notifyBackgroundMusicChanged(action.id)
+  public switchBackgroundMusic(action: AudioAction, speed = 5): Promise<void> {
+    return this.music.play(action, speed)
   }
 
   public onBackgroundMusicChanged(listener: (actionId: number | null) => void): () => void {
@@ -263,37 +252,104 @@ class Engine {
   }
 
   public pauseBackgroundMusic(): void {
-    if (this._backgroundAudio != null) {
-      this._backgroundAudio.audio.pause()
-    }
+    this.music.pause()
   }
 
   public stopBackgroundMusic(): void {
-    this._backgroundAudio?.audio.stop()
-    this._notifyBackgroundMusicChanged(null)
+    this.music.stop()
+    this._backgroundLowerSentinels.clear()
   }
 
   public resumeBackgroundMusic(): void {
-    if (this._backgroundAudio != null) {
-      this._backgroundAudio.audio.play()
-    }
+    this.music.resume()
   }
 
   public lowerBackgroundMusic(): Sentinel {
-    this._backgroundLowerGain.gain.value = 0.5
-    const sentinel = Symbol('music') as Sentinel
+    this.music.lower()
+    const sentinel = Symbol('music')
     this._backgroundLowerSentinels.add(sentinel)
     return sentinel
   }
 
   public raiseBackgroundMusic(sentinel: Sentinel): void {
-    this._backgroundLowerSentinels.delete(sentinel)
-    if (this._backgroundLowerSentinels.size === 0) {
-      this._backgroundLowerGain.gain.value = 1
+    if (this._backgroundLowerSentinels.delete(sentinel)) {
+      this.music.raise()
     }
   }
 
+  public get paused(): boolean {
+    return this._pauseReasons.size > 0
+  }
+
+  public setPaused(paused: boolean, reason = 'manual'): void {
+    const wasPaused = this.paused
+    if (paused) {
+      this._pauseReasons.add(reason)
+    } else {
+      this._pauseReasons.delete(reason)
+    }
+    if (wasPaused === this.paused) {
+      return
+    }
+    this.input.clear()
+    this._skipDelta = true
+    if (this.paused) {
+      void this._audioListener.context.suspend()
+      for (const video of this._videos) {
+        if (!video.paused) {
+          this._pausedVideos.add(video)
+          video.pause()
+        }
+      }
+      if (this._state === 'cutscene') {
+        this._cutsceneVideo.pause()
+      }
+    } else {
+      void this._audioListener.context.resume()
+      for (const video of this._pausedVideos) {
+        void video.play()
+      }
+      this._pausedVideos.clear()
+      if (this._state === 'cutscene') {
+        void this._cutsceneVideo.play()
+      }
+    }
+    this._restoreCursor()
+  }
+
+  private _restoreCursor(): void {
+    setCursor(this._pauseReasons.has('manual') ? 'no' : this._state === 'cutscene' || this.input.buttonDownActsAsSpace ? 'none' : this._state === 'transition' ? 'busy' : 'arrow')
+  }
+
+  public registerVideo(video: HTMLVideoElement, musicOnly = false, stop?: () => void): void {
+    this._videos.add(video)
+    if (musicOnly && stop != null) {
+      this._musicVideos.set(video, stop)
+    }
+  }
+
+  public playVideo(video: HTMLVideoElement): void {
+    if (this.paused) {
+      this._pausedVideos.add(video)
+    } else {
+      void video.play()
+    }
+  }
+
+  public unregisterVideo(video: HTMLVideoElement): void {
+    this._videos.delete(video)
+    this._pausedVideos.delete(video)
+    this._musicVideos.delete(video)
+  }
+
   public updateVolumes(fadeMusic = true): void {
+    this.music.setEnabled(getSettings().music)
+    if (!this.music.enabled) {
+      this._backgroundLowerSentinels.clear()
+      for (const stop of this._musicVideos.values()) {
+        stop()
+      }
+    }
     const volumes = getSettings().volume
     for (const audioType of AudioTypes) {
       const volume = volumes[audioType]
@@ -334,7 +390,7 @@ class Engine {
   }
 
   public get elapsedTimeSeconds(): number {
-    return this._timer.getElapsed()
+    return this._elapsed
   }
 
   public get elapsedTimeMilliseconds(): number {
@@ -366,10 +422,10 @@ class Engine {
 
   constructor() {
     const canvas = document.getElementById('game')
-    if (canvas == null) {
+    if (!(canvas instanceof HTMLCanvasElement)) {
       throw new Error('Canvas not found')
     }
-    this._canvas = canvas as HTMLCanvasElement
+    this._canvas = canvas
 
     this._renderer = new THREE.WebGLRenderer({
       canvas,
@@ -399,87 +455,112 @@ class Engine {
     this._cutsceneMesh.position.z = -1
     this._cutsceneRender.scene.add(this._cutsceneMesh)
 
+    this.input.onGesture = (kind, point) => {
+      const normalizedX = point.x / 320 - 1
+      const normalizedY = 1 - point.y / 240
+      this._world?.gesture(kind, { normalizedX, normalizedY, ndcX: normalizedX, ndcY: normalizedY })
+    }
+    const point = (event: PointerEvent) => {
+      const normalized = createNormalizedMouseEvent(event, this._canvas)
+      return { x: (normalized.normalizedX + 1) * 320, y: (1 - normalized.normalizedY) * 240 }
+    }
     canvas.addEventListener('pointerdown', event => {
-      event.preventDefault()
-      event.stopPropagation()
-
-      if (this._state === 'cutscene') {
-        this._cutsceneVideo.pause()
+      if (event.button !== 0 || this.paused) {
         return
       }
-
-      if (this._state === 'game') {
-        this._world?.pointerDown(createNormalizedMouseEvent(event, this._canvas))
-      }
-    })
-
-    canvas.addEventListener('pointerup', event => {
       event.preventDefault()
-      event.stopPropagation()
-
-      if (this._state === 'game') {
-        this._world?.pointerUp(createNormalizedMouseEvent(event, this._canvas))
-      }
-    })
-
-    canvas.addEventListener('pointermove', event => {
-      event.preventDefault()
-      event.stopPropagation()
-
-      if (this._state === 'game') {
-        this._world?.pointerMove(createNormalizedMouseEvent(event, this._canvas))
-      }
-    })
-
-    document.addEventListener('keydown', event => {
-      this._keyStates.add(event.key)
-
-      if (this._state === 'cutscene') {
-        if (event.key === ' ') {
-          this._cutsceneVideo.pause()
+      if (this.input.buttonDownActsAsSpace) {
+        if (this._state === 'cutscene') {
+          this.skipCutscene()
+        } else {
+          this._world?.keyPressed('Space', ' ')
         }
         return
       }
-
-      if (this._state === 'game') {
-        this._world?.keyDown(event)
+      if (this.input.inputDisabled || this._state !== 'game') {
+        return
+      }
+      canvas.setPointerCapture(event.pointerId)
+      if (this.input.pointerDown(point(event), this.elapsedTimeMilliseconds)) {
+        this._world?.beginPointer()
+        void this._world?.pointerDown(createNormalizedMouseEvent(event, canvas))
       }
     })
-
-    document.addEventListener('keyup', event => {
-      this._keyStates.delete(event.key)
-
+    canvas.addEventListener('pointerup', event => {
+      if (event.button !== 0 || this.paused || this.input.inputDisabled || this.input.buttonDownActsAsSpace || this._state !== 'game') {
+        return
+      }
+      this._world?.pointerUp(createNormalizedMouseEvent(event, canvas))
+      this.input.pointerUp()
+    })
+    canvas.addEventListener('pointermove', event => {
+      if (!this.paused && !this.input.inputDisabled && !this.input.buttonDownActsAsSpace && this._state === 'game') {
+        this._world?.pointerMove(createNormalizedMouseEvent(event, canvas))
+        this.input.pointerMove(point(event))
+      }
+    })
+    canvas.addEventListener('pointercancel', () => this.input.clear())
+    document.addEventListener('keydown', event => {
+      if (document.querySelector('dialog[open]') != null || event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement || event.target instanceof HTMLTextAreaElement) {
+        return
+      }
+      if (this.paused) {
+        if (event.code === 'Pause' && !event.repeat) {
+          this.setPaused(false)
+        }
+        return
+      }
+      if (!this.input.acceptsKey(event.code) && !(this.input.buttonDownActsAsSpace && (event.code === 'Escape' || event.code === 'Pause'))) {
+        return
+      }
+      this.input.keyDown(event.code)
+      if (event.code !== 'F2') {
+        event.preventDefault()
+      }
+      if (event.repeat) {
+        return
+      }
+      if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') {
+        this.input.toggleSticky()
+        return
+      }
+      if (event.code === 'Pause') {
+        handleGlobalKey(event.code)
+        return
+      }
+      if (this._state === 'cutscene') {
+        if (event.code === 'Space' || event.code === 'Escape') {
+          this.skipCutscene()
+        }
+        return
+      }
+      if (handleGlobalKey(event.code)) {
+        return
+      }
       if (this._state === 'game') {
+        this._world?.keyDown(event)
+        this._world?.keyPressed(event.code, event.key)
+      }
+    })
+    document.addEventListener('keyup', event => {
+      this.input.keyUp(event.code)
+      if (!this.paused && this._state === 'game') {
         this._world?.keyUp(event)
       }
     })
-
-    document.addEventListener('keypress', event => {
-      event.preventDefault()
-      event.stopPropagation()
-
-      if (this._state === 'game') {
-        this._world?.keyPressed(event.key)
+    document.addEventListener('visibilitychange', () => this.setPaused(document.hidden, 'hidden'))
+    window.addEventListener('blur', () => {
+      this.input.clear()
+      if (getSettings().pauseOnBlur) {
+        this.setPaused(true, 'blur')
       }
     })
-
-    const clearKeys = () => {
-      for (const key of this._keyStates) {
-        this._world?.keyUp(new KeyboardEvent('keyup', { key }))
-      }
-      this._keyStates.clear()
-    }
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        clearKeys()
-        this._audioListener.context.suspend()
-      } else {
-        this._audioListener.context.resume()
+    window.addEventListener('focus', () => this.setPaused(false, 'blur'))
+    window.addEventListener('pagehide', () => {
+      if (!this.currentSaveGame.isUnloaded) {
+        this.storeSaveGames()
       }
     })
-
-    window.addEventListener('blur', clearKeys)
 
     window.addEventListener('resize', this._setRendererSize)
     this._setRendererSize()
@@ -498,7 +579,15 @@ class Engine {
       animations: new GainNode(this._audioListener.context),
       cutscene: new GainNode(this._audioListener.context),
     }
-    this._backgroundLowerGain = new GainNode(this._audioListener.context)
+    this.music.onChanged = id => {
+      if (!this.music.enabled) {
+        this._backgroundLowerSentinels.clear()
+        for (const stop of this._musicVideos.values()) {
+          stop()
+        }
+      }
+      this._notifyBackgroundMusicChanged(id)
+    }
 
     this.updateVolumes(false)
 
@@ -514,7 +603,9 @@ class Engine {
   }
 
   public isKeyDown(key: string): boolean {
-    return this._keyStates.has(key)
+    const flags = this.input.getNavigationFlags()
+    const aliases: Record<string, boolean> = { ArrowUp: flags.up, ArrowDown: flags.down, ArrowLeft: flags.left, ArrowRight: flags.right }
+    return aliases[key] ?? this.input.keys.has(key.length === 1 ? `Key${key.toUpperCase()}` : key)
   }
 
   public start() {
@@ -524,6 +615,15 @@ class Engine {
   }
 
   public async setWorld(world: World, param?: unknown) {
+    this._world?.soundCache.deactivate()
+    for (const audio of this._positionalSounds) {
+      if (audio.isPlaying) {
+        audio.stop()
+      }
+      audio.removeFromParent()
+      audio.gain.disconnect()
+    }
+    this._positionalSounds.clear()
     this._world?.deactivate()
     if (this._world != null) {
       this._world.camera.remove(this._audioListener)
@@ -531,29 +631,61 @@ class Engine {
     this._composer.resetPipeline()
     this._world = world
     this._setRendererSize()
+    this.finishTransition()
     this._world.activate(this._composer, param)
     this._world.camera.add(this._audioListener)
   }
 
-  public async transition(speedMs = 50): Promise<void> {
+  public transition(options: TransitionOptions | number = {}): Promise<void> {
+    if (this._transitionPromise != null) {
+      return this._transitionPromise
+    }
+    const settings = typeof options === 'number' ? { speedMs: options } : options
+    if (!settings.keepMusic) {
+      this.stopBackgroundMusic()
+    }
     this._state = 'transition'
-    this._transitionStart = this._timer.getElapsed()
-    this._transitionSpeedMs = speedMs
-    this._mosaicEffect.tileSize = Math.ceil(Math.max(this._canvas.clientWidth / ORIGINAL_TOTAL_WIDTH, this._canvas.clientHeight / ORIGINAL_TOTAL_HEIGHT) * 10)
-    this._mosaicEffect.progress = 0.0
-    return new Promise(resolve => {
+    this.input.buttonDownActsAsSpace = false
+    this.input.disable()
+    this._restoreCursor()
+    this._transitionStart = this.elapsedTimeMilliseconds
+    this._transition = new Transition(settings)
+    this._mosaicEffect.configure(this._transition)
+    this._transitionPromise = new Promise(resolve => {
       this._transitionPromiseResolve = resolve
     })
+    return this._transitionPromise
+  }
+
+  public finishTransition(): void {
+    this._transitionPromise = null
+    this._transition = null
+    this._mosaicEffect.ticks = 0
+    this._state = 'game'
+    this.input.buttonDownActsAsSpace = false
+    this.input.enable()
+    this._restoreCursor()
   }
 
   public getAudio(action: AudioAction, type: AudioType): Promise<Audio> {
-    const gains = type === 'music' ? [this._backgroundLowerGain] : []
-    gains.push(this._gains[type])
-    return getAudio(this._audioListener, action, gains)
+    return getAudio(this._audioListener, action, [this._gains[type]])
   }
 
-  public getPositionalAudio(action: PositionalAudioAction, type: AudioType): Promise<THREE.PositionalAudio> {
-    return getPositionalAudio(this._audioListener, action, [this._gains[type]])
+  public skipCutscene(): void {
+    this._cutsceneVideo.pause()
+    this._endCutscene?.()
+  }
+
+  private _endCutscene: (() => void) | null = null
+
+  public createSoundCache(): SoundCache {
+    return new SoundCache(this._audioListener, this._gains.effects)
+  }
+
+  public async getPositionalAudio(action: PositionalAudioAction, type: AudioType): Promise<SpatialAudio> {
+    const audio = await getPositionalAudio(this._audioListener, action, [this._gains[type]])
+    this._positionalSounds.add(audio)
+    return audio
   }
 
   public async playAudio(action: AudioAction, type: AudioType): Promise<Audio> {
@@ -564,6 +696,10 @@ class Engine {
 
   public async playCutscene(action: CompositeMediaAction): Promise<void> {
     this._state = 'cutscene'
+    this.input.disable()
+    this.input.allowSpaceWhileDisabled = true
+    this.input.buttonDownActsAsSpace = true
+    this._restoreCursor()
 
     const savedGains: Partial<Record<AudioType, number>> = {}
     for (const type of AudioTypes) {
@@ -583,18 +719,22 @@ class Engine {
     const map = new THREE.VideoTexture(this._cutsceneVideo)
     map.colorSpace = THREE.SRGBColorSpace
     this._cutsceneMesh.material = new THREE.MeshBasicMaterial({ map })
-    this._cutsceneVideo.play()
+    this.playVideo(this._cutsceneVideo)
     this._cutsceneAudio.play()
     return new Promise(resolve => {
       const end = () => {
         this._state = 'game'
+        this.input.buttonDownActsAsSpace = false
+        this.input.enable()
+        this._restoreCursor()
+        this._endCutscene = null
         this._cutsceneAudio?.stop()
         restoreAudio()
         resolve()
       }
 
+      this._endCutscene = end
       this._cutsceneVideo.onended = end
-      this._cutsceneVideo.onpause = end
     })
   }
 
@@ -627,27 +767,43 @@ class Engine {
 
   private _render() {
     this._timer.update()
-
-    if (this._state === 'game') {
-      this._world?.updateWorld(this._timer.getDelta())
+    const delta = this._skipDelta || this.paused ? 0 : this._timer.getDelta()
+    this._skipDelta = false
+    if (this.paused) {
+      return
     }
-
-    if (this._state === 'transition') {
-      const progressPerTick = 1 / 16
-      const ticks = Math.floor(((this._timer.getElapsed() - this._transitionStart) * 1000) / this._transitionSpeedMs)
-      this._mosaicEffect.progress = progressPerTick * ticks
-      if (this._mosaicEffect.progress >= 1.0) {
-        this._mosaicEffect.progress = 0.0
-        this._state = 'game'
-        this._transitionPromiseResolve?.()
-        this._transitionPromiseResolve = null
+    this._elapsed += delta
+    updateDebugFps(delta)
+    this.music.update(delta)
+    this.input.update(this.elapsedTimeMilliseconds)
+    if (this._state === 'game') {
+      this._world?.updateWorld(delta)
+      if (this._world != null) {
+        this._world.camera.getWorldPosition(this._cameraPosition)
+        const sound3d = getSettings().sound3d
+        this._world.soundCache.update(this._cameraPosition, sound3d)
+        for (const audio of this._positionalSounds) {
+          if (audio.parent == null && !audio.isPlaying) {
+            this._positionalSounds.delete(audio)
+          } else {
+            audio.updateSpatial(this._cameraPosition, sound3d)
+          }
+        }
       }
     }
-
+    if (this._state === 'transition' && this._transition != null) {
+      const finished = this._transition.update(this.elapsedTimeMilliseconds - this._transitionStart)
+      this._mosaicEffect.ticks = this._transition.ticks
+      if (finished && this._transitionPromiseResolve != null) {
+        const resolve = this._transitionPromiseResolve
+        this._transitionPromiseResolve = null
+        resolve()
+      }
+    }
     if (this._state === 'cutscene') {
-      this._cutsceneComposer.render(this._timer.getElapsed())
+      this._cutsceneComposer.render(this._elapsed)
     } else {
-      this._composer.render(this._timer.getElapsed())
+      this._composer.render(this._state === 'transition' ? this._transitionStart / 1000 : this._elapsed, this._state === 'transition')
     }
   }
 }

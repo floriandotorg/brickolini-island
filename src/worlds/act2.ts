@@ -114,6 +114,11 @@ export class Act2 extends IsleBase {
     super('act2', { wdbWorldName: 'ACT2', dtaWorldName: 'ACT2' })
   }
 
+  public override escape(): boolean {
+    this.skipAllRunningAnimations(true)
+    return true
+  }
+
   public override async init(): Promise<void> {
     await super.init()
 
@@ -285,7 +290,7 @@ export class Act2 extends IsleBase {
   public override keyPressed(key: string): void {
     super.keyPressed(key)
 
-    if (key === 'f' && import.meta.env.DEV) {
+    if (key === 'KeyF' && import.meta.env.DEV) {
       this._playerMovement.toggleSlewMode()
     }
   }

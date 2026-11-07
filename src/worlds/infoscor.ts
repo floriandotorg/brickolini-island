@@ -13,6 +13,11 @@ export class InfoScor extends World {
     super('infoscor')
   }
 
+  public override escape(): boolean {
+    this.skipAllRunningAnimations(true)
+    return true
+  }
+
   public override async init(): Promise<void> {
     await super.init()
 
@@ -52,7 +57,7 @@ export class InfoScor extends World {
   }
 
   public override keyPressed(key: string): void {
-    if (key === ' ') {
+    if (key === 'Space') {
       void switchWorld({ ending: null })
       return
     }

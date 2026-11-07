@@ -17,6 +17,12 @@ export class Isle extends IsleBase {
     super(worldName, { wdbWorldName: 'ACT1', dtaWorldName: 'ACT1', ignoreEntityClick })
   }
 
+  public override escape(): boolean {
+    this.skipAllRunningAnimations(true)
+    this.abortMission()
+    return true
+  }
+
   public override async init(): Promise<void> {
     await super.init()
 

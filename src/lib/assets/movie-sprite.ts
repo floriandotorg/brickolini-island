@@ -7,6 +7,8 @@ import { getActionFileUrl } from './load'
 
 export class MovieSprite {
   private _hideAfterFinish = false
+  private _resolve: (() => void) | null = null
+  public musicOnly = false
 
   private constructor(
     private readonly _videoElement: HTMLVideoElement,
@@ -82,10 +84,18 @@ export class MovieSprite {
   }
 
   public play(scene?: THREE.Scene): Promise<void> {
+    if (this.musicOnly && !engine.music.enabled) {
+      this.visible = false
+      return Promise.resolve()
+    }
+    engine.registerVideo(this._videoElement, this.musicOnly, () => {
+      this.stop()
+      this.visible = false
+    })
     scene?.add(this._sprite)
     this._sprite.visible = true
     this._audio?.play()
-    this._videoElement.play()
+    engine.playVideo(this._videoElement)
     return new Promise<void>(resolve => {
       const onended = () => {
         this._audio?.stop()
@@ -95,14 +105,17 @@ export class MovieSprite {
         resolve()
       }
 
+      this._resolve = onended
       this._videoElement.onended = onended
-      this._videoElement.onpause = onended
     })
   }
 
   public stop() {
     this._audio?.stop()
     this._videoElement.pause()
+    this._resolve?.()
+    this._resolve = null
+    engine.unregisterVideo(this._videoElement)
   }
 
   public removeFromParent = () => this._sprite.removeFromParent()

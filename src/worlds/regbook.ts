@@ -338,6 +338,13 @@ export class RegBook extends World {
     }
   }
 
+  public override escape(): boolean {
+    this._leaving = true
+    this._idleTimer = null
+    this.stopDialogue()
+    return true
+  }
+
   public override keyDown(event: KeyboardEvent): void {
     if (this._leaving || event.repeat) {
       return
@@ -346,21 +353,19 @@ export class RegBook extends World {
     if (event.key === 'Backspace') {
       event.preventDefault()
       this.removeChar()
-    } else if (event.key === 'Escape') {
-      this.leave('exitQueried')
     }
   }
 
-  public override keyPressed(key: string): void {
+  public override keyPressed(key: string, character?: string): void {
     if (this._leaving) {
       return
     }
     this.resetIdleTimer()
-    if (key === ' ') {
+    if (key === 'Space') {
       this.stopDialogue()
       return
     }
-    const upper = key.toUpperCase()
+    const upper = (character ?? '').toUpperCase()
     if (/^[A-Z]$/.test(upper) && this._names[0].name.length < MAX_LENGTH) {
       this._names[0].name += upper
     }

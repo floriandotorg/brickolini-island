@@ -24,6 +24,7 @@ import {
   iic027in_RunAnim,
   iic029in_RunAnim,
   iic032in_RunAnim,
+  iic043in_RunAnim,
   iica28in_RunAnim,
   iicb28in_RunAnim,
   iicc28in_RunAnim,
@@ -61,9 +62,11 @@ import type { CharacterMovieAction, ImageAction, RunAnimationAction } from '../l
 import { createImageSprite } from '../lib/assets/canvas-sprite'
 import { MovieSprite } from '../lib/assets/movie-sprite'
 import type { SpawnLocation } from '../lib/assets/spawn-location'
+import { setCursor } from '../lib/cursor.ts'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect, type Timeout } from '../lib/engine'
 import { type PlayerCharacter, PlayerCharacters } from '../lib/save-game'
+import { infocenterState } from '../lib/session-state.ts'
 import { getSettings } from '../lib/settings'
 import { switchToPreviousWorld, switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
@@ -177,10 +180,14 @@ export class InfoMain extends World {
       return
     }
     this._characterMovieState = CharacterMovieState.playing
+    engine.input.disable()
+    engine.input.allowSpaceWhileDisabled = true
+    engine.input.buttonDownActsAsSpace = true
+    setCursor('none')
     const promises = [MovieSprite.createCharacterMovie(characterMovie.children[0], -0.252), MovieSprite.createCharacterMovie(characterMovie.children[1], -0.251), MovieSprite.createCharacterMovie(characterMovie.children[2], -0.25)]
     const [start, movie, end] = await Promise.all(promises)
     this._characterMovie = [start, movie, end]
-    engine.stopBackgroundMusic()
+    engine.pauseBackgroundMusic()
     await play(start)
     await play(movie)
     start.removeFromParent()
@@ -190,6 +197,11 @@ export class InfoMain extends World {
     engine.resumeBackgroundMusic()
     this._characterMovieState = CharacterMovieState.idle
     this._characterMovie = null
+    if (engine.currentWorld === this) {
+      engine.input.buttonDownActsAsSpace = false
+      engine.input.enable()
+      setCursor('arrow')
+    }
     void this.playAnimation(selectionAnimation)
   }
 
@@ -297,6 +309,11 @@ export class InfoMain extends World {
     const pad = Math.floor((7 - engine.currentSaveGame.name.length) / 2)
     this._name.name = engine.currentSaveGame.name.padStart(pad + engine.currentSaveGame.name.length, ' ')
     this.placeCharacterFrame()
+    if (infocenterState.state === 'exitQueried') {
+      void engine.switchBackgroundMusic(InformationCenter_Music)
+      void this.playAnimation(iic043in_RunAnim)
+      return
+    }
     if (this._ending !== null) {
       engine.stopBackgroundMusic()
       engine
@@ -311,7 +328,24 @@ export class InfoMain extends World {
     }
   }
 
+  public override escape(): boolean {
+    if (this._characterMovieState === CharacterMovieState.playing) {
+      this.skipAllRunningAnimations()
+      return false
+    }
+    if (infocenterState.state !== 'exitQueried') {
+      super.skipAllRunningAnimations(true)
+      this._welcomeTimeout = null
+      infocenterState.state = 'exitQueried'
+      void this.playAnimation(iic043in_RunAnim)
+    }
+    return false
+  }
+
   public override deactivate(): void {
+    if (infocenterState.state === 'exitQueried') {
+      infocenterState.state = 'newState'
+    }
     this._welcomeTimeout = null
     super.deactivate()
   }

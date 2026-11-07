@@ -67,6 +67,28 @@ if (fillCheckbox == null || !(fillCheckbox instanceof HTMLInputElement)) {
   throw new Error('Fill checkbox not found')
 }
 
+const optionCheckboxes = ['music', 'sound3d', 'gamepad', 'pauseOnBlur'] as const
+const checkboxIds = { music: 'music-checkbox', sound3d: 'sound3d-checkbox', gamepad: 'gamepad-checkbox', pauseOnBlur: 'pause-on-blur-checkbox' }
+const optionCheckbox = (key: (typeof optionCheckboxes)[number]): HTMLInputElement => {
+  const element = document.getElementById(checkboxIds[key])
+  if (!(element instanceof HTMLInputElement)) {
+    throw new Error(`Settings checkbox missing: ${key}`)
+  }
+  return element
+}
+const gamepadIndex = document.getElementById('gamepad-index')
+const islandQuality = document.getElementById('island-quality')
+if (!(gamepadIndex instanceof HTMLInputElement) || !(islandQuality instanceof HTMLSelectElement)) {
+  throw new Error('Navigation settings missing')
+}
+document.getElementById('fullscreen-button')?.addEventListener('click', () => {
+  if (document.fullscreenElement == null) {
+    void document.documentElement.requestFullscreen()
+  } else {
+    void document.exitFullscreen()
+  }
+})
+
 const volumeSlider = (audioType: AudioType): HTMLInputElement => {
   const slider = document.getElementById(`${audioType}-volume-slider`)
   if (slider == null || !(slider instanceof HTMLInputElement)) {
@@ -85,6 +107,11 @@ const volumeSliders: Record<AudioType, HTMLInputElement> = {
 
 const updateControlsFromSettings = () => {
   const settings = getSettings()
+  for (const key of optionCheckboxes) {
+    optionCheckbox(key).checked = settings[key]
+  }
+  gamepadIndex.value = String(settings.gamepadIndex)
+  islandQuality.value = settings.islandQuality
   presetSelect.value = settings.graphics.preset
   realisticWaterCheckbox.checked = settings.graphics.realisticWater
   sunCheckbox.checked = settings.graphics.sun
@@ -119,6 +146,12 @@ const updateSettingsFromCheckboxes = () => {
       animations: Number.parseFloat(volumeSliders.animations.value),
       cutscene: Number.parseFloat(volumeSliders.cutscene.value),
     },
+    music: optionCheckbox('music').checked,
+    sound3d: optionCheckbox('sound3d').checked,
+    gamepad: optionCheckbox('gamepad').checked,
+    pauseOnBlur: optionCheckbox('pauseOnBlur').checked,
+    gamepadIndex: Number.isInteger(gamepadIndex.valueAsNumber) ? gamepadIndex.valueAsNumber : -1,
+    islandQuality: islandQuality.value === 'low' ? 'low' : islandQuality.value === 'medium' ? 'medium' : 'high',
     freeRoam: freeRoamCheckbox.checked,
     fill: fillCheckbox.checked,
   })
@@ -127,22 +160,31 @@ const updateSettingsFromCheckboxes = () => {
 
 settingsButton.addEventListener('click', () => {
   updateControlsFromSettings()
+  engine.setPaused(true, 'settings')
   settingsDialog.showModal()
 })
 
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape') {
+  if (event.code === 'F2' && !event.repeat) {
     event.preventDefault()
-
-    if (settingsDialog.open) {
-      updateSettingsFromCheckboxes()
-      settingsDialog.close()
-    } else {
+    if (!settingsDialog.open && !engine.paused) {
       updateControlsFromSettings()
+      engine.setPaused(true, 'settings')
       settingsDialog.showModal()
     }
   }
 })
+
+settingsDialog.addEventListener('close', () => {
+  updateSettingsFromCheckboxes()
+  engine.setPaused(false, 'settings')
+})
+
+for (const key of optionCheckboxes) {
+  optionCheckbox(key).addEventListener('change', updateSettingsFromCheckboxes)
+}
+gamepadIndex.addEventListener('change', updateSettingsFromCheckboxes)
+islandQuality.addEventListener('change', updateSettingsFromCheckboxes)
 
 closeSettingsButton.addEventListener('click', () => {
   updateSettingsFromCheckboxes()

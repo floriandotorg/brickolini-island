@@ -29,6 +29,7 @@ const buildingKeys = ['sound', 'move', 'mood', 'counter'] as const
 const isPlant = (value: unknown): value is PlantState => hasIntegers(value, plantKeys) && value.variant >= 0 && value.variant <= 3 && value.color >= 0 && value.color <= 4
 
 export class SaveGame {
+  public dirty = false
   private _player: PlayerCharacter | null = null
   private _sunPosition = 2
   private _colorTable = new Map<ColorTableName, ColorName>()
@@ -377,6 +378,7 @@ export class SaveGame {
       return
     }
 
+    this.dirty = true
     const key = `${SAVE_GAME_STORAGE_KEY}.${this.name}.${names.join('.')}`
     if (value != null) {
       const stringValue = typeof value === 'number' ? value.toString() : typeof value === 'boolean' ? value.toString() : value

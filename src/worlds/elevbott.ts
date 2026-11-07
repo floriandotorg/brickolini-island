@@ -13,6 +13,11 @@ export class ElevBott extends World {
     super('elevbott')
   }
 
+  public override escape(): boolean {
+    this.skipAllRunningAnimations(true)
+    return true
+  }
+
   public override async init(): Promise<void> {
     await super.init()
     await this._building.init({

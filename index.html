@@ -172,6 +172,15 @@
           <fieldset>
             <legend>Gameplay Options</legend>
             <div class="input-group">
+              <label class="checkbox"><input type="checkbox" id="music-checkbox">Music enabled</label>
+              <label class="checkbox"><input type="checkbox" id="sound3d-checkbox">3D sound</label>
+              <label class="checkbox"><input type="checkbox" id="gamepad-checkbox">Gamepad</label>
+              <label class="checkbox"><input type="checkbox" id="pause-on-blur-checkbox">Pause when unfocused</label>
+              <label for="gamepad-index">Gamepad index (-1 for automatic)</label>
+              <input id="gamepad-index" type="number" min="-1" max="15" value="-1">
+              <label for="island-quality">Island quality</label>
+              <select id="island-quality"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select>
+              <button id="fullscreen-button" type="button">Full screen</button>
               <label for="free-roam-checkbox" class="checkbox">
                 <input type="checkbox" id="free-roam-checkbox">
                 Free Roam (Explore the island freely)

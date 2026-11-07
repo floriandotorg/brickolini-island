@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import type { AudioAction, PositionalAudioAction } from '../action-types'
+import { distanceVolume, volumeToGain } from '../audio/volume.ts'
 import { getActionFileUrl, manager } from './load'
 
 const audioLoader = new THREE.AudioLoader(manager)
@@ -12,7 +13,7 @@ export class Audio {
   public constructor(action: AudioAction, audio: THREE.Audio<GainNode>, gains: GainNode[] = []) {
     this._action = action
     this._audio = audio
-    this._audio.gain.gain.value = action.volume / 100
+    this._audio.gain.gain.value = volumeToGain(action.volume)
     this._audio.setLoop(action.loops > 1)
     this._audio.onEnded = () => {
       this.onEnded()
@@ -46,7 +47,10 @@ export class Audio {
   }
 
   public play(): void {
-    this._audio.play(this._action.startTime / 1000)
+    this._ended = false
+    if (!this._audio.isPlaying) {
+      this._audio.play(this._action.startTime / 1000)
+    }
   }
 
   public playAgain(): void {
@@ -55,7 +59,9 @@ export class Audio {
   }
 
   public stop(delay?: number): void {
-    this._audio.stop(delay)
+    if (this._audio.isPlaying) {
+      this._audio.stop(delay)
+    }
   }
 
   public pause(): void {
@@ -79,17 +85,86 @@ export class Playlist {
   }
 }
 
+const buffers = new Map<string, Promise<AudioBuffer>>()
+
+export const loadAudioBuffer = (action: AudioAction | PositionalAudioAction): Promise<AudioBuffer> => {
+  const url = getActionFileUrl(action)
+  const existing = buffers.get(url)
+  if (existing != null) {
+    return existing
+  }
+  const loading = audioLoader.loadAsync(url).catch(error => {
+    buffers.delete(url)
+    throw error
+  })
+  buffers.set(url, loading)
+  return loading
+}
+
+export class SpatialAudio extends THREE.PositionalAudio {
+  private _spatial = true
+  private readonly _volume: number
+  private readonly _position = new THREE.Vector3()
+  public silence = false
+  public positional = true
+
+  public constructor(listener: THREE.AudioListener, volume = 79) {
+    super(listener)
+    this._volume = volume
+  }
+
+  public override connect(): this {
+    super.connect()
+    if (!this._spatial && this.source != null) {
+      this.source.disconnect(this.panner)
+      this.source.connect(this.gain)
+    }
+    return this
+  }
+
+  public override disconnect(): this {
+    if (!this._spatial && this.source != null) {
+      this.source.disconnect(this.gain)
+      this.source.connect(this.panner)
+    }
+    super.disconnect()
+    return this
+  }
+
+  public setPitchFactor(factor: number): void {
+    if (Number.isFinite(factor) && factor > 0 && Math.abs(this.playbackRate - factor) > 0.0001) {
+      this.setPlaybackRate(factor)
+    }
+  }
+
+  public updateSpatial(cameraPosition: THREE.Vector3, sound3d: boolean): void {
+    const spatial = sound3d && this.positional
+    if (this._spatial !== spatial) {
+      if (this.isPlaying) {
+        this.disconnect()
+        this._spatial = spatial
+        this.connect()
+      } else {
+        this._spatial = spatial
+      }
+    }
+    const distanceSquared = this.positional ? this.getWorldPosition(this._position).distanceToSquared(cameraPosition) : 0
+    const attenuation = distanceSquared > 10000 ? 0 : spatial ? 1 : distanceVolume(distanceSquared)
+    this.gain.gain.value = volumeToGain(this._volume) * attenuation * (this.silence ? 10 ** (-30 / 20) : 1)
+  }
+}
+
 export const getAudio = async (listener: THREE.AudioListener, action: AudioAction, gains: GainNode[]): Promise<Audio> => {
   const audio = new THREE.Audio(listener)
-  audio.setBuffer(await audioLoader.loadAsync(getActionFileUrl(action)))
+  audio.setBuffer(await loadAudioBuffer(action))
   return new Audio(action, audio, gains)
 }
 
-export const getPositionalAudio = async (listener: THREE.AudioListener, action: PositionalAudioAction, gains: GainNode[] = []): Promise<THREE.PositionalAudio> => {
-  const audio = new THREE.PositionalAudio(listener)
-  audio.setBuffer(await audioLoader.loadAsync(getActionFileUrl(action)))
-  audio.gain.gain.value = action.volume / 100
-  audio.setDistanceModel('exponential')
+export const getPositionalAudio = async (listener: THREE.AudioListener, action: PositionalAudioAction, gains: GainNode[] = []): Promise<SpatialAudio> => {
+  const audio = new SpatialAudio(listener, action.volume)
+  audio.setBuffer(await loadAudioBuffer(action))
+  audio.gain.gain.value = volumeToGain(action.volume)
+  audio.setDistanceModel('inverse')
   audio.setRefDistance(15)
   audio.setRolloffFactor(1)
   audio.setMaxDistance(100)

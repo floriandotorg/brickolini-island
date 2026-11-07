@@ -9,6 +9,7 @@ import { World } from '../../lib/world/world'
 import { buildColorControls, buildDecalControls, Carbuild, type SpeakerAnimations } from './carbuild'
 
 export class Copter extends World {
+  private _musicMovie: MovieSprite | null = null
   private readonly _building = new Building()
   private _carbuild: Carbuild | null = null
 
@@ -18,6 +19,16 @@ export class Copter extends World {
 
   public get building(): Building {
     return this._building
+  }
+
+  public override deactivate(): void {
+    this._musicMovie?.stop()
+    super.deactivate()
+  }
+
+  public override escape(): boolean {
+    this.skipAllRunningAnimations(true)
+    return true
   }
 
   public override async init(): Promise<void> {
@@ -32,7 +43,8 @@ export class Copter extends World {
 
     const sprite = await MovieSprite.create(HelicopterBuild_Flic, -0.25)
     sprite.loop = true
-    sprite.play(this._building.scene)
+    sprite.musicOnly = true
+    this._musicMovie = sprite
 
     // TODO: Get "VIEW" transformation from the model's animation
     const displayPosition = new THREE.Vector3(1.31, 1.7, 5.11)
@@ -62,6 +74,7 @@ export class Copter extends World {
   }
 
   public override activate(composer: Composer): void {
+    void this._musicMovie?.play(this._building.scene)
     this._building.activate(composer)
     super.activate(composer)
   }

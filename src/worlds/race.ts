@@ -244,6 +244,11 @@ export abstract class Race extends IsleBase {
   abstract onEventStartWaypoint(data: number): void
   abstract onEventEndWaypoint(data: number): void
 
+  public override escape(): boolean {
+    this.skipAllRunningAnimations(true)
+    return true
+  }
+
   public override async init(): Promise<void> {
     await super.init()
 
@@ -366,7 +371,7 @@ export abstract class Race extends IsleBase {
   public override keyPressed(key: string): void {
     super.keyPressed(key)
 
-    if (key === 'f' && import.meta.env.DEV) {
+    if (key === 'KeyF' && import.meta.env.DEV) {
       this._playerMovement.toggleSlewMode()
     }
   }

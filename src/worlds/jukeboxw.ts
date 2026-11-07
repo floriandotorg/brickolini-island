@@ -27,6 +27,11 @@ export class JukeBox extends World {
     }
   }
 
+  public override escape(): boolean {
+    this.skipAllRunningAnimations(true)
+    return true
+  }
+
   public override async init(): Promise<void> {
     await super.init()
 

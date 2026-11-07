@@ -13,6 +13,11 @@ export class InfoDoor extends World {
     super('infodoor')
   }
 
+  public override escape(): boolean {
+    this.skipAllRunningAnimations(true)
+    return true
+  }
+
   public override async init(): Promise<void> {
     await super.init()
     await this._building.init({

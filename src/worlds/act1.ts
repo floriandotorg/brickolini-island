@@ -883,8 +883,11 @@ export class Act1 extends Isle {
     })
 
     this._dashboard.onExit = () => {
-      if (!this._playerMovement.flightMode) {
-        this.currentVehicle?.exit()
+      if (!this._playerMovement.flightMode && this.currentVehicle != null) {
+        void engine.transition({ keepMusic: true }).then(() => {
+          this.currentVehicle?.exit()
+          engine.finishTransition()
+        })
       }
     }
 
@@ -921,6 +924,13 @@ export class Act1 extends Isle {
 
     // brickster scene (only works in ACT2)
     // this.playAnimation(tns002br_RunAnim)
+  }
+
+  public override escape(): boolean {
+    this.skipAllRunningAnimations(true)
+    this.abortMission()
+    this.currentVehicle?.exit()
+    return true
   }
 
   public override abortMission(): void {
@@ -988,7 +998,7 @@ export class Act1 extends Isle {
 
   public override keyDown(event: KeyboardEvent): void {
     super.keyDown(event)
-    if (event.key === ' ' && !event.repeat) {
+    if (event.key === 'Space' && !event.repeat) {
       const ambulance = this.ambulance
       if (ambulance?.isInCutscene) {
         ambulance.handleSpace()
@@ -997,17 +1007,17 @@ export class Act1 extends Isle {
   }
 
   public override keyPressed(key: string): void {
-    if (key === ' ' && this.ambulance != null && this.ambulance.isInCutscene) {
+    if (key === 'Space' && this.ambulance != null && this.ambulance.isInCutscene) {
       return
     }
 
     super.keyPressed(key)
 
-    if (key === 'f' && import.meta.env.DEV) {
+    if (key === 'KeyF' && import.meta.env.DEV) {
       this._playerMovement.toggleSlewMode()
     }
 
-    if (key === 'm') {
+    if (key === 'KeyM' && import.meta.env.DEV) {
       engine.currentSaveGame.nextSunPosition()
       this._updateSun()
     }

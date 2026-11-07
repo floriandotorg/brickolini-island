@@ -156,3 +156,80 @@ Interior plants are those whose `m_boundaryName` begins with `int`. The last one
 - Source array `g_plantInfoInit` holds **81** entries (matches the declared `[81]`), not 82.
 - PlantManager serializes all **81** entries (972 bytes).
 - The roadmap/spec count of 81 is correct. If a TypeScript port somewhere claims 82, it has an off-by-one bug; but no such file exists in this repository to check.
+
+## Confirm unit 19 engine input behavior: exact sticky drag synthesis, Escape per-world cleanup and global return/quit query, Z and numpad plus/minus spawn. Summarize APIs and guards from the original; do not change files.
+_2026-11-07T18:21:06+07:00_
+
+I have everything needed. No files were modified. Here's the confirmation of the three input behaviors in the original LEGO Island (ISLE/LEGO1) engine.
+
+## 1. Sticky drag synthesis — `LegoInputManager`
+
+File: `LEGO1/lego/legoomni/src/input/legoinputmanager.cpp`, `LEGO1/.../include/legoinputmanager.h`
+
+**State fields (ctor defaults):**
+- `m_unk0x74 = 0x19` — the drag distance threshold (squared pixels); `0x19` = 25. This is the "unit 19."
+- `m_autoDragTime = 1000` — auto-drag timer fires after 1000 ms of no movement.
+- `m_unk0x195` — "sticky" mode flag, toggled by the **Shift** key.
+- `m_unk0x80` (dragging now) / `m_unk0x81` (button held, not yet dragged).
+- `m_unk0x335` / `m_unk0x336` — alternate modes; see guards below.
+
+**`QueueEvent` / `ProcessOneEvent` gate (`0x1005c740`):** events are dropped when `m_inputProcessingDisabled`, except a `c_notificationButtonDown` while `m_unk0x335`, or `VK_SPACE` while `m_unk0x336`. On `VK_SHIFT`, `ProcessOneEvent` toggles `m_unk0x195` (and, when leaving sticky, clears `m_unk0x80` and dispatches `c_notificationDragEnd` to the camera).
+
+**`FUN_1005cdf0` (`0x1005cdf0`) — the click/drag state machine:**
+- `ButtonDown`: record origin (`m_x`/`m_y`), `m_unk0x80=FALSE`, `m_unk0x81=TRUE`, `StartAutoDragTimer()`.
+- `ButtonUp`: `StopAutoDragTimer()`; if `m_unk0x80` → emit `DragEnd`; else if `m_unk0x81` → restore origin and emit `Click`. Reset both flags.
+- `MouseMove`: in sticky (`m_unk0x195`) mode, force `c_lButtonState`. While sticky or held, compute `t = dx*dx + dy*dy`; if not yet dragging, emit `DragStart` when `m_unk0x195` (sticky bypasses the threshold) OR `t > m_unk0x74` (0x19); once dragging, emit `Drag`.
+- `Timer` (matching `m_autoDragTimerID`): stop timer; if still held (`m_unk0x81`), synthesize `DragStart`; else clear drag.
+
+**APIs:** `QueueEvent`, `ProcessEvents`, `ProcessOneEvent`, `FUN_1005cdf0`, `StartAutoDragTimer`/`StopAutoDragTimer` (Win32 `SetTimer`/`KillTimer` via `LegoOmni::GetWindowHandle()`), `EnableInputProcessing` (re-enables + clears `g_clickedObjectId`/`g_clickedAtom`).
+
+## 2. Escape — per-world cleanup + global return/quit query
+
+File: `LEGO1/.../src/entity/legonavcontroller.cpp` (`LegoNavController::Notify`, `0x10055a60`)
+
+The keypress branch only runs when `!Lego()->IsPaused() || key == VK_PAUSE`.
+
+**`VK_ESCAPE` handler:**
+```cpp
+LegoWorld* currentWorld = CurrentWorld();
+if (currentWorld != NULL) {
+  InfocenterState* state = (InfocenterState*) GameState()->GetState("InfocenterState");
+  assert(state);
+  if (state != NULL && state->m_state != InfocenterState::e_exitQueried && currentWorld->Escape()) {
+    BackgroundAudioManager()->Stop();
+    TransitionManager()->StartTransition(MxTransitionManager::e_mosaic, 50, FALSE, FALSE);
+    state->m_state = InfocenterState::e_exitQueried;
+  }
+}
+```
+
+Guards: world non-null, `InfocenterState` found, **not already `e_exitQueried`** (= 8, `infocenter.h`), and the world's `Escape()` returns `TRUE`.
+
+**`LegoWorld::Escape()`** — virtual at vtable+0x64, base returns `FALSE` (`legoworld.h`). Each world overrides it to do its own cleanup, e.g.:
+- `Isle::Escape` (`isle.cpp:1221`): `m_radio.Stop()`, `BackgroundAudioManager()->Stop()`, then per-`Act1State` cleanup (pizza/towtrack/etc.).
+- `Hospital::Escape`: `DeleteObjects(...)`, set state `e_exitToClose`, `m_destLocation = e_infomain`.
+- `CarRace::Escape`: stop action wavs, `DeleteObjects(500,999)`, reset act1 state, clear variable table, restore dead zone + track default.
+- `Infocenter::Escape`: branches on `m_state` — `StopCutscene()` (→ `e_introCancelled`), `StopCredits()`, or other handling; respects `e_exitQueried`.
+
+Net effect: Escape delegates cleanup to the active world; on success it stops background audio, starts the mosaic transition, and latches `e_exitQueried` so the global "return to Infocenter" query is fired exactly once.
+
+## 3. Z and numpad plus/minus "spawn"
+
+File: same `LegoNavController::Notify`
+
+**`'Z'` — nearby plants dance:** guarded by `omni->GetCurrentWorld() != NULL && GetWorldId() == LegoOmni::e_act1`. Iterates `LegoPlantManager`, `CreatePlant(i, NULL, e_act1)`, and for visible, frustum-culled, in-range plants (`roiPosition.LenSquared() < 2000.0` or `lodLevel > 0`) calls `entity->ClickAnimation()`.
+
+**`VK_ADD` / `VK_SUBTRACT` (numpad +/-) — cycle & spawn a character in front of the camera:**
+- Global `g_nextCharacter` (init to -1 → 0 on first press).
+- On subsequent presses: `CharacterManager()->ReleaseActor(GetActorName(g_nextCharacter))`, then wrap-increment (`VK_ADD`) or wrap-decrement (`VK_SUBTRACT`) across `GetNumActors()`.
+- `GetActorROI(name, TRUE)` then place it via `CalcLocalTransform(position, direction, up, mat)` and `mat.TranslateBy(direction[0]*2.0f, direction[1]-1.0, direction[2]*2.0f)`, applied with `roi->UpdateTransformationRelativeToParent(mat)`.
+
+Note: these are reachable because the switch falls through the password-gated debug section only for keys not explicitly cased; `Z`/`VK_ADD`/`VK_SUBTRACT`/`VK_F12` are handled as top-level cases before the `!*g_currentInput` debug block (which gates `VK_TAB` FPS toggle and the digit-key light/location/animation shortcuts).
+
+### Cross-cutting guards summary
+- Input manager: events dropped when `m_inputProcessingDisabled`, except `m_unk0x335` (button-down re-routed as `VK_SPACE`) and `m_unk0x336` (`VK_SPACE` passthrough).
+- Nav controller keypresses: skipped while paused unless `VK_PAUSE`.
+- Escape: single-shot via `e_exitQueried` latch; per-world cleanup via the virtual `LegoWorld::Escape()`.
+- Debug shortcuts: gated behind `!*g_currentInput` (debug password).
+
+No files were changed.

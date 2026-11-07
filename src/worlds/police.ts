@@ -14,6 +14,11 @@ export class Police extends World {
     super('police')
   }
 
+  public override escape(): boolean {
+    this.skipAllRunningAnimations(true)
+    return true
+  }
+
   public override async init(): Promise<void> {
     await super.init()
 

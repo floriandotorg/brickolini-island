@@ -167,16 +167,18 @@ export class Composer {
     this._postScene.add(mesh)
   }
 
-  public render(time: number): void {
+  public render(time: number, frozen = false): void {
     this._postMaterial.uniforms.uTime.value = time
 
-    for (const render of this._pipeline) {
-      render.material.uniforms.uTime.value = time
-      render.render(this._renderer)
-    }
+    if (!frozen) {
+      for (const render of this._pipeline) {
+        render.material.uniforms.uTime.value = time
+        render.render(this._renderer)
+      }
 
-    this._renderer.setRenderTarget(this._renderTarget)
-    this._renderer.render(this._scene, this._camera)
+      this._renderer.setRenderTarget(this._renderTarget)
+      this._renderer.render(this._scene, this._camera)
+    }
 
     this._renderer.setRenderTarget(null)
     this._renderer.render(this._postScene, this._postCamera)

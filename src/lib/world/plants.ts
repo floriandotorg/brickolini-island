@@ -215,12 +215,52 @@ export namespace Plants {
 
   const statesBySave = new WeakMap<SaveGame, PlantState[]>()
 
+  const placements = new WeakMap<WorldType, THREE.Group>()
+  const dances = new WeakMap<WorldType, Map<THREE.Object3D, () => Promise<void>>>()
+
+  export const recreate = async (world: WorldType, reset = false): Promise<void> => {
+    const group = placements.get(world)
+    if (group == null) {
+      return
+    }
+    if (!reset) {
+      group.traverse(object => {
+        object.visible = true
+      })
+      return
+    }
+    const objects: THREE.Object3D[] = []
+    group.traverse(object => objects.push(object))
+    world.removeFromParents(objects)
+    const save = engine.currentSaveGame
+    statesBySave.delete(save)
+    save.plants = null
+    world.scene.add(await place(world, World.ACT1))
+  }
+
+  export const dance = async (world: WorldType): Promise<void> => {
+    world.camera.updateMatrixWorld()
+    const frustum = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(world.camera.projectionMatrix, world.camera.matrixWorldInverse))
+    const position = new THREE.Vector3()
+    const promises: Promise<void>[] = []
+    for (const [mesh, animate] of dances.get(world) ?? []) {
+      mesh.getWorldPosition(position)
+      if (mesh.visible && frustum.containsPoint(position) && position.distanceToSquared(world.camera.position) < 2000) {
+        promises.push(animate())
+      }
+    }
+    await Promise.all(promises)
+  }
+
   export const place = async (world: WorldType, plantWorld: World): Promise<THREE.Group> => {
     const save = engine.currentSaveGame
     const plantStates = statesBySave.get(save) ?? save.plants ?? plants.map(plant => ({ color: plant.color, variant: plant.variant, move: 0, sound: 0, mood: 0, counter: -1 }))
     statesBySave.set(save, plantStates)
     const group = new THREE.Group()
     group.name = 'plants'
+    placements.set(world, group)
+    const plantDances = new Map<THREE.Object3D, () => Promise<void>>()
+    dances.set(world, plantDances)
     if (plantStates.length !== plants.length) {
       throw new Error('Plant states length mismatch')
     }
@@ -243,6 +283,7 @@ export namespace Plants {
       mesh.add(animationRoot)
       const roi = await getGlobalPart(plantName, null, null)
       roiList[n] = roi
+      let currentRoi = roi
       animationRoot.add(roi.model)
       group.add(mesh)
       world.addClickListener(mesh, async () => {
@@ -267,7 +308,20 @@ export namespace Plants {
         mesh.add(animationRoot)
         const roi = await getGlobalPart(partName(plantState.variant, plantState.color), null, null)
         roiList[n] = roi
+        currentRoi = roi
         animationRoot.add(roi.model)
+        void animate()
+        if (engine.currentSaveGame.player === 'laura') {
+          void world.playPositionalAudio(Sound17, mesh)
+        }
+        return true
+      })
+      const animate = async (): Promise<void> => {
+        const animationRoot = mesh.getObjectByName('animation')
+        if (animationRoot == null) {
+          return
+        }
+        const roi = currentRoi
         const animation = await getAnimation(
           animations[plantState.variant][plantState.move],
           new Map([
@@ -278,13 +332,10 @@ export namespace Plants {
             ['palm', { type: WDB.ActorType.Unknown, object: animationRoot.children[0], children: new Map(), roi }],
           ]),
         )
-        if (engine.currentSaveGame.player === 'laura') {
-          void world.playPositionalAudio(Sound17, mesh)
-        }
         void world.playPositionalAudio(sounds[plantState.sound], mesh)
-        void world.playAnimationClip(animationRoot, animation)
-        return true
-      })
+        await world.playAnimationClip(animationRoot, animation)
+      }
+      plantDances.set(mesh, animate)
     }
     return group
   }
