@@ -38,6 +38,13 @@ export class RaceCar extends PathActor {
     this.addJumpEdge('edg03_112', 2, 'edg03_113', 2)
   }
 
+  public override update(delta: number) {
+    if ('raceStarted' in this._isle && !this._isle.raceStarted) {
+      return { from: this.roi.position.clone(), to: this.roi.position.clone() }
+    }
+    return super.update(delta)
+  }
+
   protected override _switchBoundary(): void {
     const jumpEdge = this._jumpEdges.get(this.destination.edge)
     if (jumpEdge != null) {

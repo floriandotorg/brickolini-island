@@ -9,6 +9,7 @@ import { getAction } from '../lib/assets/load'
 import type { WdbWorldName } from '../lib/assets/model'
 import { type Composer, Render2D } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect } from '../lib/engine'
+import { RaceProgress } from '../lib/race-progress.ts'
 import type { Actor } from '../lib/world/actor'
 import { Meter } from '../lib/world/dashboard'
 import { PlayerMovement } from '../lib/world/player-movement'
@@ -98,48 +99,6 @@ class MapLocator {
   }
 }
 
-const numberOfLaps = 2
-const numberOfWaypoints = 20
-
-class RaceProgress {
-  private _lastWaypointNo = 0
-  private _lap = 0
-
-  public get lastWaypointNo(): number {
-    return this._lastWaypointNo
-  }
-
-  public set lastWaypointNo(waypointNo: number) {
-    if (this._lap >= numberOfLaps) {
-      return
-    }
-    if (waypointNo <= 0 || waypointNo >= this._lastWaypointNo + 5) {
-      console.warn(`Got waypoint out of valid range: ${waypointNo} (last: ${this._lastWaypointNo})`)
-      return
-    }
-    if (waypointNo >= numberOfWaypoints) {
-      this._lastWaypointNo = 0
-      this._lap++
-      return
-    }
-    this._lastWaypointNo = waypointNo
-  }
-
-  public get lap(): number {
-    return this._lap
-  }
-
-  public get remainingLaps(): number {
-    return numberOfLaps - this._lap
-  }
-
-  public get progress(): number {
-    const waypoint = this._lastWaypointNo + this._lap * numberOfWaypoints
-    const totalWaypoints = numberOfLaps * numberOfWaypoints
-    return waypoint / totalWaypoints
-  }
-}
-
 type StartUpAction = SerialAction<ActionBase>
 
 export abstract class Race extends IsleBase {
@@ -152,9 +111,9 @@ export abstract class Race extends IsleBase {
   private readonly _controlsRender = new Render2D()
   private readonly _controls = new ControlsCollection(this._controlsRender)
   private _raceMap: RaceMap | null = null
-  private readonly _playerProgress = new RaceProgress()
-  private readonly _opponent1Progress = new RaceProgress()
-  private readonly _opponent2Progress = new RaceProgress()
+  protected readonly _playerProgress = new RaceProgress(2, 20)
+  protected readonly _opponent1Progress = new RaceProgress(2, 20)
+  protected readonly _opponent2Progress = new RaceProgress(2, 20)
   private _speedMeter: Meter | null = null
   private _fuelMeter: Meter | null = null
   private _distanceMeter: Meter | null = null
@@ -163,6 +122,10 @@ export abstract class Race extends IsleBase {
   private _opponent1ProgressLocator = createImageSprite(CarLocator2)
   private _opponent2ProgressLocator = createImageSprite(CarLocator3)
   private readonly _startUpAction: StartUpAction
+  protected raceState: 'waiting' | 'racing' | 'finished' | 'leaving' = 'waiting'
+  public get raceStarted(): boolean {
+    return this.raceState === 'racing'
+  }
   private _hideAnimation: Animation3D | null = null
 
   constructor(name: WorldName, options: { wdbWorldName: WdbWorldName; dtaWorldName: DtaWorldName; startUpAction: StartUpAction }) {
@@ -244,8 +207,28 @@ export abstract class Race extends IsleBase {
   abstract onEventStartWaypoint(data: number): void
   abstract onEventEndWaypoint(data: number): void
 
+  protected abstract onPlayerFinished(): Promise<void>
+
+  protected stopOpponent = (name: string, vehicle: string, hide: boolean): void => {
+    const roi = this.findRoi(name)
+    if (roi?.actor != null) {
+      this.removeActor(roi.actor)
+    }
+    if (hide) {
+      if (roi != null) {
+        roi.visible = false
+      }
+      const car = this.findRoi(vehicle)
+      if (car != null) {
+        car.visible = false
+      }
+    }
+  }
+
   public override escape(): boolean {
+    this.raceState = 'leaving'
     this.skipAllRunningAnimations(true)
+    this.resetTemporarySkyColor()
     return true
   }
 
@@ -285,7 +268,7 @@ export abstract class Race extends IsleBase {
         } else if (variable.endsWith('fuel')) {
           this._fuelMeter = await Meter.create(child)
           // For now to at least show something
-          this._fuelMeter.draw(0.5)
+          this._fuelMeter.draw(0.8)
           this._controlsRender.scene.add(this._fuelMeter.sprite)
         } else if (variable.endsWith('distance')) {
           this._distanceMeter = await Meter.create(child)
@@ -303,16 +286,21 @@ export abstract class Race extends IsleBase {
     this.boundaryManager.onTrigger((name, data, direction, roi) => {
       console.log(`Boundary trigger: ${name}, ${data}, ${direction}, ${roi?.name}`)
 
+      if (this.raceState !== 'racing') {
+        return
+      }
       if (name[2] === 'D') {
         if (roi == null) {
-          this._playerProgress.lastWaypointNo = data
-          if (this._playerProgress.remainingLaps <= 0) {
-            console.log('Player finished race')
+          if (this._playerProgress.visit(data) && this._playerProgress.finished) {
+            this.raceState = 'finished'
+            void this.onPlayerFinished()
           }
         } else if (roi.name === 'rhoda') {
-          this._opponent1Progress.lastWaypointNo = data
-        } else if (roi.name === 'studs') {
-          this._opponent2Progress.lastWaypointNo = data
+          if (this._opponent1Progress.visit(data) && this._opponent1Progress.finished) {
+            this.stopOpponent('rhoda', 'rcgreen', true)
+          }
+        } else if (roi.name === 'studs' && this._opponent2Progress.visit(data) && this._opponent2Progress.finished) {
+          this.stopOpponent('studs', 'rcblack', true)
         }
       }
 
@@ -391,7 +379,7 @@ export abstract class Race extends IsleBase {
   public override update(delta: number): void {
     super.update(delta)
 
-    if (this.isRunningCameraAnimation) {
+    if (this.isRunningCameraAnimation || this.raceState !== 'racing') {
       return
     }
 

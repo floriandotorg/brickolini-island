@@ -409,6 +409,14 @@ export abstract class IsleBase extends World {
     }
   }
 
+  private readonly _mutedActorSounds = new Map<THREE.PositionalAudio, number>()
+
+  protected setActorSoundsMuted(muted: boolean): void {
+    for (const [sound, volume] of this._mutedActorSounds) {
+      sound.gain.gain.value = muted ? 0 : volume
+    }
+  }
+
   public allowExtras = true
 
   private _spawnExtras(): void {
@@ -726,14 +734,11 @@ export abstract class IsleBase extends World {
         positionalAudio = await this.playPositionalAudio(sound.toLowerCase(), model.model)
       } catch (error) {
         console.warn('Failed to play sound', error)
-        return null
       }
     }
     const mute = getExtraValue(action, 'Mute')
-    if (mute != null) {
-      if (positionalAudio == null) {
-        throw new Error('Mute can only be used with Sound')
-      }
+    if (mute != null && positionalAudio != null) {
+      this._mutedActorSounds.set(positionalAudio, positionalAudio.gain.gain.value)
       positionalAudio.gain.gain.value = 0
     }
     const path = getExtraValue(action, 'Path')
