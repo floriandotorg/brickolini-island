@@ -1,3 +1,4 @@
+import type * as THREE from 'three'
 import type { Roi3D } from '../assets/model'
 
 export abstract class Entity {
@@ -7,7 +8,7 @@ export abstract class Entity {
     return this._roi
   }
 
-  public async onClick(): Promise<boolean> {
+  public async onClick(_object?: THREE.Object3D): Promise<boolean> {
     return false
   }
 }

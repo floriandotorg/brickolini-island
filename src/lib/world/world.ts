@@ -10,6 +10,7 @@ import type { SpawnLocation } from '../assets/spawn-location'
 import { WDB } from '../assets/wdb'
 import { type Composer, Render3D } from '../effect/composer'
 import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
+import { PendingActions } from '../pending-actions'
 import { Actor, ColliderType } from './actor'
 import { BoundaryManager } from './boundary-manager'
 import { Character, type CharacterName } from './character'
@@ -107,8 +108,9 @@ export abstract class World {
   private readonly _debugPlayer: HTMLElement
 
   private _raycaster = new THREE.Raycaster()
-  private _clickListeners = new Map<THREE.Object3D, () => Promise<boolean>>()
+  private _clickListeners = new Map<THREE.Object3D, (object: THREE.Object3D) => Promise<boolean>>()
   private _actors = new Set<Actor>()
+  private readonly _pendingActions = new PendingActions()
   private _runningAnimations: {
     metadata: ManagedAnimation
     onRelease?: () => void
@@ -764,102 +766,119 @@ export abstract class World {
     if (animationAction == null) {
       throw new Error('No AnimationAction found')
     }
-    const directionRotation = new THREE.Quaternion()
-    calculateTransformationMatrix([0, 0, 0], [-animationAction.direction[0], animationAction.direction[1], animationAction.direction[2]], [-animationAction.up[0], animationAction.up[1], animationAction.up[2]]).decompose(new THREE.Vector3(), directionRotation, new THREE.Vector3())
-    if (rotation != null) {
-      directionRotation.multiply(rotation)
-    }
-    const {
-      animation,
-      managedActorNames,
-      roisToRemoveOnStop,
-      positionalAudioActions,
-      audioActions,
-      tracks,
-      lookAtKeys,
-      faceAnimations,
-      pointAtCameraObjects,
-      roisToHideOnStop,
-      loop: defaultLoop,
-      animationActors,
-      rootTransform,
-      location: builtLocation,
-    } = await this.buildAnimation(action, { location: new THREE.Vector3(-animationAction.location[0], animationAction.location[1], animationAction.location[2]).add(location ?? new THREE.Vector3()), rotation: directionRotation, extraTracks, anchorRoi })
-    if (signal?.aborted) {
-      for (const name of managedActorNames) {
-        this.releaseActor(name)
+    const pending = this._pendingActions.begin(action.siFile, action.id, managed)
+    try {
+      const directionRotation = new THREE.Quaternion()
+      calculateTransformationMatrix([0, 0, 0], [-animationAction.direction[0], animationAction.direction[1], animationAction.direction[2]], [-animationAction.up[0], animationAction.up[1], animationAction.up[2]]).decompose(new THREE.Vector3(), directionRotation, new THREE.Vector3())
+      if (rotation != null) {
+        directionRotation.multiply(rotation)
       }
-      return
-    }
-    const loop = overrideLoop ?? defaultLoop
-    const collisionRois = [...new Set([...animationActors.values()].flatMap(actor => actor.roi.getAllRois()))].filter(roi => roi.model.hasLod)
-    const collisionCenter = new THREE.Vector3(...animation.center).add(builtLocation)
-    const collisionRadius = animation.radius
-
-    this.setupCameraForAnimation(animation.tree)
-
-    const nonPositionalAudios = await Promise.all(audioActions.map(audio => engine.playAudio(audio, 'animations')))
-
-    const audios: THREE.PositionalAudio[] = await Promise.all(
-      positionalAudioActions.map(async audio => {
-        const extra = audio.extra === 'FROM_PARENT' ? action.extra : audio.extra
-        const character = this.getRoi(extra ?? '')
-        if (character == null) {
-          throw new Error(`Actor not found: ${audio.extra}`)
-        }
-        return this.playPositionalAudio(audio, character instanceof Character ? character.head.model : character.model, audio.startTime / 1_000, 'animations')
-      }),
-    )
-    if (signal?.aborted) {
-      for (const audio of [...audios, ...nonPositionalAudios]) {
-        audio.stop()
-      }
-      for (const name of managedActorNames) {
-        this.releaseActor(name)
-      }
-      return
-    }
-    const sentinel = audioActions.length > 0 || audios.length > 0 ? engine.lowerBackgroundMusic() : null
-
-    const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
-    await this.playAnimationClip(this.scene, clip, {
-      audios,
-      nonPositionalAudios,
-      lookAtKeys,
-      faceAnimations,
-      pointAtCameraObjects,
-      roisToHideOnStop,
-      managedActorNames,
-      roisToRemoveOnStop,
-      holdManagedActorNames,
-      collisionRois,
-      collisionCenter,
-      collisionRadius,
-      lockCamera,
-      unskippable,
-      loop,
-      action,
-      onFinished: () => {
-        const bindings = new Map([...animationActors].map(([name, actor]) => [name, { ...actor, type: actor.type === WDB.ActorType.ManagedActor ? WDB.ActorType.Unknown : actor.type }]))
-        const poses = getTransformsAtTime(animation.tree, bindings, rootTransform, Math.max(0, clip.duration * 1000))
+      const {
+        animation,
+        managedActorNames,
+        roisToRemoveOnStop,
+        positionalAudioActions,
+        audioActions,
+        tracks,
+        lookAtKeys,
+        faceAnimations,
+        pointAtCameraObjects,
+        roisToHideOnStop,
+        loop: defaultLoop,
+        animationActors,
+        rootTransform,
+        location: builtLocation,
+      } = await this.buildAnimation(action, { location: new THREE.Vector3(-animationAction.location[0], animationAction.location[1], animationAction.location[2]).add(location ?? new THREE.Vector3()), rotation: directionRotation, extraTracks, anchorRoi }).catch(error => {
+        this._pendingActions.finish(pending)
+        throw error
+      })
+      if (signal?.aborted || pending.cancelled) {
         for (const name of managedActorNames) {
-          const actor = animationActors.get(name)
-          const pose = actor == null ? null : poses.get(actor.object.uuid)
-          if (actor?.roi instanceof Character && pose != null) {
-            actor.roi.syncAnimationPose(pose.position, pose.quaternion)
+          this.releaseActor(name)
+        }
+        for (const roi of roisToRemoveOnStop) {
+          this.removeFromParents(roi.getAllModels())
+        }
+        this._pendingActions.finish(pending)
+        return
+      }
+      const loop = overrideLoop ?? defaultLoop
+      const collisionRois = [...new Set([...animationActors.values()].flatMap(actor => actor.roi.getAllRois()))].filter(roi => roi.model.hasLod)
+      const collisionCenter = new THREE.Vector3(...animation.center).add(builtLocation)
+      const collisionRadius = animation.radius
+
+      this.setupCameraForAnimation(animation.tree)
+
+      const nonPositionalAudios = await Promise.all(audioActions.map(audio => engine.playAudio(audio, 'animations')))
+
+      const audios: THREE.PositionalAudio[] = await Promise.all(
+        positionalAudioActions.map(async audio => {
+          const extra = audio.extra === 'FROM_PARENT' ? action.extra : audio.extra
+          const character = this.getRoi(extra ?? '')
+          if (character == null) {
+            throw new Error(`Actor not found: ${audio.extra}`)
           }
+          return this.playPositionalAudio(audio, character instanceof Character ? character.head.model : character.model, audio.startTime / 1_000, 'animations')
+        }),
+      )
+      if (signal?.aborted || pending.cancelled) {
+        for (const audio of [...audios, ...nonPositionalAudios]) {
+          audio.stop()
         }
-        this.onAnimationCharactersFinished(managedActorNames, managed)
-      },
-      onRelease: () => {
-        if (sentinel != null) {
-          engine.raiseBackgroundMusic(sentinel)
+        for (const name of managedActorNames) {
+          this.releaseActor(name)
         }
-      },
-      metadata: { managed, capturesPlayer, location: animationLocation, hasCameraTrack: animation.cameraAnimation != null, released: false },
-    })
-    if (sentinel != null) {
-      engine.raiseBackgroundMusic(sentinel)
+        for (const roi of roisToRemoveOnStop) {
+          this.removeFromParents(roi.getAllModels())
+        }
+        this._pendingActions.finish(pending)
+        return
+      }
+      this._pendingActions.finish(pending)
+      const sentinel = audioActions.length > 0 || audios.length > 0 ? engine.lowerBackgroundMusic() : null
+
+      const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
+      await this.playAnimationClip(this.scene, clip, {
+        audios,
+        nonPositionalAudios,
+        lookAtKeys,
+        faceAnimations,
+        pointAtCameraObjects,
+        roisToHideOnStop,
+        managedActorNames,
+        roisToRemoveOnStop,
+        holdManagedActorNames,
+        collisionRois,
+        collisionCenter,
+        collisionRadius,
+        lockCamera,
+        unskippable,
+        loop,
+        action,
+        onFinished: () => {
+          const bindings = new Map([...animationActors].map(([name, actor]) => [name, { ...actor, type: actor.type === WDB.ActorType.ManagedActor ? WDB.ActorType.Unknown : actor.type }]))
+          const poses = getTransformsAtTime(animation.tree, bindings, rootTransform, Math.max(0, clip.duration * 1000))
+          for (const name of managedActorNames) {
+            const actor = animationActors.get(name)
+            const pose = actor == null ? null : poses.get(actor.object.uuid)
+            if (actor?.roi instanceof Character && pose != null) {
+              actor.roi.syncAnimationPose(pose.position, pose.quaternion)
+            }
+          }
+          this.onAnimationCharactersFinished(managedActorNames, managed)
+        },
+        onRelease: () => {
+          if (sentinel != null) {
+            engine.raiseBackgroundMusic(sentinel)
+          }
+        },
+        metadata: { managed, capturesPlayer, location: animationLocation, hasCameraTrack: animation.cameraAnimation != null, released: false },
+      })
+      if (sentinel != null) {
+        engine.raiseBackgroundMusic(sentinel)
+      }
+    } finally {
+      this._pendingActions.finish(pending)
     }
   }
 
@@ -978,7 +997,7 @@ export abstract class World {
     }
   }
 
-  public addClickListener(objects: Roi3D | THREE.Object3D | THREE.Object3D[], onClick: () => Promise<boolean>): void {
+  public addClickListener(objects: Roi3D | THREE.Object3D | THREE.Object3D[], onClick: (object: THREE.Object3D) => Promise<boolean>): void {
     if (objects instanceof RoiModel) {
       throw new Error(`RoiModel ${objects.name} should not be added a click listener`)
     }
@@ -1004,9 +1023,10 @@ export abstract class World {
   public async click(event: NormalizedMouseEvent): Promise<void> {
     this._raycaster.setFromCamera(new THREE.Vector2(event.ndcX, event.ndcY), this._render.camera)
     let hit: THREE.Object3D | null = this._raycaster.intersectObjects(Array.from(this._clickListeners.keys()))[0]?.object
-    while (hit != null) {
+    const picked = hit
+    while (hit != null && picked != null) {
       const onClick = this._clickListeners.get(hit)
-      if (hit.visible && onClick != null && (await onClick())) {
+      if (hit.visible && onClick != null && (await onClick(picked))) {
         break
       }
       hit = hit.parent
@@ -1181,7 +1201,21 @@ export abstract class World {
     composer.add(this._render)
   }
 
-  public deactivate(): void {}
+  private readonly _deactivationListeners = new Set<() => void>()
+
+  public onDeactivate(callback: () => void): void {
+    this._deactivationListeners.add(callback)
+  }
+
+  public deactivate(): void {
+    for (const callback of this._deactivationListeners) {
+      callback()
+    }
+    for (const audio of this._runningAudios) {
+      audio.stop()
+    }
+    this._runningAudios.length = 0
+  }
 
   public dispose(): void {
     this.skipAllRunningAnimations(true)
@@ -1281,6 +1315,7 @@ export abstract class World {
   }
 
   public toggleManagedAnimations(release: boolean): void {
+    this._pendingActions.stopManaged()
     for (const running of [...this._runningAnimations]) {
       const decision = skipDecision(running.metadata, release)
       if (decision === 'release') {
@@ -1305,6 +1340,7 @@ export abstract class World {
   }
 
   public stopAnimationsInRange(siFile: string, firstId: number, lastId = firstId): void {
+    this._pendingActions.stopRange(siFile, firstId, lastId)
     for (const running of [...this._runningAnimations]) {
       if (running.action?.siFile === siFile && running.action.id >= firstId && running.action.id <= lastId) {
         this.stopRunningAnimation(running)
@@ -1321,6 +1357,7 @@ export abstract class World {
   }
 
   public skipAllRunningAnimations(force = false): void {
+    this._pendingActions.stopAll()
     for (const runningAnimation of this._runningAnimations) {
       if (runningAnimation.unskippable && !force) {
         runningAnimation.lockCamera = false

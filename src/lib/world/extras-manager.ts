@@ -104,7 +104,7 @@ export class ExtrasManager {
   public purge(force: boolean): void {
     for (let n = 0; n < this.slots.length; ++n) {
       const slot = this.slots[n]
-      if (slot == null || slot.actor.borrowed || ['mama', 'papa'].includes(slot.actor.roi.name)) {
+      if (slot == null || slot.actor.borrowed || (force && ['mama', 'papa'].includes(slot.actor.roi.name))) {
         continue
       }
       if (force || (slot.lifetime >= 0 && (this._time - slot.startTime) * 1000 > allowedExtraLifetime(this.numAllowedExtras) && this._world.characterRefCount(slot.actor.roi.name) === 1 && !this._world.isBoxInFrustum(slot.actor.roi.model.getWorldBoundingBox()))) {

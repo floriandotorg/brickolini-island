@@ -1,8 +1,10 @@
 import * as THREE from 'three'
 import { _Isle } from '../actions/isle'
+import { act1State } from '../lib/act1-state'
 import { getModel } from '../lib/assets/model'
 import type { Composer } from '../lib/effect/composer'
 import { engine } from '../lib/engine'
+import { radio } from '../lib/radio'
 import type { Actor } from '../lib/world/actor'
 import type { VehicleType } from '../lib/world/dashboard'
 import type { WorldName } from '../lib/world/world'
@@ -16,8 +18,13 @@ export class Isle extends IsleBase {
   }
 
   public override escape(): boolean {
-    this.skipAllRunningAnimations(true)
+    radio.stop()
+    engine.stopBackgroundMusic()
     this.abortMission()
+    this.toggleManagedAnimations(false)
+    this.stopAnimationsInRange('isle', 500, 999)
+    this.currentVehicle?.exit()
+    act1State.value = 'none'
     return true
   }
 

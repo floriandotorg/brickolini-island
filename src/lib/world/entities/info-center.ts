@@ -6,6 +6,8 @@ export class InfoCenter extends EnterableBuilding {
 
   override async onClick(): Promise<boolean> {
     this._isle.abortMission()
+    this._isle.toggleManagedAnimations(false)
+    this._isle.currentVehicle?.exit()
     void switchWorld(this.world)
     return true
   }

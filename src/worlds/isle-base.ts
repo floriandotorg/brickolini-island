@@ -123,7 +123,7 @@ export abstract class IsleBase extends World {
     if (['elevride', 'elevopen', 'seaview', 'observe', 'elevdown', 'garadoor', 'polidoor'].includes(this.name) || vehicleType === 'ambul' || vehicleType === 'towtk') {
       return false
     }
-    return act1State.value === 'none'
+    return act1State.value !== 'pizza' && act1State.value !== 'ambulance' && act1State.value !== 'towtrack'
   }
 
   public setFlightMode(flying: boolean): void {
@@ -762,6 +762,9 @@ export abstract class IsleBase extends World {
 
     let entity: Entity | null = null
     switch (objectScript) {
+      case 'CaveEntity':
+        entity = new (await import('../lib/world/entities/cave')).CaveEntity(model, this)
+        break
       case 'JailEntity':
         entity = new (await import('../lib/world/entities/jail')).JailEntity(model, this)
         break
@@ -794,9 +797,9 @@ export abstract class IsleBase extends World {
       const quaternion = new THREE.Quaternion()
       matrix.decompose(position, quaternion, new THREE.Vector3())
       model.moveRoiTo(position, quaternion)
-      this.addClickListener(entity.roi, async () => {
+      this.addClickListener(entity.roi, async object => {
         if (!this.ignoreEntityClick) {
-          return await entity.onClick()
+          return await entity.onClick(object)
         }
         return false
       })
