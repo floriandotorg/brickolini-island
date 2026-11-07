@@ -828,7 +828,7 @@ export class Act1 extends Isle {
         [14, 2],
       ]
 
-      if (name[2] === 'M' && this.backgroundMusicTriggerEnabled) {
+      if (name[2] === 'M' && this.backgroundMusicTriggerEnabled && !jukeBoxState.active && data >= 1 && data <= triggers.length) {
         if (direction === 'inbound') {
           void engine.switchBackgroundMusic(music[triggers[data - 1][0] - 1])
         } else {

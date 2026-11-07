@@ -3,6 +3,7 @@ import type { Boundary, Edge } from '../assets/boundary'
 import type { Roi3D } from '../assets/model'
 import { getSpawnLocation, type SpawnLocation } from '../assets/spawn-location'
 import { engine } from '../engine'
+import { triggerMatches } from '../path-triggers.ts'
 import type { World } from './world'
 
 const flagsColor = (edge: { flags: number }): string => {
@@ -151,6 +152,8 @@ export class BoundaryManager {
     return this._meshToBoundary.get(hit.object as THREE.Mesh)?.boundary ?? null
   }
 
+  public ignoreTriggerDirection = false
+
   public update(fromPos: THREE.Vector3, toPos: THREE.Vector3, roi: Roi3D | null): void {
     const downRay = new THREE.Raycaster(toPos, new THREE.Vector3(0, -1, 0), 0, 1000)
     const hit = downRay.intersectObject(this._boundaryGroup)[0]
@@ -176,13 +179,13 @@ export class BoundaryManager {
       const dot2 = toPos.clone().sub(ccw).dot(this._currentBoundary.direction)
 
       for (const trigger of this._currentBoundary.triggers) {
-        if (dot2 > dot1 && trigger.triggerProjection >= dot1 && trigger.triggerProjection < dot2) {
+        if (triggerMatches(trigger.struct.flags, true, roi == null, this.ignoreTriggerDirection) && dot2 > dot1 && trigger.triggerProjection >= dot1 && trigger.triggerProjection < dot2) {
           for (const listener of this._triggerListeners) {
             listener(trigger.struct.name, trigger.data, 'inbound', roi)
           }
         }
 
-        if (dot2 < dot1 && trigger.triggerProjection >= dot2 && trigger.triggerProjection < dot1) {
+        if (triggerMatches(trigger.struct.flags, false, roi == null, this.ignoreTriggerDirection) && dot2 < dot1 && trigger.triggerProjection >= dot2 && trigger.triggerProjection < dot1) {
           for (const listener of this._triggerListeners) {
             listener(trigger.struct.name, trigger.data, 'outbound', roi)
           }
