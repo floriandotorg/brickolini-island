@@ -632,7 +632,7 @@ class Engine {
     this._world = world
     this._setRendererSize()
     this.finishTransition()
-    this._world.activate(this._composer, param)
+    await this._world.activate(this._composer, param)
     this._world.camera.add(this._audioListener)
   }
 
@@ -673,10 +673,10 @@ class Engine {
 
   public skipCutscene(): void {
     this._cutsceneVideo.pause()
-    this._endCutscene?.()
+    this._endCutscene?.('skipped')
   }
 
-  private _endCutscene: (() => void) | null = null
+  private _endCutscene: ((result: 'ended' | 'skipped') => void) | null = null
 
   public createSoundCache(): SoundCache {
     return new SoundCache(this._audioListener, this._gains.effects)
@@ -694,7 +694,7 @@ class Engine {
     return audio
   }
 
-  public async playCutscene(action: CompositeMediaAction): Promise<void> {
+  public async playCutscene(action: CompositeMediaAction): Promise<'ended' | 'skipped'> {
     this._state = 'cutscene'
     this.input.disable()
     this.input.allowSpaceWhileDisabled = true
@@ -722,7 +722,8 @@ class Engine {
     this.playVideo(this._cutsceneVideo)
     this._cutsceneAudio.play()
     return new Promise(resolve => {
-      const end = () => {
+      const end = (result: 'ended' | 'skipped') => {
+        this._cutsceneVideo.pause()
         this._state = 'game'
         this.input.buttonDownActsAsSpace = false
         this.input.enable()
@@ -730,11 +731,11 @@ class Engine {
         this._endCutscene = null
         this._cutsceneAudio?.stop()
         restoreAudio()
-        resolve()
+        resolve(result)
       }
 
       this._endCutscene = end
-      this._cutsceneVideo.onended = end
+      this._cutsceneVideo.onended = () => end('ended')
     })
   }
 

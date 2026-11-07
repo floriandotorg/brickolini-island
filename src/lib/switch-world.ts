@@ -97,6 +97,7 @@ const switchWorldInner = async (normalizedSpawn: WorldSpawnInner) => {
 }
 
 const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
+  const previousName = engine.hasWorld ? engine.currentWorld.name : null
   const transition = engine.hasWorld ? engine.transition() : Promise.resolve()
 
   if (!worlds.has(normalizedSpawn.name)) {
@@ -109,7 +110,7 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
         case 'garage':
           return import('../worlds/garage').then(m => new m.Garage())
         case 'infomain':
-          return import('../worlds/infomain').then(m => new m.InfoMain(normalizedSpawn.ending))
+          return import('../worlds/infomain').then(m => new m.InfoMain())
         case 'regbook':
           return import('../worlds/regbook').then(m => new m.RegBook())
         case 'police':
@@ -118,6 +119,8 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
           return import('../worlds/elevbott').then(m => new m.ElevBott())
         case 'infodoor':
           return import('../worlds/infodoor').then(m => new m.InfoDoor())
+        case 'credits':
+          return import('../worlds/credits').then(m => new m.Credits())
         case 'histbook':
           return import('../worlds/histbook').then(m => new m.HistBook())
         case 'infoscor':
@@ -174,6 +177,8 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
 
   const param = (() => {
     switch (normalizedSpawn.name) {
+      case 'infomain':
+        return normalizedSpawn.ending
       case 'elevride':
         return normalizedSpawn.floor
       case 'act1':
@@ -184,6 +189,9 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
   })()
 
   await engine.setWorld(world, param)
+  if (previousName != null && previousName !== normalizedSpawn.name && (previousName === 'carrace' || (previousName === 'act1' && normalizedSpawn.name === 'act2') || (previousName === 'act2' && normalizedSpawn.name === 'copter'))) {
+    discardWorld(previousName)
+  }
 }
 
 const invalidPreviousWorlds: WorldName[] = ['histbook', 'elevbott', 'elevride', 'elevopen', 'seaview', 'observe', 'elevdown'] as const

@@ -120,6 +120,7 @@ export class Act2 extends IsleBase {
   }
 
   public override async init(): Promise<void> {
+    engine.currentSaveGame.act = 2
     await super.init()
 
     await this.handleStartUpAction(_Act2Main)

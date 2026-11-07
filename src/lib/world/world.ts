@@ -29,7 +29,7 @@ export enum ElevatorEntrance {
   Third = 1,
 }
 
-export type NormalWorld = 'histbook' | 'hospital' | 'garage' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevopen' | 'seaview' | 'observe' | 'elevdown' | 'carrace' | 'act2' | 'jukeboxw'
+export type NormalWorld = 'credits' | 'histbook' | 'hospital' | 'garage' | 'regbook' | 'infodoor' | 'infoscor' | 'elevbott' | 'police' | 'polidoor' | 'garadoor' | 'copter' | 'dunecar' | 'jetski' | 'racecar' | 'elevopen' | 'seaview' | 'observe' | 'elevdown' | 'carrace' | 'act2' | 'jukeboxw'
 export type WorldName = NormalWorld | 'act1' | 'elevride' | 'infomain'
 export type WorldSpawn =
   | {

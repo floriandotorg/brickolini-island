@@ -25,6 +25,7 @@ import {
   iic029in_RunAnim,
   iic032in_RunAnim,
   iic043in_RunAnim,
+  iic046in_RunAnim,
   iica28in_RunAnim,
   iicb28in_RunAnim,
   iicc28in_RunAnim,
@@ -66,9 +67,9 @@ import { setCursor } from '../lib/cursor.ts'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect, type Timeout } from '../lib/engine'
 import { type PlayerCharacter, PlayerCharacters } from '../lib/save-game'
-import { infocenterState } from '../lib/session-state.ts'
+import { act1State, helicopterState, infocenterState } from '../lib/session-state.ts'
 import { getSettings } from '../lib/settings'
-import { switchToPreviousWorld, switchWorld } from '../lib/switch-world'
+import { discardCachedWorlds, switchToPreviousWorld, switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
 import { World, type WorldSpawn } from '../lib/world/world'
@@ -145,7 +146,7 @@ export class InfoMain extends World {
   private _bookWigMovie: MovieSprite | null = null
   private readonly _bookWigInterval = engine.createInterval(3000)
 
-  constructor(private readonly _ending: 'bad' | 'good' | null) {
+  constructor() {
     super('infomain')
     this._characterFrame = createImageSprite(FrameHot_Bitmap)
     this._building.scene.add(this._characterFrame)
@@ -242,6 +243,9 @@ export class InfoMain extends World {
 
     this._building.onButtonClicked = buttonName => {
       switch (buttonName) {
+        case 'Door_Ctl':
+          this.escape()
+          return true
         case 'LeftArrow_Ctl':
           void switchWorld('elevbott')
           return true
@@ -297,13 +301,41 @@ export class InfoMain extends World {
       return true
     }
 
+    const red = this.findRoi('2x4red')
+    const green = this.findRoi('2x4grn')
+    if (red != null) {
+      this.addClickListener(red, async () => {
+        if (infocenterState.state !== 'exitQueried') {
+          return false
+        }
+        infocenterState.state = 'notRegistered'
+        super.skipAllRunningAnimations(true)
+        void this.playAnimation(iicb28in_RunAnim)
+        return true
+      })
+    }
+    if (green != null) {
+      this.addClickListener(green, async () => {
+        if (infocenterState.state !== 'exitQueried') {
+          return false
+        }
+        infocenterState.state = 'exiting'
+        engine.input.disable()
+        engine.input.allowSpaceWhileDisabled = true
+        super.skipAllRunningAnimations(true)
+        await this.playAnimation(iic046in_RunAnim)
+        void switchWorld('credits')
+        return true
+      })
+    }
+
     this._bookWigMovie = await MovieSprite.create(BookWig_Flic, -0.3)
     this._bookWigMovie.visible = false
     this._bookWigMovie.hideAfterFinish = true
     this._bookWigMovie.parent = this._building.scene
   }
 
-  public override activate(composer: Composer): void {
+  public override activate(composer: Composer, ending: 'bad' | 'good' | null = null): void {
     this._building.activate(composer)
     super.activate(composer)
     const pad = Math.floor((7 - engine.currentSaveGame.name.length) / 2)
@@ -314,11 +346,27 @@ export class InfoMain extends World {
       void this.playAnimation(iic043in_RunAnim)
       return
     }
-    if (this._ending !== null) {
+    if (ending !== null) {
+      discardCachedWorlds('infomain')
+      const save = engine.currentSaveGame
+      save.act = 1
+      save.player = 'pepper'
+      save.savedPreviousArea = null
+      act1State.value = 'none'
+      helicopterState.status = 0
+      const plants = save.plants
+      if (plants != null) {
+        save.plants = plants.map(plant => ({ ...plant, counter: -1 }))
+      }
+      const buildings = save.buildings
+      if (buildings != null) {
+        save.buildings = { ...buildings, entries: buildings.entries.map(building => ({ ...building, counter: -1 })) }
+      }
+      this.placeCharacterFrame()
       engine.stopBackgroundMusic()
       engine
-        .playCutscene(this._ending === 'bad' ? BadEnd_Movie : GoodEnd_Movie)
-        .then(() => this.playAnimation(this._ending === 'bad' ? tic092in_RunAnim : tic089in_RunAnim, { unskippable: true }))
+        .playCutscene(ending === 'bad' ? BadEnd_Movie : GoodEnd_Movie)
+        .then(() => this.playAnimation(ending === 'bad' ? tic092in_RunAnim : tic089in_RunAnim))
         .then(() => engine.switchBackgroundMusic(InformationCenter_Music))
     } else {
       void this.playAnimation(iic001in_RunAnim).then(async () => {

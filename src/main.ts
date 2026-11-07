@@ -28,9 +28,11 @@ const start = async () => {
   engine.start()
 
   if (!import.meta.env.DEV) {
-    await engine.playCutscene(Lego_Movie)
-    await engine.playCutscene(Mindscape_Movie)
-    await engine.playCutscene(Intro_Movie)
+    for (const movie of [Lego_Movie, Mindscape_Movie, Intro_Movie]) {
+      if ((await engine.playCutscene(movie)) === 'skipped') {
+        break
+      }
+    }
   }
 
   const world = (getURLParam('world') ?? ('infomain' satisfies WorldName)) as WorldName
