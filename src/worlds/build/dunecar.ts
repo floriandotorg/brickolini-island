@@ -99,6 +99,10 @@ export class Dunecar extends World {
     this._carbuild?.pointerMove(event.normalizedX, event.normalizedY)
   }
 
+  protected override handleSkipKey(): void {
+    this.stopAnimationsInRange(this.name, 500, 510)
+  }
+
   public override update(delta: number): void {
     super.update(delta)
     this._carbuild?.update(delta)

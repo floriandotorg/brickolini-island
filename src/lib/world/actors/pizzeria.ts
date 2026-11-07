@@ -145,7 +145,7 @@ export class Pizzeria extends Actor {
   }
 
   public handleSpace(): void {
-    this.act1.skipAllRunningAnimations()
+    this.act1.toggleManagedAnimations(true)
   }
 
   private get act1(): Act1 {

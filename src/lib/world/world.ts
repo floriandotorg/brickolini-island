@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { Action } from '../../actions/types'
 import { type AnimationAction, type AudioAction, getExtraValue, isAnimationAction, isAudioAction, isNestedAnimationAction, isPositionalAudioAction, isRunAnimationAction, type NestedAnimationAction, type PositionalAudioAction, type RunAnimationAction, splitExtraValue } from '../action-types'
+import { type ManagedAnimation, skipDecision } from '../animation-skip.ts'
 import { type Animation3D, type Animation3DNode, type AnimationActor, animationToTracks, findRecursively, getBeforeAndAfter, parse3DAnimation } from '../assets/animation'
 import type { Audio } from '../assets/audio'
 import { getAction, getActionFileUrl } from '../assets/load'
@@ -88,6 +89,8 @@ export abstract class World {
   private _clickListeners = new Map<THREE.Object3D, () => Promise<boolean>>()
   private _actors = new Set<Actor>()
   private _runningAnimations: {
+    metadata: ManagedAnimation
+    onRelease?: () => void
     action?: { id: number; siFile: string }
     mixer: THREE.AnimationMixer
     clipAction: THREE.AnimationAction
@@ -528,7 +531,18 @@ export abstract class World {
 
   public async playAnimation(
     action: RunAnimationAction | NestedAnimationAction | AnimationAction,
-    { location, rotation, unskippable, lockCamera, extraTracks, overrideLoop, signal }: { location?: THREE.Vector3; rotation?: THREE.Quaternion; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[]; overrideLoop?: THREE.AnimationActionLoopStyles; signal?: AbortSignal } = {},
+    {
+      location,
+      rotation,
+      unskippable,
+      lockCamera,
+      extraTracks,
+      overrideLoop,
+      signal,
+      managed = false,
+      capturesPlayer = false,
+      animationLocation = -1,
+    }: { managed?: boolean; capturesPlayer?: boolean; animationLocation?: number; location?: THREE.Vector3; rotation?: THREE.Quaternion; unskippable?: boolean; lockCamera?: boolean; extraTracks?: THREE.KeyframeTrack[]; overrideLoop?: THREE.AnimationActionLoopStyles; signal?: AbortSignal } = {},
   ): Promise<void> {
     const animationAction = isRunAnimationAction(action) || isNestedAnimationAction(action) ? [...action.children].find((c): c is AnimationAction => isAnimationAction(c)) : action
     if (animationAction == null) {
@@ -586,7 +600,25 @@ export abstract class World {
     const sentinel = audioActions.length > 0 || audios.length > 0 ? engine.lowerBackgroundMusic() : null
 
     const clip = new THREE.AnimationClip(animation.tree.name, -1, tracks)
-    await this.playAnimationClip(this.scene, clip, { audios, nonPositionalAudios, lookAtKeys, faceAnimations, pointAtCameraObjects, roisToHideOnStop, managedActorNames, lockCamera, unskippable, loop, action })
+    await this.playAnimationClip(this.scene, clip, {
+      audios,
+      nonPositionalAudios,
+      lookAtKeys,
+      faceAnimations,
+      pointAtCameraObjects,
+      roisToHideOnStop,
+      managedActorNames,
+      lockCamera,
+      unskippable,
+      loop,
+      action,
+      onRelease: () => {
+        if (sentinel != null) {
+          engine.raiseBackgroundMusic(sentinel)
+        }
+      },
+      metadata: { managed, capturesPlayer, location: animationLocation, hasCameraTrack: animation.cameraAnimation != null, released: false },
+    })
     if (sentinel != null) {
       engine.raiseBackgroundMusic(sentinel)
     }
@@ -597,6 +629,8 @@ export abstract class World {
     clip: THREE.AnimationClip,
     {
       action,
+      onRelease,
+      metadata = { managed: false, capturesPlayer: false, location: -1, hasCameraTrack: false, released: false },
       audios = [],
       nonPositionalAudios = [],
       lookAtKeys,
@@ -610,6 +644,8 @@ export abstract class World {
       stopAtTime,
       loop,
     }: {
+      onRelease?: () => void
+      metadata?: ManagedAnimation
       action?: { id: number; siFile: string }
       audios?: THREE.PositionalAudio[]
       nonPositionalAudios?: Audio[]
@@ -639,7 +675,12 @@ export abstract class World {
     }
 
     return new Promise(resolve => {
+      let resolved = false
       const removeMe = () => {
+        if (resolved) {
+          return
+        }
+        resolved = true
         for (const faceAnimation of faceAnimations) {
           for (const { videoElement } of faceAnimation.animations) {
             videoElement.pause()
@@ -659,7 +700,7 @@ export abstract class World {
         resolve()
       }
 
-      this._runningAnimations.push({ action, mixer, clipAction, audios, nonPositionalAudios, resolve: removeMe, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, stopAtTime })
+      this._runningAnimations.push({ onRelease, metadata, action, mixer, clipAction, audios, nonPositionalAudios, resolve: removeMe, lookAtKeys, faceAnimations, pointAtCameraObjects, lockCamera, unskippable, stopAtTime })
       mixer.addEventListener('finished', removeMe)
     })
   }
@@ -782,7 +823,9 @@ export abstract class World {
   }
 
   protected update(delta: number): void {
-    for (const { mixer, resolve, lookAtKeys, faceAnimations, pointAtCameraObjects, stopAtTime } of this._runningAnimations) {
+    for (const { mixer, resolve, lookAtKeys, faceAnimations, pointAtCameraObjects, stopAtTime, metadata } of this._runningAnimations) {
+      const releasedPosition = metadata.released ? this.camera.position.clone() : null
+      const releasedQuaternion = metadata.released ? this.camera.quaternion.clone() : null
       const finishedByStopAtTime = stopAtTime != null && mixer.time + delta > stopAtTime
       if (finishedByStopAtTime) {
         mixer.update(stopAtTime - mixer.time)
@@ -790,7 +833,12 @@ export abstract class World {
         mixer.update(delta)
       }
 
-      if (lookAtKeys != null) {
+      if (releasedPosition != null && releasedQuaternion != null) {
+        this.camera.position.copy(releasedPosition)
+        this.camera.quaternion.copy(releasedQuaternion)
+      }
+
+      if (lookAtKeys != null && !metadata.released) {
         const { before, after } = getBeforeAndAfter(lookAtKeys, mixer.time * 1_000)
         if (before.timeAndFlags.flags !== 1) {
           throw new Error('Camera look at key has unsupported flags')
@@ -952,7 +1000,7 @@ export abstract class World {
     }
 
     if (key === 'Space') {
-      this.skipAllRunningAnimations()
+      this.handleSkipKey()
     }
 
     if (key === 'KeyP' && import.meta.env.DEV) {
@@ -960,16 +1008,40 @@ export abstract class World {
     }
   }
 
+  protected handleSkipKey(): void {}
+
+  public get hasReleasedPlayerAnimation(): boolean {
+    return this._runningAnimations.some(running => running.metadata.released)
+  }
+
+  public toggleManagedAnimations(release: boolean): void {
+    for (const running of [...this._runningAnimations]) {
+      const decision = skipDecision(running.metadata, release)
+      if (decision === 'release') {
+        running.onRelease?.()
+        running.metadata.released = true
+        running.metadata.capturesPlayer = false
+        running.lockCamera = false
+      } else if (decision === 'stop') {
+        this.stopRunningAnimation(running)
+      }
+    }
+  }
+
+  private stopRunningAnimation = (running: (typeof this._runningAnimations)[number]): void => {
+    if (running.clipAction.loop === THREE.LoopOnce) {
+      running.mixer.setTime(running.stopAtTime ?? running.clipAction.getClip().duration)
+    }
+    for (const audio of [...running.audios, ...running.nonPositionalAudios]) {
+      audio.stop()
+    }
+    running.resolve()
+  }
+
   public stopAnimationsInRange(siFile: string, firstId: number, lastId = firstId): void {
     for (const running of [...this._runningAnimations]) {
       if (running.action?.siFile === siFile && running.action.id >= firstId && running.action.id <= lastId) {
-        if (running.clipAction.loop === THREE.LoopOnce) {
-          running.mixer.setTime(running.stopAtTime ?? running.clipAction.getClip().duration)
-        }
-        for (const audio of [...running.audios, ...running.nonPositionalAudios]) {
-          audio.stop()
-        }
-        running.resolve()
+        this.stopRunningAnimation(running)
       }
     }
   }

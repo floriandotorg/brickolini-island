@@ -618,6 +618,11 @@ export abstract class IsleBase extends World {
     return null
   }
 
+  protected override handleSkipKey(): void {
+    this.toggleManagedAnimations(true)
+    this._cameraAnimationPlaying = this.isRunningCameraAnimation
+  }
+
   public async playCameraAnimation(action: RunAnimationAction, animationInfo?: DTA.AnimationInfo, location?: Location, lockOnly = false): Promise<void> {
     if (animationInfo == null) {
       animationInfo = this.animationInfos.find(a => a.objectId === action.id)
@@ -665,6 +670,9 @@ export abstract class IsleBase extends World {
           ]
         })()
     return this.playAnimation(action, {
+      managed: true,
+      capturesPlayer: lockOnly || animationInfo.hasCameraAnimation,
+      animationLocation: animationInfo.location,
       extraTracks,
       lockCamera: lockOnly || extraTracks != null,
     }).then(() => {

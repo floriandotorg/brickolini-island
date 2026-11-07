@@ -92,7 +92,6 @@ export class Ambulance extends FuelVehicle {
   private _banterPrimed = false
   private _musicSentinel: Sentinel | null = null
   private _hornAudio: Audio | null = null
-  private _skipArmed = false
 
   public get missionActive(): boolean {
     return this._missionState.state !== 'idle'
@@ -158,21 +157,14 @@ export class Ambulance extends FuelVehicle {
   }
 
   public handleSpace(): void {
-    if (this._skipArmed) {
-      this._skipArmed = false
-      this.act1.skipAllRunningAnimations(true)
-    } else {
-      this._skipArmed = true
-    }
+    this.act1.toggleManagedAnimations(true)
   }
 
   private async _playCutsceneAnimation(action: RunAnimationAction): Promise<void> {
-    this._skipArmed = false
     await this.act1.playCameraAnimation(action)
   }
 
   private async _playLoopingCutsceneAnimation(action: RunAnimationAction): Promise<void> {
-    this._skipArmed = false
     await this.act1.playCameraAnimation(action, undefined, undefined, true)
   }
 

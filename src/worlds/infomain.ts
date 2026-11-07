@@ -491,6 +491,15 @@ export class InfoMain extends World {
     }
   }
 
+  protected override handleSkipKey(): void {
+    if (infocenterState.state !== 'introCancelled' && infocenterState.state !== 'selectedSave') {
+      this.skipAllRunningAnimations()
+      if (infocenterState.state !== 'selectedCharacterAndDestination' && infocenterState.state !== 'exiting' && infocenterState.state !== 'exitQueried' && infocenterState.state !== 'welcomeAnimation') {
+        infocenterState.state = 'notRegistered'
+      }
+    }
+  }
+
   public override skipAllRunningAnimations(): void {
     super.skipAllRunningAnimations()
     this._characterMovieState = CharacterMovieState.cancelled

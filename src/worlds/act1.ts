@@ -1066,7 +1066,7 @@ export class Act1 extends Isle {
       ambulance.abort()
     }
 
-    if (this.isRunningCameraAnimation || this.missions.some(mission => mission.isInCutscene)) {
+    if (this.isRunningCameraAnimation || (this.missions.some(mission => mission.isInCutscene) && !this.hasReleasedPlayerAnimation)) {
       return
     }
 

@@ -279,9 +279,7 @@ export class TowTrack extends FuelVehicle implements IsleMission {
   }
 
   public handleSpace = (): void => {
-    if (this._currentAnimation != null) {
-      this.act1.stopAnimationsInRange(this._currentAnimation.siFile, this._currentAnimation.id)
-    }
+    this.act1.toggleManagedAnimations(true)
   }
 
   public override update(delta: number): null {
