@@ -27,6 +27,8 @@ export class MovieSprite {
   public static async apply(sprite: THREE.Sprite, video: VideoAction, z: number, audioAction?: AudioAction): Promise<MovieSprite> {
     const audioPromise = audioAction != null ? await engine.getAudio(audioAction, 'cutscene') : undefined
     const videoElement = document.createElement('video')
+    videoElement.muted = true
+    videoElement.playsInline = true
     const loadPromise = new Promise<void>(resolve => {
       videoElement.oncanplaythrough = () => {
         resolve()

@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import * as InfoActions from '../actions/infomain'
 import {
   _InfoMain,
   avo901in_RunAnim,
@@ -59,17 +60,21 @@ import {
 import { BadEnd_Movie, GoodEnd_Movie } from '../actions/intro'
 import { InformationCenter_Music } from '../actions/jukebox'
 import { BookWig_Flic } from '../actions/sndanim'
-import type { CharacterMovieAction, ImageAction, RunAnimationAction } from '../lib/action-types'
-import { createImageSprite } from '../lib/assets/canvas-sprite'
+import type { AudioAction, CharacterMovieAction, ImageAction, RunAnimationAction } from '../lib/action-types'
+import type { Audio } from '../lib/assets/audio'
+import { createImageSprite, setImageSprite } from '../lib/assets/canvas-sprite'
 import { MovieSprite } from '../lib/assets/movie-sprite'
 import type { SpawnLocation } from '../lib/assets/spawn-location'
 import { setCursor } from '../lib/cursor.ts'
 import type { Composer } from '../lib/effect/composer'
 import { engine, type NormalizedMouseEvent, type NormalizedRect, normalizePoint, normalizeRect, type Timeout } from '../lib/engine'
+import { act23Tips, bricksterDialogues, leaveDialogues, mapAnnouncements, returnDialogues } from '../lib/infocenter-content'
+import { infoEntry, infoReturnRule } from '../lib/infocenter-rules'
+import { radio } from '../lib/radio'
 import { type PlayerCharacter, PlayerCharacters } from '../lib/save-game'
 import { act1State, helicopterState, infocenterState, vehicleReturn } from '../lib/session-state.ts'
 import { getSettings } from '../lib/settings'
-import { discardCachedWorlds, switchToPreviousWorld, switchWorld } from '../lib/switch-world'
+import { discardCachedWorlds, getPreviousWorldName, rememberPreviousWorld, restorePreviousWorld, switchToPreviousWorld, switchWorld } from '../lib/switch-world'
 import { Building } from '../lib/world/building'
 import { Plants } from '../lib/world/plants'
 import { World, type WorldSpawn } from '../lib/world/world'
@@ -137,7 +142,6 @@ export class InfoMain extends World {
   private readonly _characterFrame: THREE.Sprite
   private readonly _name: Name
   private _welcomeTimeout: Timeout | null = null
-  private _currentAnimationIndex = 0
   private _characterMovieState: CharacterMovieState = CharacterMovieState.idle
   private _characterMovie: [MovieSprite, MovieSprite, MovieSprite] | null = null
   private readonly _destinations: Destination[]
@@ -145,6 +149,179 @@ export class InfoMain extends World {
   private _selectedCharacter: SelectedCharacterStates = IdleState
   private _bookWigMovie: MovieSprite | null = null
   private readonly _bookWigInterval = engine.createInterval(3000)
+
+  private _firstVisit = true
+  private _scriptGeneration = 0
+  private _speechGeneration = 0
+  private _speech: Audio | null = null
+  private _speechEnd: ((completed: boolean) => void) | null = null
+  private _speechDuck: symbol | null = null
+  private _mapAnnouncement = false
+  private readonly _dialogueIndices = new Map<string, number>()
+  private _redBackground: THREE.Sprite | null = null
+  private _bigInfoBlink: Timeout | null = null
+  private _blinkDown = false
+  private _bookPresentation: MovieSprite | null = null
+  private _bookTimeout: Timeout | null = null
+  private _bookResolve: (() => void) | null = null
+
+  private nextDialogue = <T>(name: string, entries: readonly T[]): T => {
+    const index = this._dialogueIndices.get(name) ?? 0
+    this._dialogueIndices.set(name, (index + 1) % entries.length)
+    return entries[index]
+  }
+
+  private stopSpeech = (completed = false): void => {
+    ++this._speechGeneration
+    const audio = this._speech
+    const resolve = this._speechEnd
+    this._speech = null
+    this._speechEnd = null
+    audio?.stop()
+    if (this._speechDuck != null) {
+      engine.raiseBackgroundMusic(this._speechDuck)
+      this._speechDuck = null
+    }
+    resolve?.(completed)
+    this._mapAnnouncement = false
+  }
+
+  private stopCurrentAction = (): void => {
+    ++this._scriptGeneration
+    this._bookPresentation?.stop()
+    this._bookResolve?.()
+    this._bookResolve = null
+    this._bookTimeout = null
+    this.stopSpeech()
+    this.skipAllRunningAnimations(true)
+    this._welcomeTimeout = null
+    this._bigInfoBlink = null
+    this._building.getControl('BigInfo_Ctl')?.draw()
+  }
+
+  private playLine = (action: AudioAction): Promise<boolean> => {
+    this.stopCurrentAction()
+    const generation = this._speechGeneration
+    this._speechDuck = engine.lowerBackgroundMusic()
+    return new Promise(resolve => {
+      this._speechEnd = resolve
+      void engine
+        .playAudio(action, 'speech')
+        .then(audio => {
+          if (generation !== this._speechGeneration || engine.currentWorld !== this) {
+            audio.stop()
+            return
+          }
+          this._speech = audio
+          audio.onEnded = () => this.stopSpeech(true)
+        })
+        .catch(() => {
+          if (generation === this._speechGeneration) {
+            this.stopSpeech()
+          }
+        })
+    })
+  }
+
+  private startWelcome = (action: RunAnimationAction, startMusic = false): void => {
+    infocenterState.state = 'welcomeAnimation'
+    const promise = this.playInfomainAnimation(action)
+    const generation = this._scriptGeneration
+    if (action.id === InfoActions.iicx26in_RunAnim.id) {
+      this._bigInfoBlink = engine.createTimeout(4400)
+    }
+    void promise.then(() => {
+      if (generation !== this._scriptGeneration || engine.currentWorld !== this) {
+        return
+      }
+      infocenterState.state = 'notRegistered'
+      this._bigInfoBlink = null
+      this._building.getControl('BigInfo_Ctl')?.draw()
+      if (startMusic) {
+        void engine.switchBackgroundMusic(InformationCenter_Music)
+      }
+      if (engine.currentSaveGame.isUnloaded) {
+        this._welcomeTimeout = engine.createTimeout(25_000)
+      }
+    })
+  }
+
+  private applyActMode = (): void => {
+    const normal = engine.currentSaveGame.act === 1
+    if (this._redBackground != null) {
+      this._redBackground.visible = !normal
+    }
+    for (const name of [...mapAnnouncements.keys(), ...Object.values(this._characterControls), 'Radio_Ctl']) {
+      const control = this._building.getControl(name)
+      if (control != null) {
+        control.visible = normal
+      }
+    }
+    if (!normal) {
+      this._characterFrame.visible = false
+    }
+  }
+
+  private returnToArea = async (): Promise<void> => {
+    const save = engine.currentSaveGame
+    const rule = infoReturnRule(save.act, getPreviousWorldName(), !save.isUnloaded, save.playerUnsafe != null)
+    if (rule === 'none') {
+      return
+    }
+    if (rule === 'register') {
+      infocenterState.state = 'notRegistered'
+      void this.playLine(iic007in_PlayWav)
+      return
+    }
+    radio.stop()
+    infocenterState.state = 'selectedCharacterAndDestination'
+    engine.input.disable()
+    engine.input.allowSpaceWhileDisabled = true
+    const completed = await this.playLine(this.nextDialogue(`leave${save.act}`, leaveDialogues[save.act]))
+    if (!completed || engine.currentWorld !== this) {
+      return
+    }
+    if (save.act === 2) {
+      await switchWorld('act2')
+    } else if (vehicleReturn.type != null) {
+      await switchWorld({ spawn: 'infocenterExited' })
+    } else {
+      await switchToPreviousWorld()
+    }
+  }
+
+  private openRegistration = async (): Promise<void> => {
+    radio.stop()
+    rememberPreviousWorld()
+    engine.currentSaveGame.savedPreviousArea = getPreviousWorldName()
+    infocenterState.state = 'selectedSave'
+    engine.input.disable()
+    const action = engine.currentSaveGame.act === 1 ? InfoActions.GoTo_RegBook : InfoActions.GoTo_RegBook_Red
+    const generation = this._scriptGeneration
+    const movie = await MovieSprite.create(action.children[1], -0.2)
+    if (generation !== this._scriptGeneration || engine.currentWorld !== this) {
+      return
+    }
+    const still = createImageSprite(action.children[0])
+    still.position.z = -0.21
+    this._building.scene.add(still)
+    this._bookPresentation = movie
+    await Promise.all([
+      movie.play(this._building.scene),
+      new Promise<void>(resolve => {
+        this._bookTimeout = engine.createTimeout(action.children[1].duration)
+        this._bookResolve = resolve
+      }),
+    ])
+    this._bookTimeout = null
+    this._bookResolve = null
+    still.removeFromParent()
+    movie.removeFromParent()
+    this._bookPresentation = null
+    if (generation === this._scriptGeneration && engine.currentWorld === this) {
+      void switchWorld('regbook')
+    }
+  }
 
   constructor() {
     super('infomain')
@@ -171,8 +348,7 @@ export class InfoMain extends World {
   }
 
   private playInfomainAnimation(action: RunAnimationAction): Promise<void> {
-    this.skipAllRunningAnimations()
-    this._welcomeTimeout = null
+    this.stopCurrentAction()
     return this.playAnimation(action)
   }
 
@@ -219,6 +395,10 @@ export class InfoMain extends World {
   }
 
   private placeCharacterFrame(): void {
+    if (engine.currentSaveGame.act !== 1) {
+      this._characterFrame.visible = false
+      return
+    }
     const character = engine.currentSaveGame.playerUnsafe
     if (character == null) {
       this._characterFrame.visible = false
@@ -253,33 +433,52 @@ export class InfoMain extends World {
       noLights: true,
     })
 
+    this._redBackground = createImageSprite(InfoActions.BackgroundRed_Bitmap)
+    this._redBackground.position.z = -0.99
+    this._redBackground.visible = false
+    this._building.scene.add(this._redBackground)
+    this._building.onRadioToggle = () => {
+      if (this._mapAnnouncement || this._characterMovieState === CharacterMovieState.playing) {
+        this.stopCurrentAction()
+      }
+    }
     this._building.onButtonClicked = buttonName => {
+      this.stopCurrentAction()
+      const announcement = mapAnnouncements.get(buttonName)
+      if (announcement != null && engine.currentSaveGame.act === 1) {
+        radio.stop()
+        void this.playLine(announcement)
+        this._mapAnnouncement = true
+        return true
+      }
       switch (buttonName) {
         case 'Door_Ctl':
           this.escape()
           return true
         case 'LeftArrow_Ctl':
-          void switchWorld('elevbott')
-          return true
         case 'RightArrow_Ctl':
-          void switchWorld('infoscor')
-          return true
-        case 'Book_Ctl':
-          void switchWorld('regbook')
-          return true
-        case 'BigInfo_Ctl':
-          if (vehicleReturn.type != null) {
-            void switchWorld({ spawn: 'infocenterExited' })
+          radio.stop()
+          infocenterState.state = 'exitingToIsland'
+          if (engine.currentSaveGame.act === 1) {
+            void switchWorld(buttonName === 'LeftArrow_Ctl' ? 'elevbott' : 'infoscor')
           } else {
-            void switchToPreviousWorld()
+            void this.playLine(this.nextDialogue('brickster', bricksterDialogues))
           }
           return true
+        case 'Book_Ctl':
+          void this.openRegistration()
+          return true
+        case 'BigInfo_Ctl':
+          void this.returnToArea()
+          return true
         default:
-          for (const character of PlayerCharacters) {
-            const control = this._characterControls[character]
-            if (control === buttonName) {
-              this._selectedCharacter = { state: 'selected', character }
-              return true
+          if (engine.currentSaveGame.act === 1) {
+            for (const character of PlayerCharacters) {
+              if (this._characterControls[character] === buttonName) {
+                this._characterFrame.visible = false
+                this._selectedCharacter = { state: 'selected', character }
+                return true
+              }
             }
           }
       }
@@ -310,10 +509,12 @@ export class InfoMain extends World {
     this.scene.add(await Plants.place(this, Plants.World.IMAIN))
 
     ;(await this.getCharacter('infoman')).onClicked = () => {
-      this.skipAllRunningAnimations()
-      this._welcomeTimeout = null
-      void this.playInfomainAnimation(ANIMATIONS[this._currentAnimationIndex])
-      this._currentAnimationIndex = (this._currentAnimationIndex + 1) % ANIMATIONS.length
+      if (infocenterState.state === 'selectedCharacterAndDestination' || infocenterState.state === 'exiting') {
+        return true
+      }
+      const entries: readonly RunAnimationAction[] = engine.currentSaveGame.act === 1 ? ANIMATIONS : act23Tips
+      void this.playInfomainAnimation(this.nextDialogue(`tips${engine.currentSaveGame.act}`, entries))
+      this.hideQueryBricks()
       return true
     }
 
@@ -326,6 +527,7 @@ export class InfoMain extends World {
         }
         infocenterState.state = 'notRegistered'
         super.skipAllRunningAnimations(true)
+        this.hideQueryBricks()
         void this.playAnimation(iicb28in_RunAnim)
         return true
       })
@@ -336,6 +538,9 @@ export class InfoMain extends World {
           return false
         }
         infocenterState.state = 'exiting'
+        if (!engine.currentSaveGame.isUnloaded) {
+          engine.storeSaveGames()
+        }
         engine.input.disable()
         engine.input.allowSpaceWhileDisabled = true
         super.skipAllRunningAnimations(true)
@@ -354,12 +559,22 @@ export class InfoMain extends World {
   public override activate(composer: Composer, ending: 'bad' | 'good' | null = null): void {
     this._building.activate(composer)
     super.activate(composer)
+    this.stopCurrentAction()
+    const state = infocenterState.state
+    if (state === 'selectedSave') {
+      restorePreviousWorld()
+    }
     const pad = Math.floor((7 - engine.currentSaveGame.name.length) / 2)
     this._name.name = engine.currentSaveGame.name.padStart(pad + engine.currentSaveGame.name.length, ' ')
     this.placeCharacterFrame()
-    if (infocenterState.state === 'exitQueried') {
+    this.applyActMode()
+    this.hideQueryBricks()
+    this._firstVisit = this._firstVisit && state === 'newState'
+    const entry = infoEntry(engine.currentSaveGame.act, state, this._firstVisit)
+    this._firstVisit = false
+    if (entry === 'exitQuery' && ending === null) {
       void engine.switchBackgroundMusic(InformationCenter_Music)
-      void this.playAnimation(iic043in_RunAnim)
+      void this.playInfomainAnimation(iic043in_RunAnim)
       return
     }
     if (ending !== null) {
@@ -379,25 +594,49 @@ export class InfoMain extends World {
         save.buildings = { ...buildings, entries: buildings.entries.map(building => ({ ...building, counter: -1 })) }
       }
       this.placeCharacterFrame()
+      this.applyActMode()
+      infocenterState.state = 'playCutscene'
       engine.stopBackgroundMusic()
-      engine
-        .playCutscene(ending === 'bad' ? BadEnd_Movie : GoodEnd_Movie)
-        .then(() => this.playAnimation(ending === 'bad' ? tic092in_RunAnim : tic089in_RunAnim))
-        .then(() => engine.switchBackgroundMusic(InformationCenter_Music))
+      engine.playCutscene(ending === 'bad' ? BadEnd_Movie : GoodEnd_Movie).then(() => this.startWelcome(ending === 'bad' ? tic092in_RunAnim : tic089in_RunAnim))
     } else {
-      void this.playAnimation(iic001in_RunAnim).then(async () => {
-        void engine.switchBackgroundMusic(InformationCenter_Music)
-        this._welcomeTimeout = engine.createTimeout(25_000)
-      })
+      const act = engine.currentSaveGame.act
+      const action = entry === 'firstWelcome' ? iic001in_RunAnim : entry === 'saveSelected' ? InfoActions.iicx18in_RunAnim : entry === 'bookBack' ? iicx17in_RunAnim : this.nextDialogue(`return${act}`, returnDialogues[act])
+      if (entry === 'resumeAct') {
+        infocenterState.state = 'selectedCharacterAndDestination'
+        engine.input.disable()
+        engine.input.allowSpaceWhileDisabled = true
+        const promise = this.playInfomainAnimation(action)
+        const generation = this._scriptGeneration
+        void promise.then(() => {
+          if (generation === this._scriptGeneration && engine.currentWorld === this) {
+            void (act === 2 ? switchWorld('act2') : switchToPreviousWorld())
+          }
+        })
+      } else {
+        if (entry !== 'firstWelcome') {
+          void engine.switchBackgroundMusic(InformationCenter_Music)
+        }
+        this.startWelcome(action, entry === 'firstWelcome')
+      }
+    }
+  }
+
+  private hideQueryBricks = (): void => {
+    for (const name of ['2x4red', '2x4grn']) {
+      const roi = this.findRoi(name)
+      if (roi != null) {
+        roi.visible = false
+      }
     }
   }
 
   public override escape(): boolean {
     if (this._characterMovieState === CharacterMovieState.playing) {
       this.skipAllRunningAnimations()
-      return false
     }
     if (infocenterState.state !== 'exitQueried') {
+      radio.stop()
+      this.stopCurrentAction()
       super.skipAllRunningAnimations(true)
       this._welcomeTimeout = null
       infocenterState.state = 'exitQueried'
@@ -407,6 +646,9 @@ export class InfoMain extends World {
   }
 
   public override deactivate(): void {
+    this.stopCurrentAction()
+    this._bookPresentation?.stop()
+    this._bookWigMovie?.stop()
     if (infocenterState.state === 'exitQueried') {
       infocenterState.state = 'newState'
     }
@@ -426,52 +668,42 @@ export class InfoMain extends World {
     this._building.pointerUp()
     if (this._selectedCharacter.state === 'selected' || this._selectedCharacter.state === 'dragging') {
       const character = this._selectedCharacter.character
-      // -> within original control ==> set player, play movie and then animation
-      // -> within infocenter destination => set player, play animation
-      // -> within any destination ==> set player, play animation switch to destination
-      // -> otherwise ==> nothing
-      const controlName = this._characterControls[character]
-      const control = this._building.getControl(controlName)
+      const control = this._building.getControl(this._characterControls[character])
       if (control?.test(event.normalizedX, event.normalizedY)) {
+        radio.stop()
         engine.currentSaveGame.player = character
         this.placeCharacterFrame()
-        const selectionAnimation = getSelectionAnimation(character)
-        switch (character) {
-          case 'mama':
-            void this.playCharacterMovie(Mama_All_Movie, selectionAnimation)
-            break
-          case 'papa':
-            void this.playCharacterMovie(Papa_All_Movie, selectionAnimation)
-            break
-          case 'pepper':
-            void this.playCharacterMovie(Pepper_All_Movie, selectionAnimation)
-            break
-          case 'nick':
-            void this.playCharacterMovie(Nick_All_Movie, selectionAnimation)
-            break
-          case 'laura':
-            void this.playCharacterMovie(Laura_All_Movie, selectionAnimation)
-            break
-        }
+        infocenterState.state = 'notRegistered'
+        const movie = character === 'mama' ? Mama_All_Movie : character === 'papa' ? Papa_All_Movie : character === 'nick' ? Nick_All_Movie : character === 'laura' ? Laura_All_Movie : Pepper_All_Movie
+        void this.playCharacterMovie(movie, getSelectionAnimation(character))
       } else {
-        for (const dest of this._destinations) {
-          if (dest.normalizedRect.inside(event.normalizedX, event.normalizedY)) {
+        const destination = this._destinations.find(destination => destination.normalizedRect.inside(event.normalizedX, event.normalizedY))
+        if (destination != null) {
+          if (destination.destination != null && engine.currentSaveGame.isUnloaded) {
+            infocenterState.state = 'notRegistered'
+            void this.playLine(iic007in_PlayWav)
+          } else {
             engine.currentSaveGame.player = character
             this.placeCharacterFrame()
-            if (engine.currentSaveGame.isUnloaded) {
-              void this.playAudio(iic007in_PlayWav, 'speech')
-            } else {
-              const selectionAnimation = getSelectionAnimation(character)
-              void this.playInfomainAnimation(selectionAnimation).then(() => {
-                if (dest.destination != null) {
-                  void switchWorld(dest.destination)
-                }
-              })
+            const leaving = destination.destination != null
+            infocenterState.state = leaving ? 'selectedCharacterAndDestination' : 'notRegistered'
+            if (leaving) {
+              engine.input.disable()
+              engine.input.allowSpaceWhileDisabled = true
             }
+            const promise = this.playInfomainAnimation(getSelectionAnimation(character))
+            const generation = this._scriptGeneration
+            void promise.then(() => {
+              if (generation === this._scriptGeneration && engine.currentWorld === this && destination.destination != null) {
+                void switchWorld(destination.destination)
+              }
+            })
           }
-          dest.sprite.visible = false
         }
       }
+    }
+    for (const destination of this._destinations) {
+      destination.sprite.visible = false
     }
     if (this._selectedCharacter.state === 'dragging') {
       this._selectedCharacter.sprite.removeFromParent()
@@ -501,13 +733,16 @@ export class InfoMain extends World {
     }
     if (this._selectedCharacter.state === 'dragging') {
       this._selectedCharacter.sprite.position.set(event.normalizedX + this._selectedCharacter.sprite.scale.x / 2, event.normalizedY - this._selectedCharacter.sprite.scale.y / 2, -0.2)
+      let matched = false
       for (const dest of this._destinations) {
-        dest.sprite.visible = dest.normalizedRect.inside(event.normalizedX, event.normalizedY)
+        dest.sprite.visible = !matched && dest.normalizedRect.inside(event.normalizedX, event.normalizedY)
+        matched ||= dest.sprite.visible
       }
     }
   }
 
   protected override handleSkipKey(): void {
+    this.stopSpeech(true)
     if (infocenterState.state !== 'introCancelled' && infocenterState.state !== 'selectedSave') {
       this.skipAllRunningAnimations()
       if (infocenterState.state !== 'selectedCharacterAndDestination' && infocenterState.state !== 'exiting' && infocenterState.state !== 'exitQueried' && infocenterState.state !== 'welcomeAnimation') {
@@ -516,8 +751,8 @@ export class InfoMain extends World {
     }
   }
 
-  public override skipAllRunningAnimations(): void {
-    super.skipAllRunningAnimations()
+  public override skipAllRunningAnimations(force = false): void {
+    super.skipAllRunningAnimations(force)
     this._characterMovieState = CharacterMovieState.cancelled
     if (this._characterMovie != null) {
       this._characterMovie[0].stop()
@@ -528,11 +763,30 @@ export class InfoMain extends World {
 
   public override update(delta: number): void {
     super.update(delta)
-    if (this._welcomeTimeout?.isExpired === true) {
+    if (this._bookTimeout?.isExpired) {
+      this._bookResolve?.()
+      this._bookTimeout = null
+      this._bookResolve = null
+    }
+    if (this._bigInfoBlink != null) {
+      const elapsed = this._bigInfoBlink.millisecondsSinceStart
+      const down = (elapsed >= 3400 && elapsed < 3650) || (elapsed >= 3900 && elapsed < 4400)
+      if (down !== this._blinkDown) {
+        this._blinkDown = down
+        const control = this._building.getControl('BigInfo_Ctl')
+        if (control != null) {
+          setImageSprite(control.sprite, down ? InfoActions.BigInfo_Down_Bitmap : InfoActions.BigInfo_Up_Bitmap, control.sprite.position.z)
+        }
+      }
+      if (this._bigInfoBlink.isExpired) {
+        this._bigInfoBlink = null
+      }
+    }
+    if (engine.currentSaveGame.isUnloaded && this._welcomeTimeout?.isExpired === true) {
       this._welcomeTimeout = null
       void this.playInfomainAnimation(iicx17in_RunAnim)
     }
-    if (this._bookWigMovie != null && this._bookWigInterval.resetExpired()) {
+    if (engine.currentSaveGame.isUnloaded && engine.currentSaveGame.act === 1 && this._bookWigMovie != null && this._bookWigInterval.resetExpired()) {
       this._bookWigMovie.stop()
       this._bookWigMovie.play()
     }

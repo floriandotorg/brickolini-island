@@ -10,6 +10,7 @@ const worlds = new Map<WorldName, World>()
 
 let lastWorld: WorldSpawnInner | null = null
 let currentWorld: WorldSpawnInner | null = null
+let savedPreviousWorld: WorldSpawnInner | null = null
 
 type WorldSpawnInner =
   | {
@@ -27,6 +28,16 @@ type WorldSpawnInner =
       name: 'infomain'
       ending: 'bad' | 'good' | null
     }
+
+export const getPreviousWorldName = (): WorldName | null => lastWorld?.name ?? null
+export const rememberPreviousWorld = (): void => {
+  savedPreviousWorld = lastWorld
+}
+export const restorePreviousWorld = (): void => {
+  if (savedPreviousWorld != null) {
+    lastWorld = savedPreviousWorld
+  }
+}
 
 export const discardWorld = (name: WorldName): void => {
   const world = worlds.get(name)
@@ -47,9 +58,14 @@ export const discardCachedWorlds = (except?: WorldName): void => {
     }
   }
   lastWorld = null
+  savedPreviousWorld = null
 }
 
-onSessionReset(() => discardCachedWorlds())
+onSessionReset(() => {
+  const previous = savedPreviousWorld
+  discardCachedWorlds()
+  savedPreviousWorld = previous
+})
 
 export const switchWorld = async (spawn: WorldSpawn | NormalWorld) => {
   radio.stop()
@@ -172,7 +188,13 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
   currentWorld = normalizedSpawn
 
   if (!world.initialized) {
-    await world.init()
+    try {
+      await world.init()
+    } catch (error) {
+      worlds.delete(normalizedSpawn.name)
+      world.dispose()
+      throw error
+    }
   }
 
   await transition

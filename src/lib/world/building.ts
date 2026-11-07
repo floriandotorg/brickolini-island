@@ -71,6 +71,7 @@ export class Building {
       }
 
       if (buttonName.endsWith('Radio_Ctl')) {
+        this.onRadioToggle()
         radio.toggle(() => this.getControl(buttonName)?.resetToggle())
         return true
       }
@@ -78,6 +79,8 @@ export class Building {
       return this.onButtonClicked(buttonName, event)
     }
   }
+
+  public onRadioToggle: () => void = () => {}
 
   public onButtonClicked: (buttonName: string, event: ControlEvent) => boolean = _buttonName => false
 
