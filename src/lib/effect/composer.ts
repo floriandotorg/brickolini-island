@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { type LetterboxAnchor, letterboxBounds, RESOLUTION_RATIO } from '../engine'
 import { getSettings } from '../settings.ts'
+import { IrradianceGrid } from '../world/irradiance-grid.ts'
 import { updateFocusedShadow } from '../world/lighting.ts'
 import type { Effect } from './effect.ts'
 import { RenderBatches } from './render-batches.ts'
@@ -63,6 +64,8 @@ export class Render3D extends Render {
     samples: 4,
   })
   private readonly _batches = new RenderBatches()
+  private readonly _irradiance = getSettings().graphics.pbrMaterials ? new IrradianceGrid() : null
+  private _probeFrame = 0
   private _focusedShadows = getSettings().graphics.preset !== 'original'
 
   constructor() {
@@ -89,6 +92,14 @@ export class Render3D extends Render {
   }
 
   public render(renderer: THREE.WebGLRenderer): void {
+    if (this._irradiance != null) {
+      this._irradiance.prepare(this.scene)
+      if (++this._probeFrame % 8 === 0) {
+        const sun = this.scene.children.find(object => object instanceof THREE.DirectionalLight)
+        const phase = sun instanceof THREE.DirectionalLight ? Math.round(Math.atan2(sun.position.y - sun.target.position.y, sun.position.x - sun.target.position.x) * 8) : 0
+        this._irradiance.update(renderer, this.scene, phase)
+      }
+    }
     renderer.setRenderTarget(this._renderTarget)
     try {
       const batching = renderer.extensions.has('WEBGL_multi_draw')
@@ -119,6 +130,7 @@ export class Render3D extends Render {
 
   public override dispose(): void {
     super.dispose()
+    this._irradiance?.dispose()
     this._batches.dispose()
     this._renderTarget.dispose()
     this._depth.dispose()
