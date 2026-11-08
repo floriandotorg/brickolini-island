@@ -3,6 +3,7 @@ import { type LetterboxAnchor, letterboxBounds, RESOLUTION_RATIO } from '../engi
 import { getSettings } from '../settings.ts'
 import { IrradianceGrid } from '../world/irradiance-grid.ts'
 import { updateFocusedShadow } from '../world/lighting.ts'
+import { DepthOfField } from './depth-of-field.ts'
 import type { Effect } from './effect.ts'
 import { RenderBatches } from './render-batches.ts'
 import effectFrag from './shader/effect.glsl'
@@ -66,6 +67,14 @@ export class Render3D extends Render {
   private readonly _batches = new RenderBatches()
   private readonly _irradiance = getSettings().graphics.pbrMaterials ? new IrradianceGrid() : null
   private _probeFrame = 0
+  private readonly _dof = getSettings().graphics.postProcessing ? new DepthOfField(this.camera, this._depth) : null
+  private _processed: THREE.Texture | null = null
+
+  public set cinematic(value: boolean) {
+    if (this._dof) {
+      this._dof.cinematic = value
+    }
+  }
   private _focusedShadows = getSettings().graphics.preset !== 'original'
 
   constructor() {
@@ -82,11 +91,12 @@ export class Render3D extends Render {
   }
 
   public get texture(): THREE.Texture {
-    return this._renderTarget.texture
+    return this._processed ?? this._renderTarget.texture
   }
 
   public resize(width: number, height: number): void {
     this._renderTarget.setSize(width, height)
+    this._dof?.resize(width, height)
     this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
   }
@@ -122,6 +132,10 @@ export class Render3D extends Render {
         }
       }
       renderer.render(this.scene, this.camera)
+      this._processed = this._dof?.render(renderer, this._renderTarget.texture, this.camera) ?? null
+      if (this.material.uniforms.tDiffuse) {
+        this.material.uniforms.tDiffuse.value = this.texture
+      }
     } finally {
       this._batches.restore()
       renderer.setRenderTarget(null)
@@ -130,6 +144,7 @@ export class Render3D extends Render {
 
   public override dispose(): void {
     super.dispose()
+    this._dof?.dispose()
     this._irradiance?.dispose()
     this._batches.dispose()
     this._renderTarget.dispose()

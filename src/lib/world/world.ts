@@ -1129,6 +1129,7 @@ export abstract class World {
   }
 
   public updateWorld(delta: number): void {
+    this._render.cinematic = this._runningAnimations.some(animation => animation.metadata?.hasCameraTrack && !animation.metadata.released)
     this.update(delta)
 
     this._debugGroup.visible = engine.debugMode
