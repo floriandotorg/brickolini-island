@@ -135,11 +135,11 @@ void mainImage(const in vec4 inputColor, out vec4 outputColor) {
   }
   if (uFilmic) {
     outputColor.rgb = ACESFilmicToneMapping(outputColor.rgb);
-    vec3 coordinate = clamp(outputColor.rgb, 0.0, 1.0) * (16.0 / 17.0) + 0.5 / 17.0;
+    vec3 coordinate = sRGBTransferOETF(vec4(clamp(outputColor.rgb, 0.0, 1.0), 1.0)).rgb * (16.0 / 17.0) + 0.5 / 17.0;
     vec3 dawn = texture(tDawnLut, coordinate).rgb;
     vec3 noon = texture(tNoonLut, coordinate).rgb;
     vec3 dusk = texture(tDuskLut, coordinate).rgb;
     float daylight = smoothstep(0.0, 0.7, sin(clamp(uDayPhase, 0.0, 1.0) * 3.14159265));
-    outputColor.rgb = mix(mix(dawn, dusk, smoothstep(0.45, 0.55, uDayPhase)), noon, daylight);
+    outputColor.rgb = sRGBTransferEOTF(vec4(mix(mix(dawn, dusk, smoothstep(0.45, 0.55, uDayPhase)), noon, daylight), 1.0)).rgb;
   }
 }
