@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { Action } from '../../actions/types'
 import { type FileActionBase, getExtraValue, isAnimationPresenter, modelPresenter } from '../action-types'
 import { getSettings } from '../settings'
+import { AssetLoadingManager } from './loading-manager.ts'
 
 THREE.Cache.enabled = !import.meta.env.DEV
 
@@ -304,7 +305,7 @@ const hdFiles = new Set<string>([
   // spellchecker: enable
 ])
 
-export const manager = new THREE.LoadingManager()
+export const manager = new AssetLoadingManager()
 const fileLoader = new THREE.FileLoader(manager)
 fileLoader.setResponseType('arraybuffer')
 

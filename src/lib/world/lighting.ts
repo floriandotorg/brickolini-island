@@ -46,4 +46,5 @@ export const updateFocusedShadow = (light: THREE.DirectionalLight, camera: THREE
   light.target.position.copy(focus)
   light.target.updateMatrixWorld()
   light.position.copy(focus).addScaledVector(direction, 200)
+  light.updateWorldMatrix(true, false)
 }

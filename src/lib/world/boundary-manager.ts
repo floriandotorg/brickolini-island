@@ -4,6 +4,7 @@ import type { Roi3D } from '../assets/model'
 import { getSpawnLocation, type SpawnLocation } from '../assets/spawn-location'
 import { engine } from '../engine'
 import { triggerMatches } from '../path-triggers.ts'
+import { BoundaryRaycastIndex } from './boundary-raycast.ts'
 import type { World } from './world'
 
 const flagsColor = (edge: { flags: number }): string => {
@@ -26,6 +27,7 @@ export class BoundaryManager {
   private _meshToBoundary = new Map<THREE.Mesh, { boundary: Boundary; debugMesh: THREE.Mesh }>()
   private _wallGroup = new THREE.Group()
   private _boundaryGroup = new THREE.Group()
+  private _boundaryIndex = new BoundaryRaycastIndex([])
   private _currentBoundary: Boundary | null = null
 
   private _triggerListeners: Array<(name: string, data: number, direction: 'inbound' | 'outbound', roi: Roi3D | null) => void> = []
@@ -70,6 +72,7 @@ export class BoundaryManager {
         }
       }
     }
+    this._boundaryIndex = new BoundaryRaycastIndex(this._boundaryGroup.children.filter(child => child instanceof THREE.Mesh))
   }
 
   public get boundaries(): readonly Boundary[] {
@@ -149,22 +152,22 @@ export class BoundaryManager {
 
   public getBoundaryFromPosition(position: THREE.Vector3): Boundary | null {
     const downRay = new THREE.Raycaster(position, new THREE.Vector3(0, -1, 0), 0, 1000)
-    const hit = downRay.intersectObject(this._boundaryGroup)[0]
-    if (hit == null) {
+    const hit = this._boundaryIndex.intersect(downRay)[0]
+    if (hit == null || !(hit.object instanceof THREE.Mesh)) {
       return null
     }
-    return this._meshToBoundary.get(hit.object as THREE.Mesh)?.boundary ?? null
+    return this._meshToBoundary.get(hit.object)?.boundary ?? null
   }
 
   public ignoreTriggerDirection = false
 
   public update(fromPos: THREE.Vector3, toPos: THREE.Vector3, roi: Roi3D | null): void {
     const downRay = new THREE.Raycaster(fromPos.clone().add(new THREE.Vector3(0, 0.01, 0)), new THREE.Vector3(0, -1, 0), 0, 1000)
-    const hit = downRay.intersectObject(this._boundaryGroup)[0]
-    if (hit) {
-      const { boundary, debugMesh } = this._meshToBoundary.get(hit.object as THREE.Mesh) ?? {}
+    const hit = this._boundaryIndex.intersect(downRay)[0]
+    if (hit?.object instanceof THREE.Mesh) {
+      const { boundary, debugMesh } = this._meshToBoundary.get(hit.object) ?? {}
       this._currentBoundary = boundary ?? null
-      if (debugMesh != null) {
+      if (engine.debugMode && debugMesh != null) {
         for (const { debugMesh } of this._meshToBoundary.values()) {
           debugMesh.visible = false
         }

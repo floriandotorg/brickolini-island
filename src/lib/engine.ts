@@ -16,7 +16,7 @@ import { PlayerDirectory } from './player-directory.ts'
 import { isPlayerCharacter, SaveGame } from './save-game'
 import { getScoreHistory } from './score-history.ts'
 import { resetSession } from './session-state.ts'
-import { getSettings } from './settings'
+import { getSettings, withSettingsSnapshot } from './settings'
 import { Transition, type TransitionOptions } from './transition.ts'
 import type { VehicleType } from './world/dashboard'
 import type { World } from './world/world'
@@ -647,7 +647,7 @@ class Engine {
     this._timer.connect(document)
     this._timer.reset()
     this._canvas.focus()
-    this.renderer.setAnimationLoop(() => this._render())
+    this.renderer.setAnimationLoop(() => withSettingsSnapshot(() => this._render()))
   }
 
   public async setWorld(world: World, param?: unknown) {

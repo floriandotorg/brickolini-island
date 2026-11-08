@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "95css": "^0.4.2",
-    "three": "^0.187.0"
+    "three": "^0.187.0",
+    "three-mesh-bvh": "0.9.18"
   }
 }

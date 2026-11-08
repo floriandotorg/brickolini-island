@@ -29,7 +29,23 @@ export interface Settings {
   fill: boolean
 }
 
+let snapshotDepth = 0
+let snapshot: Settings | null = null
+
+export const withSettingsSnapshot = <T>(callback: () => T): T => {
+  ++snapshotDepth
+  try {
+    return callback()
+  } finally {
+    --snapshotDepth
+    if (snapshotDepth === 0) {
+      snapshot = null
+    }
+  }
+}
+
 export const setSettings = (settings: Partial<Settings>) => {
+  snapshot = null
   for (const key of ['music', 'sound3d', 'gamepad', 'gamepadIndex', 'pauseOnBlur', 'islandQuality'] as const) {
     if (settings[key] != null) {
       localStorage.setItem(`settings.${key}`, String(settings[key]))
@@ -62,6 +78,7 @@ export const setSettings = (settings: Partial<Settings>) => {
 }
 
 export const setPreset = (preset: Preset) => {
+  snapshot = null
   localStorage.setItem('preset', preset)
 
   switch (preset) {
@@ -81,6 +98,9 @@ export const setPreset = (preset: Preset) => {
 }
 
 export const getSettings = (): Settings => {
+  if (snapshotDepth > 0 && snapshot != null) {
+    return snapshot
+  }
   if (!['original', 'hd', 'next-gen', 'custom'].includes(localStorage.getItem('settings.graphics.preset') ?? '')) {
     setPreset('hd')
   }
@@ -98,7 +118,7 @@ export const getSettings = (): Settings => {
     return Number.isNaN(volume) ? 1 : volume
   }
 
-  return {
+  const settings: Settings = {
     graphics: {
       preset: localStorage.getItem('settings.graphics.preset') as Preset,
       realisticWater: localStorage.getItem('settings.graphics.realisticWater') === 'true',
@@ -130,4 +150,8 @@ export const getSettings = (): Settings => {
     freeRoam: localStorage.getItem('settings.freeRoam') === 'true',
     fill: localStorage.getItem('settings.fill') === 'true',
   }
+  if (snapshotDepth > 0) {
+    snapshot = settings
+  }
+  return settings
 }

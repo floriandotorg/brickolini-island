@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { Water } from 'three/addons/objects/Water.js'
 import type { ModelAction } from '../action-types'
 import { islandModelName, lodIndex } from '../model-quality'
+import { RaycastMesh } from '../raycast-mesh.ts'
 import { getSettings } from '../settings'
 import type { Actor } from '../world/actor'
 import { createIslandWater } from '../world/water.ts'
@@ -29,7 +30,7 @@ export const setMaximumLod = (maximum: number): void => {
       continue
     }
     const meshes = createGeometryAndMaterials(lod, entry.customColor, entry.texture, entry.type).map(([geometry, material], n) => {
-      const mesh = new THREE.Mesh(geometry, material)
+      const mesh = new RaycastMesh(geometry, material)
       mesh.name = `${model.name}-${n + 1}`
       mesh.castShadow = getSettings().graphics.shadows
       mesh.receiveShadow = mesh.castShadow
@@ -414,7 +415,7 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
         })
       }
 
-      const mesh = new THREE.Mesh(geometry, newMaterial ?? material)
+      const mesh = new RaycastMesh(geometry, newMaterial ?? material)
       mesh.name = `${roiModel.name}-${++n}`.toLowerCase()
       if (getSettings().graphics.shadows) {
         mesh.castShadow = true
@@ -492,7 +493,7 @@ const getPart = async (name: string, part: WDB.Part, color: WDB.Color | null, te
   result.model.hasLod = true
   let n = 0
   for (const [geometry, material] of createGeometryAndMaterials(lod, color, texture, 'part')) {
-    const mesh = new THREE.Mesh(geometry, material)
+    const mesh = new RaycastMesh(geometry, material)
     mesh.name = `${name}-${++n}`.toLowerCase()
     if (getSettings().graphics.shadows) {
       mesh.castShadow = true

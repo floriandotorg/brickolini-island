@@ -36,3 +36,12 @@ export const createWaterNormalPixels = (size: number): Uint8Array => {
   }
   return pixels
 }
+
+export const createAmbientOcclusionSamples = (): Float32Array => {
+  const samples = new Float32Array(36)
+  for (let n = 0; n < 12; ++n) {
+    const angle = Math.fround(n * Math.fround(2.39996323))
+    samples.set([Math.cos(angle), Math.sin(angle), Math.sqrt(Math.fround((n + 0.5) / 12))], n * 3)
+  }
+  return samples
+}

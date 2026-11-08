@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import type { Boundary } from '../assets/boundary'
 import { engine } from '../engine'
+import { updateRaycastMatrices } from '../matrix-cache.ts'
 import { getSettings } from '../settings'
 import type { BoundaryManager } from './boundary-manager'
 import type { VehicleType } from './dashboard'
@@ -127,6 +128,7 @@ export class PlayerMovement {
 
   private _tryGetGroundPosition(position: THREE.Vector3, offset = new THREE.Vector3(0, CAM_HEIGHT, 0)): THREE.Vector3 | null {
     const downRay = new THREE.Raycaster(position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0), 0, 1000)
+    updateRaycastMatrices(this._groundGroup)
     const hit = downRay.intersectObjects(this._groundGroup)[0]
     if (hit) {
       return hit.point.clone().add(offset)
@@ -186,6 +188,7 @@ export class PlayerMovement {
     }
 
     const downRay = new THREE.Raycaster(this._camera.position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0), 0, 10)
+    updateRaycastMatrices(this._groundGroup)
     const hit = downRay.intersectObjects(this._groundGroup)[0]
 
     if (hit?.face != null) {
@@ -205,6 +208,7 @@ export class PlayerMovement {
 
   getGroundPosition(position: THREE.Vector3, offset = new THREE.Vector3(0, CAM_HEIGHT, 0)): THREE.Vector3 {
     const downRay = new THREE.Raycaster(position.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0), 0, 1000)
+    updateRaycastMatrices(this._groundGroup)
     const hit = downRay.intersectObjects(this._groundGroup)[0]
     if (hit) {
       return hit.point.clone().add(offset)

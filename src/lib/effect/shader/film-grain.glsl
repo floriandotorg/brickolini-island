@@ -1,71 +1,57 @@
 const float amount = 0.05;
-const bool colored = true;
-
 const float permTexUnit = 1.0 / 256.0;
-
-// Half perm texture texel-size
 const float permTexUnitHalf = 0.5 / 256.0;
 
 vec4 rand(in vec2 tc) {
   float noise = sin(dot(tc + vec2(uTime), vec2(12.9898, 78.233))) * 43758.5453;
-
-  float noiseR = fract(noise) * 2.0 - 1.0;
-  float noiseG = fract(noise * 1.2154) * 2.0 - 1.0;
-  float noiseB = fract(noise * 1.3453) * 2.0 - 1.0;
-  float noiseA = fract(noise * 1.3647) * 2.0 - 1.0;
-  return vec4(noiseR, noiseG, noiseB, noiseA);
+  return vec4(fract(noise), fract(noise * 1.2154), fract(noise * 1.3453), fract(noise * 1.3647)) * 2.0 - 1.0;
 }
 
-float fade(in float t) { return t * t * t * (t * (t * 6.0 - 15.0) + 10.0); }
+float fade(in float t) {
+  return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+}
 
-float pnoise3D(in vec3 p) {
+struct GrainColumn {
+  vec3 lower;
+  vec3 upper;
+};
 
-  // Integer partscaled so +1 moves permTexUnit texel
-  vec3 pi = permTexUnit * floor(p) + permTexUnitHalf;
+GrainColumn grainColumn(vec2 delta, vec3 layers, vec3 fraction, float permutation) {
+  GrainColumn result;
+  vec3 gradient = rand(vec2(permutation, layers.x)).rgb * 4.0 - 1.0;
+  result.lower.x = dot(gradient, vec3(delta, fraction.x));
+  gradient = rand(vec2(permutation, layers.x + permTexUnit)).rgb * 4.0 - 1.0;
+  result.upper.x = dot(gradient, vec3(delta, fraction.x - 1.0));
+  if (layers.y != layers.x + permTexUnit) {
+    gradient = rand(vec2(permutation, layers.y)).rgb * 4.0 - 1.0;
+  }
+  result.lower.y = dot(gradient, vec3(delta, fraction.y));
+  gradient = rand(vec2(permutation, layers.y + permTexUnit)).rgb * 4.0 - 1.0;
+  result.upper.y = dot(gradient, vec3(delta, fraction.y - 1.0));
+  if (layers.z != layers.y + permTexUnit) {
+    gradient = rand(vec2(permutation, layers.z)).rgb * 4.0 - 1.0;
+  }
+  result.lower.z = dot(gradient, vec3(delta, fraction.z));
+  gradient = rand(vec2(permutation, layers.z + permTexUnit)).rgb * 4.0 - 1.0;
+  result.upper.z = dot(gradient, vec3(delta, fraction.z - 1.0));
+  return result;
+}
 
-  // and offset 1/2 texel to sample texel centers
-  // Fractional part for interpolation
-  vec3 pf = fract(p);
-
-  // Noise contributions from (x=0y=0)z=0 and z=1
-  float perm00 = rand(pi.xy).a;
-  vec3 grad000 = rand(vec2(perm00, pi.z)).rgb * 4.0 - 1.0;
-  float n000 = dot(grad000, pf);
-  vec3 grad001 = rand(vec2(perm00, pi.z + permTexUnit)).rgb * 4.0 - 1.0;
-  float n001 = dot(grad001, pf - vec3(0.0, 0.0, 1.0));
-
-  // Noise contributions from (x=0y=1)z=0 and z=1
-  float perm01 = rand(pi.xy + vec2(0.0, permTexUnit)).a;
-  vec3 grad010 = rand(vec2(perm01, pi.z)).rgb * 4.0 - 1.0;
-  float n010 = dot(grad010, pf - vec3(0.0, 1.0, 0.0));
-  vec3 grad011 = rand(vec2(perm01, pi.z + permTexUnit)).rgb * 4.0 - 1.0;
-  float n011 = dot(grad011, pf - vec3(0.0, 1.0, 1.0));
-
-  // Noise contributions from (x=1y=0)z=0 and z=1
-  float perm10 = rand(pi.xy + vec2(permTexUnit, 0.0)).a;
-  vec3 grad100 = rand(vec2(perm10, pi.z)).rgb * 4.0 - 1.0;
-  float n100 = dot(grad100, pf - vec3(1.0, 0.0, 0.0));
-  vec3 grad101 = rand(vec2(perm10, pi.z + permTexUnit)).rgb * 4.0 - 1.0;
-  float n101 = dot(grad101, pf - vec3(1.0, 0.0, 1.0));
-
-  // Noise contributions from (x=1y=1)z=0 and z=1
-  float perm11 = rand(pi.xy + vec2(permTexUnit, permTexUnit)).a;
-  vec3 grad110 = rand(vec2(perm11, pi.z)).rgb * 4.0 - 1.0;
-  float n110 = dot(grad110, pf - vec3(1.0, 1.0, 0.0));
-  vec3 grad111 = rand(vec2(perm11, pi.z + permTexUnit)).rgb * 4.0 - 1.0;
-  float n111 = dot(grad111, pf - vec3(1.0, 1.0, 1.0));
-
-  // Blend contributions along x
-  vec4 n_x = mix(vec4(n000, n001, n010, n011), vec4(n100, n101, n110, n111),
-                 fade(pf.x));
-
-  // Blend contributions along y
-  vec2 n_xy = mix(n_x.xy, n_x.zw, fade(pf.y));
-
-  // Blend contributions along z
-  float n_xyz = mix(n_xy.x, n_xy.y, fade(pf.z));
-
-  return n_xyz;
+vec3 coloredGrain(vec2 pixel, float timer) {
+  vec2 lattice = permTexUnit * floor(pixel) + permTexUnitHalf;
+  vec2 fraction = fract(pixel);
+  vec3 time = vec3(timer) + vec3(0.0, 1.0, 2.0);
+  vec3 layers = permTexUnit * floor(time) + permTexUnitHalf;
+  vec3 timeFraction = fract(time);
+  GrainColumn c00 = grainColumn(fraction, layers, timeFraction, rand(lattice).a);
+  GrainColumn c01 = grainColumn(fraction - vec2(0.0, 1.0), layers, timeFraction, rand(lattice + vec2(0.0, permTexUnit)).a);
+  GrainColumn c10 = grainColumn(fraction - vec2(1.0, 0.0), layers, timeFraction, rand(lattice + vec2(permTexUnit, 0.0)).a);
+  GrainColumn c11 = grainColumn(fraction - vec2(1.0, 1.0), layers, timeFraction, rand(lattice + vec2(permTexUnit, permTexUnit)).a);
+  float fx = fade(fraction.x);
+  float fy = fade(fraction.y);
+  vec3 lower = mix(mix(c00.lower, c10.lower, fx), mix(c01.lower, c11.lower, fx), fy);
+  vec3 upper = mix(mix(c00.upper, c10.upper, fx), mix(c01.upper, c11.upper, fx), fy);
+  return mix(lower, upper, vec3(fade(timeFraction.x), fade(timeFraction.y), fade(timeFraction.z)));
 }
 
 vec3 blendSoftlight(vec3 base, vec3 blend) {
@@ -76,11 +62,8 @@ vec3 blendSoftlight(vec3 base, vec3 blend) {
 
 void mainImage(const in vec4 inputColor, out vec4 outputColor) {
   float timer = mod(uTime, 10000.0) / 10000.0;
-  vec3 noise = vec3(pnoise3D(vec3(uv * texSize, timer + 0.0)));
-  if (colored) {
-    noise.g = pnoise3D(vec3(uv * texSize, timer + 1.0));
-    noise.b = pnoise3D(vec3(uv * texSize, timer + 2.0)) * 0.6;
-  }
+  vec3 noise = coloredGrain(uv * texSize, timer);
+  noise.b *= 0.6;
   float lum = luminance(inputColor.rgb);
   float grainStrength = amount * (1.0 - smoothstep(0.0, 1.0, lum));
   vec3 noiseColor = noise * grainStrength + 0.5;

@@ -1,0 +1,591 @@
+{
+  "recordedAt": "2026-11-07T16:53:10.506Z",
+  "hardware": {
+    "model": "MacBookPro18,4",
+    "chip": "Apple M1 Max",
+    "cpuCores": 10,
+    "gpuCores": 32,
+    "memoryGB": 64
+  },
+  "browser": "HeadlessChrome/151.0.0.0",
+  "graphicsBackend": "ANGLE Metal Renderer: Apple M1 Max",
+  "baselineRevision": "de61b2b",
+  "method": {
+    "cpu": "Synchronous Engine._render elapsed time, including world update and render submission. GPU completion is not included.",
+    "cadence": "Intervals between measured animation frame callbacks.",
+    "rotation": "Identical starting position, one full 360 degree camera sweep, 240 warmup frames followed by 1200 measured frames.",
+    "movement": "240 warmup frames followed by 2400 frames of forward movement and periodic left turns. Ground, boundary, actor and trigger updates remain enabled.",
+    "quality": "next-gen preset, high island quality, native 3024 x 1964 rendering, 4 sample scene MSAA, 4096 shadow maps. No graphics features disabled."
+  },
+  "cpuMedianSpeedup": 10.374999823048713,
+  "cpuP95Speedup": 15.972972773565179,
+  "originalRotation": {
+    "clearAlpha": 0,
+    "context": {
+      "alpha": true,
+      "antialias": false,
+      "depth": true,
+      "desynchronized": false,
+      "failIfMajorPerformanceCaveat": false,
+      "powerPreference": "high-performance",
+      "premultipliedAlpha": true,
+      "preserveDrawingBuffer": false,
+      "stencil": false,
+      "xrCompatible": false
+    },
+    "devicePixelRatio": 2,
+    "frameCount": 1200,
+    "motion": true,
+    "multiDraw": true,
+    "preset": "next-gen",
+    "resolution": [3024, 1964],
+    "results": {
+      "original": {
+        "cpuMilliseconds": {
+          "max": 79.29999995231628,
+          "median": 33.199999928474426,
+          "p95": 59.10000002384186,
+          "p99": 70.70000004768372
+        },
+        "drawCalls": {
+          "max": 1206,
+          "median": 986,
+          "p95": 1180,
+          "p99": 1199
+        },
+        "frameMilliseconds": {
+          "max": 79.70000004768372,
+          "median": 33.300000071525574,
+          "p95": 59.5,
+          "p99": 71
+        },
+        "framesOver20ms": 1199
+      }
+    },
+    "warmup": 240,
+    "world": "act1"
+  },
+  "optimizedRotation": {
+    "clearAlpha": 0,
+    "context": {
+      "alpha": true,
+      "antialias": false,
+      "depth": true,
+      "desynchronized": false,
+      "failIfMajorPerformanceCaveat": false,
+      "powerPreference": "high-performance",
+      "premultipliedAlpha": true,
+      "preserveDrawingBuffer": false,
+      "stencil": false,
+      "xrCompatible": false
+    },
+    "devicePixelRatio": 2,
+    "frameCount": 1200,
+    "motion": true,
+    "multiDraw": true,
+    "preset": "next-gen",
+    "resolution": [3024, 1964],
+    "results": {
+      "optimized": {
+        "cpuMilliseconds": {
+          "max": 4.399999976158142,
+          "median": 3.200000047683716,
+          "p95": 3.700000047683716,
+          "p99": 3.900000095367432
+        },
+        "drawCalls": {
+          "max": 186,
+          "median": 158,
+          "p95": 176,
+          "p99": 186
+        },
+        "frameMilliseconds": {
+          "max": 23.399999976158146,
+          "median": 16.699999928474426,
+          "p95": 17.699999928474426,
+          "p99": 18.600000023841854
+        },
+        "framesOver20ms": 5
+      }
+    },
+    "warmup": 240,
+    "world": "act1"
+  },
+  "movement": {
+    "clearAlpha": 0,
+    "context": {
+      "alpha": true,
+      "antialias": false,
+      "depth": true,
+      "desynchronized": false,
+      "failIfMajorPerformanceCaveat": false,
+      "powerPreference": "high-performance",
+      "premultipliedAlpha": true,
+      "preserveDrawingBuffer": false,
+      "stencil": false,
+      "xrCompatible": false
+    },
+    "devicePixelRatio": 2,
+    "frameCount": 2400,
+    "motion": false,
+    "multiDraw": true,
+    "preset": "next-gen",
+    "resolution": [3024, 1964],
+    "results": {
+      "movement": {
+        "cpuMilliseconds": {
+          "max": 6.5,
+          "median": 3.3000000715255737,
+          "p95": 3.899999976158142,
+          "p99": 4.199999928474426
+        },
+        "drawCalls": {
+          "max": 188,
+          "median": 150,
+          "p95": 177,
+          "p99": 186
+        },
+        "frameMilliseconds": {
+          "max": 25.399999976158146,
+          "median": 16.699999928474426,
+          "p95": 18.399999976158146,
+          "p99": 23
+        },
+        "framesOver20ms": 37
+      }
+    },
+    "warmup": 240,
+    "world": "act1"
+  },
+  "movementPositions": [
+    {
+      "position": [12.02500030612254, 1.249992808163297, -46.00000022222224],
+      "state": "game",
+      "tick": 0,
+      "world": "act1"
+    },
+    {
+      "position": [12.02500030612254, 1.249992808163297, -46.00000022222224],
+      "state": "game",
+      "tick": 60,
+      "world": "act1"
+    },
+    {
+      "position": [12.02500030612254, 1.249992808163297, -46.00000022222224],
+      "state": "game",
+      "tick": 120,
+      "world": "act1"
+    },
+    {
+      "position": [12.02500030612254, 1.249992808163297, -46.00000022222224],
+      "state": "game",
+      "tick": 180,
+      "world": "act1"
+    },
+    {
+      "position": [12.025119928581644, 1.2499926000559156, -45.99967834182982],
+      "state": "game",
+      "tick": 240,
+      "world": "act1"
+    },
+    {
+      "position": [13.094235809298846, 1.2499925964954337, -47.520672086620266],
+      "state": "game",
+      "tick": 300,
+      "world": "act1"
+    },
+    {
+      "position": [11.35504075192235, 1.2499929999984705, -51.14871067666747],
+      "state": "game",
+      "tick": 360,
+      "world": "act1"
+    },
+    {
+      "position": [11.366822864411882, 1.2499929999984705, -51.18742333199022],
+      "state": "game",
+      "tick": 420,
+      "world": "act1"
+    },
+    {
+      "position": [11.39011447205353, 1.2499929999984705, -51.263952899955626],
+      "state": "game",
+      "tick": 480,
+      "world": "act1"
+    },
+    {
+      "position": [11.436260969832048, 1.2499929999984705, -51.415577106942195],
+      "state": "game",
+      "tick": 540,
+      "world": "act1"
+    },
+    {
+      "position": [11.5, 1.211079467508297, -51.937112022065655],
+      "state": "game",
+      "tick": 600,
+      "world": "act1"
+    },
+    {
+      "position": [11.5, 1.1524936659193985, -52.19935322251485],
+      "state": "game",
+      "tick": 660,
+      "world": "act1"
+    },
+    {
+      "position": [11.5, 1.1460656555778084, -52.228126220455664],
+      "state": "game",
+      "tick": 720,
+      "world": "act1"
+    },
+    {
+      "position": [11.5, 1.1970783694360725, -51.9997836023204],
+      "state": "game",
+      "tick": 780,
+      "world": "act1"
+    },
+    {
+      "position": [11.276649363641, 1.24999256169919, -50.72668902261225],
+      "state": "game",
+      "tick": 840,
+      "world": "act1"
+    },
+    {
+      "position": [10.219532617152696, 1.2499931766406442, -46.41443934429938],
+      "state": "game",
+      "tick": 900,
+      "world": "act1"
+    },
+    {
+      "position": [9.396155350223683, 1.249993851961907, -43.750000222222205],
+      "state": "game",
+      "tick": 960,
+      "world": "act1"
+    },
+    {
+      "position": [9.505014741359274, 1.2499938253024632, -43.750000222222205],
+      "state": "game",
+      "tick": 1020,
+      "world": "act1"
+    },
+    {
+      "position": [10.659236939307975, 1.249993356665852, -44.79608221256399],
+      "state": "game",
+      "tick": 1080,
+      "world": "act1"
+    },
+    {
+      "position": [12.731759144816074, 1.2499939587700537, -49.48272006851612],
+      "state": "game",
+      "tick": 1140,
+      "world": "act1"
+    },
+    {
+      "position": [13.014114670410596, 1.2499938903399894, -50.98506858772213],
+      "state": "game",
+      "tick": 1200,
+      "world": "act1"
+    },
+    {
+      "position": [12.947902610923055, 1.2499934665827617, -51.28964406136483],
+      "state": "game",
+      "tick": 1260,
+      "world": "act1"
+    },
+    {
+      "position": [12.88147697187678, 1.249993042108849, -51.59471375232316],
+      "state": "game",
+      "tick": 1320,
+      "world": "act1"
+    },
+    {
+      "position": [11.5, 1.0377710011776002, -52.712873708787754],
+      "state": "game",
+      "tick": 1380,
+      "world": "act1"
+    },
+    {
+      "position": [11.505505810141775, 1.0898889496376944, -52.479582673071754],
+      "state": "game",
+      "tick": 1440,
+      "world": "act1"
+    },
+    {
+      "position": [11.85839811843477, 1.2499933206295637, -49.69433506930215],
+      "state": "game",
+      "tick": 1500,
+      "world": "act1"
+    },
+    {
+      "position": [12.64006149006688, 1.2499930030513442, -44.05647653874906],
+      "state": "game",
+      "tick": 1560,
+      "world": "act1"
+    },
+    {
+      "position": [12.806778592477873, 1.2499930167072058, -43.750000222222205],
+      "state": "game",
+      "tick": 1620,
+      "world": "act1"
+    },
+    {
+      "position": [13.013059757233949, 1.2499931957224786, -43.46525535630808],
+      "state": "game",
+      "tick": 1680,
+      "world": "act1"
+    },
+    {
+      "position": [15.687498666666698, 1.2499952141949842, -42.57129390114208],
+      "state": "game",
+      "tick": 1740,
+      "world": "act1"
+    },
+    {
+      "position": [15.601118989750535, 1.249996023896177, -43.07554417253579],
+      "state": "game",
+      "tick": 1800,
+      "world": "act1"
+    },
+    {
+      "position": [14.166613724808444, 1.2499925128926648, -46.2640282641922],
+      "state": "game",
+      "tick": 1860,
+      "world": "act1"
+    },
+    {
+      "position": [11.73925655586704, 1.219920646726097, -51.89753722085816],
+      "state": "game",
+      "tick": 1920,
+      "world": "act1"
+    },
+    {
+      "position": [11.5, 0.961366471786954, -53.05487492689441],
+      "state": "game",
+      "tick": 1980,
+      "world": "act1"
+    },
+    {
+      "position": [11.5, 0.893088670999323, -53.360499360749934],
+      "state": "game",
+      "tick": 2040,
+      "world": "act1"
+    },
+    {
+      "position": [11.5, 0.8334049201162516, -53.627655191248174],
+      "state": "game",
+      "tick": 2100,
+      "world": "act1"
+    },
+    {
+      "position": [11.5, 0.8265150814914701, -53.65849542049932],
+      "state": "game",
+      "tick": 2160,
+      "world": "act1"
+    },
+    {
+      "position": [11.5, 0.8761211065737008, -53.43644940910632],
+      "state": "game",
+      "tick": 2220,
+      "world": "act1"
+    },
+    {
+      "position": [11.5, 0.94331829482964, -53.135662002650704],
+      "state": "game",
+      "tick": 2280,
+      "world": "act1"
+    },
+    {
+      "position": [11.5, 1.0126517652076117, -52.82531219074896],
+      "state": "game",
+      "tick": 2340,
+      "world": "act1"
+    },
+    {
+      "position": [11.500118523454528, 1.0843880337524805, -52.50420717804096],
+      "state": "game",
+      "tick": 2400,
+      "world": "act1"
+    },
+    {
+      "position": [13.015650772013585, 1.2499939001710407, -50.9780025203484],
+      "state": "game",
+      "tick": 2460,
+      "world": "act1"
+    },
+    {
+      "position": [13.002836017501584, 1.2499938181566028, -51.036950391103595],
+      "state": "game",
+      "tick": 2520,
+      "world": "act1"
+    },
+    {
+      "position": [12.93505733561023, 1.2499933843729905, -51.34873232780382],
+      "state": "game",
+      "tick": 2580,
+      "world": "act1"
+    }
+  ],
+  "visualEquivalence": {
+    "reflectionMaterialCaches": {
+      "resolution": [3024, 1964],
+      "results": [
+        {
+          "changed": 0,
+          "max": 0,
+          "rmse": 0
+        },
+        {
+          "changed": 0,
+          "max": 0,
+          "rmse": 0
+        },
+        {
+          "changed": 0,
+          "max": 0,
+          "rmse": 0
+        },
+        {
+          "changed": 0,
+          "max": 0,
+          "rmse": 0
+        }
+      ]
+    },
+    "ambientOcclusion": {
+      "components": 23756544,
+      "resolution": [3024, 1964],
+      "results": [
+        {
+          "max": 1,
+          "over1": 0,
+          "over4": 0,
+          "rmse": 0.0002901505292168961
+        },
+        {
+          "max": 0,
+          "over1": 0,
+          "over4": 0,
+          "rmse": 0
+        },
+        {
+          "max": 0,
+          "over1": 0,
+          "over4": 0,
+          "rmse": 0
+        },
+        {
+          "max": 1,
+          "over1": 0,
+          "over4": 0,
+          "rmse": 0.0002051674067741327
+        }
+      ]
+    },
+    "filmGrain": {
+      "components": 23756544,
+      "resolution": [3024, 1964],
+      "results": [
+        {
+          "max": 0,
+          "over1": 0,
+          "over4": 0,
+          "rmse": 0
+        },
+        {
+          "max": 0,
+          "over1": 0,
+          "over4": 0,
+          "rmse": 0
+        },
+        {
+          "max": 0,
+          "over1": 0,
+          "over4": 0,
+          "rmse": 0
+        },
+        {
+          "max": 0,
+          "over1": 0,
+          "over4": 0,
+          "rmse": 0
+        }
+      ]
+    },
+    "composition": {
+      "resolution": [3024, 1964],
+      "results": [
+        {
+          "max": 1,
+          "over1": 0,
+          "rmse": 0.13991273933790643
+        },
+        {
+          "max": 1,
+          "over1": 0,
+          "rmse": 0.14226669553911478
+        },
+        {
+          "max": 1,
+          "over1": 0,
+          "rmse": 0.13859874569145525
+        },
+        {
+          "max": 1,
+          "over1": 0,
+          "rmse": 0.12884970516866945
+        }
+      ]
+    }
+  },
+  "normalEntryRotation": {
+    "clearAlpha": 0,
+    "context": {
+      "alpha": true,
+      "antialias": false,
+      "depth": true,
+      "desynchronized": false,
+      "failIfMajorPerformanceCaveat": false,
+      "powerPreference": "high-performance",
+      "premultipliedAlpha": true,
+      "preserveDrawingBuffer": false,
+      "stencil": false,
+      "xrCompatible": false
+    },
+    "devicePixelRatio": 2,
+    "frameCount": 2400,
+    "motion": true,
+    "multiDraw": true,
+    "preset": "next-gen",
+    "resolution": [3024, 1964],
+    "results": {
+      "optimized": {
+        "cpuMilliseconds": {
+          "max": 4.799999952316284,
+          "median": 3.5,
+          "p95": 4,
+          "p99": 4.299999952316284
+        },
+        "drawCalls": {
+          "max": 186,
+          "median": 158,
+          "p95": 176,
+          "p99": 186
+        },
+        "frameMilliseconds": {
+          "max": 21,
+          "median": 16.699999928474426,
+          "p95": 16.800000071525574,
+          "p99": 16.90000009536743
+        },
+        "framesOver20ms": 8
+      }
+    },
+    "warmup": 240,
+    "world": "act1"
+  },
+  "repeatCpuMedianSpeedup": 9.485714265278407,
+  "validation": {
+    "tests": 71,
+    "typecheck": "passed",
+    "lint": "passed",
+    "productionBuild": "passed"
+  }
+}

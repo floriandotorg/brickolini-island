@@ -5,12 +5,10 @@ import { updateFocusedShadow } from '../world/lighting.ts'
 import type { Effect } from './effect.ts'
 import { RenderBatches } from './render-batches.ts'
 import effectFrag from './shader/effect.glsl'
+import { compileFragmentShader } from './shader-pipeline.ts'
 import { WorldShadingEffect } from './world-shading.ts'
 
 export { Effect } from './effect.ts'
-
-const compileFragmentShader = (effects: Effect[]) =>
-  effectFrag.replace('/// EFFECTS', effects.map((effect, n) => effect.fragmentShader.replace('void mainImage', `void main${n + 1}`)).join('\n')).replace('/// PIPELINE', effects.map((_, n) => `main${n + 1}(inputColor, outputColor);\ninputColor = outputColor;`).join('\n'))
 
 export abstract class Render {
   private _effects: Effect[] = []
@@ -21,6 +19,10 @@ export abstract class Render {
   public abstract get camera(): THREE.Camera
   public abstract get texture(): THREE.Texture
 
+  public get empty(): boolean {
+    return false
+  }
+
   public abstract resize(width: number, height: number): void
   public abstract render(renderer: THREE.WebGLRenderer): void
 
@@ -28,8 +30,12 @@ export abstract class Render {
     this._effects.push(effect)
   }
 
+  public get effects(): readonly Effect[] {
+    return this._effects
+  }
+
   public get shader(): string {
-    return compileFragmentShader(this._effects)
+    return compileFragmentShader(effectFrag, this._effects)
   }
 
   public bindEffects(): void {
@@ -64,6 +70,8 @@ export class Render3D extends Render {
     this.scene.add(this.camera)
     this.camera.name = 'camera'
     this.camera.rotation.order = 'YXZ'
+    this.scene.onBeforeRender = (_renderer, _scene, camera) => this._batches.setReflection(camera !== this.camera)
+    this.scene.onAfterRender = () => this._batches.setReflection(false)
     const graphics = getSettings().graphics
     if (graphics.ambientOcclusion || graphics.toneMapping === 'filmic') {
       this.addEffect(new WorldShadingEffect(this.camera, this._depth, graphics.ambientOcclusion, graphics.toneMapping === 'filmic'))
@@ -81,17 +89,26 @@ export class Render3D extends Render {
   }
 
   public render(renderer: THREE.WebGLRenderer): void {
-    if (this._focusedShadows) {
-      this.scene.traverse(object => {
-        if (object instanceof THREE.DirectionalLight && object.castShadow) {
-          updateFocusedShadow(object, this.camera)
-        }
-      })
-    }
     renderer.setRenderTarget(this._renderTarget)
     try {
-      if (renderer.extensions.has('WEBGL_multi_draw')) {
+      const batching = renderer.extensions.has('WEBGL_multi_draw')
+      if (batching) {
         this._batches.prepare(this.scene)
+      }
+      if (this._focusedShadows) {
+        if (batching) {
+          for (const light of this._batches.directionalLights) {
+            if (light.castShadow) {
+              updateFocusedShadow(light, this.camera)
+            }
+          }
+        } else {
+          this.scene.traverse(object => {
+            if (object instanceof THREE.DirectionalLight && object.castShadow) {
+              updateFocusedShadow(object, this.camera)
+            }
+          })
+        }
       }
       renderer.render(this.scene, this.camera)
     } finally {
@@ -119,6 +136,10 @@ export class Render2D extends Render {
     type: THREE.HalfFloatType,
     stencilBuffer: false,
   })
+
+  public override get empty(): boolean {
+    return this.scene.background == null && this.scene.children.every(object => object === this.camera)
+  }
 
   public get texture(): THREE.Texture {
     return this._renderTarget.texture
@@ -168,8 +189,13 @@ export class Composer {
   private _postScene = new THREE.Scene()
   private _postCamera = new THREE.OrthographicCamera()
   private _postMaterial: THREE.ShaderMaterial
+  private _postMesh: THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>
+  private readonly _fused = new Map<Render3D, THREE.ShaderMaterial>()
+  private _directFrame = false
+  private _directCompositionEnabled = true
 
   private _pipeline: Render[] = []
+  private readonly _layers = new Map<Render, THREE.Mesh>()
   private _effects: Effect[] = []
   private _width = 1
   private _height = 1
@@ -190,32 +216,70 @@ export class Composer {
 
     this._postMaterial = new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3,
-      fragmentShader: compileFragmentShader(this._effects),
+      fragmentShader: compileFragmentShader(effectFrag, this._effects),
       uniforms: {
         tDiffuse: { value: this._renderTarget.texture },
         uTime: { value: 0 },
       },
     })
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this._postMaterial)
-    mesh.position.z = -1
-    this._postScene.add(mesh)
+    this._postMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this._postMaterial)
+    this._postMesh.position.z = -1
+    this._postScene.add(this._postMesh)
   }
 
   public render(time: number, frozen = false): void {
     this._postMaterial.uniforms.uTime.value = time
 
     if (!frozen) {
+      let single: Render | null = null
+      let active = 0
       for (const render of this._pipeline) {
+        const layer = this._layers.get(render)
+        if (layer != null) {
+          layer.visible = !render.empty
+        }
+        if (render.empty) {
+          continue
+        }
+        single = render
+        ++active
         render.material.uniforms.uTime.value = time
         render.render(this._renderer)
       }
 
+      if (this._directCompositionEnabled && active === 1 && single instanceof Render3D) {
+        this._renderDirect(single)
+        this._directFrame = true
+        return
+      }
+    }
+    if (!frozen || this._directFrame) {
       this._renderer.setRenderTarget(this._renderTarget)
       this._renderer.render(this._scene, this._camera)
+      this._directFrame = false
     }
 
     this._renderer.setRenderTarget(null)
     this._renderer.render(this._postScene, this._postCamera)
+  }
+
+  private _renderDirect(render: Render3D): void {
+    let material = this._fused.get(render)
+    if (material == null) {
+      material = new THREE.ShaderMaterial({
+        glslVersion: THREE.GLSL3,
+        fragmentShader: compileFragmentShader(effectFrag, [...render.effects, ...this._effects], render.effects.length).replace('fragColor = outputColor;', 'fragColor = linearToOutputTexel(outputColor);'),
+        uniforms: { ...render.material.uniforms, ...this._postMaterial.uniforms, tDiffuse: { value: render.texture } },
+      })
+      this._fused.set(render, material)
+    }
+    this._renderer.setRenderTarget(null)
+    this._postMesh.material = material
+    try {
+      this._renderer.render(this._postScene, this._postCamera)
+    } finally {
+      this._postMesh.material = this._postMaterial
+    }
   }
 
   public resize(width: number, height: number): void {
@@ -245,6 +309,7 @@ export class Composer {
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), render.material)
     mesh.position.z = -100 + this._pipeline.length
     this._scene.add(mesh)
+    this._layers.set(render, mesh)
   }
 
   public resetPipeline(): void {
@@ -255,15 +320,25 @@ export class Composer {
     }
     this._scene.clear()
     this._pipeline = []
+    this._layers.clear()
+    for (const material of this._fused.values()) {
+      material.dispose()
+    }
+    this._fused.clear()
+    this._directFrame = false
   }
 
   public addEffect(effect: Effect): void {
+    for (const material of this._fused.values()) {
+      material.dispose()
+    }
+    this._fused.clear()
     effect.material = this._postMaterial
     this._effects.push(effect)
     this._postMaterial.uniforms = {
       ...this._postMaterial.uniforms,
       ...effect.uniforms,
     }
-    this._postMaterial.fragmentShader = compileFragmentShader(this._effects).replace('fragColor = outputColor;', 'fragColor = linearToOutputTexel(outputColor);')
+    this._postMaterial.fragmentShader = compileFragmentShader(effectFrag, this._effects).replace('fragColor = outputColor;', 'fragColor = linearToOutputTexel(outputColor);')
   }
 }

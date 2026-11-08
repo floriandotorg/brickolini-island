@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { updateRaycastMatrices } from '../matrix-cache.ts'
 
 const vertexShader = `
 varying vec2 vUv;
@@ -54,6 +55,7 @@ export class ContactShadows {
         this._shadows.delete(roi)
       }
     }
+    let groundPrepared = false
     for (const roi of active) {
       roi.model.getWorldPosition(this._position)
       let shadow = this._shadows.get(roi)
@@ -81,6 +83,10 @@ export class ContactShadows {
         continue
       }
       if (time >= shadow.nextCast) {
+        if (!groundPrepared) {
+          updateRaycastMatrices(ground)
+          groundPrepared = true
+        }
         this._raycaster.set(this._position.clone().add(new THREE.Vector3(0, 1, 0)), this._down)
         this._raycaster.far = 20
         const hit = this._raycaster.intersectObjects(ground, true)[0]

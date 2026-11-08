@@ -12,6 +12,7 @@ import { type Composer, Render3D } from '../effect/composer'
 import { type AudioType, engine, type NormalizedMouseEvent } from '../engine'
 import { PendingActions } from '../pending-actions'
 import { ReferenceCache } from '../reference-cache'
+import { SceneIndex } from '../scene-index.ts'
 import { Actor, ColliderType } from './actor'
 import { ExtraActor } from './actors/extra-actor'
 import { BoundaryManager } from './boundary-manager'
@@ -98,6 +99,9 @@ export type BuiltAnimation = {
 
 export abstract class World {
   protected _render = new Render3D()
+  private readonly _roiModels = new SceneIndex(this._render.scene, (object): object is RoiModel => object instanceof RoiModel)
+  private _environment: THREE.WebGLRenderTarget | null = null
+  private _disposed = false
   public fixedAspectRatio = false
 
   private readonly _debugGroup: THREE.Group = new THREE.Group()
@@ -177,6 +181,19 @@ export abstract class World {
 
   public get isRunningCameraAnimation(): boolean {
     return this._runningAnimations.some(a => !a.metadata.released && (a.lookAtKeys != null || a.lockCamera === true || a.metadata.hasCameraTrack))
+  }
+
+  public replaceEnvironment(environment: THREE.WebGLRenderTarget, intensity: number): void {
+    if (this._disposed) {
+      environment.dispose()
+      return
+    }
+    if (this._environment !== environment) {
+      this._environment?.dispose()
+    }
+    this._environment = environment
+    this.scene.environment = environment.texture
+    this.scene.environmentIntensity = intensity
   }
 
   public get scene(): THREE.Scene {
@@ -337,16 +354,13 @@ export abstract class World {
 
   public findRoi(name: string): Roi3D | null {
     const lowerName = name.toLowerCase()
-    let found: Roi3D | null = null
-    this.scene.traverse(object => {
-      if (found == null && object instanceof RoiModel) {
-        const roi3d = object.roi3dOrNull
-        if (roi3d != null && roi3d.name === lowerName) {
-          found = roi3d
-        }
+    for (const object of this._roiModels.objects) {
+      const roi = object.roi3dOrNull
+      if (roi != null && roi.name === lowerName) {
+        return roi
       }
-    })
-    return found
+    }
+    return null
   }
 
   public getRoi(name: string): Roi3D {
@@ -1119,6 +1133,9 @@ export abstract class World {
 
     this._debugGroup.visible = engine.debugMode
     this._debugBox.classList.toggle('hidden', !engine.debugMode)
+    if (!engine.debugMode) {
+      return
+    }
 
     const positionDirection = this.debugPositionDirection
     const time = this.debugTime
@@ -1270,7 +1287,11 @@ export abstract class World {
   }
 
   public dispose(): void {
+    this._disposed = true
     this.deactivate()
+    this._environment?.dispose()
+    this._environment = null
+    this.scene.environment = null
     this.skipAllRunningAnimations(true)
     for (const animation of [...this._runningAnimations]) {
       animation.resolve()
@@ -1282,6 +1303,7 @@ export abstract class World {
     this._characters.clear()
     this.soundCache.dispose()
     forgetModelLods(this.scene)
+    this._roiModels.dispose()
     this._render.dispose()
     this.scene.clear()
   }

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import * as THREE from 'three'
-import { createWaterNormalPixels, getRenderSize, getSurfaceProperties } from '../src/lib/graphics.ts'
+import { createAmbientOcclusionSamples, createWaterNormalPixels, getRenderSize, getSurfaceProperties } from '../src/lib/graphics.ts'
 import { getSettings, setPreset } from '../src/lib/settings.ts'
 import { ContactShadows } from '../src/lib/world/contact-shadows.ts'
 import { configureShadow, updateFocusedShadow } from '../src/lib/world/lighting.ts'
@@ -141,5 +141,21 @@ test('graphics presets preserve original and migrate existing enhanced settings'
     } else {
       Reflect.deleteProperty(globalThis, 'localStorage')
     }
+  }
+})
+
+test('ambient occlusion keeps twelve deterministic samples on increasing disk radii', () => {
+  const samples = createAmbientOcclusionSamples()
+  assert.equal(samples.length, 36)
+  assert.deepEqual(samples, createAmbientOcclusionSamples())
+  assert.equal(samples[0], 1)
+  assert.equal(samples[1], 0)
+  let previousRadius = 0
+  for (let n = 0; n < 12; ++n) {
+    const [x, y, radius] = samples.slice(n * 3, n * 3 + 3)
+    assert.ok(Math.abs(Math.hypot(x, y) - 1) < 0.0000001)
+    assert.ok(radius > previousRadius && radius < 1)
+    assert.ok(Math.abs(radius * radius - (n + 0.5) / 12) < 0.0000001)
+    previousRadius = radius
   }
 })

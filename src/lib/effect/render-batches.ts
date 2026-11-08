@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { cacheObjectMatrix, updateVisibleMatrices } from '../matrix-cache.ts'
 
 type BatchMaterial = THREE.MeshBasicMaterial | THREE.MeshLambertMaterial | THREE.MeshPhysicalMaterial
 
@@ -14,7 +15,7 @@ type Source = {
   color: THREE.Color
 }
 
-type Batch = { mesh: THREE.BatchedMesh; sources: Source[] }
+type Batch = { mesh: THREE.BatchedMesh; material: BatchMaterial; reflection: BatchMaterial; sources: Source[] }
 
 const eligible = (object: THREE.Object3D): object is THREE.Mesh<THREE.BufferGeometry, BatchMaterial> =>
   object instanceof THREE.Mesh &&
@@ -46,30 +47,73 @@ const signature = (mesh: THREE.Mesh<THREE.BufferGeometry, BatchMaterial>): strin
 }
 
 export class RenderBatches {
+  private readonly _lights = new Set<THREE.DirectionalLight>()
+  private readonly _pending = new Set<THREE.Object3D>()
+  private readonly _watched = new Set<THREE.Object3D>()
+  private readonly _added = (event: THREE.Object3DEventMap['childadded']) => this._pending.add(event.child)
+  private readonly _removed = (event: THREE.Object3DEventMap['childremoved']) => {
+    event.child.traverse(object => {
+      object.removeEventListener('childadded', this._added)
+      object.removeEventListener('childremoved', this._removed)
+      if (object instanceof THREE.DirectionalLight) {
+        this._lights.delete(object)
+      }
+      this._watched.delete(object)
+      this._pending.delete(object)
+    })
+  }
   private readonly _seen = new WeakSet<THREE.Object3D>()
   private readonly _batches: Batch[] = []
   private readonly _hidden: Source[] = []
   private _scene: THREE.Scene | null = null
   private _matrixWorldAutoUpdate = true
+  private _initializedMatrices = false
+
+  public get directionalLights(): Iterable<THREE.DirectionalLight> {
+    return this._lights
+  }
 
   public prepare(scene: THREE.Scene): void {
+    if (this._scene == null) {
+      this._pending.add(scene)
+    }
     this._scene = scene
     this._matrixWorldAutoUpdate = scene.matrixWorldAutoUpdate
-    scene.updateMatrixWorld()
     const groups = new Map<string, THREE.Mesh<THREE.BufferGeometry, BatchMaterial>[]>()
-    scene.traverse(object => {
-      if (this._seen.has(object) || !eligible(object)) {
-        return
-      }
-      this._seen.add(object)
-      const key = signature(object)
-      const group = groups.get(key)
-      if (group == null) {
-        groups.set(key, [object])
-      } else {
-        group.push(object)
-      }
-    })
+    for (const root of this._pending) {
+      root.traverse(object => {
+        if (!this._watched.has(object)) {
+          this._watched.add(object)
+          if (object instanceof THREE.DirectionalLight) {
+            this._lights.add(object)
+          }
+          object.addEventListener('childadded', this._added)
+          object.addEventListener('childremoved', this._removed)
+        }
+        if (this._seen.has(object)) {
+          return
+        }
+        this._seen.add(object)
+        cacheObjectMatrix(object)
+        if (!eligible(object)) {
+          return
+        }
+        const key = signature(object)
+        const group = groups.get(key)
+        if (group == null) {
+          groups.set(key, [object])
+        } else {
+          group.push(object)
+        }
+      })
+    }
+    this._pending.clear()
+    if (this._initializedMatrices) {
+      updateVisibleMatrices(scene)
+    } else {
+      scene.updateMatrixWorld()
+      this._initializedMatrices = true
+    }
     for (const meshes of groups.values()) {
       if (meshes.length < 2) {
         continue
@@ -78,6 +122,7 @@ export class RenderBatches {
     }
     for (const batch of this._batches) {
       batch.mesh.visible = true
+      let removed: Set<Source> | null = null
       for (const source of batch.sources) {
         const { mesh, material, geometry, instance } = source
         const compatible =
@@ -97,7 +142,13 @@ export class RenderBatches {
           visible &&= parent.visible
           parent = parent.parent
         }
-        visible &&= parent === scene
+        if (parent !== scene) {
+          batch.mesh.deleteInstance(instance)
+          this._seen.delete(mesh)
+          removed ??= new Set()
+          removed.add(source)
+          continue
+        }
         batch.mesh.setVisibleAt(instance, visible)
         if (visible) {
           if (!source.matrix.equals(mesh.matrixWorld)) {
@@ -114,6 +165,20 @@ export class RenderBatches {
           mesh.layers.mask = 0
           this._hidden.push(source)
         }
+      }
+      if (removed != null) {
+        const removedSources = removed
+        batch.sources = batch.sources.filter(source => !removedSources.has(source))
+      }
+    }
+    for (let n = this._batches.length - 1; n >= 0; --n) {
+      const batch = this._batches[n]
+      if (batch.sources.length === 0) {
+        batch.mesh.removeFromParent()
+        batch.mesh.dispose()
+        batch.material.dispose()
+        batch.reflection.dispose()
+        this._batches.splice(n, 1)
       }
     }
     scene.matrixWorldAutoUpdate = false
@@ -154,10 +219,17 @@ export class RenderBatches {
       return { mesh: object, material: object.material, map: object.material.map, version: object.material.version, geometry: object.geometry, instance, layers: object.layers.mask, matrix: object.matrixWorld.clone(), color: object.material.color.clone() }
     })
     scene.add(mesh)
-    this._batches.push({ mesh, sources })
+    this._batches.push({ mesh, material, reflection: material.clone(), sources })
+  }
+
+  public setReflection(reflection: boolean): void {
+    for (const batch of this._batches) {
+      batch.mesh.material = reflection ? batch.reflection : batch.material
+    }
   }
 
   public restore(): void {
+    this.setReflection(false)
     for (const source of this._hidden) {
       source.mesh.layers.mask = source.layers
     }
@@ -175,8 +247,18 @@ export class RenderBatches {
     for (const batch of this._batches) {
       batch.mesh.removeFromParent()
       batch.mesh.dispose()
-      batch.mesh.material.dispose()
+      batch.material.dispose()
+      batch.reflection.dispose()
     }
     this._batches.length = 0
+    for (const object of this._watched) {
+      object.removeEventListener('childadded', this._added)
+      object.removeEventListener('childremoved', this._removed)
+    }
+    this._watched.clear()
+    this._lights.clear()
+    this._pending.clear()
+    this._scene = null
+    this._initializedMatrices = false
   }
 }

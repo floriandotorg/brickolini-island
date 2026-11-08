@@ -26,6 +26,7 @@ import { getWorld } from '../assets/model'
 import type { SpawnLocation } from '../assets/spawn-location'
 import { createTextureAsync } from '../assets/texture'
 import { type Composer, Render2D } from '../effect/composer'
+import { getEnvironmentGenerator } from '../effect/environment.ts'
 import { TransparentEdgeBlurEffect } from '../effect/transparent-edge-blur'
 import { engine } from '../engine'
 import { radio } from '../radio.ts'
@@ -162,13 +163,14 @@ export class Building {
 
         if (getSettings().graphics.pbrMaterials) {
           void createTextureAsync(child).then(async texture => {
-            world.scene.environment = new THREE.PMREMGenerator(engine.renderer).fromEquirectangular(texture).texture
-            world.scene.environmentIntensity = 0.1
+            world.replaceEnvironment(getEnvironmentGenerator(engine.renderer).fromEquirectangular(texture), 0.1)
             const cubeRenderTarget = new THREE.WebGLCubeRenderTarget()
-            cubeRenderTarget.fromEquirectangularTexture(engine.renderer, texture)
-            void LightProbeGenerator.fromCubeRenderTarget(engine.renderer, cubeRenderTarget).then(lightProbe => {
-              world.scene.add(lightProbe)
-            })
+            try {
+              cubeRenderTarget.fromEquirectangularTexture(engine.renderer, texture)
+              world.scene.add(await LightProbeGenerator.fromCubeRenderTarget(engine.renderer, cubeRenderTarget))
+            } finally {
+              cubeRenderTarget.dispose()
+            }
           })
         }
       }

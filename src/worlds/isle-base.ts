@@ -34,6 +34,7 @@ import { calculateTransformationMatrix, getModel, getWorld, Roi3D, type WdbWorld
 import type { SpawnLocation } from '../lib/assets/spawn-location'
 import { createTexture } from '../lib/assets/texture'
 import type { Composer } from '../lib/effect/composer'
+import { getEnvironmentGenerator } from '../lib/effect/environment.ts'
 import { engine, getURLParam, type NormalizedMouseEvent } from '../lib/engine'
 import { type Location, locations } from '../lib/locations'
 import { applyLights, NUM_ORIGINAL_LIGHTS } from '../lib/original-lights'
@@ -230,14 +231,6 @@ export abstract class IsleBase extends World {
           this.scene.add(lightProbe)
         },
       )
-
-      manager.onLoad = () => {
-        this.scene.environment = new THREE.PMREMGenerator(engine.renderer).fromScene(this.scene, 0, 0.1, 1000, {
-          size: 1024,
-          position: new THREE.Vector3(-15, 10, -1),
-        }).texture
-        this.scene.environmentIntensity = 0.3
-      }
     }
 
     if (this._wdbWorldName != null) {
@@ -384,6 +377,11 @@ export abstract class IsleBase extends World {
         continue
       }
       this._groundGroup.push(object)
+    }
+    if (settings.graphics.pbrMaterials) {
+      await manager.whenIdle()
+      engine.renderer.shadowMap.needsUpdate = true
+      this.replaceEnvironment(getEnvironmentGenerator(engine.renderer).fromScene(this.scene, 0, 0.1, 1000, { size: 1024, position: new THREE.Vector3(-15, 10, -1) }), 0.3)
     }
   }
 
