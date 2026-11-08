@@ -494,6 +494,7 @@ export abstract class IsleBase extends World {
   }
 
   protected _updateSun(): void {
+    this.scene.userData.dayPhase = this._sun.type === 'modern' ? this._modernDayTime : engine.currentSaveGame.sunPosition / (NUM_ORIGINAL_LIGHTS - 1)
     if (this._temporarySkyColor != null) {
       this._applySkyColor(this._temporarySkyColor)
     }

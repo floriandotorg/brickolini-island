@@ -159,6 +159,11 @@ export class Render3D extends Render {
 
   public override dispose(): void {
     super.dispose()
+    for (const effect of this.effects) {
+      if (effect instanceof WorldShadingEffect) {
+        effect.dispose()
+      }
+    }
     this._cascades?.dispose()
     this._bloom?.dispose()
     this._dof?.dispose()
