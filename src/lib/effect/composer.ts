@@ -11,6 +11,7 @@ import type { Effect } from './effect.ts'
 import { RenderBatches } from './render-batches.ts'
 import effectFrag from './shader/effect.glsl'
 import { compileFragmentShader } from './shader-pipeline.ts'
+import { WaterDepth } from './water-depth.ts'
 import { WorldShadingEffect } from './world-shading.ts'
 
 export { Effect } from './effect.ts'
@@ -70,6 +71,7 @@ export class Render3D extends Render {
   private readonly _batches = new RenderBatches()
   private readonly _irradiance = getSettings().graphics.pbrMaterials ? new IrradianceGrid() : null
   private _probeFrame = 0
+  private readonly _waterDepth = new WaterDepth()
   private readonly _reflections = getSettings().graphics.pbrMaterials ? new ReflectionProbes() : null
   private readonly _dof = getSettings().graphics.postProcessing ? new DepthOfField(this.camera, this._depth) : null
   private _processed: THREE.Texture | null = null
@@ -102,6 +104,7 @@ export class Render3D extends Render {
 
   public resize(width: number, height: number): void {
     this._renderTarget.setSize(width, height)
+    this._waterDepth.resize(width, height)
     this._dof?.resize(width, height)
     this._bloom?.setSize(width, height)
     this.camera.aspect = width / height
@@ -119,6 +122,7 @@ export class Render3D extends Render {
         this._irradiance.update(renderer, this.scene, phase)
       }
     }
+    this._waterDepth.render(renderer, this.scene, this.camera)
     renderer.setRenderTarget(this._renderTarget)
     try {
       const batching = renderer.extensions.has('WEBGL_multi_draw')
@@ -166,6 +170,7 @@ export class Render3D extends Render {
     }
     this._cascades?.dispose()
     this._bloom?.dispose()
+    this._waterDepth.dispose()
     this._dof?.dispose()
     this._reflections?.dispose()
     this._irradiance?.dispose()
