@@ -1,4 +1,5 @@
 import type * as THREE from 'three'
+import { getSettings } from '../settings.ts'
 import { Effect } from './effect.ts'
 import worldShadingFrag from './shader/world-shading.glsl'
 
@@ -21,6 +22,7 @@ export class WorldShadingEffect extends Effect {
       tWorldDepth: { value: this._depth },
       uProjectionInverse: { value: this._camera.projectionMatrixInverse },
       uProjection: { value: this._camera.projectionMatrix },
+      uPlasticEdges: { value: getSettings().graphics.postProcessing },
       uAmbientOcclusion: { value: this._ambientOcclusion },
       uFilmic: { value: this._toneMapping },
       toneMappingExposure: { value: 1 },

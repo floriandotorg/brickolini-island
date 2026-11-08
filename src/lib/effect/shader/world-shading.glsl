@@ -5,6 +5,7 @@ uniform mat4 uProjectionInverse;
 uniform mat4 uProjection;
 uniform bool uAmbientOcclusion;
 uniform bool uFilmic;
+uniform bool uPlasticEdges;
 
 vec3 viewPosition(vec2 sampleUv, float depth) {
   float reciprocalW = 1.0 / (uProjectionInverse[2][3] * (depth * 2.0 - 1.0) + uProjectionInverse[3][3]);
@@ -55,13 +56,43 @@ float ambientVisibility(vec3 position, vec3 normal) {
   return clamp(visibility / 4.0, 0.25, 1.0);
 }
 
+vec3 surfaceNormal(vec2 sampleUv) {
+  vec3 center = viewPosition(sampleUv, texture(tWorldDepth, sampleUv).r);
+  vec3 left = viewPosition(sampleUv - vec2(texelSize.x, 0.0), texture(tWorldDepth, sampleUv - vec2(texelSize.x, 0.0)).r);
+  vec3 right = viewPosition(sampleUv + vec2(texelSize.x, 0.0), texture(tWorldDepth, sampleUv + vec2(texelSize.x, 0.0)).r);
+  vec3 bottom = viewPosition(sampleUv - vec2(0.0, texelSize.y), texture(tWorldDepth, sampleUv - vec2(0.0, texelSize.y)).r);
+  vec3 top = viewPosition(sampleUv + vec2(0.0, texelSize.y), texture(tWorldDepth, sampleUv + vec2(0.0, texelSize.y)).r);
+  vec3 dx = abs(left.z - center.z) < abs(right.z - center.z) ? center - left : right - center;
+  vec3 dy = abs(bottom.z - center.z) < abs(top.z - center.z) ? center - bottom : top - center;
+  return normalize(cross(dx, dy));
+}
+
+float plasticBevel(vec3 position, vec3 normal) {
+  float edge = 0.0;
+  for (int n = 0; n < 4; ++n) {
+    vec2 offset = n == 0 ? vec2(1.5, 0.0) : n == 1 ? vec2(-1.5, 0.0) : n == 2 ? vec2(0.0, 1.5) : vec2(0.0, -1.5);
+    vec2 sampleUv = clamp(uv + offset * texelSize, texelSize * 2.0, 1.0 - texelSize * 2.0);
+    vec3 neighbor = viewPosition(sampleUv, texture(tWorldDepth, sampleUv).r);
+    vec3 neighborNormal = surfaceNormal(sampleUv);
+    float crease = smoothstep(0.08, 0.55, 1.0 - dot(normal, neighborNormal));
+    float convex = smoothstep(0.002, 0.08, -dot(neighbor - position, normal));
+    float connected = 1.0 - smoothstep(0.15, 0.65, length(neighbor - position));
+    vec3 rounded = normalize(normal + neighborNormal);
+    edge = max(edge, crease * convex * connected * pow(max(dot(rounded, normalize(vec3(-0.4, 0.7, 0.6))), 0.0), 8.0));
+  }
+  return edge * 0.16;
+}
+
 void mainImage(const in vec4 inputColor, out vec4 outputColor) {
   outputColor = inputColor;
   float depth = texture(tWorldDepth, uv).r;
   vec3 position = viewPosition(uv, depth);
-  vec3 normal = normalize(cross(dFdx(position), dFdy(position)));
+  vec3 normal = surfaceNormal(uv);
   if (uAmbientOcclusion && depth < 0.999999 && inputColor.a > 0.0) {
     outputColor.rgb *= ambientVisibility(position, normal);
+  }
+  if (uPlasticEdges && depth < 0.999999) {
+    outputColor.rgb += plasticBevel(position, normal) * sqrt(max(inputColor.rgb, vec3(0.0)));
   }
   if (uFilmic) {
     outputColor.rgb = ACESFilmicToneMapping(outputColor.rgb);
