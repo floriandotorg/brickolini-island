@@ -116,7 +116,7 @@ export class Render3D extends Render {
     this._reflections?.update(renderer, this.scene, this.camera)
     if (this._irradiance != null) {
       this._irradiance.prepare(this.scene)
-      if (++this._probeFrame % 8 === 0) {
+      if (++this._probeFrame % 4 === 0) {
         const sun = this.scene.children.find(object => object instanceof THREE.DirectionalLight)
         const phase = sun instanceof THREE.DirectionalLight ? Math.round(Math.atan2(sun.position.y - sun.target.position.y, sun.position.x - sun.target.position.x) * 8) : 0
         this._irradiance.update(renderer, this.scene, phase)
