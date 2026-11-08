@@ -62,6 +62,6 @@ printSceneGraph?.addEventListener('click', () => {
   }
 })
 
-if (import.meta.env.DEV) {
+if (import.meta.env.DEV && !matchMedia('(any-pointer: coarse)').matches) {
   void start()
 }

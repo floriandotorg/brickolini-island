@@ -10,6 +10,17 @@ This project aims to recreate the charm of LEGO ISLAND in your browser to make i
 
 _Note: This project is currently in the very early stages of development._
 
+## Phone controls
+
+Tap **Play now** to start and enable sound. Portrait and landscape layouts are supported. Phones use the Original graphics preset on first launch; graphics can be changed in Settings.
+
+- Drag the thumbstick to walk, reverse, steer vehicles, or fly. Hold **Turbo** with another finger to accelerate faster.
+- Tap objects and dashboard buttons to interact. Drag on the scene to use the original drag controls, including vehicle assembly.
+- Use **Skip / Action**, **Back**, **Pause**, and **Settings** in the top toolbar.
+- In the registration book, enter your name with the touch keyboard and tap the checkmark in the book. In landscape, use the book's own letter buttons.
+
+The game requires a browser with WebGL 2. Fullscreen is available in Settings when supported by the browser.
+
 ## Contributing
 
 Contributions are welcome! Anyone who wishes to contribute is encouraged to join the project's [Discord](https://discord.gg/jcX3JE9Az3), where most of the communication happens.

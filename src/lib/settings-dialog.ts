@@ -155,11 +155,15 @@ const islandQuality = document.getElementById('island-quality')
 if (!(gamepadIndex instanceof HTMLInputElement) || !(islandQuality instanceof HTMLSelectElement)) {
   throw new Error('Navigation settings missing')
 }
-document.getElementById('fullscreen-button')?.addEventListener('click', () => {
+const fullscreenButton = document.getElementById('fullscreen-button')
+if (fullscreenButton instanceof HTMLButtonElement) {
+  fullscreenButton.disabled = !document.fullscreenEnabled
+}
+fullscreenButton?.addEventListener('click', () => {
   if (document.fullscreenElement == null) {
-    void document.documentElement.requestFullscreen()
+    void document.documentElement.requestFullscreen?.().catch(() => {})
   } else {
-    void document.exitFullscreen()
+    void document.exitFullscreen?.().catch(() => {})
   }
 })
 

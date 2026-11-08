@@ -7,6 +7,7 @@ export class InputManager {
   public allowSpaceWhileDisabled = false
   public buttonDownActsAsSpace = false
   public readonly keys = new Set<string>()
+  private readonly _touchKeys = new Set<string>()
   public dragging = false
   public onGesture: (kind: Gesture, point: InputPoint) => void = () => {}
   private _sticky = false
@@ -27,6 +28,7 @@ export class InputManager {
 
   public clear(): void {
     this.keys.clear()
+    this._touchKeys.clear()
     if (this.dragging) {
       this.onGesture('dragEnd', this._point)
     }
@@ -49,8 +51,17 @@ export class InputManager {
     this.keys.delete(code)
   }
 
+  public setTouchKeys(codes: readonly string[]): void {
+    this._touchKeys.clear()
+    if (!this.inputDisabled) {
+      for (const code of codes) {
+        this._touchKeys.add(code)
+      }
+    }
+  }
+
   public getNavigationFlags(): NavigationFlags {
-    const held = (...codes: string[]) => !this.inputDisabled && codes.some(code => this.keys.has(code))
+    const held = (...codes: string[]) => !this.inputDisabled && codes.some(code => this.keys.has(code) || this._touchKeys.has(code))
     return { up: held('ArrowUp', 'Numpad8'), down: held('ArrowDown', 'Numpad2'), left: held('ArrowLeft', 'Numpad4'), right: held('ArrowRight', 'Numpad6'), ctrl: held('ControlLeft', 'ControlRight') }
   }
 

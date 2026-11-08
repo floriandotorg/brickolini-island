@@ -12,6 +12,8 @@ import { MosaicEffect } from './effect/mosaic'
 import { handleGlobalKey } from './global-keys.ts'
 import { getRenderSize } from './graphics.ts'
 import { InputManager } from './input.ts'
+import { MobileControls } from './mobile-controls.ts'
+import { getMobileViewport } from './mobile-layout.ts'
 import { PlayerDirectory } from './player-directory.ts'
 import { isPlayerCharacter, SaveGame } from './save-game'
 import { getScoreHistory } from './score-history.ts'
@@ -157,6 +159,8 @@ class Engine {
   private _cutsceneMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
   private _world: World | null = null
   public readonly input = new InputManager()
+  private readonly _mobile = new MobileControls(keys => this.input.setTouchKeys(keys))
+  private _cancelPointer = () => this.input.clear()
   public readonly music = new BackgroundMusic<AudioAction>(action => this.getAudio(action, 'music'))
   private readonly _pauseReasons = new Set<string>()
   private _elapsed = 0
@@ -302,7 +306,8 @@ class Engine {
     if (wasPaused === this.paused) {
       return
     }
-    this.input.clear()
+    this._mobile.reset()
+    this._cancelPointer()
     this._skipDelta = true
     if (this.paused) {
       void this._audioListener.context.suspend()
@@ -463,13 +468,19 @@ class Engine {
     this._cutsceneComposer.add(this._cutsceneRender)
 
     this._cutsceneVideo = document.createElement('video')
+    this._cutsceneVideo.playsInline = true
+    this._cutsceneVideo.muted = true
     this._cutsceneMesh.position.z = -1
     this._cutsceneRender.scene.add(this._cutsceneMesh)
 
     this.input.onGesture = (kind, point) => {
       const normalizedX = point.x / 320 - 1
       const normalizedY = 1 - point.y / 240
-      this._world?.gesture(kind, { normalizedX, normalizedY, ndcX: normalizedX, ndcY: normalizedY })
+      const rect = this._canvas.getBoundingClientRect()
+      const bounds = letterboxBounds(rect.width, rect.height)
+      const ndcX = ((normalizedX - bounds.left) / (bounds.right - bounds.left)) * 2 - 1
+      const ndcY = ((normalizedY - bounds.bottom) / (bounds.top - bounds.bottom)) * 2 - 1
+      this._world?.gesture(kind, { normalizedX, normalizedY, ndcX, ndcY })
     }
     const point = (event: PointerEvent) => {
       const normalized = createNormalizedMouseEvent(event, this._canvas)
@@ -478,12 +489,24 @@ class Engine {
     this._renderer.xr.enabled = true
     void this._setupVrButton()
 
+    let activePointer: number | null = null
+    let lastPointerEvent: NormalizedMouseEvent | null = null
+    const cancelPointer = () => {
+      if (activePointer != null && lastPointerEvent != null) {
+        this._world?.pointerUp(lastPointerEvent)
+      }
+      activePointer = null
+      lastPointerEvent = null
+      this.input.clear()
+    }
+    this._cancelPointer = cancelPointer
+    window.addEventListener('resize', cancelPointer)
     canvas.addEventListener('pointerdown', event => {
-      canvas.focus()
-      if (this._audioListener.context.state === 'suspended') {
+      canvas.focus({ preventScroll: true })
+      if (this._audioListener.context.state !== 'running') {
         void this._audioListener.context.resume()
       }
-      if (event.button !== 0 || this.paused) {
+      if (event.button !== 0 || this.paused || activePointer != null) {
         return
       }
       event.preventDefault()
@@ -498,6 +521,8 @@ class Engine {
       if (this.input.inputDisabled || this._state !== 'game') {
         return
       }
+      activePointer = event.pointerId
+      lastPointerEvent = createNormalizedMouseEvent(event, canvas)
       canvas.setPointerCapture(event.pointerId)
       if (this.input.pointerDown(point(event), this.elapsedTimeMilliseconds)) {
         this._world?.beginPointer()
@@ -505,6 +530,11 @@ class Engine {
       }
     })
     canvas.addEventListener('pointerup', event => {
+      if (event.pointerId !== activePointer) {
+        return
+      }
+      activePointer = null
+      lastPointerEvent = null
       if (event.button !== 0 || this.paused || this.input.inputDisabled || this.input.buttonDownActsAsSpace || this._state !== 'game') {
         return
       }
@@ -512,12 +542,31 @@ class Engine {
       this.input.pointerUp()
     })
     canvas.addEventListener('pointermove', event => {
+      if (activePointer != null && event.pointerId !== activePointer) {
+        return
+      }
+      if (event.pointerType !== 'mouse' && activePointer == null) {
+        return
+      }
+      lastPointerEvent = createNormalizedMouseEvent(event, canvas)
       if (!this.paused && !this.input.inputDisabled && !this.input.buttonDownActsAsSpace && this._state === 'game') {
         this._world?.pointerMove(createNormalizedMouseEvent(event, canvas))
         this.input.pointerMove(point(event))
       }
     })
-    canvas.addEventListener('pointercancel', () => this.input.clear())
+    canvas.addEventListener('pointercancel', cancelPointer)
+    canvas.addEventListener('lostpointercapture', () => {
+      if (activePointer != null) {
+        cancelPointer()
+      }
+    })
+    canvas.addEventListener('contextmenu', event => event.preventDefault())
+    window.addEventListener('blur', cancelPointer)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        cancelPointer()
+      }
+    })
     document.addEventListener('keydown', event => {
       if (document.querySelector('dialog[open]') != null || event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement || event.target instanceof HTMLTextAreaElement) {
         return
@@ -581,6 +630,9 @@ class Engine {
     })
 
     window.addEventListener('resize', this._setRendererSize)
+    window.visualViewport?.addEventListener('resize', this._setRendererSize)
+    window.visualViewport?.addEventListener('scroll', this._setRendererSize)
+    document.addEventListener('fullscreenchange', this._setRendererSize)
     this._setRendererSize()
 
     this.playerDirectory = new PlayerDirectory(localStorage, SaveGame.delete)
@@ -644,6 +696,8 @@ class Engine {
   }
 
   public start() {
+    this._mobile.start()
+    void this._audioListener.context.resume()
     this._timer.connect(document)
     this._timer.reset()
     this._canvas.focus()
@@ -660,12 +714,15 @@ class Engine {
       audio.gain.disconnect()
     }
     this._positionalSounds.clear()
+    this._mobile.reset()
+    this._cancelPointer()
     this._world?.deactivate()
     if (this._world != null) {
       this._world.camera.remove(this._audioListener)
     }
     this._composer.resetPipeline()
     this._world = world
+    this._mobile.setWorld(world.name)
     this._setRendererSize()
     this.finishTransition()
     await this._world.activate(this._composer, param)
@@ -680,7 +737,9 @@ class Engine {
     if (!settings.keepMusic) {
       this.stopBackgroundMusic()
     }
+    this._cancelPointer()
     this._state = 'transition'
+    this._mobile.reset()
     this.input.buttonDownActsAsSpace = false
     this.input.disable()
     this._restoreCursor()
@@ -780,8 +839,11 @@ class Engine {
   }
 
   private _setRendererSize = () => {
-    let width = window.innerWidth
-    let height = window.innerHeight
+    const viewport = window.visualViewport
+    const safeInsets = this._mobile.safeInsets
+    const available = getMobileViewport(viewport?.width ?? window.innerWidth, viewport?.height ?? window.innerHeight, document.body.classList.contains('touch-game'), safeInsets.top, safeInsets.bottom, safeInsets.left, safeInsets.right)
+    let width = available.width
+    let height = available.height
     const fill = getSettings().fill && !(this._world?.fixedAspectRatio ?? false)
 
     if (!fill) {
@@ -793,8 +855,8 @@ class Engine {
       }
     }
 
-    this._canvas.style.left = `${(window.innerWidth - width) / 2}px`
-    this._canvas.style.top = `${(window.innerHeight - height) / 2}px`
+    this._canvas.style.left = `${(viewport?.offsetLeft ?? 0) + available.left + (available.width - width) / 2}px`
+    this._canvas.style.top = `${(viewport?.offsetTop ?? 0) + available.top + (available.height - height) / 2}px`
 
     const size = getRenderSize(width, height, window.devicePixelRatio, getSettings().graphics.highDpi, this._renderer.capabilities.maxTextureSize)
     this._canvas.style.width = `${width}px`

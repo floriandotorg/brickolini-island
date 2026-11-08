@@ -103,7 +103,7 @@ export const getSettings = (): Settings => {
     return snapshot
   }
   if (!['original', 'hd', 'next-gen', 'custom'].includes(localStorage.getItem('settings.graphics.preset') ?? '')) {
-    setPreset('hd')
+    setPreset(typeof matchMedia === 'function' && matchMedia('(any-pointer: coarse)').matches ? 'original' : 'hd')
   }
 
   const preset = localStorage.getItem('settings.graphics.preset')

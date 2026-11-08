@@ -43,3 +43,198 @@
 .xr-button:disabled {
   display: none;
 }
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+#game {
+  position: fixed;
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+
+#menu {
+  height: 100dvh;
+  min-height: 0;
+  gap: clamp(12px, 3dvh, 32px);
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(64px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+
+#menu img {
+  max-width: 85vw;
+  object-fit: contain;
+}
+
+#menu picture img {
+  height: clamp(60px, 20dvh, 160px);
+}
+
+#settings-dialog {
+  box-sizing: border-box;
+  width: min(500px, calc(100vw - 24px));
+  max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  margin: 0;
+  color: #000;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+#settings-dialog .dialog,
+#settings-dialog fieldset {
+  min-width: 0;
+  max-width: 100%;
+}
+
+#settings-dialog input,
+#settings-dialog select {
+  max-width: 100%;
+}
+
+#mobile-controls {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#mobile-controls [hidden] {
+  display: none;
+}
+
+#mobile-controls button {
+  pointer-events: auto;
+  touch-action: none;
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 1px solid #ffffff60;
+  border-radius: 12px;
+  background: #17202deb;
+  color: white;
+  font:
+    600 14px system-ui,
+    sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#mobile-controls button:active {
+  background: #945500;
+}
+
+.mobile-toolbar {
+  position: absolute;
+  top: max(4px, env(safe-area-inset-top));
+  left: max(8px, env(safe-area-inset-left));
+  right: max(8px, env(safe-area-inset-right));
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.mobile-stick {
+  position: absolute;
+  left: max(18px, env(safe-area-inset-left));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  width: 128px;
+  height: 128px;
+  border: 2px solid #ffffff80;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff30, #17202d99);
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.mobile-stick-thumb {
+  position: absolute;
+  inset: 38px;
+  border-radius: 50%;
+  background: #ffcc32dd;
+  border: 2px solid #fff;
+  pointer-events: none;
+}
+
+#mobile-controls .mobile-modifier {
+  position: absolute;
+  bottom: max(42px, env(safe-area-inset-bottom));
+  right: max(18px, env(safe-area-inset-right));
+  min-width: 76px;
+  min-height: 64px;
+}
+
+.mobile-keyboard {
+  position: absolute;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  left: max(4px, env(safe-area-inset-left));
+  right: max(4px, env(safe-area-inset-right));
+  text-align: center;
+}
+
+.mobile-keyboard > div {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  margin-bottom: 3px;
+}
+
+#mobile-controls .mobile-keyboard button {
+  flex: 1;
+  max-width: 44px;
+  min-width: 0;
+  padding: 4px;
+  min-height: 36px;
+}
+
+#mobile-controls .mobile-keyboard > button {
+  max-width: none;
+  min-width: 90px;
+}
+
+@media (pointer: coarse) {
+  #settings-dialog button,
+  #settings-dialog select,
+  #settings-dialog .checkbox {
+    min-height: 44px;
+  }
+
+  #settings-dialog input[type="range"] {
+    height: 36px;
+  }
+
+  #settings-dialog input[type="number"],
+  #settings-dialog select {
+    font-size: 16px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .mobile-stick {
+    width: 100px;
+    height: 100px;
+  }
+
+  .mobile-stick-thumb {
+    inset: 28px;
+  }
+
+  .mobile-keyboard {
+    left: auto;
+    width: min(380px, 55vw);
+  }
+}
+
+@media (orientation: landscape) {
+  .mobile-keyboard {
+    display: none;
+  }
+}
