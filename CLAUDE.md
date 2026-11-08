@@ -9,6 +9,7 @@ Lego Island Remastered (formerly Brickolini Island) is a web-based recreation of
 ## Development Commands
 
 ### Running the Project
+
 ```bash
 npm start        # Start development server on port 5174
 npm run build    # Build for production (TypeScript + Vite build)
@@ -16,6 +17,7 @@ npm run preview  # Preview production build
 ```
 
 ### Code Quality
+
 ```bash
 npm run check    # Type checking (tsc --noEmit)
 npm run lint     # Linting with Biome
@@ -83,15 +85,17 @@ The project requires extracted game assets in `public/org/` (original assets) an
 # Rules
 
 ## General
+
 - write code concise and without comments
 - always use brackets for if statements
 - don't insert unnecessary try/catches
-- use n as counter in for loops 
+- use n as counter in for loops
 - use prefix increment when possible (++n)
 - never use the term Lego (copyright)
 - use descriptive variable names
 
 ## TypeScript
+
 - use 2 spaces for indentation
 - avoid using `as` in TypeScript
 - prefer ?? over ||
@@ -99,4 +103,5 @@ The project requires extracted game assets in `public/org/` (original assets) an
 - avoid using any, prever using unknown or generics
 
 ## Third party
+
 - use tailwind 4 syntax

@@ -8,33 +8,34 @@ A web-based rewrite of the 1997 game Lego Island.
 
 This project aims to recreate the charm of LEGO ISLAND in your browser to make it easily accessible. It will only include minor enhancements and will try to be as close to the original as possible.
 
-*Note: This project is currently in the very early stages of development.*
+_Note: This project is currently in the very early stages of development._
 
 ## Contributing
+
 Contributions are welcome! Anyone who wishes to contribute is encouraged to join the project's [Discord](https://discord.gg/jcX3JE9Az3), where most of the communication happens.
 
 Also, please feel free to open an issue or submit a pull request.
 
 ## Features
 
-| Feature                | Status        |
-|:-----------------------|:-------------:|
-| **Read ISO**           | ✅ Done       |
-| **Read SI**            | ✅ Done       |
-| **Read WDB**           | 🟡 Mostly Done|
-| **Decode Smacker**     | ✅ Done       |
-| **Decode Flic**        | ✅ Done       |
-| **Play Cutscenes**     | ✅ Done       |
-| **Render World**       | 🟡            |
-| **Music**              | ⬜            |
-| **Pedestrians**        | ⬜            |
-| **Missions**           |               |
-| &nbsp;&nbsp;Pizza      | ⬜            |
-| &nbsp;&nbsp;Ambulance  | ⬜            |
-| &nbsp;&nbsp;Police     | ⬜            |
-| &nbsp;&nbsp;Jetski     | ⬜            |
-| &nbsp;&nbsp;Race       | ⬜            |
-| **Brickster Storyline**| ⬜            |
+| Feature                 |     Status     |
+| :---------------------- | :------------: |
+| **Read ISO**            |    ✅ Done     |
+| **Read SI**             |    ✅ Done     |
+| **Read WDB**            | 🟡 Mostly Done |
+| **Decode Smacker**      |    ✅ Done     |
+| **Decode Flic**         |    ✅ Done     |
+| **Play Cutscenes**      |    ✅ Done     |
+| **Render World**        |       🟡       |
+| **Music**               |       ⬜       |
+| **Pedestrians**         |       ⬜       |
+| **Missions**            |                |
+| &nbsp;&nbsp;Pizza       |       ⬜       |
+| &nbsp;&nbsp;Ambulance   |       ⬜       |
+| &nbsp;&nbsp;Police      |       ⬜       |
+| &nbsp;&nbsp;Jetski      |       ⬜       |
+| &nbsp;&nbsp;Race        |       ⬜       |
+| **Brickster Storyline** |       ⬜       |
 
 ⬜ = Not started &nbsp;&nbsp; 🟡 = In progress &nbsp;&nbsp; ✅ = Done
 
@@ -45,28 +46,34 @@ Also, please feel free to open an issue or submit a pull request.
 Before running this project, you need to extract the game assets from your LEGO Island ISO file:
 
 1. Clone the [lego-island-asset-ripper](https://github.com/floriandotorg/lego-island-asset-ripper) repository:
+
    ```bash
    git clone https://github.com/floriandotorg/lego-island-asset-ripper.git
    cd lego-island-asset-ripper
    ```
 
 2. Checkout the `hd` branch:
+
    ```bash
    git checkout hd
    ```
 
 3. Extract the assets from your ISO file:
+
    ```bash
    python extract.py <ISO_FILE>
    ```
+
    Replace `<ISO_FILE>` with the path to your LEGO Island ISO file. Full extract takes around 5-10 minutes.
-   
+
    Example:
+
    ```bash
    python extract.py lego_island.iso
    ```
 
 4. Copy the `extract` folder to this project's `public` directory and rename it to `org`:
+
    ```bash
    cp -r extract /path/to/brickolini/public/org
    ```
@@ -74,10 +81,12 @@ Before running this project, you need to extract the game assets from your LEGO 
 ### Running the Project
 
 1.  Install dependencies:
+
     ```bash
     npm install
     ```
 2.  Run the development server:
+
     ```bash
     npm start
     ```
