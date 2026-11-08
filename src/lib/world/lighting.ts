@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import { installContactHardening } from '../effect/pcss.ts'
-import { getSettings } from '../settings.ts'
 
 const direction = new THREE.Vector3()
 const forward = new THREE.Vector3()
@@ -10,8 +9,8 @@ const up = new THREE.Vector3()
 const worldUp = new THREE.Vector3(0, 1, 0)
 const radius = 70
 
-export const configureShadow = (light: THREE.DirectionalLight): void => {
-  if (getSettings().graphics.preset !== 'original') {
+export const configureShadow = (light: THREE.DirectionalLight, contactHardening = true): void => {
+  if (contactHardening) {
     installContactHardening()
   }
   light.castShadow = true
