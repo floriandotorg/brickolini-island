@@ -98,6 +98,8 @@ import { getImage } from '../assets/image'
 import type { ColorName } from '../assets/mesh'
 import { type Composer, Render2D } from '../effect/composer'
 import { engine, type NormalizedMouseEvent } from '../engine'
+import { InteriorRender } from '../interiors/interior-render.ts'
+import { getSettings } from '../settings.ts'
 import type { VehicleType } from '../vehicle-types.ts'
 
 export { isVehicleType, type VehicleType, VehicleTypes } from '../vehicle-types.ts'
@@ -327,6 +329,8 @@ export class Meter {
 
 export class Dashboard {
   private _render = new Render2D()
+  private readonly _interior = new InteriorRender()
+  private _generation = 0
   private _background: THREE.Sprite | null = null
   private _armsMask: Control | null = null
   private _hornControl: Control | null = null
@@ -342,7 +346,26 @@ export class Dashboard {
   public onFlightModeClick: (mode: 'taking-off' | 'landing') => void = _ => {}
   public onHornToggle: ((on: boolean) => void) | null = null
 
-  public pointerDown(event: NormalizedMouseEvent): void {
+  public pointerDown(event: NormalizedMouseEvent): boolean {
+    if (this._interior.interior.model != null) {
+      const action = this._interior.interior.pick(this._interior.camera, event.ndcX, event.ndcY)
+      if (action != null) {
+        this._interior.interior.press(action)
+        switch (action) {
+          case 'exit':
+            this.onExit()
+            break
+          case 'horn':
+            this._hornOn = !this._hornOn
+            this.onHornToggle?.(this._hornOn)
+            break
+          case 'info':
+            this.onInfoButtonClicked()
+            break
+        }
+      }
+      return action != null
+    }
     const [normalizedX, normalizedY] = this._render.contentNDC(event.ndcX, event.ndcY)
     if (this._armsMask?.pointerDown(normalizedX, normalizedY) != null) {
       this.onExit()
@@ -364,9 +387,11 @@ export class Dashboard {
     if (this._landControl?.pointerDown(normalizedX, normalizedY) != null) {
       this.onFlightModeClick('landing')
     }
+    return false
   }
 
   public pointerUp(): void {
+    this._interior.interior.release()
     if (this._hornControl != null) {
       this._hornControl.pointerUp()
     }
@@ -381,6 +406,18 @@ export class Dashboard {
 
   public async show(vehicle: Vehicle): Promise<void> {
     this.clear()
+    const generation = this._generation
+    try {
+      const shown = await this._interior.show(vehicle.type, getSettings().interiors3d)
+      if (generation !== this._generation || shown) {
+        return
+      }
+    } catch (error) {
+      if (generation !== this._generation) {
+        return
+      }
+      console.warn('Could not load the 3D interior; using the original dashboard.', error)
+    }
 
     const action = vehicleToDashboard[vehicle.type]
     if (action == null) {
@@ -465,6 +502,8 @@ export class Dashboard {
   }
 
   public clear(): void {
+    ++this._generation
+    this._interior.interior.clear()
     this._background?.removeFromParent()
     this._armsMask?.sprite.removeFromParent()
     this._hornControl?.sprite.removeFromParent()
@@ -485,12 +524,22 @@ export class Dashboard {
     this._landControl = null
   }
 
+  public dispose(): void {
+    this.clear()
+    this._interior.dispose()
+    this._render.dispose()
+  }
+
   public update(velocity: number, fuel: number): void {
     this._speedMeter?.draw(velocity)
     this._fuelMeter?.draw(fuel)
   }
 
-  public activate(composer: Composer): void {
+  public activate(composer: Composer, scene?: THREE.Scene, camera?: THREE.PerspectiveCamera): void {
+    if (scene != null && camera != null) {
+      this._interior.setWorld(scene, camera)
+    }
+    composer.add(this._interior)
     this._render.letterbox = true
     this._render.letterboxAnchor = 'bottom'
     composer.add(this._render)

@@ -424,6 +424,7 @@ export abstract class IsleBase extends World {
     this.toggleManagedAnimations(false)
     this.releaseHeldCharacters()
     this.extras.suspend()
+    this._dashboard.clear()
     super.deactivate()
   }
 
@@ -443,7 +444,7 @@ export abstract class IsleBase extends World {
   public override async activate(composer: Composer, _param?: unknown): Promise<void> {
     super.activate(composer, _param)
 
-    this._dashboard.activate(composer)
+    this._dashboard.activate(composer, this.scene, this.camera)
     this.extras.resume()
     this.ambient.restore()
     this.islandBuildings.refresh()
@@ -1029,8 +1030,10 @@ export abstract class IsleBase extends World {
   }
 
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
+    if (this._dashboard.pointerDown(event)) {
+      return
+    }
     await super.pointerDown(event)
-    this._dashboard.pointerDown(event)
   }
 
   public override pointerUp(event: NormalizedMouseEvent): void {
@@ -1068,6 +1071,7 @@ export abstract class IsleBase extends World {
   }
 
   public override dispose(): void {
+    this._dashboard.dispose()
     this._contactShadows?.dispose()
     this._shoreline?.texture.dispose()
     this._waters.clear()

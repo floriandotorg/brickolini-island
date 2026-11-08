@@ -353,3 +353,48 @@ History.gsi: `S16 next_player_id`, `S16 count`, then `count x` entry:
 5. **Minor label: plant/building `counter`** is actually `m_initialCounter` (1 signed byte, same position).
 
 Everything else (field types, offsets, counts, ordering, the Act1State plane/texture gating, the playlist nextIndex-only rule) matches the retail serialization exactly.
+
+## Confirm the bicycle dashboard controls and behavior: which bitmap/control IDs form the visible first-person overlay, which control exits, horn toggle/hold behavior, info control behavior, and whether the arms represent the current character colors. Read-only inspection only; do not modify any files.
+_2026-11-08T13:09:22+07:00_
+
+Here's what the code confirms. All references are read-only inspection of `LEGO1/lego/legoomni/`.
+
+## 1. Visible first-person overlay IDs
+
+The bike dashboard is started by `InvokeAction(..., IsleScript::c_BikeDashboard, ...)` in `Bike::HandleClick` (`src/actors/bike.cpp:67`), and torn down by `Bike::Exit` (`src/actors/bike.cpp:42-49`). The overlay is composed of these `IsleScript` IDs (`include/actions/isle_actions.h`):
+
+| ID | Value | Role |
+|---|---|---|
+| `c_BikeDashboard` | 10 | The dashboard action (starts the overlay) |
+| `c_BikeDashboard_Bitmap` | 11 | The background bitmap |
+| `c_BikeArms_Ctl` | 12 | Arms control (also the exit button, see below) |
+| `c_BikeInfo_Ctl` | 13 | Info control |
+| `c_BikeHorn_Sound` | 14 | Horn sound presenter |
+| `c_BikeHorn_Ctl` | 15 | Horn control |
+
+Plus the per-control up/down state bitmaps declared later in `isle_actions.h:272-277`:
+- `c_BikeArms_Mask_Bitmap` (260)
+- `c_BikeHornUp_Bitmap` (261), `c_BikeHornDown` (262, the action), `c_BikeHornDown_Bitmap` (263)
+- `c_BikeInfoUp_Bitmap` (264), `c_BikeInfoDown_Bitmap` (265)
+
+`Exit()` removes `c_BikeDashboard_Bitmap`, `c_BikeArms_Ctl`, `c_BikeHorn_Ctl`, `c_BikeHorn_Sound`, and `c_BikeInfo_Ctl` (`bike.cpp:44-48`).
+
+## 2. Which control exits
+
+`c_BikeArms_Ctl` is the exit control. In `Bike::HandleControl` (`bike.cpp:84-90`), clicking it calls `Exit()` and sets `GameState()->m_currentArea = LegoGameState::e_vehicleExited`. So the "arms" graphic doubles as the dismount button.
+
+## 3. Horn toggle/hold behavior
+
+`c_BikeHorn_Ctl` toggles the horn sound (`bike.cpp:97-100`): it finds the `MxSoundPresenter` named `BikeHorn_Sound` and calls `presenter->Enable(p_param.m_enabledChild)`. The whole `HandleControl` body only runs when `m_enabledChild == 1` (the pressed/down state), so the sound is switched **on** when the control enters its down state. The sound is switched **off** when the control returns to its rest state, which is handled by the control-presenter machinery itself (`MxControlPresenter::UpdateEnabledChild` / `Notify` in `src/common/mxcontrolpresenter.cpp:149-189`, coordinated by `LegoControlManager` in `src/control/legocontrolmanager.cpp`).
+
+Whether that down-state is momentary (hold-to-honk) or persistent (click-to-toggle) is governed by the control's `STYLE` extra, which is defined in the `isle.si` dashboard script (not present in this repo), so it can't be pinned down from the decompiled C++ alone. The dune buggy / tow truck / ambulance horns use the identical pattern (`dunebuggy.cpp:131-138`, `towtrack.cpp`, `ambulance.cpp`).
+
+## 4. Info control behavior
+
+`c_BikeInfo_Ctl` (`bike.cpp:91-95`) sets the destination to the Information Center: `((Isle*) CurrentWorld())->SetDestLocation(LegoGameState::e_infomain)`, starts a mosaic transition (`MxTransitionManager::e_mosaic`, 50, FALSE, FALSE), then calls `Exit()`.
+
+## 5. Do the arms represent the current character colors?
+
+No, not in the decompiled code. `Bike::HandleClick`/`HandleControl` apply no color logic to `c_BikeArms_Ctl` — there is no `GetColorOffset` call and no character/shirt color variable tied to the bike arms. The only place a dashboard variant is recolored from "current" choices is the build-station vehicles (race car / jetski dashboards selected via `DuneBuggy::GetColorOffset` on the **vehicle's** part colors `C_RCEDGEY0`/`C_RCFRNTY6`/`c_jsfrnty5`/`c_jswnshy5`, in `carrace.cpp:107` and `jetski.cpp:100`), and even there it is the vehicle build colors, not the walking character's colors. The bike has no such selection; its arms are a fixed control/bitmap that simply serves as the exit button.
+
+(For contrast, the motorcycle dashboard, `src/actors/motorcycle.cpp`, follows the same pattern: `c_MotoBikeArms_Ctl` exits to `e_vehicleExited`, `c_MotoBikeInfo_Ctl` routes to `e_infomain`, and no character-color is applied to the arms.)

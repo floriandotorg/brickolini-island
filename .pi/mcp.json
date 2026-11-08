@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "blender": {
+      "command": "uvx",
+      "args": ["--from", "https://projects.blender.org/api/v1/repos/lab/blender_mcp/archive/v1.0.3.tar.gz#subdirectory=mcp", "blender-mcp"],
+      "exposure": "codemode"
+    }
+  }
+}

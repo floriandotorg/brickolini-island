@@ -141,8 +141,8 @@ if (fillCheckbox == null || !(fillCheckbox instanceof HTMLInputElement)) {
   throw new Error('Fill checkbox not found')
 }
 
-const optionCheckboxes = ['music', 'sound3d', 'gamepad', 'pauseOnBlur'] as const
-const checkboxIds = { music: 'music-checkbox', sound3d: 'sound3d-checkbox', gamepad: 'gamepad-checkbox', pauseOnBlur: 'pause-on-blur-checkbox' }
+const optionCheckboxes = ['music', 'interiors3d', 'sound3d', 'gamepad', 'pauseOnBlur'] as const
+const checkboxIds = { music: 'music-checkbox', interiors3d: 'interiors-3d-checkbox', sound3d: 'sound3d-checkbox', gamepad: 'gamepad-checkbox', pauseOnBlur: 'pause-on-blur-checkbox' }
 const optionCheckbox = (key: (typeof optionCheckboxes)[number]): HTMLInputElement => {
   const element = document.getElementById(checkboxIds[key])
   if (!(element instanceof HTMLInputElement)) {
@@ -229,6 +229,7 @@ const updateSettingsFromCheckboxes = () => {
       cutscene: Number.parseFloat(volumeSliders.cutscene.value),
     },
     music: optionCheckbox('music').checked,
+    interiors3d: optionCheckbox('interiors3d').checked,
     sound3d: optionCheckbox('sound3d').checked,
     gamepad: optionCheckbox('gamepad').checked,
     pauseOnBlur: optionCheckbox('pauseOnBlur').checked,
