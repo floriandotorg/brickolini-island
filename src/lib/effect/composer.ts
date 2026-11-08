@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { type LetterboxAnchor, letterboxBounds, RESOLUTION_RATIO } from '../engine'
 import { getSettings } from '../settings.ts'
+import { CascadedShadows } from '../world/cascaded-shadows.ts'
 import { IrradianceGrid } from '../world/irradiance-grid.ts'
 import { updateFocusedShadow } from '../world/lighting.ts'
 import { DepthOfField } from './depth-of-field.ts'
@@ -78,6 +79,7 @@ export class Render3D extends Render {
     }
   }
   private _focusedShadows = getSettings().graphics.preset !== 'original'
+  private readonly _cascades = getSettings().graphics.shadows && getSettings().graphics.preset !== 'original' ? new CascadedShadows() : null
 
   constructor() {
     super()
@@ -105,6 +107,7 @@ export class Render3D extends Render {
   }
 
   public render(renderer: THREE.WebGLRenderer): void {
+    this._cascades?.update(this.scene, this.camera)
     if (this._irradiance != null) {
       this._irradiance.prepare(this.scene)
       if (++this._probeFrame % 8 === 0) {
@@ -119,7 +122,7 @@ export class Render3D extends Render {
       if (batching) {
         this._batches.prepare(this.scene)
       }
-      if (this._focusedShadows) {
+      if (this._focusedShadows && this._cascades == null) {
         if (batching) {
           for (const light of this._batches.directionalLights) {
             if (light.castShadow) {
@@ -148,6 +151,7 @@ export class Render3D extends Render {
 
   public override dispose(): void {
     super.dispose()
+    this._cascades?.dispose()
     this._bloom?.dispose()
     this._dof?.dispose()
     this._irradiance?.dispose()
