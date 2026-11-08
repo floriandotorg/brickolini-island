@@ -1,11 +1,11 @@
 import * as THREE from 'three'
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { type LetterboxAnchor, letterboxBounds, RESOLUTION_RATIO } from '../engine'
 import { getSettings } from '../settings.ts'
 import { CascadedShadows } from '../world/cascaded-shadows.ts'
 import { IrradianceGrid } from '../world/irradiance-grid.ts'
 import { updateFocusedShadow } from '../world/lighting.ts'
 import { ReflectionProbes } from '../world/reflection-probes.ts'
+import { createBloom } from './bloom.ts'
 import { DepthOfField } from './depth-of-field.ts'
 import type { Effect } from './effect.ts'
 import { RenderBatches } from './render-batches.ts'
@@ -75,7 +75,7 @@ export class Render3D extends Render {
   private readonly _reflections = getSettings().graphics.pbrMaterials ? new ReflectionProbes() : null
   private readonly _dof = getSettings().graphics.postProcessing ? new DepthOfField(this.camera, this._depth) : null
   private _processed: THREE.Texture | null = null
-  private readonly _bloom = getSettings().graphics.postProcessing ? new UnrealBloomPass(new THREE.Vector2(1, 1), 0.22, 0.55, 0.85) : null
+  private readonly _bloom = getSettings().graphics.postProcessing ? createBloom(this._depth) : null
 
   public set cinematic(value: boolean) {
     if (this._dof) {
