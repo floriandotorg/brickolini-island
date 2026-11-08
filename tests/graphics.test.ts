@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import * as THREE from 'three'
-import { createAmbientOcclusionSamples, createWaterNormalPixels, getRenderSize, getSurfaceProperties } from '../src/lib/graphics.ts'
+import { createAmbientOcclusionSamples, getRenderSize, getSurfaceProperties } from '../src/lib/graphics.ts'
 import { getSettings, setPreset } from '../src/lib/settings.ts'
 import { ContactShadows } from '../src/lib/world/contact-shadows.ts'
 import { configureShadow, updateFocusedShadow } from '../src/lib/world/lighting.ts'
+import { computeShoreDistances } from '../src/lib/world/shoreline.ts'
 import { createIslandWater } from '../src/lib/world/water.ts'
 
 test('render resolution respects original mode, device density, and GPU limits', () => {
@@ -25,25 +26,6 @@ test('surface tuning separates matte terrain, plastic, rubber, and glass', () =>
   assert.equal(plastic.iridescence, 0)
   assert.ok(getSurfaceProperties('windo blue').roughness < plastic.roughness)
   assert.ok(getSurfaceProperties('rubber').roughness > plastic.roughness)
-})
-
-test('procedural water normals are deterministic, normalized, and tileable', () => {
-  const size = 32
-  const pixels = createWaterNormalPixels(size)
-  assert.equal(pixels.length, size * size * 4)
-  assert.deepEqual(pixels, createWaterNormalPixels(size))
-  for (let n = 0; n < size * size; ++n) {
-    const offset = n * 4
-    const x = pixels[offset] / 127.5 - 1
-    const y = pixels[offset + 1] / 127.5 - 1
-    const z = pixels[offset + 2] / 127.5 - 1
-    assert.ok(Math.abs(Math.hypot(x, y, z) - 1) < 0.015)
-    assert.equal(pixels[offset + 3], 255)
-  }
-  for (let n = 0; n < size; ++n) {
-    assert.deepEqual(pixels.slice(n * 4, n * 4 + 4), pixels.slice(((size - 1) * size + n) * 4, ((size - 1) * size + n) * 4 + 4))
-    assert.deepEqual(pixels.slice(n * size * 4, n * size * 4 + 4), pixels.slice((n * size + size - 1) * 4, (n * size + size - 1) * 4 + 4))
-  }
 })
 
 test('shadow focus follows the view while retaining light direction and stable texel alignment', () => {
@@ -104,14 +86,15 @@ test('water aligns its reflection plane without moving the source geometry', () 
   const geometry = new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2).translate(4, 2, -3)
   const positions = geometry.getAttribute('position')
   const expected = new THREE.Vector3().fromBufferAttribute(positions, 0)
-  const water = createIslandWater(geometry)
+  const map = new THREE.DataTexture(new Uint8Array([0, 0, 255, 255]), 1, 1)
+  const water = createIslandWater(geometry, map)
   water.updateMatrixWorld(true)
   const actual = new THREE.Vector3().fromBufferAttribute(water.geometry.getAttribute('position'), 0).applyMatrix4(water.matrixWorld)
   assert.ok(actual.distanceTo(expected) < 0.0001)
   assert.ok(new THREE.Vector3(0, 0, 1).applyQuaternion(water.quaternion).distanceTo(new THREE.Vector3(0, 1, 0)) < 0.0001)
   assert.equal(geometry.getAttribute('position'), positions)
   assert.equal(water.material.fog, true)
-  assert.ok(water.material.uniforms.normalSampler.value instanceof THREE.DataTexture)
+  assert.equal(water.material.uniforms.islandWaterMap.value, map)
 })
 
 test('graphics presets preserve original and migrate existing enhanced settings', () => {
@@ -158,4 +141,35 @@ test('ambient occlusion keeps twelve deterministic samples on increasing disk ra
     assert.ok(Math.abs(radius * radius - (n + 0.5) / 12) < 0.0000001)
     previousRadius = radius
   }
+})
+
+test('shore distances measure euclidean world distance to the nearest land texel', () => {
+  const width = 9
+  const height = 9
+  const land = new Uint8Array(width * height)
+  land[4 * width + 4] = 1
+  const distances = computeShoreDistances(land, width, height, 0.5, 4)
+  const at = (x: number, y: number) => distances[y * width + x]
+  assert.equal(at(4, 4), 0)
+  assert.ok(Math.abs(at(5, 4) - 0.5) < 0.02)
+  assert.ok(Math.abs(at(4, 1) - 1.5) < 0.02)
+  assert.ok(Math.abs(at(7, 8) - 2.5) < 0.02)
+  assert.ok(Math.abs(at(0, 0) - Math.sqrt(32) * 0.5) < 0.02)
+})
+
+test('shore distances saturate when there is no land', () => {
+  const distances = computeShoreDistances(new Uint8Array(16), 4, 4, 1, 3)
+  assert.ok(distances.every(value => value === 3))
+})
+
+test('shore distances treat every land texel as the shoreline source', () => {
+  const width = 6
+  const land = new Uint8Array(width * 2)
+  land[0] = 1
+  land[width + 5] = 1
+  const distances = computeShoreDistances(land, width, 2, 1, 10)
+  assert.equal(distances[0], 0)
+  assert.equal(distances[width + 5], 0)
+  assert.equal(distances[2], 2)
+  assert.equal(distances[width + 3], 2)
 })

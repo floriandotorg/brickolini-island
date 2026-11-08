@@ -52,6 +52,7 @@ import { IslandBuildings } from '../lib/world/island-buildings'
 import { configureShadow } from '../lib/world/lighting.ts'
 import { Plants } from '../lib/world/plants'
 import type { PlayerMovement } from '../lib/world/player-movement'
+import { bakeShoreline, type Shoreline } from '../lib/world/shoreline.ts'
 import { World, type WorldName } from '../lib/world/world'
 
 export type IsleParam = {
@@ -117,6 +118,7 @@ export abstract class IsleBase extends World {
   protected _ambientLight: THREE.AmbientLight | null = null
   private readonly _waters = new Set<Water>()
   private _contactShadows: ContactShadows | null = null
+  private _shoreline: Shoreline | null = null
   private _temporarySkyColor: { h: number; s: number; l: number } | null = null
   protected _isleMesh: THREE.Object3D | null = null
   protected _bikeRoi: Roi3D | null = null
@@ -324,8 +326,13 @@ export abstract class IsleBase extends World {
       const sky = new Sky()
       sky.scale.setScalar(10000)
       this.scene.add(sky)
-      sky.material.uniforms.turbidity.value = 10
-      sky.material.uniforms.rayleigh.value = 2
+      const skyOutput = 'gl_FragColor = vec4( texColor, 1.0 );'
+      if (!sky.material.fragmentShader.includes(skyOutput)) {
+        throw new Error('Unsupported sky shader')
+      }
+      sky.material.fragmentShader = sky.material.fragmentShader.replace(skyOutput, 'gl_FragColor = vec4( min( texColor * 0.3, vec3( 24.0 ) ), 1.0 );')
+      sky.material.uniforms.turbidity.value = 3
+      sky.material.uniforms.rayleigh.value = 1.5
       sky.material.uniforms.mieCoefficient.value = 0.005
       sky.material.uniforms.mieDirectionalG.value = 0.8
 
@@ -377,6 +384,17 @@ export abstract class IsleBase extends World {
         continue
       }
       this._groundGroup.push(object)
+    }
+    if (this._waters.size > 0) {
+      const level = Math.max(...[...this._waters].map(water => new THREE.Box3().setFromObject(water).max.y))
+      const terrain = this._groundGroup.filter(object => object.name.startsWith('isle'))
+      this._shoreline = bakeShoreline(engine.renderer, this.scene, level, terrain)
+      for (const water of this._waters) {
+        if (this._shoreline != null) {
+          water.material.uniforms.islandShore.value = this._shoreline.texture
+          water.material.uniforms.islandShoreBounds.value = this._shoreline.bounds
+        }
+      }
     }
     if (settings.graphics.pbrMaterials) {
       await manager.whenIdle()
@@ -531,7 +549,7 @@ export abstract class IsleBase extends World {
         const cold = new THREE.Color(0xfffefa) // ≈ 6500 K
         const color = warm.clone().lerp(cold, Math.sin(Math.PI * dayTime)) // warm → cold → warm
 
-        this.scene.environmentIntensity = 0.15 * intensity
+        this.scene.environmentIntensity = 0.45 * intensity
 
         if (this._ambientLight != null) {
           this._ambientLight.intensity = 0.4
@@ -544,7 +562,7 @@ export abstract class IsleBase extends World {
 
         this._sun.sunLight.target.position.set(0, 0, 0)
         this._sun.sunLight.position.copy(lightDir).multiplyScalar(100)
-        this._sun.sunLight.intensity = intensity
+        this._sun.sunLight.intensity = intensity * (getSettings().graphics.pbrMaterials ? 2.5 : 1)
         this._sun.sunLight.color.copy(color)
 
         if (this.scene.fog != null && this._temporarySkyColor == null) {
@@ -554,7 +572,7 @@ export abstract class IsleBase extends World {
             .multiplyScalar(0.6 + intensity * 0.4)
         }
         for (const water of this._waters) {
-          water.material.uniforms.sunColor.value.copy(color)
+          water.material.uniforms.sunColor.value.copy(color).multiplyScalar(intensity)
           water.material.uniforms.sunDirection.value.copy(sunDir)
         }
         break
@@ -1051,6 +1069,7 @@ export abstract class IsleBase extends World {
 
   public override dispose(): void {
     this._contactShadows?.dispose()
+    this._shoreline?.texture.dispose()
     this._waters.clear()
     super.dispose()
   }

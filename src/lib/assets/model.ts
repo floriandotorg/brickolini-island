@@ -395,8 +395,9 @@ const roiToMesh = async (roi: WDB.Roi, parts: WDB.Part[], animation: WDB.Animati
     const meshes: THREE.Mesh[] = []
     let n = 0
     for (const [geometry, material] of createGeometryAndMaterials(lod, customColor, null, 'model')) {
-      if (getSettings().graphics.realisticWater && material.name.toLowerCase() === 'ocean flat') {
-        const mesh = createIslandWater(geometry)
+      const waterMap = 'map' in material && material.map instanceof THREE.Texture ? material.map : null
+      if (getSettings().graphics.realisticWater && material.name.toLowerCase() === 'ocean flat' && waterMap != null) {
+        const mesh = createIslandWater(geometry, waterMap)
         geometry.dispose()
         material.dispose()
         mesh.name = `${roiModel.name}-${++n}`.toLowerCase()

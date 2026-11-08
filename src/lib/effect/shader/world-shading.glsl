@@ -19,16 +19,22 @@ vec3 viewPosition(vec2 sampleUv, float depth) {
   return vec3(plane, -1.0) * reciprocalW;
 }
 
+float pixelNoise(vec2 offset) {
+  return fract(52.9829189 * fract(dot(gl_FragCoord.xy + offset, vec2(0.06711056, 0.00583715))));
+}
+
 float ambientVisibility(vec3 position, vec3 normal) {
   if (dot(normal, -position) < 0.0) {
     normal = -normal;
   }
-  float radius = 2.0;
-  float projectedRadius = min(radius * uProjection[1][1] * 0.5 / max(-position.z, 0.1), 0.12);
+  float radius = 1.2;
+  float projectedRadius = min(radius * uProjection[1][1] * 0.5 / max(-position.z, 0.1), 0.05);
+  float sliceJitter = pixelNoise(vec2(0.0));
+  float stepJitter = pixelNoise(vec2(5.588238, 3.140592));
   vec3 view = normalize(-position);
   float visibility = 0.0;
   for (int n = 0; n < 4; ++n) {
-    float angle = (float(n) + 0.5) * 3.14159265 / 4.0;
+    float angle = (float(n) + sliceJitter) * 3.14159265 / 4.0;
     vec2 axis = vec2(cos(angle), sin(angle));
     vec3 sliceDirection = vec3(axis, 0.0);
     vec3 sliceNormal = normalize(cross(sliceDirection, view));
@@ -40,7 +46,7 @@ float ambientVisibility(vec3 position, vec3 normal) {
     for (int side = 0; side < 2; ++side) {
       float direction = side == 0 ? -1.0 : 1.0;
       for (int step = 1; step <= 6; ++step) {
-        float fraction = float(step) / 6.0;
+        float fraction = (float(step) - stepJitter) / 6.0;
         vec2 sampleUv = uv + axis * vec2(texSize.y / texSize.x, 1.0) * direction * projectedRadius * fraction * fraction;
         if (any(lessThan(sampleUv, vec2(0.0))) || any(greaterThan(sampleUv, vec2(1.0)))) {
           continue;
@@ -94,8 +100,9 @@ float sunContactVisibility(vec3 position, vec3 normal) {
     return 1.0;
   }
   float visibility = 1.0;
+  float stepJitter = pixelNoise(vec2(11.0, 7.0));
   for (int n = 1; n <= 12; ++n) {
-    float distance = float(n) * 0.045;
+    float distance = (float(n) - stepJitter) * 0.045;
     vec3 samplePosition = position + normal * 0.025 + uContactDirection * distance;
     vec4 clip = uProjection * vec4(samplePosition, 1.0);
     vec2 sampleUv = clip.xy / clip.w * 0.5 + 0.5;
@@ -118,7 +125,7 @@ void mainImage(const in vec4 inputColor, out vec4 outputColor) {
   vec3 position = viewPosition(uv, depth);
   vec3 normal = surfaceNormal(uv);
   if (uAmbientOcclusion && depth < 0.999999 && inputColor.a > 0.0) {
-    outputColor.rgb *= ambientVisibility(position, normal);
+    outputColor.rgb *= mix(1.0, ambientVisibility(position, normal), 0.5);
   }
   if (uContactShadows && depth < 0.999999) {
     outputColor.rgb *= sunContactVisibility(position, normal);

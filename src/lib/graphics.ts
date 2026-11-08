@@ -21,22 +21,6 @@ export const getSurfaceProperties = (name: string) => {
   }
 }
 
-export const createWaterNormalPixels = (size: number): Uint8Array => {
-  const pixels = new Uint8Array(size * size * 4)
-  for (let n = 0; n < size * size; ++n) {
-    const x = ((n % size) / (size - 1)) * Math.PI * 2
-    const y = (Math.floor(n / size) / (size - 1)) * Math.PI * 2
-    const dx = 0.22 * Math.cos(x + 2 * y) + 0.1 * Math.cos(3 * x - y)
-    const dy = 0.44 * Math.cos(x + 2 * y) - 0.033 * Math.cos(3 * x - y)
-    const length = Math.hypot(dx, dy, 1)
-    pixels[n * 4] = Math.round((dx / length + 1) * 127.5)
-    pixels[n * 4 + 1] = Math.round((dy / length + 1) * 127.5)
-    pixels[n * 4 + 2] = Math.round((1 / length + 1) * 127.5)
-    pixels[n * 4 + 3] = 255
-  }
-  return pixels
-}
-
 export const createAmbientOcclusionSamples = (): Float32Array => {
   const samples = new Float32Array(36)
   for (let n = 0; n < 12; ++n) {
