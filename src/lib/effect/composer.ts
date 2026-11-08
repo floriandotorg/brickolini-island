@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { type LetterboxAnchor, letterboxBounds, RESOLUTION_RATIO } from '../engine'
 import { getSettings } from '../settings.ts'
 import { IrradianceGrid } from '../world/irradiance-grid.ts'
@@ -69,6 +70,7 @@ export class Render3D extends Render {
   private _probeFrame = 0
   private readonly _dof = getSettings().graphics.postProcessing ? new DepthOfField(this.camera, this._depth) : null
   private _processed: THREE.Texture | null = null
+  private readonly _bloom = getSettings().graphics.postProcessing ? new UnrealBloomPass(new THREE.Vector2(1, 1), 0.22, 0.55, 0.85) : null
 
   public set cinematic(value: boolean) {
     if (this._dof) {
@@ -97,6 +99,7 @@ export class Render3D extends Render {
   public resize(width: number, height: number): void {
     this._renderTarget.setSize(width, height)
     this._dof?.resize(width, height)
+    this._bloom?.setSize(width, height)
     this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
   }
@@ -132,6 +135,7 @@ export class Render3D extends Render {
         }
       }
       renderer.render(this.scene, this.camera)
+      this._bloom?.render(renderer, this._renderTarget, this._renderTarget, 0, false)
       this._processed = this._dof?.render(renderer, this._renderTarget.texture, this.camera) ?? null
       if (this.material.uniforms.tDiffuse) {
         this.material.uniforms.tDiffuse.value = this.texture
@@ -144,6 +148,7 @@ export class Render3D extends Render {
 
   public override dispose(): void {
     super.dispose()
+    this._bloom?.dispose()
     this._dof?.dispose()
     this._irradiance?.dispose()
     this._batches.dispose()
