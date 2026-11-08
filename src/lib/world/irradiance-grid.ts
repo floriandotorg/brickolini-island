@@ -60,6 +60,8 @@ export class IrradianceGrid {
   private _busy = false
   private _disposed = false
   private _pending = new Float32Array(this._pixels.length)
+  private readonly _desired = new Float32Array(this._pixels.length)
+  private _hasLighting = false
 
   public constructor() {
     this._texture.type = THREE.FloatType
@@ -121,6 +123,12 @@ export class IrradianceGrid {
     if (this._busy || this._disposed || this._bounds.isEmpty()) {
       return
     }
+    if (this._hasLighting) {
+      for (let n = 0; n < this._pixels.length; ++n) {
+        this._pixels[n] += (this._desired[n] - this._pixels[n]) * 0.15
+      }
+      this._texture.needsUpdate = true
+    }
     if (sun !== this._sun) {
       this._sun = sun
       this._index = 0
@@ -128,7 +136,8 @@ export class IrradianceGrid {
       this._pending.fill(0)
       const cached = this._cache.get(sun)
       if (cached) {
-        this._pixels.set(cached)
+        this._desired.set(cached)
+        this._hasLighting = true
         this._texture.needsUpdate = true
         this._ready.value = 1
         this._bounce = 2
@@ -154,22 +163,29 @@ export class IrradianceGrid {
           for (let n = 0; n < 9; ++n) {
             probe.sh.coefficients[n].toArray(this._pending, (n * count + index) * 4)
           }
+          const surfaces: THREE.Mesh[] = []
+          scene.traverse(object => {
+            if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshStandardMaterial) {
+              surfaces.push(object)
+            }
+          })
           for (let n = 0; n < 6; ++n) {
             const axis = new THREE.Vector3().setComponent(n % 3, n < 3 ? 1 : -1)
             this._ray.set(this._camera.position, axis)
             this._ray.far = 600
-            const hit = this._ray.intersectObjects(scene.children, true).find(hit => hit.object instanceof THREE.Mesh && hit.object.material instanceof THREE.MeshStandardMaterial)
+            const hit = this._ray.intersectObjects(surfaces, false).find(hit => hit.object instanceof THREE.Mesh && hit.object.material instanceof THREE.MeshStandardMaterial)
             this._pending[((9 + Math.floor(n / 3)) * count + index) * 4 + (n % 3)] = hit?.distance ?? 600
           }
           ++this._index
           if (this._index === count) {
-            this._pixels.set(this._pending)
+            this._desired.set(this._pending)
+            this._hasLighting = true
             this._texture.needsUpdate = true
             this._ready.value = 1
             this._index = 0
             ++this._bounce
             if (this._bounce === 2) {
-              this._cache.set(sun, this._pixels.slice())
+              this._cache.set(sun, this._desired.slice())
             }
           }
         })

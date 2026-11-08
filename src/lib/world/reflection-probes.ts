@@ -25,10 +25,16 @@ export class ReflectionProbes {
       probe.min.copy(position).sub(new THREE.Vector3(24, 8, 24))
       probe.max.copy(position).add(new THREE.Vector3(24, 8, 24))
       const ray = new THREE.Raycaster()
+      const surfaces: THREE.Mesh[] = []
+      scene.traverse(object => {
+        if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshStandardMaterial) {
+          surfaces.push(object)
+        }
+      })
       for (let n = 0; n < 6; ++n) {
         ray.set(position, new THREE.Vector3().setComponent(n % 3, n < 3 ? 1 : -1))
         ray.far = n % 3 === 1 ? 8 : 24
-        const hit = ray.intersectObjects(scene.children, true).find(hit => hit.object instanceof THREE.Mesh && hit.object.material instanceof THREE.MeshStandardMaterial)
+        const hit = ray.intersectObjects(surfaces, false).find(hit => hit.object instanceof THREE.Mesh && hit.object.material instanceof THREE.MeshStandardMaterial)
         if (hit) {
           const bound = n < 3 ? probe.max : probe.min
           bound.setComponent(n % 3, hit.point.getComponent(n % 3))
