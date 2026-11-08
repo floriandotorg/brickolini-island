@@ -56,12 +56,17 @@ export class PlayerMovement {
     land: { position: THREE.Vector3; quaternion: THREE.Quaternion }
   } | null = null
 
-  constructor(
-    private readonly _camera: THREE.PerspectiveCamera,
-    private readonly _groundGroup: THREE.Object3D[],
-    private readonly _getBoundaryWalls: () => THREE.Object3D,
-    private readonly _getIsleMesh: () => THREE.Object3D | null,
-  ) {}
+  private readonly _camera: THREE.PerspectiveCamera
+  private readonly _groundGroup: THREE.Object3D[]
+  private readonly _getBoundaryWalls: () => THREE.Object3D
+  private readonly _getIsleMesh: () => THREE.Object3D | null
+
+  constructor(camera: THREE.PerspectiveCamera, groundGroup: THREE.Object3D[], getBoundaryWalls: () => THREE.Object3D, getIsleMesh: () => THREE.Object3D | null) {
+    this._camera = camera
+    this._groundGroup = groundGroup
+    this._getBoundaryWalls = getBoundaryWalls
+    this._getIsleMesh = getIsleMesh
+  }
 
   get slewMode(): boolean {
     return this._slewMode
@@ -140,16 +145,11 @@ export class PlayerMovement {
     return null
   }
 
-  private _calculateNewVel(targetVel: number, currentVel: number, accel: number, delta: number): number {
-    let newVel = currentVel
-    const velDiff = targetVel - currentVel
-    if (Math.abs(velDiff) > EPSILON) {
-      const vSign = velDiff > 0 ? 1 : -1
-      const deltaVel = accel * delta
-      newVel = currentVel + deltaVel * vSign
-      newVel = vSign > 0 ? Math.min(newVel, targetVel) : Math.max(newVel, targetVel)
+  private _calculateNewVel = (targetVel: number, currentVel: number, accel: number, delta: number): number => {
+    if (Math.abs(targetVel - currentVel) <= EPSILON) {
+      return targetVel
     }
-    return newVel
+    return targetVel > currentVel ? Math.min(targetVel, currentVel + accel * delta) : Math.max(targetVel, currentVel - accel * delta)
   }
 
   private _collideAndSlide(startPos: THREE.Vector3, moveVec: THREE.Vector3): THREE.Vector3 {
@@ -301,8 +301,10 @@ export class PlayerMovement {
     const mouseWasd = engine.input.mouseWasd && !engine.isPresenting
     this._mouseLook.begin(this._camera, engine.input.consumeMouseLook(), mouseWasd)
     this._camera.rotateY(-this._lookYaw)
-    if (mouseWasd) {
+    if (mouseWasd || !engine.input.dragging) {
       this.navigation.setTargets(320, 240, false)
+    }
+    if (mouseWasd) {
       this._lookYaw = 0
     }
     const speedMultiplier = this._slewMode ? 4 : 1

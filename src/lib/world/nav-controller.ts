@@ -6,7 +6,7 @@ const targetVelocity = (position: number, center: number, maximum: number, deadZ
 }
 const newVelocity = (target: number, current: number, acceleration: number, delta: number): number => {
   if (Math.abs(target - current) <= 0.001) {
-    return current
+    return target
   }
   return target > current ? Math.min(target, current + acceleration * delta) : Math.max(target, current - acceleration * delta)
 }
