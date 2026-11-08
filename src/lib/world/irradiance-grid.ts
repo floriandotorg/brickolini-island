@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { LightProbeGenerator } from 'three/addons/lights/LightProbeGenerator.js'
+import { captureProbe } from './probe-capture.ts'
 
 const size = new THREE.Vector3(9, 4, 9)
 const count = size.x * size.y * size.z
@@ -154,7 +155,7 @@ export class IrradianceGrid {
     this._busy = true
     renderer.xr.enabled = false
     try {
-      this._camera.update(renderer, scene)
+      captureProbe(renderer, scene, this._camera)
       void LightProbeGenerator.fromCubeRenderTarget(renderer, this._cube)
         .then(probe => {
           if (this._disposed || this._sun !== sun) {

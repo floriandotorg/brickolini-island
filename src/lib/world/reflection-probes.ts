@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { captureProbe } from './probe-capture.ts'
 
 const makeProbe = () => ({
   target: new THREE.WebGLCubeRenderTarget(128, { type: THREE.HalfFloatType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter }),
@@ -50,7 +51,7 @@ export class ReflectionProbes {
       try {
         const capture = new THREE.CubeCamera(0.1, 600, probe.target)
         capture.position.copy(position)
-        capture.update(renderer, scene)
+        captureProbe(renderer, scene, capture)
       } finally {
         for (let n = 0; n < 2; ++n) {
           this._probes[n].ready.value = ready[n]

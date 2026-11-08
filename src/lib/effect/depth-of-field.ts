@@ -7,6 +7,8 @@ export class DepthOfField {
   private readonly _material: THREE.ShaderMaterial
   private readonly _quad: FullScreenQuad
   private _focus = 18
+  private _focusTarget = 18
+  private _frame = 0
 
   public constructor(camera: THREE.PerspectiveCamera, depth: THREE.DepthTexture) {
     this._material = new THREE.ShaderMaterial({
@@ -55,10 +57,20 @@ export class DepthOfField {
   }
 
   public render(renderer: THREE.WebGLRenderer, source: THREE.Texture, camera: THREE.PerspectiveCamera): THREE.Texture {
-    const ray = new THREE.Raycaster()
-    ray.setFromCamera(new THREE.Vector2(), camera)
-    const hit = camera.parent == null ? undefined : ray.intersectObjects(camera.parent.children, true).find(hit => hit.object instanceof THREE.Mesh && hit.distance > 1 && hit.distance < 100)
-    this._focus = THREE.MathUtils.lerp(this._focus, hit?.distance ?? 18, 0.04)
+    if (++this._frame % 30 === 1) {
+      const ray = new THREE.Raycaster()
+      ray.setFromCamera(new THREE.Vector2(), camera)
+      const surfaces: THREE.Mesh[] = []
+      camera.parent?.traverse(object => {
+        if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshStandardMaterial && object.visible) {
+          surfaces.push(object)
+        }
+      })
+      ray.near = 1
+      ray.far = 100
+      this._focusTarget = ray.intersectObjects(surfaces, false)[0]?.distance ?? 18
+    }
+    this._focus = THREE.MathUtils.lerp(this._focus, this._focusTarget, 0.04)
     this._material.uniforms.focus.value = this._focus
     this._material.uniforms.strength.value = this.cinematic ? 7 : 1.1
     this._material.uniforms.source.value = source
