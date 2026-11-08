@@ -5,6 +5,7 @@ import { getSettings } from '../settings.ts'
 import { CascadedShadows } from '../world/cascaded-shadows.ts'
 import { IrradianceGrid } from '../world/irradiance-grid.ts'
 import { updateFocusedShadow } from '../world/lighting.ts'
+import { ReflectionProbes } from '../world/reflection-probes.ts'
 import { DepthOfField } from './depth-of-field.ts'
 import type { Effect } from './effect.ts'
 import { RenderBatches } from './render-batches.ts'
@@ -69,6 +70,7 @@ export class Render3D extends Render {
   private readonly _batches = new RenderBatches()
   private readonly _irradiance = getSettings().graphics.pbrMaterials ? new IrradianceGrid() : null
   private _probeFrame = 0
+  private readonly _reflections = getSettings().graphics.pbrMaterials ? new ReflectionProbes() : null
   private readonly _dof = getSettings().graphics.postProcessing ? new DepthOfField(this.camera, this._depth) : null
   private _processed: THREE.Texture | null = null
   private readonly _bloom = getSettings().graphics.postProcessing ? new UnrealBloomPass(new THREE.Vector2(1, 1), 0.22, 0.55, 0.85) : null
@@ -108,6 +110,7 @@ export class Render3D extends Render {
 
   public render(renderer: THREE.WebGLRenderer): void {
     this._cascades?.update(this.scene, this.camera)
+    this._reflections?.update(renderer, this.scene, this.camera)
     if (this._irradiance != null) {
       this._irradiance.prepare(this.scene)
       if (++this._probeFrame % 8 === 0) {
@@ -159,6 +162,7 @@ export class Render3D extends Render {
     this._cascades?.dispose()
     this._bloom?.dispose()
     this._dof?.dispose()
+    this._reflections?.dispose()
     this._irradiance?.dispose()
     this._batches.dispose()
     this._renderTarget.dispose()
