@@ -6,6 +6,8 @@ uniform mat4 uProjection;
 uniform bool uAmbientOcclusion;
 uniform bool uFilmic;
 uniform bool uPlasticEdges;
+uniform vec3 uContactDirection;
+uniform bool uContactShadows;
 
 vec3 viewPosition(vec2 sampleUv, float depth) {
   float reciprocalW = 1.0 / (uProjectionInverse[2][3] * (depth * 2.0 - 1.0) + uProjectionInverse[3][3]);
@@ -83,6 +85,29 @@ float plasticBevel(vec3 position, vec3 normal) {
   return edge * 0.16;
 }
 
+float sunContactVisibility(vec3 position, vec3 normal) {
+  if (dot(normal, uContactDirection) <= 0.0) {
+    return 1.0;
+  }
+  float visibility = 1.0;
+  for (int n = 1; n <= 12; ++n) {
+    float distance = float(n) * 0.045;
+    vec3 samplePosition = position + normal * 0.025 + uContactDirection * distance;
+    vec4 clip = uProjection * vec4(samplePosition, 1.0);
+    vec2 sampleUv = clip.xy / clip.w * 0.5 + 0.5;
+    if (clip.w <= 0.0 || any(lessThan(sampleUv, vec2(0.0))) || any(greaterThan(sampleUv, vec2(1.0)))) {
+      break;
+    }
+    float depth = texture(tWorldDepth, sampleUv).r;
+    float separation = viewPosition(sampleUv, depth).z - samplePosition.z;
+    if (depth < 0.999999 && separation > 0.015 && separation < 0.16) {
+      float border = smoothstep(0.0, 0.04, min(min(sampleUv.x, sampleUv.y), min(1.0 - sampleUv.x, 1.0 - sampleUv.y)));
+      visibility = min(visibility, 1.0 - 0.45 * border * (1.0 - distance / 0.6));
+    }
+  }
+  return visibility;
+}
+
 void mainImage(const in vec4 inputColor, out vec4 outputColor) {
   outputColor = inputColor;
   float depth = texture(tWorldDepth, uv).r;
@@ -90,6 +115,9 @@ void mainImage(const in vec4 inputColor, out vec4 outputColor) {
   vec3 normal = surfaceNormal(uv);
   if (uAmbientOcclusion && depth < 0.999999 && inputColor.a > 0.0) {
     outputColor.rgb *= ambientVisibility(position, normal);
+  }
+  if (uContactShadows && depth < 0.999999) {
+    outputColor.rgb *= sunContactVisibility(position, normal);
   }
   if (uPlasticEdges && depth < 0.999999) {
     outputColor.rgb += plasticBevel(position, normal) * sqrt(max(inputColor.rgb, vec3(0.0)));

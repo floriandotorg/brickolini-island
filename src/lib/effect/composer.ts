@@ -138,6 +138,11 @@ export class Render3D extends Render {
         }
       }
       renderer.render(this.scene, this.camera)
+      for (const effect of this.effects) {
+        if (effect instanceof WorldShadingEffect) {
+          effect.updateSun(this.scene)
+        }
+      }
       this._bloom?.render(renderer, this._renderTarget, this._renderTarget, 0, false)
       this._processed = this._dof?.render(renderer, this._renderTarget.texture, this.camera) ?? null
       if (this.material.uniforms.tDiffuse) {
