@@ -141,8 +141,8 @@ if (fillCheckbox == null || !(fillCheckbox instanceof HTMLInputElement)) {
   throw new Error('Fill checkbox not found')
 }
 
-const optionCheckboxes = ['music', 'interiors3d', 'sound3d', 'gamepad', 'pauseOnBlur'] as const
-const checkboxIds = { music: 'music-checkbox', interiors3d: 'interiors-3d-checkbox', sound3d: 'sound3d-checkbox', gamepad: 'gamepad-checkbox', pauseOnBlur: 'pause-on-blur-checkbox' }
+const optionCheckboxes = ['music', 'interiors3d', 'sound3d', 'gamepad', 'mouseWasd', 'pauseOnBlur'] as const
+const checkboxIds = { music: 'music-checkbox', interiors3d: 'interiors-3d-checkbox', sound3d: 'sound3d-checkbox', gamepad: 'gamepad-checkbox', mouseWasd: 'mouse-wasd-checkbox', pauseOnBlur: 'pause-on-blur-checkbox' }
 const optionCheckbox = (key: (typeof optionCheckboxes)[number]): HTMLInputElement => {
   const element = document.getElementById(checkboxIds[key])
   if (!(element instanceof HTMLInputElement)) {
@@ -236,6 +236,7 @@ const updateSettingsFromCheckboxes = () => {
     interiors3d: optionCheckbox('interiors3d').checked,
     sound3d: optionCheckbox('sound3d').checked,
     gamepad: optionCheckbox('gamepad').checked,
+    mouseWasd: optionCheckbox('mouseWasd').checked,
     pauseOnBlur: optionCheckbox('pauseOnBlur').checked,
     gamepadIndex: Number.isInteger(gamepadIndex.valueAsNumber) ? gamepadIndex.valueAsNumber : -1,
     islandQuality: islandQuality.value === 'low' ? 'low' : islandQuality.value === 'medium' ? 'medium' : 'high',

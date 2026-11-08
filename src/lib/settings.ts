@@ -23,6 +23,7 @@ export interface Settings {
   interiors3d: boolean
   sound3d: boolean
   gamepad: boolean
+  mouseWasd: boolean
   gamepadIndex: number
   pauseOnBlur: boolean
   islandQuality: 'low' | 'medium' | 'high'
@@ -47,7 +48,7 @@ export const withSettingsSnapshot = <T>(callback: () => T): T => {
 
 export const setSettings = (settings: Partial<Settings>) => {
   snapshot = null
-  for (const key of ['music', 'interiors3d', 'sound3d', 'gamepad', 'gamepadIndex', 'pauseOnBlur', 'islandQuality'] as const) {
+  for (const key of ['music', 'interiors3d', 'sound3d', 'gamepad', 'mouseWasd', 'gamepadIndex', 'pauseOnBlur', 'islandQuality'] as const) {
     if (settings[key] != null) {
       localStorage.setItem(`settings.${key}`, String(settings[key]))
     }
@@ -146,6 +147,7 @@ export const getSettings = (): Settings => {
     interiors3d: localStorage.getItem('settings.interiors3d') === 'true',
     sound3d: localStorage.getItem('settings.sound3d') !== 'false',
     gamepad: localStorage.getItem('settings.gamepad') === 'true',
+    mouseWasd: localStorage.getItem('settings.mouseWasd') === 'true',
     gamepadIndex: Number.parseInt(localStorage.getItem('settings.gamepadIndex') ?? '-1', 10),
     pauseOnBlur: localStorage.getItem('settings.pauseOnBlur') !== 'false',
     islandQuality: localStorage.getItem('settings.islandQuality') === 'low' ? 'low' : localStorage.getItem('settings.islandQuality') === 'medium' ? 'medium' : 'high',

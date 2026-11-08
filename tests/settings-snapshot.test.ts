@@ -28,6 +28,12 @@ test('frame settings share one read and refresh after writes or the next frame',
       })
       assert.equal(getSettings().music, false)
     })
+    assert.equal(getSettings().mouseWasd, false)
+    setSettings({ mouseWasd: true })
+    assert.equal(storage.get('settings.mouseWasd'), 'true')
+    assert.equal(getSettings().mouseWasd, true)
+    setSettings({ mouseWasd: false })
+    assert.equal(getSettings().mouseWasd, false)
     storage.set('settings.music', 'true')
     withSettingsSnapshot(() => assert.equal(getSettings().music, true))
     assert.throws(

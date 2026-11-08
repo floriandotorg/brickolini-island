@@ -55,6 +55,11 @@ export class Act3Dashboard {
     composer.add(this._render)
     this._controls.pointerUp()
   }
+  public test(event: NormalizedMouseEvent): boolean {
+    const [x, y] = this._render.contentNDC(event.ndcX, event.ndcY)
+    return this._controls.test(x, y)
+  }
+
   public pointerDown(event: NormalizedMouseEvent): boolean {
     const [x, y] = this._render.contentNDC(event.ndcX, event.ndcY)
     return this._controls.pointerDown(x, y)

@@ -25,6 +25,18 @@
   overflow-y: auto;
 }
 
+.mouse-look::after {
+  content: "+";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font: 20px monospace;
+  text-shadow: 0 0 2px black;
+  pointer-events: none;
+}
+
 .xr-button {
   position: fixed;
   bottom: 1rem;

@@ -215,6 +215,10 @@ export class Act3 extends IsleBase {
     this.stopAnimationsInRange('act3', 500, 999)
     return true
   }
+  public override canCaptureMouse(event: NormalizedMouseEvent): boolean {
+    return super.canCaptureMouse(event) && !this._act3Dashboard.test(event)
+  }
+
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
     if (this._phase !== 'flying') {
       return
@@ -327,6 +331,10 @@ export class Act3 extends IsleBase {
     this._ending = { good, start: this._time, from: this.camera.position.clone(), to, fromRotation: this.camera.quaternion.clone(), toRotation: new THREE.Quaternion().setFromRotationMatrix(matrix) }
     helicopterState.status = good ? 4 : 5
   }
+  public override get canMouseLook(): boolean {
+    return super.canMouseLook && this._enabled && this._phase === 'flying'
+  }
+
   public override update(delta: number): void {
     super.update(delta)
     if (!this._enabled) {

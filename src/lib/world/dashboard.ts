@@ -346,6 +346,14 @@ export class Dashboard {
   public onFlightModeClick: (mode: 'taking-off' | 'landing') => void = _ => {}
   public onHornToggle: ((on: boolean) => void) | null = null
 
+  public test(event: NormalizedMouseEvent): boolean {
+    if (this._interior.interior.model != null) {
+      return this._interior.interior.pick(this._interior.camera, event.ndcX, event.ndcY) != null
+    }
+    const [x, y] = this._render.contentNDC(event.ndcX, event.ndcY)
+    return this._render.scene.visible && [this._armsMask, this._hornControl, this._infoControl, this._takeOffControl, this._landControl].some(control => control?.visible && control.test(x, y))
+  }
+
   public pointerDown(event: NormalizedMouseEvent): boolean {
     if (this._interior.interior.model != null) {
       const action = this._interior.interior.pick(this._interior.camera, event.ndcX, event.ndcY)

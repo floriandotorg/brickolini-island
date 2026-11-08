@@ -429,6 +429,10 @@ export abstract class Race extends IsleBase {
     }
   }
 
+  public override canCaptureMouse(event: NormalizedMouseEvent): boolean {
+    return super.canCaptureMouse(event) && !this._dashboard.test(event) && !this._controls.test(event.normalizedX, event.normalizedY)
+  }
+
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
     await super.pointerDown(event)
     this._dashboard.pointerDown(event)
@@ -470,6 +474,10 @@ export abstract class Race extends IsleBase {
     if (nearest.distanceTo(this.camera.position) < 1.5) {
       this.collisionVoice(actor.roi.name, false)
     }
+  }
+
+  public override get canMouseLook(): boolean {
+    return super.canMouseLook && this.raceState === 'racing' && this._playerJump == null
   }
 
   public override update(delta: number): void {

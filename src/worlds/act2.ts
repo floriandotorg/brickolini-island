@@ -466,6 +466,10 @@ export class Act2 extends IsleBase {
       }
     }
   }
+  public override get canMouseLook(): boolean {
+    return super.canMouseLook && this._enabled && ['goingToResidentialArea', 'chase', 'droppingBrick', 'goingToHide', 'brickHunt'].includes(this._phase)
+  }
+
   public override update(delta: number): void {
     super.update(delta)
     if (!this._enabled) {

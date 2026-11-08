@@ -158,9 +158,22 @@ class Engine {
   private _cutsceneRender = new Render2D()
   private _cutsceneMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2))
   private _world: World | null = null
+  private _worldReady = false
   public readonly input = new InputManager()
   private readonly _mobile = new MobileControls(keys => this.input.setTouchKeys(keys))
   private _cancelPointer = () => this.input.clear()
+  private _ignoreEscapeUntil = 0
+
+  private _updateMouseControls(): void {
+    const previous = this.input.mouseWasd
+    this.input.mouseWasd = getSettings().mouseWasd && !this.paused && this._state === 'game' && !this.input.inputDisabled && !this.input.buttonDownActsAsSpace && !this.isPresenting && this._worldReady && (this._world?.canMouseLook ?? false)
+    if (previous !== this.input.mouseWasd) {
+      this.input.clear()
+    }
+    if (!this.input.mouseWasd && document.pointerLockElement === this._canvas) {
+      document.exitPointerLock()
+    }
+  }
   public readonly music = new BackgroundMusic<AudioAction>(action => this.getAudio(action, 'music'))
   private readonly _pauseReasons = new Set<string>()
   private _elapsed = 0
@@ -334,6 +347,7 @@ class Engine {
   }
 
   private _restoreCursor(): void {
+    this._updateMouseControls()
     setCursor(this._pauseReasons.has('manual') ? 'no' : this._state === 'cutscene' || this.input.buttonDownActsAsSpace ? 'none' : this._state === 'transition' ? 'busy' : 'arrow')
   }
 
@@ -489,6 +503,7 @@ class Engine {
     this._renderer.xr.enabled = true
     void this._setupVrButton()
 
+    const pointerEvent = (event: PointerEvent): NormalizedMouseEvent => (document.pointerLockElement === canvas ? { normalizedX: 0, normalizedY: 0, ndcX: 0, ndcY: 0 } : createNormalizedMouseEvent(event, canvas))
     let activePointer: number | null = null
     let lastPointerEvent: NormalizedMouseEvent | null = null
     const cancelPointer = () => {
@@ -498,7 +513,29 @@ class Engine {
       activePointer = null
       lastPointerEvent = null
       this.input.clear()
+      if (document.pointerLockElement === canvas) {
+        document.exitPointerLock()
+      }
     }
+    document.addEventListener('pointerlockchange', () => {
+      const locked = document.pointerLockElement === canvas
+      document.body.classList.toggle('mouse-look', locked)
+      if (!locked) {
+        this._ignoreEscapeUntil = performance.now() + 200
+      }
+      if (activePointer != null && lastPointerEvent != null) {
+        this._world?.pointerUp(lastPointerEvent)
+      }
+      this.input.clear()
+      activePointer = null
+      lastPointerEvent = null
+      this._updateMouseControls()
+    })
+    document.addEventListener('mousemove', event => {
+      if (document.pointerLockElement === canvas) {
+        this.input.mouseMove(event.movementX, event.movementY)
+      }
+    })
     this._cancelPointer = cancelPointer
     window.addEventListener('resize', cancelPointer)
     canvas.addEventListener('pointerdown', event => {
@@ -521,12 +558,25 @@ class Engine {
       if (this.input.inputDisabled || this._state !== 'game') {
         return
       }
+      this._updateMouseControls()
+      if (event.pointerType === 'mouse' && this.input.mouseWasd && document.pointerLockElement !== canvas && this._world?.canCaptureMouse(pointerEvent(event)) && typeof canvas.requestPointerLock === 'function') {
+        try {
+          const request = canvas.requestPointerLock()
+          void request?.catch(() => {})
+        } catch {}
+        return
+      }
       activePointer = event.pointerId
-      lastPointerEvent = createNormalizedMouseEvent(event, canvas)
+      lastPointerEvent = pointerEvent(event)
+      if (document.pointerLockElement === canvas) {
+        this._world?.beginPointer()
+        void this._world?.pointerDown(lastPointerEvent)
+        return
+      }
       canvas.setPointerCapture(event.pointerId)
       if (this.input.pointerDown(point(event), this.elapsedTimeMilliseconds)) {
         this._world?.beginPointer()
-        void this._world?.pointerDown(createNormalizedMouseEvent(event, canvas))
+        void this._world?.pointerDown(lastPointerEvent)
       }
     })
     canvas.addEventListener('pointerup', event => {
@@ -538,10 +588,18 @@ class Engine {
       if (event.button !== 0 || this.paused || this.input.inputDisabled || this.input.buttonDownActsAsSpace || this._state !== 'game') {
         return
       }
-      this._world?.pointerUp(createNormalizedMouseEvent(event, canvas))
-      this.input.pointerUp()
+      this._world?.pointerUp(pointerEvent(event))
+      if (document.pointerLockElement === canvas) {
+        this._world?.gesture('click', pointerEvent(event))
+      } else {
+        this.input.pointerUp()
+      }
+      this._updateMouseControls()
     })
     canvas.addEventListener('pointermove', event => {
+      if (document.pointerLockElement === canvas) {
+        return
+      }
       if (activePointer != null && event.pointerId !== activePointer) {
         return
       }
@@ -580,6 +638,12 @@ class Engine {
       if (!this.input.acceptsKey(event.code) && !(this.input.buttonDownActsAsSpace && (event.code === 'Escape' || event.code === 'Pause'))) {
         return
       }
+      if (event.code === 'Escape' && (document.pointerLockElement === canvas || performance.now() < this._ignoreEscapeUntil)) {
+        event.preventDefault()
+        cancelPointer()
+        return
+      }
+      this._updateMouseControls()
       this.input.keyDown(event.code)
       if (event.code !== 'F2') {
         event.preventDefault()
@@ -587,8 +651,13 @@ class Engine {
       if (event.repeat) {
         return
       }
+      if (this.input.mouseWasd && ['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code)) {
+        return
+      }
       if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') {
-        this.input.toggleSticky()
+        if (!this.input.mouseWasd) {
+          this.input.toggleSticky()
+        }
         return
       }
       if (event.code === 'Pause') {
@@ -705,6 +774,7 @@ class Engine {
   }
 
   public async setWorld(world: World, param?: unknown) {
+    this._worldReady = false
     this._world?.soundCache.deactivate()
     for (const audio of this._positionalSounds) {
       if (audio.isPlaying) {
@@ -727,6 +797,8 @@ class Engine {
     this.finishTransition()
     await this._world.activate(this._composer, param)
     this._world.camera.add(this._audioListener)
+    this._worldReady = true
+    this._updateMouseControls()
   }
 
   public transition(options: TransitionOptions | number = {}): Promise<void> {
@@ -936,9 +1008,11 @@ class Engine {
     this._elapsed += delta
     updateDebugFps(delta)
     this.music.update(delta)
+    this._updateMouseControls()
     this.input.update(this.elapsedTimeMilliseconds)
     if (this._state === 'game') {
       this._world?.updateWorld(delta)
+      this._updateMouseControls()
       if (this._world != null) {
         this._world.camera.getWorldPosition(this._cameraPosition)
         const sound3d = getSettings().sound3d

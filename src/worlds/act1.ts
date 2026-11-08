@@ -1112,6 +1112,10 @@ export class Act1 extends Isle {
     return this._playerMovement.getDebugInfo()
   }
 
+  public override get canMouseLook(): boolean {
+    return super.canMouseLook && (!this.missions.some(mission => mission.isInCutscene) || this.hasReleasedPlayerAnimation) && (!(this.currentVehicle instanceof Helicopter) || helicopterState.status === 2)
+  }
+
   public override update(delta: number): void {
     super.update(delta)
 

@@ -5,6 +5,7 @@ import { updateRaycastMatrices } from '../matrix-cache.ts'
 import { getSettings } from '../settings'
 import type { BoundaryManager } from './boundary-manager'
 import type { VehicleType } from './dashboard'
+import { MouseLook, planarMovement } from './mouse-navigation.ts'
 import { NAV_REFERENCE_TICK_HZ, NavController } from './nav-controller.ts'
 
 const CAM_HEIGHT = 1.25
@@ -41,6 +42,8 @@ export class PlayerMovement {
   public canMove: (from: THREE.Vector3, to: THREE.Vector3) => boolean = () => true
   private _boundary: Boundary | null = null
   private _linearVel = 0
+  private _strafeVel = 0
+  private readonly _mouseLook = new MouseLook()
   private _rotVel = 0
   private _verticalVel = 0
   private _pitchVel = 0
@@ -98,6 +101,7 @@ export class PlayerMovement {
     this._externalVelocity.set(0, 0, 0)
     this._boundary = null
     this._linearVel = 0
+    this._strafeVel = 0
     this._rotVel = 0
     this._verticalVel = 0
     this._pitchVel = 0
@@ -246,7 +250,8 @@ export class PlayerMovement {
     position.addScaledVector(oldUp, -(oldUp.dot(position) + boundary.up.w))
     const direction = (engine.isPresenting ? (engine.xrHeadCamera ?? this._camera) : this._camera).getWorldDirection(new THREE.Vector3()).projectOnPlane(oldUp).normalize()
     direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(this._rotVel * delta * (oldUp.y < 0 ? -1 : 1)))
-    let target = position.clone().addScaledVector(direction, this._linearVel * delta)
+    const displacement = engine.input.mouseWasd ? planarMovement(direction, oldUp, this._linearVel, this._strafeVel, this.navigation.maximumSpeed).multiplyScalar(delta) : direction.clone().multiplyScalar(this._linearVel * delta)
+    let target = position.clone().add(displacement)
     const hit = boundary.intersect(position, target)
     if (hit != null) {
       const next = hit.edge.faceA === boundary ? hit.edge.faceB : hit.edge.faceA
@@ -255,7 +260,8 @@ export class PlayerMovement {
         boundary = next
       } else {
         this.linearVelocity = this._linearVel * 0.8
-        const push = hit.point.clone().sub(position.clone().addScaledVector(direction, this._linearVel * delta))
+        this._strafeVel *= 0.8
+        const push = hit.point.clone().sub(engine.input.mouseWasd ? position.clone().add(displacement) : position.clone().addScaledVector(direction, this._linearVel * delta))
         if (push.lengthSq() > 1e-9) {
           direction.addScaledVector(push.normalize(), 0.01).normalize()
         }
@@ -283,6 +289,7 @@ export class PlayerMovement {
     }
     this._boundary = boundary
     this._camera.rotateY(this._lookYaw)
+    this._mouseLook.apply(this._camera)
     return { fromPos, toPos: this._camera.position.clone(), normalizedSpeed }
   }
 
@@ -291,7 +298,13 @@ export class PlayerMovement {
       this._camera.position.copy(this.constrainDisplacement(this._camera.position, this._externalVelocity.clone().multiplyScalar(delta)))
       this._externalVelocity.multiplyScalar(Math.max(0, 1 - delta * 4))
     }
+    const mouseWasd = engine.input.mouseWasd && !engine.isPresenting
+    this._mouseLook.begin(this._camera, engine.input.consumeMouseLook(), mouseWasd)
     this._camera.rotateY(-this._lookYaw)
+    if (mouseWasd) {
+      this.navigation.setTargets(320, 240, false)
+      this._lookYaw = 0
+    }
     const speedMultiplier = this._slewMode ? 4 : 1
     const maxLinearVel = maximumSpeed ?? (vehicleType != null ? VEHICLE_MAX_LINEAR_VEL[vehicleType] : WALK_SPEED)
 
@@ -305,13 +318,13 @@ export class PlayerMovement {
     }
     const settings = getSettings()
     const pad = settings.gamepad ? engine.input.getGamepad(navigator.getGamepads(), settings.gamepadIndex) : null
-    if (pad?.pov != null) {
+    if (!mouseWasd && pad?.pov != null) {
       this._lookYaw = -THREE.MathUtils.degToRad(pad.pov)
     }
     const targetLinearVel = (flags.up ? maxLinearVel : flags.down ? -maxLinearVel : pad != null ? ((50 - pad.y) / 50) * maxLinearVel : 0) * speedMultiplier
     const targetRotVel = flags.left ? MAX_ROT_VEL : flags.right ? -MAX_ROT_VEL : pad != null ? ((50 - pad.x) / 50) * MAX_ROT_VEL : 0
     const targetVerticalVel = this._slewMode ? (engine.isKeyDown('q') ? maxLinearVel * speedMultiplier : engine.isKeyDown('e') ? -maxLinearVel * speedMultiplier : 0) : 0
-    const targetPitchVel = this._slewMode ? (engine.isKeyDown('w') ? MAX_ROT_VEL : engine.isKeyDown('s') ? -MAX_ROT_VEL : 0) : 0
+    const targetPitchVel = this._slewMode && !mouseWasd ? (engine.isKeyDown('w') ? MAX_ROT_VEL : engine.isKeyDown('s') ? -MAX_ROT_VEL : 0) : 0
 
     const linearAccel = targetLinearVel !== 0 ? MAX_LINEAR_ACCEL * (flags.ctrl ? 4 : 1) : MAX_LINEAR_DECEL
     const pitchAccel = (targetPitchVel !== 0 ? MAX_ROT_ACCEL * (flags.ctrl ? 2 : 1) : MAX_ROT_DECEL) * 40
@@ -330,9 +343,12 @@ export class PlayerMovement {
       this._pitchVel = this._calculateNewVel(targetPitchVel, this._pitchVel, pitchAccel, delta)
     }
 
-    const vel = this._linearVel < 0 ? -this._linearVel : this._linearVel
-    const maxVelCurrent = maxLinearVel * (this._slewMode ? 4 : 1)
-    const normalizedSpeed = vel / maxVelCurrent
+    const strafe = mouseWasd ? engine.input.strafe : 0
+    const targetStrafeVel = strafe * maxLinearVel * speedMultiplier
+    this._strafeVel = mouseWasd ? this._calculateNewVel(targetStrafeVel, this._strafeVel, (strafe === 0 ? 50 : flags.ctrl ? 15 : 3.75) * this.accelerationMultiplier, delta) : 0
+    const vel = Math.hypot(this._linearVel, this._strafeVel)
+    const maxVelCurrent = maxLinearVel * speedMultiplier
+    const normalizedSpeed = mouseWasd ? Math.min(1, vel / maxVelCurrent) : vel / maxVelCurrent
 
     const bounded = this.navigateBoundary(delta, vehicleType, normalizedSpeed)
     if (bounded != null) {
@@ -363,7 +379,7 @@ export class PlayerMovement {
 
     const fromPos = this._camera.position.clone()
     let toPos = fromPos.clone()
-    const moveVec = forward.clone().multiplyScalar(this._linearVel * delta)
+    const moveVec = (mouseWasd ? planarMovement(forward, new THREE.Vector3(0, 1, 0), this._linearVel, this._strafeVel, maxVelCurrent) : forward.clone().multiplyScalar(this._linearVel)).multiplyScalar(delta)
     moveVec.y += this._verticalVel * delta
 
     if (moveVec.length() > 0) {
@@ -383,6 +399,7 @@ export class PlayerMovement {
     }
 
     this._camera.rotateY(this._lookYaw)
+    this._mouseLook.apply(this._camera)
     return { fromPos, toPos, normalizedSpeed }
   }
 }

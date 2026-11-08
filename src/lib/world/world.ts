@@ -179,6 +179,14 @@ export abstract class World {
     this._render.scene.add(this._debugGroup)
   }
 
+  public canCaptureMouse(_event: NormalizedMouseEvent): boolean {
+    return this.canMouseLook
+  }
+
+  public get canMouseLook(): boolean {
+    return this.playerMovement != null && this.render3d && !this.isRunningCameraAnimation
+  }
+
   public get isRunningCameraAnimation(): boolean {
     return this._runningAnimations.some(a => !a.metadata.released && (a.lookAtKeys != null || a.lockCamera === true || a.metadata.hasCameraTrack))
   }

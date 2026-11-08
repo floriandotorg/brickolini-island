@@ -449,6 +449,10 @@ export class ControlsCollection {
     return null
   }
 
+  public test(normalizedX: number, normalizedY: number): boolean {
+    return this._render.scene.visible && this._controls.some(control => control.visible && control.test(normalizedX, normalizedY))
+  }
+
   public pointerDown(normalizedX: number, normalizedY: number): boolean {
     for (const control of this._controls.toSorted((a, b) => a.z - b.z)) {
       const result = control.pointerDown(normalizedX, normalizedY)

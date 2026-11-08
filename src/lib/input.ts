@@ -6,6 +6,8 @@ export class InputManager {
   public inputDisabled = false
   public allowSpaceWhileDisabled = false
   public buttonDownActsAsSpace = false
+  public mouseWasd = false
+  private _mouseLook = { x: 0, y: 0 }
   public readonly keys = new Set<string>()
   private readonly _touchKeys = new Set<string>()
   public dragging = false
@@ -29,6 +31,7 @@ export class InputManager {
   public clear(): void {
     this.keys.clear()
     this._touchKeys.clear()
+    this._mouseLook = { x: 0, y: 0 }
     if (this.dragging) {
       this.onGesture('dragEnd', this._point)
     }
@@ -62,7 +65,24 @@ export class InputManager {
 
   public getNavigationFlags(): NavigationFlags {
     const held = (...codes: string[]) => !this.inputDisabled && codes.some(code => this.keys.has(code) || this._touchKeys.has(code))
-    return { up: held('ArrowUp', 'Numpad8'), down: held('ArrowDown', 'Numpad2'), left: held('ArrowLeft', 'Numpad4'), right: held('ArrowRight', 'Numpad6'), ctrl: held('ControlLeft', 'ControlRight') }
+    return { up: held('ArrowUp', 'Numpad8') || (this.mouseWasd && held('KeyW')), down: held('ArrowDown', 'Numpad2') || (this.mouseWasd && held('KeyS')), left: held('ArrowLeft', 'Numpad4'), right: held('ArrowRight', 'Numpad6'), ctrl: held('ControlLeft', 'ControlRight') }
+  }
+
+  public get strafe(): number {
+    return this.mouseWasd && !this.inputDisabled ? Number(this.keys.has('KeyD')) - Number(this.keys.has('KeyA')) : 0
+  }
+
+  public mouseMove(x: number, y: number): void {
+    if (this.mouseWasd && !this.inputDisabled && Number.isFinite(x) && Number.isFinite(y)) {
+      this._mouseLook.x += x
+      this._mouseLook.y += y
+    }
+  }
+
+  public consumeMouseLook(): InputPoint {
+    const movement = this._mouseLook
+    this._mouseLook = { x: 0, y: 0 }
+    return movement
   }
 
   public pointerDown(point: InputPoint, now: number): boolean {
@@ -115,7 +135,7 @@ export class InputManager {
 
   public getGamepad(pads: readonly (Gamepad | null)[], index: number): { x: number; y: number; pov: number | null } | null {
     const flags = this.getNavigationFlags()
-    if (this.inputDisabled || flags.up || flags.down || flags.left || flags.right) {
+    if (this.inputDisabled || flags.up || flags.down || flags.left || flags.right || this.strafe !== 0) {
       return null
     }
     const pad = pads[index] ?? pads.find(pad => pad?.connected)

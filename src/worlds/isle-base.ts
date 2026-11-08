@@ -633,7 +633,7 @@ export abstract class IsleBase extends World {
 
   public override gesture(kind: import('../lib/input.ts').Gesture, event: NormalizedMouseEvent): void {
     super.gesture(kind, event)
-    if (this.playerMovement != null && !this.isRunningCameraAnimation && kind !== 'click') {
+    if (this.playerMovement != null && !this.isRunningCameraAnimation && !engine.input.mouseWasd && kind !== 'click') {
       this.playerMovement.navigation.setTargets((event.normalizedX + 1) * 320, (1 - event.normalizedY) * 240, kind !== 'dragEnd')
     }
   }
@@ -1027,6 +1027,10 @@ export abstract class IsleBase extends World {
 
   public override resize(width: number, height: number): void {
     super.resize(width, height)
+  }
+
+  public override canCaptureMouse(event: NormalizedMouseEvent): boolean {
+    return super.canCaptureMouse(event) && !this._dashboard.test(event)
   }
 
   public override async pointerDown(event: NormalizedMouseEvent): Promise<void> {
