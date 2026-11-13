@@ -121,8 +121,9 @@ const graphicsCheckboxIds = {
   distanceFog: 'distance-fog-checkbox',
   contactShadows: 'contact-shadows-checkbox',
   ambientOcclusion: 'ambient-occlusion-checkbox',
+  grass: 'grass-checkbox',
 } as const
-const graphicsKeys = ['textureFiltering', 'highDpi', 'distanceFog', 'contactShadows', 'ambientOcclusion'] as const
+const graphicsKeys = ['textureFiltering', 'highDpi', 'distanceFog', 'contactShadows', 'ambientOcclusion', 'grass'] as const
 const graphicsCheckbox = (key: (typeof graphicsKeys)[number]): HTMLInputElement => {
   const element = document.getElementById(graphicsCheckboxIds[key])
   if (!(element instanceof HTMLInputElement)) {
@@ -224,6 +225,7 @@ const updateSettingsFromCheckboxes = () => {
       distanceFog: graphicsCheckbox('distanceFog').checked,
       contactShadows: graphicsCheckbox('contactShadows').checked,
       ambientOcclusion: graphicsCheckbox('ambientOcclusion').checked,
+      grass: graphicsCheckbox('grass').checked,
     },
     volume: {
       music: Number.parseFloat(volumeSliders.music.value),

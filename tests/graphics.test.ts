@@ -103,11 +103,12 @@ test('graphics presets preserve original and migrate existing enhanced settings'
   Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => values.set(key, value) } })
   try {
     setPreset('original')
-    for (const key of ['textureFiltering', 'highDpi', 'distanceFog', 'contactShadows', 'ambientOcclusion'] as const) {
+    for (const key of ['textureFiltering', 'highDpi', 'distanceFog', 'contactShadows', 'ambientOcclusion', 'grass'] as const) {
       assert.equal(getSettings().graphics[key], false)
     }
     setPreset('hd')
     assert.equal(getSettings().graphics.highDpi, true)
+    assert.equal(getSettings().graphics.grass, true)
     assert.equal(getSettings().graphics.ambientOcclusion, false)
     setPreset('next-gen')
     assert.equal(getSettings().graphics.ambientOcclusion, true)

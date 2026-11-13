@@ -17,6 +17,7 @@ export interface Settings {
     distanceFog: boolean
     contactShadows: boolean
     ambientOcclusion: boolean
+    grass: boolean
   }
   volume: Record<AudioType, number>
   music: boolean
@@ -62,7 +63,7 @@ export const setSettings = (settings: Partial<Settings>) => {
     localStorage.setItem('settings.graphics.shadows', settings.graphics.shadows ? 'true' : 'false')
     localStorage.setItem('settings.graphics.postProcessing', settings.graphics.postProcessing ? 'true' : 'false')
     localStorage.setItem('settings.graphics.toneMapping', settings.graphics.toneMapping)
-    for (const key of ['textureFiltering', 'highDpi', 'distanceFog', 'contactShadows', 'ambientOcclusion'] as const) {
+    for (const key of ['textureFiltering', 'highDpi', 'distanceFog', 'contactShadows', 'ambientOcclusion', 'grass'] as const) {
       localStorage.setItem(`settings.graphics.${key}`, String(settings.graphics[key]))
     }
   }
@@ -85,13 +86,13 @@ export const setPreset = (preset: Preset) => {
 
   switch (preset) {
     case 'original':
-      setSettings({ graphics: { preset: 'original', realisticWater: false, sun: false, hdTextures: false, pbrMaterials: false, shadows: false, toneMapping: 'none', postProcessing: false, textureFiltering: false, highDpi: false, distanceFog: false, contactShadows: false, ambientOcclusion: false } })
+      setSettings({ graphics: { preset: 'original', realisticWater: false, sun: false, hdTextures: false, pbrMaterials: false, shadows: false, toneMapping: 'none', postProcessing: false, textureFiltering: false, highDpi: false, distanceFog: false, contactShadows: false, ambientOcclusion: false, grass: false } })
       break
     case 'hd':
-      setSettings({ graphics: { preset: 'hd', realisticWater: false, sun: false, hdTextures: true, pbrMaterials: false, shadows: true, toneMapping: 'filmic', postProcessing: false, textureFiltering: true, highDpi: true, distanceFog: true, contactShadows: true, ambientOcclusion: false } })
+      setSettings({ graphics: { preset: 'hd', realisticWater: false, sun: false, hdTextures: true, pbrMaterials: false, shadows: true, toneMapping: 'filmic', postProcessing: false, textureFiltering: true, highDpi: true, distanceFog: true, contactShadows: true, ambientOcclusion: false, grass: true } })
       break
     case 'next-gen':
-      setSettings({ graphics: { preset: 'next-gen', realisticWater: true, sun: true, hdTextures: true, pbrMaterials: true, shadows: true, toneMapping: 'filmic', postProcessing: true, textureFiltering: true, highDpi: true, distanceFog: true, contactShadows: true, ambientOcclusion: true } })
+      setSettings({ graphics: { preset: 'next-gen', realisticWater: true, sun: true, hdTextures: true, pbrMaterials: true, shadows: true, toneMapping: 'filmic', postProcessing: true, textureFiltering: true, highDpi: true, distanceFog: true, contactShadows: true, ambientOcclusion: true, grass: true } })
       break
     case 'custom':
       localStorage.setItem('settings.graphics.preset', 'custom')
@@ -135,6 +136,7 @@ export const getSettings = (): Settings => {
       distanceFog: graphicsOption('distanceFog', enhanced),
       contactShadows: graphicsOption('contactShadows', enhanced),
       ambientOcclusion: graphicsOption('ambientOcclusion', preset === 'next-gen'),
+      grass: graphicsOption('grass', enhanced),
     },
     volume: {
       music: parseVolume('music'),

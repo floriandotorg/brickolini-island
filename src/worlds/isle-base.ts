@@ -48,6 +48,7 @@ import { ContactShadows } from '../lib/world/contact-shadows.ts'
 import { Dashboard, type VehicleType } from '../lib/world/dashboard'
 import type { Entity } from '../lib/world/entity'
 import { ExtrasManager } from '../lib/world/extras-manager'
+import { Grass } from '../lib/world/grass.ts'
 import { IslandBuildings } from '../lib/world/island-buildings'
 import { configureShadow } from '../lib/world/lighting.ts'
 import { Plants } from '../lib/world/plants'
@@ -118,6 +119,7 @@ export abstract class IsleBase extends World {
   protected _ambientLight: THREE.AmbientLight | null = null
   private readonly _waters = new Set<Water>()
   private _contactShadows: ContactShadows | null = null
+  private _grass: Grass | null = null
   private _shoreline: Shoreline | null = null
   private _temporarySkyColor: { h: number; s: number; l: number } | null = null
   protected _isleMesh: THREE.Object3D | null = null
@@ -384,6 +386,10 @@ export abstract class IsleBase extends World {
         continue
       }
       this._groundGroup.push(object)
+    }
+    if (settings.graphics.grass) {
+      this._grass = new Grass(this._groundGroup.filter(object => object.name.startsWith('isle')))
+      this.scene.add(this._grass.group)
     }
     if (this._waters.size > 0) {
       const level = Math.max(...[...this._waters].map(water => new THREE.Box3().setFromObject(water).max.y))
@@ -1062,6 +1068,7 @@ export abstract class IsleBase extends World {
     for (const water of this._waters) {
       water.material.uniforms.time.value += delta * 0.35
     }
+    this._grass?.update(this.camera, delta)
     if (this._contactShadows != null) {
       const sources = new Set<Roi3D>([...this.actors.map(actor => actor.roi), ...this.characters])
       for (const vehicle of ['bike', 'moto', 'skate', 'ambul', 'towtk'] as const) {
@@ -1077,6 +1084,7 @@ export abstract class IsleBase extends World {
   public override dispose(): void {
     this._dashboard.dispose()
     this._contactShadows?.dispose()
+    this._grass?.dispose()
     this._shoreline?.texture.dispose()
     this._waters.clear()
     super.dispose()
