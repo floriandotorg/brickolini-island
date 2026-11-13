@@ -538,7 +538,9 @@ export class Dashboard {
     this._render.dispose()
   }
 
-  public update(velocity: number, fuel: number): void {
+  public update(velocity: number, fuel: number, turn = 0, delta = 0): void {
+    this._interior.interior.lean(turn, delta)
+    this._interior.interior.setMeters(velocity, fuel)
     this._speedMeter?.draw(velocity)
     this._fuelMeter?.draw(fuel)
   }

@@ -5,7 +5,7 @@ import { CascadedShadows } from '../world/cascaded-shadows.ts'
 import { IrradianceGrid } from '../world/irradiance-grid.ts'
 import { updateFocusedShadow } from '../world/lighting.ts'
 import { ReflectionProbes } from '../world/reflection-probes.ts'
-import { createBloom } from './bloom.ts'
+import { Bloom, BloomEffect } from './bloom.ts'
 import { DepthOfField } from './depth-of-field.ts'
 import type { Effect } from './effect.ts'
 import { RenderBatches } from './render-batches.ts'
@@ -69,13 +69,10 @@ export class Render3D extends Render {
     samples: 4,
   })
   private readonly _batches = new RenderBatches()
-  private readonly _irradiance = getSettings().graphics.pbrMaterials ? new IrradianceGrid() : null
-  private _probeFrame = 0
   private readonly _waterDepth = new WaterDepth()
-  private readonly _reflections = getSettings().graphics.pbrMaterials ? new ReflectionProbes() : null
   private readonly _dof = getSettings().graphics.postProcessing ? new DepthOfField(this.camera, this._depth) : null
   private _processed: THREE.Texture | null = null
-  private readonly _bloom = getSettings().graphics.postProcessing ? createBloom(this._depth) : null
+  private readonly _bloom = getSettings().graphics.postProcessing ? new Bloom(this._depth) : null
 
   public set cinematic(value: boolean) {
     if (this._dof) {
@@ -90,11 +87,22 @@ export class Render3D extends Render {
     this.scene.add(this.camera)
     this.camera.name = 'camera'
     this.camera.rotation.order = 'YXZ'
-    this.scene.onBeforeRender = (_renderer, _scene, camera) => this._batches.setReflection(camera !== this.camera)
-    this.scene.onAfterRender = () => this._batches.setReflection(false)
     const graphics = getSettings().graphics
+    if (this._bloom != null) {
+      this.addEffect(new BloomEffect(this._bloom))
+    }
     if (graphics.ambientOcclusion || graphics.toneMapping === 'filmic') {
-      this.addEffect(new WorldShadingEffect(this.camera, this._depth, graphics.ambientOcclusion, graphics.toneMapping === 'filmic'))
+      this._worldShading = new WorldShadingEffect(this.camera, this._depth, graphics.ambientOcclusion, graphics.toneMapping === 'filmic')
+      this.addEffect(this._worldShading)
+    }
+  }
+
+  private readonly _worldShading: WorldShadingEffect | null = null
+  private _probes: { irradiance: IrradianceGrid; reflections: ReflectionProbes } | null = null
+
+  public enableProbes(): void {
+    if (this._probes == null && getSettings().graphics.pbrMaterials) {
+      this._probes = { irradiance: new IrradianceGrid(), reflections: new ReflectionProbes() }
     }
   }
 
@@ -107,28 +115,83 @@ export class Render3D extends Render {
     this._waterDepth.resize(width, height)
     this._dof?.resize(width, height)
     this._bloom?.setSize(width, height)
+    this._worldShading?.resize(width, height)
     this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
   }
 
-  public render(renderer: THREE.WebGLRenderer): void {
-    this._cascades?.update(this.scene, this.camera)
-    this._reflections?.update(renderer, this.scene, this.camera)
-    if (this._irradiance != null) {
-      this._irradiance.prepare(this.scene)
-      if (++this._probeFrame % 4 === 0) {
-        const sun = this.scene.children.find(object => object instanceof THREE.DirectionalLight)
-        const phase = sun instanceof THREE.DirectionalLight ? Math.round(Math.atan2(sun.position.y - sun.target.position.y, sun.position.x - sun.target.position.x) * 8) : 0
-        this._irradiance.update(renderer, this.scene, phase)
-      }
+  private _preparedMaterials = new WeakSet<THREE.Material>()
+
+  private _hookMaterials(): void {
+    if (this._cascades == null && this._probes == null) {
+      return
     }
-    this._waterDepth.render(renderer, this.scene, this.camera)
+    this.scene.traverse(object => {
+      if (!(object instanceof THREE.Mesh)) {
+        return
+      }
+      for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
+        if (!(material instanceof THREE.Material) || this._preparedMaterials.has(material)) {
+          continue
+        }
+        this._preparedMaterials.add(material)
+        this._cascades?.setupMaterial(material)
+        if (material instanceof THREE.MeshStandardMaterial) {
+          this._probes?.irradiance.hook(material)
+          this._probes?.reflections.hook(material)
+        }
+      }
+    })
+  }
+
+  private _hookFrame = 0
+
+  private _prepareMaterials(): void {
+    const created = this._cascades?.update(this.scene, this.camera) ?? false
+    if (created) {
+      this._preparedMaterials = new WeakSet()
+    }
+    if (created || this._hookFrame++ % 4 === 0) {
+      this._hookMaterials()
+    }
+    this._probes?.irradiance.prepare(this.scene)
+    this._probes?.reflections.prepare(this.scene, this.camera)
+  }
+
+  public async precompile(renderer: THREE.WebGLRenderer): Promise<void> {
+    this._prepareMaterials()
+    this._hookMaterials()
+    const batching = renderer.extensions.has('WEBGL_multi_draw')
+    if (batching && this._batches.prepare(this.scene)) {
+      this._hookMaterials()
+    }
+    const target = renderer.getRenderTarget()
     renderer.setRenderTarget(this._renderTarget)
     try {
-      const batching = renderer.extensions.has('WEBGL_multi_draw')
-      if (batching) {
-        this._batches.prepare(this.scene)
+      const compiled = renderer.compileAsync(this.scene, this.camera)
+      renderer.setRenderTarget(target)
+      await compiled
+    } finally {
+      renderer.setRenderTarget(target)
+      this._batches.restore()
+    }
+  }
+
+  public render(renderer: THREE.WebGLRenderer): void {
+    this._prepareMaterials()
+    const sun = this._probes == null ? null : this.scene.children.find(object => object instanceof THREE.DirectionalLight)
+    const batching = renderer.extensions.has('WEBGL_multi_draw')
+    try {
+      if (batching && this._batches.prepare(this.scene)) {
+        this._hookMaterials()
       }
+      if (this._probes != null) {
+        const phase = sun instanceof THREE.DirectionalLight ? Math.round(Math.atan2(sun.position.y - sun.target.position.y, sun.position.x - sun.target.position.x) * 8) : 0
+        this._probes.reflections.capture(renderer, this.scene)
+        this._probes.irradiance.update(renderer, this.scene, phase)
+      }
+      this._waterDepth.render(renderer, this.scene, this.camera)
+      renderer.setRenderTarget(this._renderTarget)
       if (this._focusedShadows && this._cascades == null) {
         if (batching) {
           for (const light of this._batches.directionalLights) {
@@ -145,12 +208,9 @@ export class Render3D extends Render {
         }
       }
       renderer.render(this.scene, this.camera)
-      for (const effect of this.effects) {
-        if (effect instanceof WorldShadingEffect) {
-          effect.updateSun(this.scene)
-        }
-      }
-      this._bloom?.render(renderer, this._renderTarget, this._renderTarget, 0, false)
+      this._worldShading?.updateSun(this.scene)
+      this._worldShading?.renderScreenSpace(renderer)
+      this._bloom?.render(renderer, this._renderTarget.texture)
       this._processed = this._dof?.render(renderer, this._renderTarget.texture, this.camera) ?? null
       if (this.material.uniforms.tDiffuse) {
         this.material.uniforms.tDiffuse.value = this.texture
@@ -163,17 +223,13 @@ export class Render3D extends Render {
 
   public override dispose(): void {
     super.dispose()
-    for (const effect of this.effects) {
-      if (effect instanceof WorldShadingEffect) {
-        effect.dispose()
-      }
-    }
+    this._worldShading?.dispose()
     this._cascades?.dispose()
     this._bloom?.dispose()
     this._waterDepth.dispose()
     this._dof?.dispose()
-    this._reflections?.dispose()
-    this._irradiance?.dispose()
+    this._probes?.reflections.dispose()
+    this._probes?.irradiance.dispose()
     this._batches.dispose()
     this._renderTarget.dispose()
     this._depth.dispose()

@@ -1143,7 +1143,7 @@ export class Act1 extends Isle {
 
     this.updateActors(delta, fromPos, toPos)
 
-    this._dashboard.update(normalizedSpeed, this.currentVehicle?.fuel ?? 0)
+    this._dashboard.update(normalizedSpeed, this.currentVehicle?.fuel ?? 0, this._playerMovement.turn, delta)
 
     this.boundaryManager.update(fromPos, toPos, null)
   }

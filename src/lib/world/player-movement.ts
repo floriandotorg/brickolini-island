@@ -101,6 +101,10 @@ export class PlayerMovement {
     return this._linearVel
   }
 
+  get turn(): number {
+    return this._linearVel > 0 ? (this.navigation.rotationalVelocity / 20) * Math.min(1, this._linearVel / this.navigation.maximumSpeed) : 0
+  }
+
   resetVelocities(): void {
     this.navigation.reset()
     this._externalVelocity.set(0, 0, 0)

@@ -1264,6 +1264,10 @@ export abstract class World {
     }
   }
 
+  public precompile(): Promise<void> {
+    return this._render.precompile(engine.renderer)
+  }
+
   public activate(composer: Composer, _param?: unknown): void {
     composer.add(this._render)
   }
@@ -1360,7 +1364,7 @@ export abstract class World {
   }
 
   public keyPressed(key: string, _character?: string): void {
-    if (key === 'KeyD' && import.meta.env.DEV) {
+    if (key === 'Backquote' && import.meta.env.DEV) {
       engine.debugMode = !engine.debugMode
     }
 

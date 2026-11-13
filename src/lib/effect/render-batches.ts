@@ -15,7 +15,13 @@ type Source = {
   color: THREE.Color
 }
 
-type Batch = { mesh: THREE.BatchedMesh; material: BatchMaterial; reflection: BatchMaterial; sources: Source[] }
+type Batch = { mesh: THREE.BatchedMesh; material: BatchMaterial; sources: Source[] }
+
+const sharedShaderHooks = new WeakSet<THREE.Material>()
+
+export const markSharedShaderHook = (material: THREE.Material): void => {
+  sharedShaderHooks.add(material)
+}
 
 const eligible = (object: THREE.Object3D): object is THREE.Mesh<THREE.BufferGeometry, BatchMaterial> =>
   object instanceof THREE.Mesh &&
@@ -31,7 +37,7 @@ const eligible = (object: THREE.Object3D): object is THREE.Mesh<THREE.BufferGeom
   object.customDepthMaterial == null &&
   object.customDistanceMaterial == null &&
   object.material.clippingPlanes == null &&
-  object.material.onBeforeCompile === THREE.Material.prototype.onBeforeCompile &&
+  (object.material.onBeforeCompile === THREE.Material.prototype.onBeforeCompile || sharedShaderHooks.has(object.material)) &&
   object.geometry.groups.length === 0 &&
   object.geometry.drawRange.start === 0 &&
   object.geometry.drawRange.count === Number.POSITIVE_INFINITY &&
@@ -73,7 +79,8 @@ export class RenderBatches {
     return this._lights
   }
 
-  public prepare(scene: THREE.Scene): void {
+  public prepare(scene: THREE.Scene): boolean {
+    const batchCount = this._batches.length
     if (this._scene == null) {
       this._pending.add(scene)
     }
@@ -177,11 +184,11 @@ export class RenderBatches {
         batch.mesh.removeFromParent()
         batch.mesh.dispose()
         batch.material.dispose()
-        batch.reflection.dispose()
         this._batches.splice(n, 1)
       }
     }
     scene.matrixWorldAutoUpdate = false
+    return this._batches.length > batchCount
   }
 
   private _create(scene: THREE.Scene, meshes: THREE.Mesh<THREE.BufferGeometry, BatchMaterial>[]): void {
@@ -203,6 +210,7 @@ export class RenderBatches {
     mesh.layers.mask = meshes[0].layers.mask
     mesh.matrixWorldAutoUpdate = false
     mesh.frustumCulled = false
+    mesh.perObjectFrustumCulled = false
     mesh.sortObjects = false
     const ids = new Map<THREE.BufferGeometry, number>()
     for (const geometry of geometries) {
@@ -219,17 +227,10 @@ export class RenderBatches {
       return { mesh: object, material: object.material, map: object.material.map, version: object.material.version, geometry: object.geometry, instance, layers: object.layers.mask, matrix: object.matrixWorld.clone(), color: object.material.color.clone() }
     })
     scene.add(mesh)
-    this._batches.push({ mesh, material, reflection: material.clone(), sources })
-  }
-
-  public setReflection(reflection: boolean): void {
-    for (const batch of this._batches) {
-      batch.mesh.material = reflection ? batch.reflection : batch.material
-    }
+    this._batches.push({ mesh, material, sources })
   }
 
   public restore(): void {
-    this.setReflection(false)
     for (const source of this._hidden) {
       source.mesh.layers.mask = source.layers
     }
@@ -248,7 +249,6 @@ export class RenderBatches {
       batch.mesh.removeFromParent()
       batch.mesh.dispose()
       batch.material.dispose()
-      batch.reflection.dispose()
     }
     this._batches.length = 0
     for (const object of this._watched) {

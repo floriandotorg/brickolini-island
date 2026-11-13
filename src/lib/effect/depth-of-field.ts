@@ -37,18 +37,25 @@ export class DepthOfField {
           float coc = clamp(abs(distance - focus) / max(distance, 0.1), 0.0, 1.0);
           float tilt = smoothstep(0.2, 0.5, abs(vUv.y - 0.5));
           float radius = min(coc * strength + tilt * 0.6, 8.0);
-          vec4 color = texture2D(source, vUv);
-          float weight = 1.0;
-          for (int n = 0; n < 32; ++n) {
+          vec4 sharp = texture2D(source, vUv);
+          if (radius < 0.35) {
+            gl_FragColor = sharp;
+            return;
+          }
+          int samples = radius < 2.0 ? 12 : 32;
+          vec4 color = vec4(0.0);
+          float weight = 0.0;
+          for (int n = 0; n < samples; ++n) {
             float angle = float(n) * 2.399963;
-            vec2 offset = vec2(cos(angle), sin(angle)) * sqrt((float(n) + 0.5) / 32.0) * radius / resolution;
+            vec2 offset = vec2(cos(angle), sin(angle)) * sqrt((float(n) + 0.5) / float(samples)) * radius / resolution;
             vec2 uv = clamp(vUv + offset, vec2(0.0), vec2(1.0));
             float sampleDistance = distanceAt(uv);
             float accept = 1.0 - smoothstep(0.5, 2.0, max(distance - sampleDistance, 0.0));
             color += texture2D(source, uv) * accept;
             weight += accept;
           }
-          gl_FragColor = color / weight;
+          vec4 blurred = weight > 0.001 ? color / weight : sharp;
+          gl_FragColor = mix(sharp, blurred, smoothstep(0.35, 1.5, radius));
         }`,
       depthTest: false,
       depthWrite: false,

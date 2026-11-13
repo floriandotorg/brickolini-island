@@ -28,6 +28,13 @@ test('surface tuning separates matte terrain, plastic, rubber, and glass', () =>
   assert.ok(getSurfaceProperties('rubber').roughness > plastic.roughness)
 })
 
+test('road surfaces are matte so painted markings do not glare', () => {
+  for (const name of ['road straight', 'road grey flat', 'se curve', 'gas road', 'track grey mid f', 'piz curve']) {
+    assert.ok(getSurfaceProperties(name).roughness >= 0.8, name)
+    assert.equal(getSurfaceProperties(name).clearcoat, 0, name)
+  }
+})
+
 test('shadow focus follows the view while retaining light direction and stable texel alignment', () => {
   const light = new THREE.DirectionalLight()
   light.position.set(100, 200, 50)
@@ -95,6 +102,17 @@ test('water aligns its reflection plane without moving the source geometry', () 
   assert.equal(geometry.getAttribute('position'), positions)
   assert.equal(water.material.fog, true)
   assert.equal(water.material.uniforms.islandWaterMap.value, map)
+})
+
+test('water shades from the camera position without rendering a mirror pass', () => {
+  const water = createIslandWater(new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2), new THREE.DataTexture(new Uint8Array([0, 0, 255, 255]), 1, 1))
+  const camera = new THREE.PerspectiveCamera()
+  camera.position.set(3, 4, 5)
+  camera.updateMatrixWorld()
+  const renderer = { render: () => assert.fail('mirror pass rendered'), setRenderTarget: () => assert.fail('mirror pass rendered') }
+  Reflect.apply(water.onBeforeRender, water, [renderer, new THREE.Scene(), camera, water.geometry, water.material, null])
+  assert.ok(water.material.uniforms.eye.value.distanceTo(camera.position) < 0.0001)
+  assert.equal(water.material.fragmentShader.includes('mirrorSampler'), false)
 })
 
 test('graphics presets preserve original and migrate existing enhanced settings', () => {

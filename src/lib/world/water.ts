@@ -5,7 +5,6 @@ import { createOpenSeaTexture } from './shoreline.ts'
 const openSea = createOpenSeaTexture()
 
 const fragmentShader = `
-  uniform sampler2D mirrorSampler;
   uniform float alpha;
   uniform float time;
   uniform vec3 sunColor;
@@ -17,8 +16,8 @@ const fragmentShader = `
   uniform vec2 islandCameraRange;
   uniform sampler2D islandShore;
   uniform vec4 islandShoreBounds;
+  uniform vec3 islandSkyColor;
 
-  varying vec4 mirrorCoord;
   varying vec4 worldPosition;
 
   #include <common>
@@ -44,27 +43,32 @@ const fragmentShader = `
     vec3 swell = texture2D(islandWaterMap, position * 0.021 + vec2(time * 0.031, -time * 0.023)).rgb;
     vec2 warp = (swell.rg - vec2(0.3, 0.6)) * 0.05;
     vec3 paint = texture2D(islandWaterMap, position * 0.055 + vec2(-time * 0.017, time * 0.011) + warp).rgb;
+    float detail = dot(paint, vec3(0.3, 0.4, 0.3));
 
     float floorDepth = islandLinearDepth(texture2D(islandSceneDepth, gl_FragCoord.xy / islandViewport).r);
     float surfaceDepth = islandLinearDepth(gl_FragCoord.z);
     float depth = max(floorDepth - surfaceDepth, 0.0) * distance / surfaceDepth * abs(eyeDirection.y);
     float shore = texture2D(islandShore, vec2((position.x - islandShoreBounds.x) / islandShoreBounds.z, (islandShoreBounds.y - position.y) / islandShoreBounds.w)).r;
 
-    vec3 light = mix(vec3(dot(sunColor, vec3(0.2126, 0.7152, 0.0722))), sunColor, 0.35) * (0.45 + 0.55 * clamp(sunDirection.y * 1.5, 0.0, 1.0)) * getShadowMask();
-    float shallow = max(1.0 - smoothstep(0.0, 2.5, depth), 1.0 - smoothstep(0.0, 7.0, shore));
-    vec3 water = paint * mix(0.85, 1.0, shallow);
-    water = mix(water, vec3(0.12, 0.72, 0.7) * (0.55 + paint.b * 0.5), shallow * 0.5);
+    float shadow = getShadowMask();
+    float daylight = 0.45 + 0.55 * clamp(sunDirection.y * 1.5, 0.0, 1.0);
+    vec3 light = mix(vec3(dot(sunColor, vec3(0.2126, 0.7152, 0.0722))), sunColor, 0.35) * daylight * (0.55 + 0.45 * shadow);
+    float shallow = max(1.0 - smoothstep(0.0, 3.0, depth), 1.0 - smoothstep(0.0, 9.0, shore));
+    vec3 deepColor = mix(vec3(0.02, 0.16, 0.3), vec3(0.04, 0.27, 0.42), smoothstep(0.35, 0.8, swell.b));
+    vec3 shallowColor = vec3(0.1, 0.52, 0.55);
+    vec3 water = mix(deepColor, shallowColor, shallow) * (0.82 + 0.36 * detail);
     vec3 color = water * light;
 
-    vec2 distortion = warp * 0.4 / (1.0 + distance * 0.02);
-    vec3 reflection = min(texture2D(mirrorSampler, mirrorCoord.xy / mirrorCoord.w + distortion).rgb, vec3(4.0));
-    float fresnel = 0.04 + 0.96 * pow(1.0 - max(eyeDirection.y, 0.0), 5.0);
-    color = mix(color, reflection, fresnel * 0.1);
+    vec3 normal = normalize(vec3(warp.x * 4.0, 1.0, warp.y * 4.0) + vec3(paint.r - 0.5, 0.0, paint.g - 0.5) * 0.06);
+    float facing = max(dot(eyeDirection, normal), 0.0);
+    float fresnel = 0.02 + 0.98 * pow(1.0 - facing, 5.0);
+    vec3 reflected = reflect(-eyeDirection, normal);
+    vec3 sky = mix(islandSkyColor * vec3(0.85, 0.95, 1.05), islandSkyColor * vec3(0.6, 0.78, 1.0), clamp(reflected.y * 1.5, 0.0, 1.0)) * daylight;
+    color = mix(color, sky, clamp(fresnel, 0.0, 0.55));
 
-    float highlight = smoothstep(0.7, 0.92, dot(paint, vec3(0.3, 0.4, 0.3)));
-    vec3 normal = normalize(vec3(warp.x * 3.0, 1.0, warp.y * 3.0));
-    float specular = pow(max(dot(reflect(-sunDirection, normal), eyeDirection), 0.0), 60.0);
-    color += sunColor * smoothstep(0.35, 0.5, specular * highlight) * 1.6 * (1.0 - smoothstep(40.0, 120.0, distance));
+    vec3 halfway = normalize(sunDirection + eyeDirection);
+    float glint = pow(max(dot(normal, halfway), 0.0), 600.0) * smoothstep(0.55, 0.85, detail);
+    color += sunColor * glint * 2.5 * shadow * (1.0 - smoothstep(40.0, 140.0, distance));
 
     float fade = 1.0 - smoothstep(60.0, 140.0, distance);
     float wobble = (texture2D(islandWaterMap, position * 0.013 + vec2(time * 0.004)).g - 0.6) * 1.4;
@@ -76,7 +80,7 @@ const fragmentShader = `
     float patches = mix(0.35, 1.0, smoothstep(0.3, 0.6, swell.b));
     float waves = smoothstep(0.75, 0.79, crest) * (1.0 - smoothstep(0.8, 1.0, crest)) * patches;
     waves *= smoothstep(0.3, 0.9, shore) * (1.0 - smoothstep(1.5, 5.5, shore)) * fade;
-    color = mix(color, vec3(0.92, 0.97, 1.0) * light * 1.1, max(rim, waves) * 0.9);
+    color = mix(color, vec3(0.86, 0.93, 0.96) * light, max(rim, waves) * 0.85);
 
     gl_FragColor = vec4(color, alpha);
 
@@ -92,8 +96,8 @@ export const createIslandWater = (geometry: THREE.BufferGeometry, map: THREE.Tex
   const rotation = new THREE.Quaternion().setFromUnitVectors(normal, new THREE.Vector3(0, 0, 1))
   const surface = geometry.clone().applyQuaternion(rotation)
   const water = new Water(surface, {
-    textureWidth: 512,
-    textureHeight: 512,
+    textureWidth: 1,
+    textureHeight: 1,
     sunColor: 0xfff4df,
     sunDirection: new THREE.Vector3(-1, 2, -1).normalize(),
     fog: true,
@@ -106,7 +110,11 @@ export const createIslandWater = (geometry: THREE.BufferGeometry, map: THREE.Tex
     islandCameraRange: { value: new THREE.Vector2(0.1, 1000) },
     islandShore: { value: openSea },
     islandShoreBounds: { value: new THREE.Vector4(0, 0, 1, 1) },
+    islandSkyColor: { value: new THREE.Color(0xa8cddd) },
   })
   water.material.fragmentShader = fragmentShader
+  water.onBeforeRender = (_renderer, _scene, camera) => {
+    water.material.uniforms.eye.value.setFromMatrixPosition(camera.matrixWorld)
+  }
   return water
 }

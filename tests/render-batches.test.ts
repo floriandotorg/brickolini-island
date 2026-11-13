@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import * as THREE from 'three'
-import { RenderBatches } from '../src/lib/effect/render-batches.ts'
+import { markSharedShaderHook, RenderBatches } from '../src/lib/effect/render-batches.ts'
 
 const createScene = () => {
   const scene = new THREE.Scene()
@@ -165,24 +165,22 @@ test('nested directional lights follow scene additions, removals and reparenting
   batches.dispose()
 })
 
-test('reflection passes isolate material caches and restore the main pass material', () => {
-  const { scene, batches } = createScene()
-  batches.prepare(scene)
-  const mesh = scene.children.find(object => object instanceof THREE.BatchedMesh)
-  assert.ok(mesh instanceof THREE.BatchedMesh)
-  const material = mesh.material
-  batches.setReflection(true)
-  const reflection = mesh.material
-  assert.notEqual(reflection, material)
-  assert.deepEqual(reflection.toJSON().color, material.toJSON().color)
-  batches.setReflection(false)
-  assert.equal(mesh.material, material)
-  batches.setReflection(true)
-  assert.equal(mesh.material, reflection)
+test('materials with shared engine shader hooks still batch while custom shaders stay separate', () => {
+  const { scene, parent, batches } = createScene()
+  const [shared, other, custom] = parent.children
+  if (!(shared instanceof THREE.Mesh && other instanceof THREE.Mesh && custom instanceof THREE.Mesh)) {
+    throw new Error('Expected meshes')
+  }
+  for (const mesh of [shared, other]) {
+    mesh.material.onBeforeCompile = () => {}
+    markSharedShaderHook(mesh.material)
+  }
+  custom.material.onBeforeCompile = () => {}
+  assert.equal(batches.prepare(scene), true)
+  assert.equal(shared.layers.mask, 0)
+  assert.equal(other.layers.mask, 0)
+  assert.equal(custom.layers.mask, 1)
   batches.restore()
-  assert.equal(mesh.material, material)
-  let disposed = 0
-  reflection.addEventListener('dispose', () => ++disposed)
+  assert.equal(batches.prepare(scene), false)
   batches.dispose()
-  assert.equal(disposed, 1)
 })

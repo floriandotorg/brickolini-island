@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { installContactHardening } from '../effect/pcss.ts'
+import { installSmoothShadowFilter } from '../effect/shadow-filter.ts'
 
 const direction = new THREE.Vector3()
 const forward = new THREE.Vector3()
@@ -9,9 +9,9 @@ const up = new THREE.Vector3()
 const worldUp = new THREE.Vector3(0, 1, 0)
 const radius = 70
 
-export const configureShadow = (light: THREE.DirectionalLight, contactHardening = true): void => {
-  if (contactHardening) {
-    installContactHardening()
+export const configureShadow = (light: THREE.DirectionalLight, smoothFilter = true): void => {
+  if (smoothFilter) {
+    installSmoothShadowFilter()
   }
   light.castShadow = true
   light.shadow.mapSize.set(4096, 4096)

@@ -9,12 +9,13 @@ export const getRenderSize = (width: number, height: number, pixelRatio: number,
 export const getSurfaceProperties = (name: string) => {
   const surface = name.toLowerCase()
   const terrain = ['grass', 'rock', 'sand', 'ocean', 'cave', 'beach', 'mites', 'pebble'].some(value => surface.includes(value))
+  const road = ['road', 'curve', 'track', 'path'].some(value => surface.includes(value))
   const glass = surface.includes('windo')
   const rubber = surface.includes('rubber') || surface.includes('tire')
   return {
     metalness: 0,
-    roughness: terrain ? 0.95 : rubber ? 0.8 : glass ? 0.12 : 0.32,
-    clearcoat: terrain || rubber ? 0 : glass ? 0.4 : 0.25,
+    roughness: terrain ? 0.95 : road ? 0.85 : rubber ? 0.8 : glass ? 0.12 : 0.32,
+    clearcoat: terrain || road || rubber ? 0 : glass ? 0.4 : 0.25,
     clearcoatRoughness: 0.2,
     specularIntensity: glass ? 0.8 : 0.45,
     iridescence: 0,

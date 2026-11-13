@@ -207,7 +207,7 @@ const loadWorld = async (normalizedSpawn: WorldSpawnInner) => {
     }
   }
 
-  await transition
+  await Promise.all([transition, world.precompile()])
 
   const param = (() => {
     switch (normalizedSpawn.name) {

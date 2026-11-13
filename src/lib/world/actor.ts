@@ -200,7 +200,7 @@ export abstract class Actor extends Entity {
       }
     }
     for (const [uuid, visible] of getVisibilityAtTime(runtime.animation.tree, runtime.animationActors, runtime.time)) {
-      const object = this._isle.scene.getObjectByProperty('uuid', uuid)
+      const object = runtime.objects.get(uuid) ?? this._isle.scene.getObjectByProperty('uuid', uuid)
       if (object != null) {
         object.visible = visible
       }

@@ -196,6 +196,7 @@ export abstract class IsleBase extends World {
     } = {},
   ) {
     super(name, ignoreEntityClick ?? false)
+    this._render.enableProbes()
     this._wdbWorldName = wdbWorldName ?? null
     this._dtaWorldName = dtaWorldName ?? null
   }
@@ -581,6 +582,10 @@ export abstract class IsleBase extends World {
         for (const water of this._waters) {
           water.material.uniforms.sunColor.value.copy(color).multiplyScalar(intensity)
           water.material.uniforms.sunDirection.value.copy(sunDir)
+          water.material.uniforms.islandSkyColor.value
+            .set(0xa8cddd)
+            .lerp(color, 0.12)
+            .multiplyScalar(0.6 + intensity * 0.4)
         }
         break
       }
